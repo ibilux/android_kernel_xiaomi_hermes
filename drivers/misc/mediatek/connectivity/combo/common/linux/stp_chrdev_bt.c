@@ -234,15 +234,14 @@ unsigned int BT_poll(struct file *filp, poll_table *wait)
 	return mask;
 }
 
-ssize_t BT_write_iter(struct kiocb *iocb, struct iov_iter *from)
+ssize_t BT_aio_write(struct kiocb *iocb, const struct iovec *iov, unsigned long nr_segs, loff_t f_pos)
 {
 	INT32 retval = 0;
-	size_t count = iov_iter_count(from);
+	size_t count = iov_length(iov, nr_segs);
 
-	ftrace_print("%s get called, count %zd", __func__, count);
 	down(&wr_mtx);
 
-	BT_DBG_FUNC("count %zd", count);
+	BT_DBG_FUNC("%s: count %zd pos %lld\n", __func__, count, f_pos);
 
 	if (rstflag) {
 		BT_ERR_FUNC("whole chip reset occurs! rstflag=%d\n", rstflag);
@@ -251,24 +250,32 @@ ssize_t BT_write_iter(struct kiocb *iocb, struct iov_iter *from)
 	}
 
 	if (count > 0) {
+		unsigned long seg = nr_segs;
+		size_t ofs = 0;
 		if (count > BT_BUFFER_SIZE) {
 			BT_ERR_FUNC("write count %zd exceeds max buffer size %d", count, BT_BUFFER_SIZE);
 			retval = -EINVAL;
 			goto OUT;
 		}
 
-		if (copy_from_iter(o_buf, count, from) != count) {
-			retval = -EFAULT;
-			goto OUT;
+		while (seg > 0) {
+			if (copy_from_user(&o_buf[ofs], iov->iov_base, iov->iov_len)) {
+				retval = -EFAULT;
+				goto OUT;
+			}
+			ofs += iov->iov_len;
+			iov++;
+			seg--;
 		}
 
+		BT_DBG_FUNC("%s: before mtk_wcn_stp_send_data ofs %zd\n", __func__, ofs);
 		retval = mtk_wcn_stp_send_data(o_buf, count, BT_TASK_INDX);
 
 		if (retval < 0)
 			BT_ERR_FUNC("mtk_wcn_stp_send_data fail, retval %d\n", retval);
 		else if (retval == 0) {
 			/* Device cannot process data in time, STP queue is full and no space is available for write,
-			 * native program should not call writev with no delay.
+			 * native program should not call write with no delay.
 			 */
 			BT_ERR_FUNC("write count %zd, sent bytes %d, no space is available!\n", count, retval);
 			retval = -EAGAIN;
@@ -545,7 +552,7 @@ const struct file_operations BT_fops = {
 	.release = BT_close,
 	.read = BT_read,
 	.write = BT_write,
-	.write_iter = BT_write_iter,
+	.aio_write = BT_aio_write,
 	/* .ioctl = BT_ioctl, */
 	.unlocked_ioctl = BT_unlocked_ioctl,
 	.compat_ioctl = BT_compat_ioctl,
