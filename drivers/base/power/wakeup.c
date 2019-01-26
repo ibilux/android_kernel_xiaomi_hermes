@@ -2,6 +2,7 @@
  * drivers/base/power/wakeup.c - System wakeup events framework
  *
  * Copyright (c) 2010 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
+ * Copyright (C) 2018 XiaoMi, Inc.
  *
  * This file is released under the GPLv2.
  */
@@ -17,12 +18,14 @@
 #include <trace/events/power.h>
 
 #include "power.h"
+int wakeup_debug = 1;// add by zhaofei - 2015-05-26-13-53
 
 /*
  * If set, the suspend/hibernate code will abort transitions to a sleep state
  * if wakeup events are registered during or immediately before the transition.
  */
 bool events_check_enabled __read_mostly;
+EXPORT_SYMBOL_GPL(events_check_enabled);
 
 /*
  * Combined counters of registered wakeup events and wakeup events in progress.
@@ -538,6 +541,7 @@ static void wakeup_source_deactivate(struct wakeup_source *ws)
  *
  * It is safe to call it from interrupt context.
  */
+static void print_active_wakeup_sources(void);// add by zhaofei - 2015-05-26-13-56
 void __pm_relax(struct wakeup_source *ws)
 {
 	unsigned long flags;
@@ -549,6 +553,8 @@ void __pm_relax(struct wakeup_source *ws)
 	if (ws->active)
 		wakeup_source_deactivate(ws);
 	spin_unlock_irqrestore(&ws->lock, flags);
+
+	//print_active_wakeup_sources();// add by zhaofei - 2015-05-26-13-56
 }
 EXPORT_SYMBOL_GPL(__pm_relax);
 
@@ -659,6 +665,22 @@ void pm_wakeup_event(struct device *dev, unsigned int msec)
 }
 EXPORT_SYMBOL_GPL(pm_wakeup_event);
 
+void pm_get_active_wakeup_sources(char *pending_wakeup_source, size_t max)
+{
+	struct wakeup_source *ws;
+	int len = 0;
+	rcu_read_lock();
+	len += snprintf(pending_wakeup_source, max, "Pending Wakeup Sources: ");
+	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+		if (ws->active) {
+			len += snprintf(pending_wakeup_source + len, max,
+				"%s ", ws->name);
+		}
+	}
+	rcu_read_unlock();
+}
+EXPORT_SYMBOL_GPL(pm_get_active_wakeup_sources);
+
 static void print_active_wakeup_sources(void)
 {
 	struct wakeup_source *ws;
@@ -712,6 +734,7 @@ bool pm_wakeup_pending(void)
 
 	return ret;
 }
+EXPORT_SYMBOL_GPL(pm_wakeup_pending);
 
 /**
  * pm_get_wakeup_count - Read the number of registered wakeup events.
@@ -854,6 +877,8 @@ static int print_wakeup_source_stats(struct seq_file *m,
 
 	return ret;
 }
+
+static struct dentry *wakeup_sources_stats_dentry;
 
 /**
  * wakeup_sources_stats_show - Print wakeup sources statistics information.

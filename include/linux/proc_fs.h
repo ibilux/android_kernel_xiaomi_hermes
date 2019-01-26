@@ -41,6 +41,7 @@ extern void *proc_get_parent_data(const struct inode *);
 extern void proc_remove(struct proc_dir_entry *);
 extern void remove_proc_entry(const char *, struct proc_dir_entry *);
 extern int remove_proc_subtree(const char *, struct proc_dir_entry *);
+extern int proc_score_change_from_bg(pid_t *pids, int cnt);
 
 #else /* CONFIG_PROC_FS */
 

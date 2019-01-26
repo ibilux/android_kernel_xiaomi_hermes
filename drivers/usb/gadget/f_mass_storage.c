@@ -2,6 +2,7 @@
  * f_mass_storage.c -- Mass Storage USB Composite Function
  *
  * Copyright (C) 2003-2008 Alan Stern
+ * Copyright (C) 2018 XiaoMi, Inc.
  * Copyright (C) 2009 Samsung Electronics
  *                    Author: Michal Nazarewicz <mina86@mina86.com>
  * All rights reserved.
@@ -311,6 +312,11 @@ struct fsg_common {
 	char inquiry_string[8 + 16 + 4 + 1];
 
 	struct kref		ref;
+
+#ifdef CONFIG_MTK_BICR_SUPPORT
+	int  bicr;
+#endif
+	void (*android_callback)(unsigned char);
 };
 
 struct fsg_config {
@@ -386,6 +392,7 @@ static void set_bulk_out_req_length(struct fsg_common *common,
 	if (rem > 0)
 		length += common->bulk_out_maxpacket - rem;
 	bh->outreq->length = length;
+	bh->outreq->short_not_ok = 1;
 }
 
 
@@ -546,8 +553,19 @@ static int fsg_setup(struct usb_function *f,
 				w_length != 1)
 			return -EDOM;
 		VDBG(fsg, "get max LUN\n");
-		*(u8 *)req->buf = fsg->common->nluns - 1;
 
+#ifdef CONFIG_MTK_BICR_SUPPORT
+		if(fsg->common->bicr) {
+			/*When enable bicr, only share ONE LUN.*/
+			*(u8 *)req->buf = 0;
+		} else {
+		*(u8 *)req->buf = fsg->common->nluns - 1;
+		}
+#else
+		*(u8 *)req->buf = fsg->common->nluns - 1;
+#endif
+
+		INFO(fsg, "get max LUN = %d\n",*(u8 *)req->buf);
 		/* Respond with data/status */
 		req->length = min((u16)1, w_length);
 		return ep0_queue(fsg->common);
@@ -615,13 +633,14 @@ static bool start_out_transfer(struct fsg_common *common, struct fsg_buffhd *bh)
 	return true;
 }
 
-static int sleep_thread(struct fsg_common *common)
+static int sleep_thread(struct fsg_common *common, bool can_freeze)
 {
 	int	rc = 0;
 
 	/* Wait until a signal arrives or we are woken up */
 	for (;;) {
-		try_to_freeze();
+		if (can_freeze)
+			try_to_freeze();
 		set_current_state(TASK_INTERRUPTIBLE);
 		if (signal_pending(current)) {
 			rc = -EINTR;
@@ -695,7 +714,7 @@ static int do_read(struct fsg_common *common)
 		/* Wait for the next buffer to become available */
 		bh = common->next_buffhd_to_fill;
 		while (bh->state != BUF_STATE_EMPTY) {
-			rc = sleep_thread(common);
+			rc = sleep_thread(common, false);
 			if (rc)
 				return rc;
 		}
@@ -950,7 +969,7 @@ static int do_write(struct fsg_common *common)
 		}
 
 		/* Wait for something to happen */
-		rc = sleep_thread(common);
+		rc = sleep_thread(common, false);
 		if (rc)
 			return rc;
 	}
@@ -1214,6 +1233,8 @@ static int do_read_toc(struct fsg_common *common, struct fsg_buffhd *bh)
 	int		msf = common->cmnd[1] & 0x02;
 	int		start_track = common->cmnd[6];
 	u8		*buf = (u8 *)bh->buf;
+	u8		format;
+	int		ret;
 
 	if ((common->cmnd[1] & ~0x02) != 0 ||	/* Mask away MSF */
 			start_track > 1) {
@@ -1221,6 +1242,24 @@ static int do_read_toc(struct fsg_common *common, struct fsg_buffhd *bh)
 		return -EINVAL;
 	}
 
+	format = common->cmnd[2] & 0xf;
+	/*
+	* Check if CDB is old style SFF-8020i
+	* i.e. format is in 2 MSBs of byte 9
+	* Mac OS-X host sends us this.
+	*/
+
+	if (format == 0)
+		format = (common->cmnd[9] >> 6) & 0x3;
+
+	ret = fsg_get_toc(curlun, msf, format, buf);
+	if (ret < 0) {
+		curlun->sense_data = SS_INVALID_FIELD_IN_CDB;
+	}
+
+	return ret;
+
+#ifdef NEVER
 	memset(buf, 0, 20);
 	buf[1] = (20-2);		/* TOC data length */
 	buf[2] = 1;			/* First track number */
@@ -1233,6 +1272,7 @@ static int do_read_toc(struct fsg_common *common, struct fsg_buffhd *bh)
 	buf[14] = 0xAA;			/* Lead-out track number */
 	store_cdrom_address(&buf[16], msf, curlun->num_sectors);
 	return 20;
+#endif /* NEVER */
 }
 
 static int do_mode_sense(struct fsg_common *common, struct fsg_buffhd *bh)
@@ -1389,7 +1429,7 @@ static int do_prevent_allow(struct fsg_common *common)
 		return -EINVAL;
 	}
 
-	if (curlun->prevent_medium_removal && !prevent)
+	if (!curlun->nofua && curlun->prevent_medium_removal && !prevent)
 		fsg_lun_fsync_sub(curlun);
 	curlun->prevent_medium_removal = prevent;
 	return 0;
@@ -1517,7 +1557,7 @@ static int throw_away_data(struct fsg_common *common)
 		}
 
 		/* Otherwise wait for something to happen */
-		rc = sleep_thread(common);
+		rc = sleep_thread(common, true);
 		if (rc)
 			return rc;
 	}
@@ -1638,7 +1678,7 @@ static int send_status(struct fsg_common *common)
 	/* Wait for the next buffer to become available */
 	bh = common->next_buffhd_to_fill;
 	while (bh->state != BUF_STATE_EMPTY) {
-		rc = sleep_thread(common);
+		rc = sleep_thread(common, true);
 		if (rc)
 			return rc;
 	}
@@ -1652,7 +1692,7 @@ static int send_status(struct fsg_common *common)
 		sd = SS_LOGICAL_UNIT_NOT_SUPPORTED;
 
 	if (common->phase_error) {
-		DBG(common, "sending phase-error status\n");
+		ERROR(common, "sending phase-error status\n");
 		status = US_BULK_STAT_PHASE;
 		sd = SS_INVALID_COMMAND;
 	} else if (sd != SS_NO_SENSE) {
@@ -1678,6 +1718,20 @@ static int send_status(struct fsg_common *common)
 		return -EIO;
 
 	common->next_buffhd_to_fill = bh->next;
+
+#ifdef CONFIG_MTK_ICUSB_SUPPORT
+#define ICUSB_FSYNC_MAGIC_TIME 2
+	if (curlun->filp && curlun->isICUSB)
+	{
+		struct timeval tv_before, tv_after;
+		do_gettimeofday(&tv_before);
+		vfs_fsync(curlun->filp, 1);
+		do_gettimeofday(&tv_after);
+		if( (tv_after.tv_sec - tv_before.tv_sec) >= ICUSB_FSYNC_MAGIC_TIME){
+			printk(KERN_WARNING "time spent more than %d sec, sec : %d, usec : %d\n", ICUSB_FSYNC_MAGIC_TIME, (unsigned int)(tv_after.tv_sec - tv_before.tv_sec), (unsigned int)(tv_after.tv_usec - tv_before.tv_usec));
+		}
+	}
+#endif
 	return 0;
 }
 
@@ -1718,6 +1772,8 @@ static int check_command(struct fsg_common *common, int cmnd_size,
 		 * Carry out the command, but only transfer as much as
 		 * we are allowed.
 		 */
+		ERROR(common, "PHASE ERROR: data_size(%d) < data_size_from_cmnd(%d)\n",
+		    common->data_size, common->data_size_from_cmnd);
 		common->data_size_from_cmnd = common->data_size;
 		common->phase_error = 1;
 	}
@@ -1726,6 +1782,8 @@ static int check_command(struct fsg_common *common, int cmnd_size,
 
 	/* Conflicting data directions is a phase error */
 	if (common->data_dir != data_dir && common->data_size_from_cmnd > 0) {
+		ERROR(common, "PHASE ERROR: conflict data dir(%d,%d),data_size_from_cmnd(%d)\n",
+		    common->data_dir, data_dir, common->data_size_from_cmnd);
 		common->phase_error = 1;
 		return -EINVAL;
 	}
@@ -1841,7 +1899,7 @@ static int do_scsi_command(struct fsg_common *common)
 	bh = common->next_buffhd_to_fill;
 	common->next_buffhd_to_drain = bh;
 	while (bh->state != BUF_STATE_EMPTY) {
-		rc = sleep_thread(common);
+		rc = sleep_thread(common, true);
 		if (rc)
 			return rc;
 	}
@@ -1967,7 +2025,7 @@ static int do_scsi_command(struct fsg_common *common)
 		common->data_size_from_cmnd =
 			get_unaligned_be16(&common->cmnd[7]);
 		reply = check_command(common, 10, DATA_DIR_TO_HOST,
-				      (7<<6) | (1<<1), 1,
+				      (0xf<<6) | (1<<1), 1,
 				      "READ TOC");
 		if (reply == 0)
 			reply = do_read_toc(common, bh);
@@ -2061,6 +2119,14 @@ static int do_scsi_command(struct fsg_common *common)
 				      "WRITE(12)");
 		if (reply == 0)
 			reply = do_write(common);
+		break;
+
+	case REZERO_UNIT:
+		printk("Get REZERO_UNIT command = %x\r\n", common->cmnd[1]);
+		if (common->cmnd[1] == 0xB)
+			common->android_callback(1);
+		else if (common->cmnd[1] == 0xD)
+			common->android_callback(2);
 		break;
 
 	/*
@@ -2187,7 +2253,7 @@ static int get_next_command(struct fsg_common *common)
 	/* Wait for the next buffer to become available */
 	bh = common->next_buffhd_to_fill;
 	while (bh->state != BUF_STATE_EMPTY) {
-		rc = sleep_thread(common);
+		rc = sleep_thread(common, true);
 		if (rc)
 			return rc;
 	}
@@ -2206,7 +2272,7 @@ static int get_next_command(struct fsg_common *common)
 
 	/* Wait for the CBW to arrive */
 	while (bh->state != BUF_STATE_FULL) {
-		rc = sleep_thread(common);
+		rc = sleep_thread(common, true);
 		if (rc)
 			return rc;
 	}
@@ -2388,7 +2454,7 @@ static void handle_exception(struct fsg_common *common)
 			}
 			if (num_active == 0)
 				break;
-			if (sleep_thread(common))
+			if (sleep_thread(common, true))
 				return;
 		}
 
@@ -2522,7 +2588,7 @@ static int fsg_main_thread(void *common_)
 		}
 
 		if (!common->running) {
-			sleep_thread(common);
+			sleep_thread(common, true);
 			continue;
 		}
 
@@ -2655,7 +2721,9 @@ static struct fsg_common *fsg_common_init(struct fsg_common *common,
 	common->ep0 = gadget->ep0;
 	common->ep0req = cdev->req;
 	common->cdev = cdev;
-
+#ifdef CONFIG_MTK_BICR_SUPPORT
+	common->bicr = 0;
+#endif
 	/* Maybe allocate device-global string IDs, and patch descriptors */
 	if (fsg_strings[FSG_STRING_INTERFACE].id == 0) {
 		rc = usb_string_id(cdev);
@@ -2683,6 +2751,7 @@ static struct fsg_common *fsg_common_init(struct fsg_common *common,
 		curlun->ro = lcfg->cdrom || lcfg->ro;
 		curlun->initially_ro = curlun->ro;
 		curlun->removable = lcfg->removable;
+		curlun->nofua = lcfg->nofua;
 		curlun->dev.release = fsg_lun_release;
 		curlun->dev.parent = &gadget->dev;
 		/* curlun->dev.driver = &fsg_driver.driver; XXX */
@@ -2733,7 +2802,11 @@ static struct fsg_common *fsg_common_init(struct fsg_common *common,
 		bh->next = bh + 1;
 		++bh;
 buffhds_first_it:
+#if defined(CONFIG_64BIT) && defined(CONFIG_MTK_LM_MODE)
+		bh->buf = kmalloc(FSG_BUFLEN, GFP_KERNEL | GFP_DMA);
+#else                
 		bh->buf = kmalloc(FSG_BUFLEN, GFP_KERNEL);
+#endif                
 		if (unlikely(!bh->buf)) {
 			rc = -ENOMEM;
 			goto error_release;
@@ -2744,7 +2817,7 @@ buffhds_first_it:
 	/* Prepare inquiryString */
 	i = get_default_bcdDevice();
 	snprintf(common->inquiry_string, sizeof common->inquiry_string,
-		 "%-8s%-16s%04x", cfg->vendor_name ?: "Linux",
+		 "%-8s%-16s%04x", cfg->vendor_name ?: "Redmi Note 2",    //qinhai modify for h3y
 		 /* Assume product name dependent on the first LUN */
 		 cfg->product_name ?: (common->luns->cdrom
 				     ? "File-Stor Gadget"

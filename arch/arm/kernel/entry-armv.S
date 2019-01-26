@@ -685,8 +685,29 @@ ENDPROC(ret_from_exception)
 ENTRY(__switch_to)
  UNWIND(.fnstart	)
  UNWIND(.cantunwind	)
+#ifdef CONFIG_VFP_OPT
 	add	ip, r1, #TI_CPU_SAVE
-	ldr	r3, [r2, #TI_TP_VALUE]
+	stmfa	ip!, {r0, r1, r2, r5, r6, r8, lr}
+
+	@1. save vfp state for previous thread_info
+	mov	r0, r1
+	add	r0, r0, #TI_VFPSTATE	@ r0 = workspace
+	VFPFMRX	r1, FPEXC
+	mov	r5, ip			@ save ip to r5, because vfp_save_state may change ip
+	mov	r6, r2			@ save r2 to r6, because vfp_save_state may change r2
+	bl	vfp_save_state
+	mov	ip, r5
+	mov	r2, r6
+
+	@ 2. restore vfp state from next thread_info
+	add	r2, r2, #TI_VFPSTATE	@ r2 = workspace
+	VFPFLDMIA	r2, r0		@ reload the working registers while
+					@ FPEXC is in a safe state
+	ldmia	r2, {r1, r5, r6, r8}	@ load FPEXC, FPSCR, FPINST, FPINST2
+	VFPFMXR	FPSCR, r5		@ restore status
+	ldmfa	ip!, {r0, r1, r2, r5, r6, r8, lr}
+#endif
+	add	ip, r1, #TI_CPU_SAVE
  ARM(	stmia	ip!, {r4 - sl, fp, sp, lr} )	@ Store most regs on stack
  THUMB(	stmia	ip!, {r4 - sl, fp}	   )	@ Store most regs on stack
  THUMB(	str	sp, [ip], #4		   )
@@ -694,7 +715,7 @@ ENTRY(__switch_to)
 #ifdef CONFIG_CPU_USE_DOMAINS
 	ldr	r6, [r2, #TI_CPU_DOMAIN]
 #endif
-	set_tls	r3, r4, r5
+	switch_tls r1, r2, r4, r5, r3, r7
 #if defined(CONFIG_CC_STACKPROTECTOR) && !defined(CONFIG_SMP)
 	ldr	r7, [r2, #TI_TASK]
 	ldr	r8, =__stack_chk_guard

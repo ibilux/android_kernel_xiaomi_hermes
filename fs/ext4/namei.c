@@ -34,6 +34,7 @@
 #include <linux/quotaops.h>
 #include <linux/buffer_head.h>
 #include <linux/bio.h>
+#include <linux/sched.h>
 #include "ext4.h"
 #include "ext4_jbd2.h"
 
@@ -2727,6 +2728,11 @@ static int ext4_unlink(struct inode *dir, struct dentry *dentry)
 	struct buffer_head *bh;
 	struct ext4_dir_entry_2 *de;
 	handle_t *handle = NULL;
+
+    if (dentry->d_name.name && !strcmp(dentry->d_name.name, "wpa_supplicant.conf")) {
+        printk("unlink_dbg: %s remove %s\n", current->comm, dentry->d_name.name);
+        show_stack(NULL, NULL);
+    }
 
 	trace_ext4_unlink_enter(dir, dentry);
 	/* Initialize quotas before so that eventual writes go

@@ -46,6 +46,7 @@
 #include "truncate.h"
 
 #include <trace/events/ext4.h>
+#include <linux/blkdev.h>
 
 #define MPAGE_DA_EXTENT_TAIL 0x01
 
@@ -982,6 +983,13 @@ static int ext4_write_begin(struct file *file, struct address_space *mapping,
 	struct page *page;
 	pgoff_t index;
 	unsigned from, to;
+#if defined(FEATURE_STORAGE_PID_LOGGER)
+		extern unsigned char *page_logger;
+		struct page_pid_logger *tmp_logger;
+		unsigned long page_index;
+		extern spinlock_t g_locker;
+		unsigned long g_flags;
+#endif
 
 	trace_ext4_write_begin(inode, pos, len, flags);
 	/*
@@ -1076,6 +1084,24 @@ retry_journal:
 		return ret;
 	}
 	*pagep = page;
+#if defined(FEATURE_STORAGE_PID_LOGGER)
+		if( page_logger && (*pagep)) {
+			//#if defined(CONFIG_FLATMEM)
+			//page_index = (unsigned long)((*pagep) - mem_map) ;
+			//#else
+			page_index = (unsigned long)(__page_to_pfn(*pagep))- PHYS_PFN_OFFSET;
+			//#endif
+			tmp_logger =((struct page_pid_logger *)page_logger) + page_index;
+			spin_lock_irqsave(&g_locker, g_flags);
+			if( page_index < num_physpages) {
+				if( tmp_logger->pid1 == 0XFFFF)
+					tmp_logger->pid1 = current->pid;
+				else if( tmp_logger->pid1 != current->pid)
+					tmp_logger->pid2 = current->pid;
+			}
+			spin_unlock_irqrestore(&g_locker, g_flags);
+		}
+#endif
 	return ret;
 }
 
@@ -3589,6 +3615,7 @@ int ext4_can_truncate(struct inode *inode)
 
 int ext4_punch_hole(struct file *file, loff_t offset, loff_t length)
 {
+#if 0
 	struct inode *inode = file_inode(file);
 	struct super_block *sb = inode->i_sb;
 	ext4_lblk_t first_block, stop_block;
@@ -3774,6 +3801,12 @@ out_dio:
 out_mutex:
 	mutex_unlock(&inode->i_mutex);
 	return ret;
+#else
+	/*
+	 * Disabled as per b/28760453
+	 */
+	return -EOPNOTSUPP;
+#endif
 }
 
 /*
@@ -4036,6 +4069,10 @@ make_io:
 		trace_ext4_load_inode(inode);
 		get_bh(bh);
 		bh->b_end_io = end_buffer_read_sync;
+#ifdef FEATURE_STORAGE_META_LOG
+		if( bh && bh->b_bdev && bh->b_bdev->bd_disk)
+			set_metadata_rw_status(bh->b_bdev->bd_disk->first_minor, WAIT_READ_CNT);
+#endif
 		submit_bh(READ | REQ_META | REQ_PRIO, bh);
 		wait_on_buffer(bh);
 		if (!buffer_uptodate(bh)) {

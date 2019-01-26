@@ -1,6 +1,7 @@
 /* linux/net/ipv4/arp.c
  *
  * Copyright (C) 1994 by Florian  La Roche
+ * Copyright (C) 2018 XiaoMi, Inc.
  *
  * This module implements the Address Resolution Protocol ARP (RFC 826),
  * which is used to convert IP addresses (or in the future maybe other
@@ -157,6 +158,7 @@ static const struct neigh_ops arp_broken_ops = {
 	.connected_output =	neigh_compat_output,
 };
 
+/* MTK_NET_CHANGES */
 struct neigh_table arp_tbl = {
 	.family		= AF_INET,
 	.key_len	= 4,
@@ -166,10 +168,10 @@ struct neigh_table arp_tbl = {
 	.id		= "arp_cache",
 	.parms		= {
 		.tbl			= &arp_tbl,
-		.base_reachable_time	= 30 * HZ,
+		.base_reachable_time	= 30 * HZ,  //dengbing modify  300 -> 30
 		.retrans_time		= 1 * HZ,
 		.gc_staletime		= 60 * HZ,
-		.reachable_time		= 30 * HZ,
+		.reachable_time		= 30 * HZ,      //dengbing modify  300 -> 30
 		.delay_probe_time	= 5 * HZ,
 		.queue_len_bytes	= 64*1024,
 		.ucast_probes		= 3,
@@ -180,9 +182,9 @@ struct neigh_table arp_tbl = {
 		.locktime		= 1 * HZ,
 	},
 	.gc_interval	= 30 * HZ,
-	.gc_thresh1	= 128,
-	.gc_thresh2	= 512,
-	.gc_thresh3	= 1024,
+	.gc_thresh1	= 512,
+	.gc_thresh2	= 1024,
+	.gc_thresh3	= 2048,
 };
 EXPORT_SYMBOL(arp_tbl);
 
@@ -703,7 +705,9 @@ void arp_send(int type, int ptype, __be32 dest_ip,
 
 	if (dev->flags&IFF_NOARP)
 		return;
-
+	#ifdef CONFIG_MTK_NET_LOGGING  	
+    printk(KERN_INFO "[mtk_net][arp]arp_send type = %d, dev = %s\n", type, dev->name);
+    #endif
 	skb = arp_create(type, ptype, dest_ip, dev, src_ip,
 			 dest_hw, src_hw, target_hw);
 	if (skb == NULL)

@@ -416,6 +416,126 @@ config TOUCHSCREEN_MK712
 	  To compile this driver as a module, choose M here: the
 	  module will be called mk712.
 
+config TOUCHSCREEN_MTK
+	bool "MediaTek Touch Panel Driver"
+	help
+	  Say Y here if you have MediaTek touch panel.
+
+config TOUCHSCREEN_MTK_GT9XX
+	bool "GT9XX for Mediatek package"
+	depends on TOUCHSCREEN_MTK
+
+config TOUCHSCREEN_MTK_FHD
+	bool "GT9XX for lenovo fhd aio driver config"
+	depends on TOUCHSCREEN_MTK
+
+config TOUCHSCREEN_MTK_HD
+	bool "GT9XX for lenovo hd aio driver config"
+	depends on TOUCHSCREEN_MTK
+
+config TOUCHSCREEN_MTK_GT9XX_AIO
+	bool "GT9XX for lenovo aio driver"
+	depends on TOUCHSCREEN_MTK
+
+config TOUCHSCREEN_MTK_GT9XX_HOTKNOT_SCP
+	bool "GT9XX with SCP for Mediatek package"
+	depends on TOUCHSCREEN_MTK
+
+config TOUCHSCREEN_MTK_GT9XX_HOTKNOT
+	bool "GT9XX HOTKNOT for Mediatek package"
+	depends on TOUCHSCREEN_MTK
+
+config TOUCHSCREEN_MTK_GT1151
+	bool "GT1151 for Mediatek package"
+	default n
+	
+config TOUCHSCREEN_MTK_MAX1187X
+	bool "MAX1187X for Mediatek package"
+	depends on TOUCHSCREEN_MTK
+
+config TOUCHSCREEN_MTK_FT5346
+	bool "FT5346 for Mediatek package"
+	depends on TOUCHSCREEN_MTK
+
+config TOUCHSCREEN_MTK_ATMEL336T
+	bool "ATMEL336T for Mediatek package"
+	depends on TOUCHSCREEN_MTK	
+
+config TOUCHSCREEN_MTK_FT5346_CX865
+	bool "FT5346 CX865 for Mediatek package"
+	depends on TOUCHSCREEN_MTK
+	
+config TOUCHSCREEN_MTK_ATMEL336T_CX865
+	bool "ATMEL336T CX865 for Mediatek package"
+	depends on TOUCHSCREEN_MTK	
+	
+config TOUCHSCREEN_MTK_GT9XXTB_HOTKNOT
+	bool "GT9XXTB HOTKNOT for Mediatek package"
+	depends on TOUCHSCREEN_MTK
+	
+config TOUCHSCREEN_MTK_GT818B_FPGA
+	bool "GT818B for Mediatek package"
+	default n
+	
+config TOUCHSCREEN_S7020
+	bool "GT9XX for Mediatek package"
+	depends on TOUCHSCREEN_MTK
+
+config TOUCHSCREEN_MTK_GT9XX_2
+	bool "GT9XX for Mediatek package"
+	depends on TOUCHSCREEN_MTK
+        
+# Touch panel
+config MTK_GT9XX
+        bool "GT9XX for Mediatek package"
+        default n
+        
+config GT9XX_2
+        bool "GT9XX for Mediatek package"
+        default n
+        
+config TOUCHSCREEN_MTK_SYNAPTICS_S3528_2
+       tristate "Synaptics S3528_2 touchscreen"
+	     depends on I2C
+	     help
+	       This enables support for Synaptics S3528 over I2C based touchscreens.
+
+config MTK_MMS244
+        bool "MMS244 for Mediatek package"
+        default n 
+
+config GT9XX_HOTKNOT_FLASHLESS
+        bool "GT9XX_HOTKNOT for Mediatek package"
+        default n
+
+config MTK_FT5406
+        bool "FT5406 for Mediatek package"
+        default n
+
+config MTK_FT5406_82
+        bool "FT5406_82 for Mediatek package"
+        default n
+
+config MTK_FT5206
+        bool "FT5206 for Mediatek package"
+        default n
+
+config MTK_MMS134
+        bool "MMS134 for Mediatek package"
+        default n
+
+config MTK_MMS128
+        bool "MMS128 for Mediatek package"
+        default n
+
+config MTK_S7020
+	bool "MTK_S7020"
+	default n
+	
+config MTK_MIT200
+        bool "MIT200 for Mediatek package"
+        default n
+
 config TOUCHSCREEN_HP600
 	tristate "HP Jornada 6xx touchscreen"
 	depends on SH_HP6XX && SH_ADC
@@ -616,7 +736,11 @@ config TOUCHSCREEN_WM9713
 	help
 	  Say Y here to enable support for the Wolfson Microelectronics
 	  WM9713 touchscreen controller.
-
+	  
+config TOUCHSCREEN_MTK_FTS2A052
+	bool "FTS2A052 for Mediatek package"
+	default n
+	
 config TOUCHSCREEN_WM97XX_ATMEL
 	tristate "WM97xx Atmel accelerated touch"
 	depends on TOUCHSCREEN_WM97XX && (AVR32 || ARCH_AT91)
@@ -888,4 +1012,10 @@ config TOUCHSCREEN_TPS6507X
 	  To compile this driver as a module, choose M here: the
 	  module will be called tps6507x_ts.
 
+config TOUCHSCREEN_SYNAPTICS_S3528
+	tristate "Synaptics S7020 touchscreen"
+	depends on I2C
+	help
+	  This enables support for Synaptics S3528 over I2C based touchscreens.
+	  
 endif

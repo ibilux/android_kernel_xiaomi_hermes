@@ -1,6 +1,7 @@
 /* include/linux/logger.h
  *
  * Copyright (C) 2007-2008 Google, Inc.
+ * Copyright (C) 2018 XiaoMi, Inc.
  * Author: Robert Love <rlove@android.com>
  *
  * This software is licensed under the terms of the GNU General Public
@@ -66,14 +67,55 @@ struct logger_entry {
 	__s32		tid;
 	__s32		sec;
 	__s32		nsec;
+    __s32       tz;         /* timezone*/
 	kuid_t		euid;
 	char		msg[0];
 };
+
+/*
+  SMP porting, we double the android buffer 
+* and kernel buffer size for dual core
+*/
+#ifdef CONFIG_SMP
+/* mingjian, 20101208: define buffer size based on different products {*/
+#ifndef __MAIN_BUF_SIZE
+#define __MAIN_BUF_SIZE 256*1024
+#endif
+
+#ifndef __EVENTS_BUF_SIZE
+#define __EVENTS_BUF_SIZE 256*1024
+#endif
+
+#ifndef __RADIO_BUF_SIZE
+#define __RADIO_BUF_SIZE 256*1024
+#endif
+
+#ifndef __SYSTEM_BUF_SIZE
+#define __SYSTEM_BUF_SIZE 256*1024
+#endif
+#else
+#ifndef __MAIN_BUF_SIZE
+#define __MAIN_BUF_SIZE 256*1024
+#endif
+
+#ifndef __EVENTS_BUF_SIZE
+#define __EVENTS_BUF_SIZE 256*1024 
+#endif
+
+#ifndef __RADIO_BUF_SIZE
+#define __RADIO_BUF_SIZE 64*1024
+#endif
+
+#ifndef __SYSTEM_BUF_SIZE
+#define __SYSTEM_BUF_SIZE 64*1024
+#endif
+#endif
 
 #define LOGGER_LOG_RADIO	"log_radio"	/* radio-related messages */
 #define LOGGER_LOG_EVENTS	"log_events"	/* system/hardware events */
 #define LOGGER_LOG_SYSTEM	"log_system"	/* system/framework messages */
 #define LOGGER_LOG_MAIN		"log_main"	/* everything else */
+#define LOGGER_WS_EVENTS        "xiaomi_wsevents"  /* whetstone event */
 
 #define LOGGER_ENTRY_MAX_PAYLOAD	4076
 
@@ -85,5 +127,6 @@ struct logger_entry {
 #define LOGGER_FLUSH_LOG		_IO(__LOGGERIO, 4) /* flush log */
 #define LOGGER_GET_VERSION		_IO(__LOGGERIO, 5) /* abi version */
 #define LOGGER_SET_VERSION		_IO(__LOGGERIO, 6) /* abi version */
-
+#define LOGGER_SET_INTERVAL     _IO(__LOGGERIO, 101)    /* wake up interval */
+#define LOGGER_SET_TIMER        _IO(__LOGGERIO, 102)    /* trigger timer*/
 #endif /* _LINUX_LOGGER_H */

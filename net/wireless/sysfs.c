@@ -3,6 +3,7 @@
  * and some default attributes.
  *
  * Copyright 2005-2006	Jiri Benc <jbenc@suse.cz>
+ * Copyright (C) 2018 XiaoMi, Inc.
  * Copyright 2006	Johannes Berg <johannes@sipsolutions.net>
  *
  * This file is GPLv2 as found in COPYING.
@@ -100,15 +101,19 @@ static int wiphy_suspend(struct device *dev, pm_message_t state)
 
 	rtnl_lock();
 	if (rdev->wiphy.registered) {
+#if 0	//add by lizhiye, begin for W_And00317250, wifi signal instability	
 		if (!rdev->wowlan)
 			cfg80211_leave_all(rdev);
+		#endif
 		if (rdev->ops->suspend)
 			ret = rdev_suspend(rdev, rdev->wowlan);
+		#if 0
 		if (ret == 1) {
 			/* Driver refuse to configure wowlan */
 			cfg80211_leave_all(rdev);
 			ret = rdev_suspend(rdev, NULL);
 		}
+#endif	//add by lizhiye, end for W_And00317250, wifi signal instability
 	}
 	rtnl_unlock();
 

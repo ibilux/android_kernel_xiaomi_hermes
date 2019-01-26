@@ -1193,7 +1193,13 @@ static void ndisc_router_discovery(struct sk_buff *skb)
 	if (rt)
 		rt6_set_expires(rt, jiffies + (HZ * lifetime));
 	if (ra_msg->icmph.icmp6_hop_limit) {
-		in6_dev->cnf.hop_limit = ra_msg->icmph.icmp6_hop_limit;
+		/* Only set hop_limit on the interface if it is higher than
+		 * the current hop_limit.
+		 */
+		if (in6_dev->cnf.hop_limit < ra_msg->icmph.icmp6_hop_limit)
+			in6_dev->cnf.hop_limit = ra_msg->icmph.icmp6_hop_limit;
+		else
+			ND_PRINTK(2, warn, "RA: Got route advertisement with lower hop_limit than current\n");
 		if (rt)
 			dst_metric_set(&rt->dst, RTAX_HOPLIMIT,
 				       ra_msg->icmph.icmp6_hop_limit);
@@ -1325,12 +1331,35 @@ skip_routeinfo:
 		}
 	}
 
+#ifdef CONFIG_MTK_DHCPV6C_WIFI
+	if (in6_dev->if_flags & IF_RA_OTHERCONF){
+		printk(KERN_INFO "[mtk_net][ipv6]receive RA with o bit!\n");
+		in6_dev->cnf.ra_info_flag = 1;
+	} 
+	if(in6_dev->if_flags & IF_RA_MANAGED){
+		printk(KERN_INFO "[mtk_net][ipv6]receive RA with m bit!\n");
+		in6_dev->cnf.ra_info_flag = 2;
+	}
+	if(in6_dev->cnf.ra_info_flag == 0){
+		printk(KERN_INFO "[mtk_net][ipv6]receive RA neither O nor M bit is set!\n");
+		in6_dev->cnf.ra_info_flag = 4;
+	}
+#endif
+
 	if (ndopts.nd_useropts) {
 		struct nd_opt_hdr *p;
 		for (p = ndopts.nd_useropts;
 		     p;
 		     p = ndisc_next_useropt(p, ndopts.nd_useropts_end)) {
 			ndisc_ra_useropt(skb, p);
+#ifdef CONFIG_MTK_DHCPV6C_WIFI
+			/* only clear ra_info_flag when O bit is set */
+			if (p->nd_opt_type == ND_OPT_RDNSS &&
+					in6_dev->if_flags & IF_RA_OTHERCONF) {
+				printk(KERN_INFO "[mtk_net][ipv6]RDNSS, ignore RA with o bit!\n");
+				in6_dev->cnf.ra_info_flag = 0;
+			} 
+#endif
 		}
 	}
 
@@ -1542,7 +1571,7 @@ int ndisc_rcv(struct sk_buff *skb)
 	}
 
 	memset(NEIGH_CB(skb), 0, sizeof(struct neighbour_cb));
-
+	
 	switch (msg->icmph.icmp6_type) {
 	case NDISC_NEIGHBOUR_SOLICITATION:
 		ndisc_recv_ns(skb);
