@@ -29,7 +29,7 @@ int g_sw_rechr_flag=0;
 int g_sw_rechr_vlot=4100;
 
 #if defined(HIGH_BATTERY_VOLTAGE_SUPPORT)
-kal_uint32 g_cv_reg_val=0x5; //default 4.35V
+kal_uint32 g_cv_reg_val=0x4; //default 4.4V
 #else
 kal_uint32 g_cv_reg_val=0x8; //default 4.2V
 #endif
@@ -551,9 +551,9 @@ static kal_uint32 charging_set_cv_voltage(void *data)
     register_value = charging_parameter_to_value(VBAT_CV_VTH, GETARRAYNUM(VBAT_CV_VTH) ,*(kal_uint32 *)(data));
     g_cv_reg_val = register_value;
 
-    if(*(kal_uint32 *)(data) == BATTERY_VOLT_04_340000_V)
+    if(*(kal_uint32 *)(data) == BATTERY_VOLT_04_387500_V)
     {
-        g_cv_reg_val=0x5;
+        g_cv_reg_val=0x4;
     }
 
     set_cv_volt();

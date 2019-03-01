@@ -1,0 +1,2 @@
+source "drivers/input/touchscreen/mediatek/atmel336t/Kconfig"
+source "drivers/input/touchscreen/mediatek/ft5346/Kconfig"

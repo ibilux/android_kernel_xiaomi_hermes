@@ -66,6 +66,12 @@ config CUSTOM_KERNEL_CHARGEPUMP
 	bool "backlight driver"
 	default n
 
+config MTK_CONSUMERIR_SUPPORT
+	bool "MediaTek consumer IR transmitter"
+	default n
+	---help---
+	  Consumerir driver support for MediaTek SoC
+
 config MTK_MD_LOW_BAT_SUPPORT
 	bool "MediaTek MD low bat support"
 	default n
@@ -393,6 +399,10 @@ config MTK_MULTI_BAT_PROFILE_SUPPORT
 config MTK_SMART_BATTERY
 	tristate "MediaTek Smart Battery Driver"
 	default y
+
+config MTK_CW2015_BATTERY
+	tristate "MTK CW2015 Battery Driver"
+	default n
 
 config MTK_DUMMY_BATTERY
 	tristate "MediaTek Dummy Battery Driver"

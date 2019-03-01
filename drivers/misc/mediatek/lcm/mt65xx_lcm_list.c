@@ -21,7 +21,15 @@
 #endif
 
 LCM_DRIVER *lcm_driver_list[] = {
-
+#if defined(NT35532_FHD_DSI_VDO_BOE)
+	&nt35532_fhd_boe_vdo_lcm_drv,
+#endif
+#if defined(NT35596_FHD_DSI_VDO_AUO)
+	&nt35596_fhd_auo_phantom_lcm_drv,
+#endif
+#if defined(NT35596_FHD_DSI_VDO_TIANMA)
+	&nt35596_fhd_tianma_phantom_lcm_drv,
+#endif
 };
 
 #define LCM_COMPILE_ASSERT(condition) LCM_COMPILE_ASSERT_X(condition, __LINE__)
@@ -30,7 +38,7 @@ LCM_DRIVER *lcm_driver_list[] = {
 
 unsigned int lcm_count = sizeof(lcm_driver_list) / sizeof(LCM_DRIVER *);
 LCM_COMPILE_ASSERT(0 != sizeof(lcm_driver_list) / sizeof(LCM_DRIVER *));
-#if 0
+#if defined(NT35532_FHD_DSI_VDO_BOE) | defined(NT35596_FHD_DSI_VDO_AUO) | defined(NT35596_FHD_DSI_VDO_TIANMA)
 #ifdef BUILD_LK
 extern void mdelay(unsigned long msec);
 #endif
@@ -163,7 +171,7 @@ unsigned char which_lcd_module_triple(void)
 	pr_debug("which_lcd_module_triple,lcd_id0:%d\n", lcd_id0);
 	pr_debug("which_lcd_module_triple,lcd_id1:%d\n", lcd_id1);
 #endif
-	lcd_id = lcd_id0 | (lcd_id1 << 2);
+	lcd_id = lcd_id0 | (lcd_id1 << 1);
 
 #ifdef BUILD_LK
 	dprintf(CRITICAL, "which_lcd_module_triple,lcd_id:%d\n", lcd_id);

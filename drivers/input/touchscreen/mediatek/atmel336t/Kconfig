@@ -1,0 +1,8 @@
+config TOUCHSCREEN_MTK_ATMEL336T
+	tristate "ATMEL336T touchscreen"
+	depends on TOUCHSCREEN_MTK
+	help
+	  Say Y here if you have a ATMEL336T and want to enable
+	  support for the built-in touchscreen.
+
+	  If unsure, say N.

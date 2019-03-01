@@ -70,7 +70,7 @@
 static unsigned int audio_ap_supported_high_sample_rates[] =
 {
     8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000,
-    96000, 192000
+    88200, 96000, 176400, 192000
 };
 
 static struct snd_pcm_hw_constraint_list constraints_sample_rates =

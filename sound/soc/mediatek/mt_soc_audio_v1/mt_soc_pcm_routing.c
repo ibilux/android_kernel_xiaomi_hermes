@@ -499,7 +499,7 @@ static int Audio_Irqcnt2_Set(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_
 static void GetAudioTrimOffset(int channels)
 {
     int Buffer_on_value = 0 , Buffer_offl_value = 0, Buffer_offr_value = 0/*, Buffer_diff = 0*/;
-    const int off_counter = 20, on_counter  = 20 , Const_DC_OFFSET = 2048;
+    const int off_counter = 500, on_counter  = 500 , Const_DC_OFFSET = 2048;
     printk("%s channels = %d\n", __func__, channels);
     // open headphone and digital part
     AudDrv_Clk_On();
@@ -517,13 +517,19 @@ static void GetAudioTrimOffset(int channels)
             break;
     }
 
-    // Get HPL off offset
+    // init one time
+    setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_HPL);
+    EnableTrimbuffer(true);
+    msleep(100);
+    EnableTrimbuffer(false);
+    msleep(100);
+    setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_GROUND);
+    msleep(2000);
     SetSdmLevel(AUDIO_SDM_LEVEL_MUTE);
-    msleep(1);
     setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_HPL);
     setOffsetTrimBufferGain(3);
     EnableTrimbuffer(true);
-    msleep(1);
+    msleep(100);
 #ifndef CONFIG_MTK_FPGA
     Buffer_offl_value = PMIC_IMM_GetOneChannelValue(AUX_HP_AP, off_counter, 0);
 #else
@@ -537,7 +543,7 @@ static void GetAudioTrimOffset(int channels)
     setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_HPR);
     setOffsetTrimBufferGain(3);
     EnableTrimbuffer(true);
-    msleep(5);
+    msleep(100);
 #ifndef CONFIG_MTK_FPGA
     Buffer_offr_value = PMIC_IMM_GetOneChannelValue(AUX_HP_AP, off_counter, 0);
 #else
@@ -545,6 +551,13 @@ static void GetAudioTrimOffset(int channels)
 #endif
     printk("Buffer_offr_value = %d \n", Buffer_offr_value);
     EnableTrimbuffer(false);
+
+    if(abs(Buffer_offr_value - Buffer_offl_value) >= 4)
+    {
+        printk("Buffer_offr_value =%d Buffer_offl_value diff  = %d\n",Buffer_offr_value,Buffer_offl_value);
+        Buffer_offl_value =Buffer_offr_value;
+        printk("Buffer_offr_value =%d Buffer_offl_value  = %d\n",Buffer_offr_value,Buffer_offl_value);
+    }
 
     switch (channels)
     {
@@ -563,7 +576,7 @@ static void GetAudioTrimOffset(int channels)
     setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_HPL);
     setOffsetTrimBufferGain(3);
     EnableTrimbuffer(true);
-    msleep(5);
+    msleep(100);
 
     switch (channels)
     {
@@ -577,9 +590,13 @@ static void GetAudioTrimOffset(int channels)
         default:
             break;
     }
+    EnableTrimbuffer(false);
 
-    //int value = 0;
-    msleep(10);
+    // calibrate HPL offset trim
+    setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_HPL);
+    setOffsetTrimBufferGain(3);
+    EnableTrimbuffer(true);
+    msleep(100);
 #ifndef CONFIG_MTK_FPGA
     Buffer_on_value = PMIC_IMM_GetOneChannelValue(AUX_HP_AP, on_counter, 0);
 #else

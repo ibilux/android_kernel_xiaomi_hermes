@@ -15,3 +15,5 @@ config CUSTOM_KERNEL_ACCELEROMETER
           If the platform is supported for acceleometer, this
           configuration should be configured, and the acceleometer
           driver configuration should be configured as well.
+
+source "drivers/misc/mediatek/accelerometer/bmi160_acc/Kconfig"

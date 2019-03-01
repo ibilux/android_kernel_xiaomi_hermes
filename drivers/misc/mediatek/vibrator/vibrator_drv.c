@@ -24,13 +24,14 @@
 
 #include <linux/jiffies.h>
 #include <linux/timer.h>
+#include <linux/delay.h>
 
 #include <mach/mt_typedefs.h>
 /* #include <mach/mt6577_pm_ldo.h> */
 
 #include <cust_vibrator.h>
 #include <vibrator_hal.h>
-
+#include <mach/mt_pwm.h>
 
 #define VERSION					        "v 0.1"
 #define VIB_DEVICE				"mtk_vibrator"
@@ -86,6 +87,29 @@ static int vibr_Enable(void)
 	if (!ldo_state) {
 		vibr_Enable_HW();
 		ldo_state = 1;
+		struct pwm_spec_config pwm_setting;
+		pwm_setting.pwm_no = PWM3;
+		pwm_setting.mode = PWM_MODE_OLD;
+		pwm_setting.clk_src = PWM_CLK_OLD_MODE_BLOCK;
+		pwm_setting.pmic_pad = 0;
+		pwm_setting.clk_div = CLK_DIV1;
+		pwm_setting.PWM_MODE_OLD_REGS.THRESH = 991;
+		pwm_setting.PWM_MODE_OLD_REGS.DATA_WIDTH = 1160;
+		pwm_setting.PWM_MODE_FIFO_REGS.IDLE_VALUE = 0;
+		pwm_setting.PWM_MODE_FIFO_REGS.GUARD_VALUE = 0;
+		pwm_setting.PWM_MODE_FIFO_REGS.GDURATION = 0;
+		pwm_setting.PWM_MODE_FIFO_REGS.WAVE_NUM = 0;
+		mt_set_gpio_mode(GPIO_VIBRATOR_PWM_PIN, GPIO_MODE_03);
+		udelay(10);
+		pwm_set_spec_config(&pwm_setting);
+		udelay(10);
+		mt_set_gpio_mode(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_MODE_00);
+		mt_set_gpio_dir(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_DIR_OUT);
+		mt_set_gpio_out(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_OUT_ONE);
+		udelay(10);
+		mt_set_gpio_mode(GPIO_VIBRATOR_EN_PIN, GPIO_MODE_00);
+		mt_set_gpio_dir(GPIO_VIBRATOR_EN_PIN, GPIO_DIR_OUT);
+		mt_set_gpio_out(GPIO_VIBRATOR_EN_PIN, GPIO_OUT_ONE);
 	}
 	return 0;
 }
@@ -95,6 +119,16 @@ static int vibr_Disable(void)
 	if (ldo_state) {
 		vibr_Disable_HW();
 		ldo_state = 0;
+		mt_set_gpio_out(GPIO_VIBRATOR_EN_PIN, GPIO_OUT_ZERO);
+		udelay(10);
+		mt_set_gpio_mode(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_MODE_00);
+		mt_set_gpio_dir(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_DIR_OUT);
+		mt_set_gpio_out(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_OUT_ZERO);
+		udelay(10);
+		mt_pwm_disable(PWM3, 0);
+		mt_set_gpio_mode(GPIO_VIBRATOR_PWM_PIN, GPIO_MODE_00);
+		mt_set_gpio_dir(GPIO_VIBRATOR_PWM_PIN, GPIO_DIR_OUT);
+		mt_set_gpio_out(GPIO_VIBRATOR_PWM_PIN, GPIO_OUT_ZERO);
 	}
 	return 0;
 }

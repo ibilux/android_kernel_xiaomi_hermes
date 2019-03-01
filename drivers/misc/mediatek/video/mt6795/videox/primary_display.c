@@ -198,6 +198,17 @@ static display_primary_path_context *_get_context(void)
 	return &g_context;
 }
 
+struct mutex esd_mode_switch_lock;
+static void _primary_path_esd_check_lock()
+{
+	mutex_lock(&esd_mode_switch_lock);
+}
+
+static void _primary_path_esd_check_unlock()
+{
+	mutex_unlock(&esd_mode_switch_lock);
+}
+
 static void _primary_path_lock(const char *caller)
 {
 	dprec_logger_start(DPREC_LOGGER_PRIMARY_MUTEX, 0, 0);
@@ -2718,11 +2729,13 @@ int primary_display_esd_check(void)
 	MMProfileLogEx(ddp_mmp_get_events()->esd_check_t, MMProfileFlagStart, 0, 0);
 	DISPCHECK("[ESD]ESD check begin\n");
 
+	_primary_path_esd_check_lock();
 	_primary_path_lock(__func__);
 	if (pgc->state == DISP_SLEEPED) {
 		MMProfileLogEx(ddp_mmp_get_events()->esd_check_t, MMProfileFlagPulse, 1, 0);
 		DISPCHECK("[ESD]primary display path is sleeped?? -- skip esd check\n");
 		_primary_path_unlock(__func__);
+		_primary_path_esd_check_unlock();
 		goto done;
 	}
 	_primary_path_unlock(__func__);
@@ -2753,6 +2766,7 @@ int primary_display_esd_check(void)
 		}
 		MMProfileLogEx(ddp_mmp_get_events()->esd_extte, MMProfileFlagEnd, 0, ret);
 		/* _primary_path_unlock(__func__); */
+		_primary_path_esd_check_unlock();
 		goto done;
 	}
 
@@ -2855,6 +2869,7 @@ destory_cmdq:
 		_primary_path_unlock(__func__);
 	}
 	MMProfileLogEx(ddp_mmp_get_events()->esd_rdlcm, MMProfileFlagEnd, 0, ret);
+	_primary_path_esd_check_unlock();
 
 done:
 	DISPCHECK("[ESD]ESD check end\n");
@@ -2952,6 +2967,27 @@ static int primary_display_esd_check_worker_kthread(void *data)
 	return 0;
 }
 
+unsigned int esd_backlight_level = 0;
+int primary_display_esd_setbacklight(unsigned int level)
+{
+	DISPFUNC();
+	int ret = 0;
+
+	MMProfileLogEx(ddp_mmp_get_events()->primary_set_bl, MMProfileFlagStart, 0, 0);
+
+	if (primary_display_cmdq_enabled()) {
+		printk("primary_display_esd_setbacklight, line=%d\n", __LINE__);
+		if (primary_display_is_video_mode()) {
+			MMProfileLogEx(ddp_mmp_get_events()->primary_set_bl, MMProfileFlagPulse, 0, 7);
+			disp_lcm_set_backlight(pgc->plcm,NULL,level);
+		}
+	}
+
+	MMProfileLogEx(ddp_mmp_get_events()->primary_set_bl, MMProfileFlagEnd, 0, 0);
+
+	return ret;
+}
+
 /* ESD RECOVERY */
 int primary_display_esd_recovery(void)
 {
@@ -3045,6 +3081,11 @@ done:
 	DISPCHECK("[ESD]ESD recovery end\n");
 	MMProfileLogEx(ddp_mmp_get_events()->esd_recovery_t, MMProfileFlagEnd, 0, 0);
 	dprec_logger_done(DPREC_LOGGER_ESD_RECOVERY, 0, 0);
+	DISPCHECK("[ESD]lcm force backlight set to %d, line=%d\n", esd_backlight_level, __LINE__);
+	mdelay(10);
+	if (esd_backlight_level == 0)
+		esd_backlight_level = 102;
+	primary_display_esd_setbacklight(esd_backlight_level - 1);
 	return ret;
 }
 
@@ -3739,6 +3780,7 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps)
 	init_cmdq_slots(&(pgc->ovl_status_info), 1, 0);
 	mutex_init(&(pgc->capture_lock));
 	mutex_init(&(pgc->lock));
+	mutex_init(&(esd_mode_switch_lock));
 #ifdef DISP_SWITCH_DST_MODE
 	mutex_init(&(pgc->switch_dst_lock));
 #endif
@@ -4372,6 +4414,7 @@ int primary_display_suspend(void)
 	primary_display_switch_dst_mode(primary_display_def_dst_mode);
 #endif
 	disp_sw_mutex_lock(&(pgc->capture_lock));
+	_primary_path_esd_check_lock();
 	_primary_path_lock(__func__);
 	if (pgc->state == DISP_SLEEPED) {
 		DISPCHECK("primary display path is already sleep, skip\n");
@@ -4448,6 +4491,7 @@ int primary_display_suspend(void)
 done:
 	pgc->state = DISP_SLEEPED;
 	_primary_path_unlock(__func__);
+	_primary_path_esd_check_unlock();
 	disp_sw_mutex_unlock(&(pgc->capture_lock));
 
 #ifdef CONFIG_MTK_AEE_POWERKEY_HANG_DETECT
@@ -6485,6 +6529,7 @@ int primary_display_setbacklight(unsigned int level)
 #ifdef DISP_SWITCH_DST_MODE
 	_primary_path_switch_dst_lock();
 #endif
+	_primary_path_esd_check_lock();
 	_primary_path_lock(__func__);
 	if (pgc->state == DISP_SLEEPED) {
 		DISPCHECK("Sleep State set backlight invald\n");
@@ -6501,10 +6546,45 @@ int primary_display_setbacklight(unsigned int level)
 		}
 	}
 	_primary_path_unlock(__func__);
+	_primary_path_esd_check_unlock();
 #ifdef DISP_SWITCH_DST_MODE
 	_primary_path_switch_dst_lock();
 #endif
 	MMProfileLogEx(ddp_mmp_get_events()->primary_set_bl, MMProfileFlagEnd, 0, 0);
+	return ret;
+}
+
+int cabc_enable_flag = 0;
+int primary_display_enable_cabc(unsigned int enable)
+{
+	DISPFUNC();
+	int ret = 0;
+	if (enable == 1)
+		cabc_enable_flag = 1;
+	else
+		cabc_enable_flag = 0;
+
+	if (disp_helper_get_stage() != DISP_HELPER_STAGE_NORMAL) {
+		DISPMSG("%s skip due to stage %s\n", __func__, disp_helper_stage_spy());
+		return 0;
+	}
+
+#ifdef DISP_SWITCH_DST_MODE
+	_primary_path_switch_dst_lock();
+#endif
+	_primary_path_esd_check_lock();
+	_primary_path_lock(__func__);
+	if (pgc->state == DISP_SLEEPED)
+		DISPCHECK("Sleep State set cabc invald\n");
+	else
+		if (primary_display_cmdq_enabled())
+			if (primary_display_is_video_mode())
+				disp_lcm_enable_cabc(pgc->plcm,NULL,enable);
+	_primary_path_unlock(__func__);
+	_primary_path_esd_check_unlock();
+#ifdef DISP_SWITCH_DST_MODE
+	_primary_path_switch_dst_lock();
+#endif
 	return ret;
 }
 

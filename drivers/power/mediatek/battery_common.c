@@ -256,6 +256,8 @@ struct battery_data {
 	int capacity_smb;
 	int present_smb;
 	int adjust_power;
+	int charge_full_design;
+	int current_now;
 };
 
 static enum power_supply_property wireless_props[] = {
@@ -293,6 +295,8 @@ static enum power_supply_property battery_props[] = {
 	POWER_SUPPLY_PROP_present_smb,
 	/* ADB CMD Discharging */
 	POWER_SUPPLY_PROP_adjust_power,
+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+	POWER_SUPPLY_PROP_CURRENT_NOW,
 };
 
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
@@ -612,7 +616,12 @@ static int battery_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_adjust_power :
 		val->intval = data->adjust_power;
 		break;
-
+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+		val->intval = data->charge_full_design;
+		break;
+	case POWER_SUPPLY_PROP_CURRENT_NOW:
+		val->intval = data->current_now;
+		break;
 	default:
 		ret = -EINVAL;
 		break;
@@ -699,6 +708,7 @@ static struct battery_data battery_main = {
 	.present_smb = 0,
 	/* ADB CMD discharging*/
 	.adjust_power = -1,
+	.charge_full_design = 3020*1000,
 #endif
 };
 
@@ -1762,6 +1772,7 @@ static void battery_update(struct battery_data *bat_data)
 	bat_data->BAT_batt_vol = BMT_status.bat_vol;
 	bat_data->BAT_batt_temp = BMT_status.temperature * 10;
 	bat_data->BAT_PRESENT = BMT_status.bat_exist;
+	bat_data->current_now = BMT_status.ICharging;
 
 	if ((BMT_status.charger_exist == KAL_TRUE) && (BMT_status.bat_charging_state != CHR_ERROR)) {
 		if (BMT_status.bat_exist) {	/* charging */
@@ -2164,6 +2175,7 @@ static kal_uint32 mt_battery_average_method(BATTERY_AVG_ENUM type, kal_uint32 *b
 	return avgdata;
 }
 
+int FG_charging_status = 0;
 void mt_battery_GetBatteryData(void)
 {
 	kal_uint32 bat_vol, charger_vol, Vsense, ZCV;
@@ -2175,10 +2187,13 @@ void mt_battery_GetBatteryData(void)
 	static kal_uint8 batteryIndex = 0;
 	static kal_int32 previous_SOC = -1;
 
+#if defined(CONFIG_MTK_CW2015_BATTERY)
+	FG_charging_status = upmu_is_chr_det();
+#endif
 	bat_vol = battery_meter_get_battery_voltage(KAL_TRUE);
 	Vsense = battery_meter_get_VSense();
 	if( upmu_is_chr_det() == KAL_TRUE ) {
-	ICharging = battery_meter_get_charging_current();
+		ICharging = battery_meter_get_battery_current() / 10;
 	} else {
 		ICharging = 0;
 	}
@@ -2366,6 +2381,20 @@ static PMU_STATUS mt_battery_CheckChargingTime(void)
 
 }
 
+#if defined(CONFIG_MTK_CW2015_BATTERY)
+extern int hmi_battery_version;
+static PMU_STATUS mt_battery_CheckBatteryversion(void)
+{
+	PMU_STATUS status = PMU_STATUS_OK;
+
+	if ((hmi_battery_version != 1) && (hmi_battery_version != 2) && (hmi_battery_version != 3)) {
+		status = PMU_STATUS_FAIL;
+		battery_xlog_printk(BAT_LOG_CRTI, "mt_battery_CheckBatteryversion error\n");
+	}
+	return status;
+}
+#endif
+
 #if defined(STOP_CHARGING_IN_TAKLING)
 static PMU_STATUS mt_battery_CheckCallState(void)
 {
@@ -2406,6 +2435,13 @@ static void mt_battery_CheckBatteryStatus(void)
 #if defined(STOP_CHARGING_IN_TAKLING)
 	if (mt_battery_CheckCallState() != PMU_STATUS_OK) {
 		BMT_status.bat_charging_state = CHR_HOLD;
+		return;
+	}
+#endif
+
+#if defined(CONFIG_MTK_CW2015_BATTERY)
+	if (mt_battery_CheckBatteryversion() != PMU_STATUS_OK) {
+		BMT_status.bat_charging_state = CHR_ERROR;
 		return;
 	}
 #endif
@@ -2733,7 +2769,7 @@ static void mt_battery_charger_detect_check(void)
 		    (DISO_data.diso_state.cur_vusb_state == DISO_ONLINE)) {
 		#endif
 			mt_charger_type_detection();
-		
+
 			if ((BMT_status.charger_type == STANDARD_HOST)
 			    || (BMT_status.charger_type == CHARGING_HOST)) {
 				mt_usb_connect();
@@ -2932,6 +2968,7 @@ void BAT_thread(void)
 int bat_thread_kthread(void *x)
 {
 	ktime_t ktime = ktime_set(3, 0);	/* 10s, 10* 1000 ms */
+	u8 count = 0;
 
 	/* Run on a process content */
 	while (1) {
@@ -2962,7 +2999,11 @@ int bat_thread_kthread(void *x)
 
 		bat_thread_timeout = KAL_FALSE;
 		hrtimer_start(&battery_kthread_timer, ktime, HRTIMER_MODE_REL);
-		ktime = ktime_set(BAT_TASK_PERIOD, 0);	/* 10s, 10* 1000 ms */
+		if (count < 15 && (g_platform_boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT)) {
+			ktime = ktime_set(1, 0);
+			count++;
+		} else
+			ktime = ktime_set(BAT_TASK_PERIOD, 0);	/* 10s, 10* 1000 ms */
 		if (chr_wake_up_bat == KAL_TRUE && g_smartbook_update != 1)	/* for charger plug in/ out */
 		{
 			#if defined(CONFIG_MTK_DUAL_INPUT_CHARGER_SUPPORT)
