@@ -1769,7 +1769,7 @@ static void battery_update(struct battery_data *bat_data)
 
 	bat_data->BAT_TECHNOLOGY = POWER_SUPPLY_TECHNOLOGY_LION;
 	bat_data->BAT_HEALTH = POWER_SUPPLY_HEALTH_GOOD;
-	bat_data->BAT_batt_vol = BMT_status.bat_vol;
+	bat_data->BAT_batt_vol = BMT_status.bat_vol * 1000;
 	bat_data->BAT_batt_temp = BMT_status.temperature * 10;
 	bat_data->BAT_PRESENT = BMT_status.bat_exist;
 	bat_data->current_now = BMT_status.ICharging;
