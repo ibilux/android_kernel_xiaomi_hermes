@@ -1,8 +1,20 @@
 dtb-$(CONFIG_ARCH_VEXPRESS) += rtsm_ve-aemv8a.dtb foundation-v8.dtb
 
 targets += dtbs
-targets += $(dtb-y)
 
-dtbs: $(addprefix $(obj)/, $(dtb-y))
+DTB_NAMES := $(subst $\",,$(CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE_NAMES))
+ifneq ($(DTB_NAMES),)
+DTB_LIST := $(addsuffix .dtb,$(DTB_NAMES))
+else
+DTB_LIST := $(dtb-y)
+endif
+targets += $(DTB_LIST)
 
-clean-files := *.dtb
+dtbs: $(addprefix $(obj)/, $(DTB_LIST))
+
+clean-files := dts/*.dtb *.dtb
+
+MTK_PLATFORM := $(subst ",,$(CONFIG_MTK_PLATFORM))
+ARCH_MTK_PROJECT := $(subst ",,$(CONFIG_ARCH_MTK_PROJECT))
+DCT_EXTRA_PATH := $(objtree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/dct/dct/
+DTC_FLAGS ?= -i $(DCT_EXTRA_PATH)

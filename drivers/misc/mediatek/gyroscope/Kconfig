@@ -1,0 +1,4 @@
+config CUSTOM_KERNEL_GYROSCOPE
+	bool "CUSTOM_KERNEL_GYROSCOPE"
+	help
+	  gyroscope driver
