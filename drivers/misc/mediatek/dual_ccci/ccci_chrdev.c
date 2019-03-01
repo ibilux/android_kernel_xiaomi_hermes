@@ -35,7 +35,7 @@ static unsigned int md_sbp_code_default;
 #endif
 
 #ifndef CONFIG_MODEM_FIRMWARE_PATH
-#define CONFIG_MODEM_FIRMWARE_PATH "/etc/firmware/"
+#define CONFIG_MODEM_FIRMWARE_PATH "/vendor/etc/firmware/"
 #endif
 
 static char *type_str[] = {[modem_invalid] = "invalid",
