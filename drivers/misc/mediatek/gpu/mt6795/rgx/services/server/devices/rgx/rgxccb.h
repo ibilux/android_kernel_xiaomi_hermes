@@ -78,17 +78,18 @@ typedef struct _RGX_CCB_CMD_HELPER_DATA_ {
 	IMG_UINT32				*paui32ServerSyncFlags;
 	SERVER_SYNC_PRIMITIVE	**papsServerSyncs;
 
-	RGXFWIF_KCCB_CMD_TYPE	eType;
+	RGXFWIF_CCB_CMD_TYPE	eType;
 	IMG_UINT32				ui32CmdSize;
 	IMG_UINT8				*pui8DMCmd;
 	IMG_UINT32				ui32FenceCmdSize;
 	IMG_UINT32				ui32DMCmdSize;
 	IMG_UINT32				ui32UpdateCmdSize;
+	IMG_UINT32				ui32UnfencedUpdateCmdSize;
 
 	/* timestamp commands */
-	PRGXFWIF_TIMESTAMP_ADDR pPreTimestampAddr;
+	RGXFWIF_DEV_VIRTADDR    pPreTimestamp;
 	IMG_UINT32              ui32PreTimeStampCmdSize;
-	PRGXFWIF_TIMESTAMP_ADDR pPostTimestampAddr;
+	RGXFWIF_DEV_VIRTADDR    pPostTimestamp;
 	IMG_UINT32              ui32PostTimeStampCmdSize;
 	PRGXFWIF_UFO_ADDR       pRMWUFOAddr;
 	IMG_UINT32              ui32RMWUFOCmdSize;
@@ -96,9 +97,11 @@ typedef struct _RGX_CCB_CMD_HELPER_DATA_ {
 	/* Data setup at command acquire time */
 	IMG_UINT8				*pui8StartPtr;
 	IMG_UINT8				*pui8ServerUpdateStart;
+	IMG_UINT8				*pui8ServerUnfencedUpdateStart;
 	IMG_UINT8				*pui8ServerFenceStart;
 	IMG_UINT32				ui32ServerFenceCount;
 	IMG_UINT32				ui32ServerUpdateCount;
+	IMG_UINT32				ui32ServerUnfencedUpdateCount;
 
 } RGX_CCB_CMD_HELPER_DATA;
 
@@ -126,24 +129,24 @@ IMG_INTERNAL IMG_VOID RGXReleaseCCB(RGX_CLIENT_CCB *psClientCCB,
 
 IMG_UINT32 RGXGetHostWriteOffsetCCB(RGX_CLIENT_CCB *psClientCCB);
 
-PVRSRV_ERROR RGXCmdHelperInitCmdCCB(RGX_CLIENT_CCB       *psClientCCB,
-                                    IMG_UINT32           ui32ClientFenceCount,
-                                    PRGXFWIF_UFO_ADDR    *pauiFenceUFOAddress,
-                                    IMG_UINT32           *paui32FenceValue,
-                                    IMG_UINT32           ui32ClientUpdateCount,
-                                    PRGXFWIF_UFO_ADDR    *pauiUpdateUFOAddress,
-                                    IMG_UINT32           *paui32UpdateValue,
-                                    IMG_UINT32           ui32ServerSyncCount,
-                                    IMG_UINT32           *paui32ServerSyncFlags,
-                                    SERVER_SYNC_PRIMITIVE **pasServerSyncs,
-                                    IMG_UINT32           ui32CmdSize,
-                                    IMG_UINT8            *pui8DMCmd,
-                                    PRGXFWIF_TIMESTAMP_ADDR * ppPreAddr,
-                                    PRGXFWIF_TIMESTAMP_ADDR * ppPostAddr,
-                                    RGXFWIF_DEV_VIRTADDR    * ppRMWUFOAddr,
-                                    RGXFWIF_CCB_CMD_TYPE eType,
-                                    IMG_BOOL             bPDumpContinuous,
-                                    IMG_CHAR             *pszCommandName,
+PVRSRV_ERROR RGXCmdHelperInitCmdCCB(RGX_CLIENT_CCB          *psClientCCB,
+                                    IMG_UINT32              ui32ClientFenceCount,
+                                    PRGXFWIF_UFO_ADDR       *pauiFenceUFOAddress,
+                                    IMG_UINT32              *paui32FenceValue,
+                                    IMG_UINT32              ui32ClientUpdateCount,
+                                    PRGXFWIF_UFO_ADDR       *pauiUpdateUFOAddress,
+                                    IMG_UINT32              *paui32UpdateValue,
+                                    IMG_UINT32              ui32ServerSyncCount,
+                                    IMG_UINT32              *paui32ServerSyncFlags,
+                                    SERVER_SYNC_PRIMITIVE   **pasServerSyncs,
+                                    IMG_UINT32              ui32CmdSize,
+                                    IMG_UINT8               *pui8DMCmd,
+                                    RGXFWIF_DEV_VIRTADDR    *ppPreTimestamp,
+                                    RGXFWIF_DEV_VIRTADDR    *ppPostTimestamp,
+                                    RGXFWIF_DEV_VIRTADDR    *ppRMWUFOAddr,
+                                    RGXFWIF_CCB_CMD_TYPE    eType,
+                                    IMG_BOOL                bPDumpContinuous,
+                                    IMG_CHAR                *pszCommandName,
                                     RGX_CCB_CMD_HELPER_DATA *psCmdHelperData);
 
 PVRSRV_ERROR RGXCmdHelperAcquireCmdCCB(IMG_UINT32 ui32CmdCount,
@@ -154,11 +157,14 @@ IMG_VOID RGXCmdHelperReleaseCmdCCB(IMG_UINT32 ui32CmdCount,
 								   RGX_CCB_CMD_HELPER_DATA *asCmdHelperData,
 								   const IMG_CHAR *pcszDMName,
 								   IMG_UINT32 ui32CtxAddr);
-								   
+
 IMG_UINT32 RGXCmdHelperGetCommandSize(IMG_UINT32 ui32CmdCount,
 								   RGX_CCB_CMD_HELPER_DATA *asCmdHelperData);
 
 IMG_VOID DumpStalledCCBCommand(PRGXFWIF_FWCOMMONCONTEXT sFWCommonContext, RGX_CLIENT_CCB  *psCurrentClientCCB, DUMPDEBUG_PRINTF_FUNC *pfnDumpDebugPrintf);
+#if defined(PVRSRV_ENABLE_FULL_SYNC_TRACKING) || defined(PVRSRV_ENABLE_FULL_CCB_DUMP)
+IMG_VOID DumpCCB(PRGXFWIF_FWCOMMONCONTEXT sFWCommonContext, RGX_CLIENT_CCB  *psCurrentClientCCB, DUMPDEBUG_PRINTF_FUNC *pfnDumpDebugPrintf);
+#endif
 
 PVRSRV_ERROR CheckForStalledCCB(RGX_CLIENT_CCB  *psCurrentClientCCB);
 #endif /* __RGXCCB_H__ */

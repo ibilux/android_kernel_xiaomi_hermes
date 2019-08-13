@@ -6,7 +6,7 @@
 
 #include <mach/mt_typedefs.h>
 #include <mach/mt_power_gs.h>
-
+/*
 const unsigned int MT6332_PMIC_REG_gs_flightmode_suspend_mode_32k_removal_data[] = {
  // Address     Mask        Golden Setting Value
     0x0004, 0x03F8, 0x0178,// TOP_CON
@@ -228,7 +228,7 @@ const unsigned int MT6332_PMIC_REG_gs_video_play_and_3d_gaming_data[] = {
 const unsigned int *MT6332_PMIC_REG_gs_video_play_and_3d_gaming = MT6332_PMIC_REG_gs_video_play_and_3d_gaming_data;
 
 unsigned int MT6332_PMIC_REG_gs_video_play_and_3d_gaming_len = 177;
-
+*/
 #ifndef CONFIG_ARM64
 const unsigned int MT6332_PMIC_REG_gs_flightmode_suspend_mode_data[] = {
  // Address     Mask        Golden Setting Value
@@ -310,7 +310,7 @@ unsigned int MT6332_PMIC_REG_gs_flightmode_suspend_mode_len = 93;
 
 #endif
 
-
+/*
 const unsigned int MT6332_PMIC_REG_gs_efuse_trimming_data[] = {
  // Address     Mask        Golden Setting Value
     0x0038, 0x0FC0, 0x0000,// CORE_CON2
@@ -460,4 +460,4 @@ const unsigned int *MT6332_PMIC_REG_gs_mp3_play = MT6332_PMIC_REG_gs_mp3_play_da
 
 unsigned int MT6332_PMIC_REG_gs_mp3_play_len = 177;
 
-
+*/

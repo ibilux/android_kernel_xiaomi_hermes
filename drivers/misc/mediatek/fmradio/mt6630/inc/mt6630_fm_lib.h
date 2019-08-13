@@ -67,5 +67,4 @@ struct mt6630_full_cqi {
 	fm_u16 drssi;		/* delta rssi */
 };
 
-
 #endif

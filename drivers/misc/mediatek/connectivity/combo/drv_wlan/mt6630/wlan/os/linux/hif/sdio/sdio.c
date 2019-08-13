@@ -9,10 +9,8 @@
 *    Copyright (C) 2010 MediaTek Incorporation. All Rights Reserved.
 ******************************************************************************/
 
-
-
 /*
-** $Log: sdio.c $
+** Log: sdio.c
 **
 ** 07 05 2013 terry.wu
 ** [BORA00002207] [MT6630 Wi-Fi] TXM & MQM Implementation
@@ -77,11 +75,13 @@
  * Add a compiler option "PC_LINUX_DRIVER_USE" for building driver in PC Linux environment.
  *
  * 03 18 2011 cp.wu
- * [WCXRP00000559] [MT6620 Wi-Fi][Driver] Combine TX/RX DMA buffers into a single one to reduce physically continuous memory consumption
+ * [WCXRP00000559] [MT6620 Wi-Fi][Driver] Combine TX/RX DMA buffers into a single one
+ * to reduce physically continuous memory consumption
  * deprecate CFG_HANDLE_IST_IN_SDIO_CALLBACK.
  *
  * 03 15 2011 cp.wu
- * [WCXRP00000559] [MT6620 Wi-Fi][Driver] Combine TX/RX DMA buffers into a single one to reduce physically continuous memory consumption
+ * [WCXRP00000559] [MT6620 Wi-Fi][Driver] Combine TX/RX DMA buffers into a single
+ * one to reduce physically continuous memory consumption
  * 1. deprecate CFG_HANDLE_IST_IN_SDIO_CALLBACK
  * 2. Use common coalescing buffer for both TX/RX directions
  *
@@ -111,7 +111,8 @@
  * remove HIF_SDIO_ONE flags because the settings could be merged for runtime detection instead of compile-time.
  *
  * 10 19 2010 jeffrey.chang
- * [WCXRP00000120] [MT6620 Wi-Fi][Driver] Refine linux kernel module to the license of MTK propietary and enable MTK HIF by default
+ * [WCXRP00000120] [MT6620 Wi-Fi][Driver] Refine linux kernel module to the license
+ * of MTK propietary and enable MTK HIF by default
  * Refine linux kernel module to the license of MTK and enable MTK HIF
  *
  * 08 21 2010 jeffrey.chang
@@ -200,7 +201,6 @@
 
 #if MTK_WCN_HIF_SDIO
 
-
 /*
  * function prototypes
  *
@@ -220,7 +220,6 @@ static MTK_WCN_HIF_SDIO_FUNCINFO funcInfo[] = {
 	{MTK_WCN_HIF_SDIO_FUNC(0x037a, 0x6630, 0x1, 512)},
 #endif
 };
-
 
 static MTK_WCN_HIF_SDIO_CLTINFO cltInfo = {
 	.func_tbl = funcInfo,
@@ -248,7 +247,6 @@ MODULE_DEVICE_TABLE(sdio, mtk_sdio_ids);
 ********************************************************************************
 */
 
-
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -261,7 +259,6 @@ MODULE_DEVICE_TABLE(sdio, mtk_sdio_ids);
 static probe_card pfWlanProbe;
 static remove_card pfWlanRemove;
 
-
 #if (MTK_WCN_HIF_SDIO == 0)
 static struct sdio_driver mtk_sdio_driver = {
 	.name = "wlan",		/* "MTK SDIO WLAN Driver" */
@@ -270,7 +267,6 @@ static struct sdio_driver mtk_sdio_driver = {
 	.remove = NULL,
 };
 #endif
-
 
 #if CFG_DBG_GPIO_PINS
 
@@ -293,10 +289,15 @@ UINT_32 dbgPinSTP[] = {
 	    , GPIO_PLATFORM(125)	/* GPS_SYNC, mtk_sys_msg_recv [GPS] */
 	    , GPIO_PLATFORM(21)	/* GPS_EINT8, dump_nmea_data [GPS] */
 	    , GPIO_PLATFORM(29)	/* CAM_STROBE, IDX_GPS_TX, J613 low-active */
-	    , GPIO_PLATFORM(20)	/*CMHREF, J613 UNUSED */
-	    /* , GPIO_6516(64) */ /* EINT5, REMOVED!!! for MT6620-Wi-Fi Int */
-	    /* , GPIO_6516(122) */ /* BT_PWR_EN, REMOVED!!! for MT6620-PMU_EN */
-	    /* , GPIO_6516(123) */ /* BT_RESET, REMOVED!!! for MT6620-RST */
+	    , GPIO_PLATFORM(20)
+
+	    /*CMHREF, J613 UNUSED */
+	    /* , GPIO_6516(64) */
+	    /* EINT5, REMOVED!!! for MT6620-Wi-Fi Int */
+	    /* , GPIO_6516(122) */
+	    /* BT_PWR_EN, REMOVED!!! for MT6620-PMU_EN */
+	    /* , GPIO_6516(123) */
+	    /* BT_RESET, REMOVED!!! for MT6620-RST */
 };
 #endif
 /*******************************************************************************
@@ -361,8 +362,8 @@ void mtk_wcn_stp_debug_gpio_assert(UINT_32 dwIndex, UINT_32 dwMethod)
 	if (dwIndex > IDX_STP_MAX)
 		/* printk(KERN_INFO "[%s] dwIndex(%ld) > IDX_STP_MAX(%d)\n", __FUNCTION__, dwIndex, IDX_STP_MAX); */
 
-	if (GPIO_INVALID == dbgPinSTP[dwIndex])
-		return;
+		if (GPIO_INVALID == dbgPinSTP[dwIndex])
+			return;
 
 	if (dwMethod & DBG_TIE_DIR) {
 		if (dwMethod & DBG_HIGH)
@@ -497,9 +498,7 @@ static void mtk_sdio_interrupt(struct sdio_func *func)
 /* FIXME: global variable */
 static const MTK_WCN_HIF_SDIO_FUNCINFO *prFunc;
 
-
-static INT_32
-mtk_sdio_probe(MTK_WCN_HIF_SDIO_CLTCTX cltCtx, const MTK_WCN_HIF_SDIO_FUNCINFO *prFuncInfo)
+static INT_32 mtk_sdio_probe(MTK_WCN_HIF_SDIO_CLTCTX cltCtx, const MTK_WCN_HIF_SDIO_FUNCINFO *prFuncInfo)
 {
 	INT_32 ret = HIF_SDIO_ERR_SUCCESS;
 
@@ -540,7 +539,8 @@ static int mtk_sdio_probe(struct sdio_func *func, const struct sdio_device_id *i
 	/* printk(KERN_INFO DRV_NAME "Number of info = %d:\n", func->card->num_info); */
 
 	for (i = 0; i < func->card->num_info; i++) {
-		/* printk(KERN_INFO DRV_NAME "info[%d]: %s\n", i, func->card->info[i]); */
+		/* printk(KERN_INFO
+			DRV_NAME "info[%d]: %s\n", i, func->card->info[i]); */
 	}
 
 	sdio_claim_host(func);
@@ -570,7 +570,6 @@ out:
 	return ret;
 }
 #endif
-
 
 #if MTK_WCN_HIF_SDIO
 static INT_32 mtk_sdio_remove(MTK_WCN_HIF_SDIO_CLTCTX cltCtx)
@@ -621,7 +620,6 @@ int mtk_sdio_resume(struct device *pDev)
 }
 #endif
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function will register sdio bus to the os
@@ -657,14 +655,11 @@ WLAN_STATUS glRegisterBus(probe_card pfProbe, remove_card pfRemove)
 	mtk_sdio_driver.drv.suspend = mtk_sdio_suspend;
 	mtk_sdio_driver.drv.resume = mtk_sdio_resume;
 
-	ret =
-	    (sdio_register_driver(&mtk_sdio_driver) ==
-	     0) ? WLAN_STATUS_SUCCESS : WLAN_STATUS_FAILURE;
+	ret = (sdio_register_driver(&mtk_sdio_driver) == 0) ? WLAN_STATUS_SUCCESS : WLAN_STATUS_FAILURE;
 #endif
 
 	return ret;
 }				/* end of glRegisterBus() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -689,7 +684,6 @@ VOID glUnregisterBus(remove_card pfRemove)
 
 	return;
 }				/* end of glUnregisterBus() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -747,7 +741,6 @@ VOID glClearHifInfo(P_GLUE_INFO_T prGlueInfo)
 	return;
 }				/* end of glClearHifInfo() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Initialize bus operation and hif related information, request resources.
@@ -774,9 +767,11 @@ BOOL glBusInit(PVOID pvData)
 	sdio_release_host(func);
 
 	if (ret) {
-		/* printk(KERN_INFO DRV_NAME"sdio_set_block_size 512 failed!\n"); */
+		/* printk(KERN_INFO
+			DRV_NAME"sdio_set_block_size 512 failed!\n"); */
 	} else {
-		/* printk(KERN_INFO DRV_NAME"sdio_set_block_size 512 done!\n"); */
+		/* printk(KERN_INFO
+			DRV_NAME"sdio_set_block_size 512 done!\n"); */
 	}
 
 	/* printk(KERN_INFO DRV_NAME"param: func->cur_blksize(%d)\n", func->cur_blksize); */
@@ -786,7 +781,6 @@ BOOL glBusInit(PVOID pvData)
 #endif
 	return TRUE;
 }				/* end of glBusInit() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -802,7 +796,6 @@ VOID glBusRelease(PVOID pvData)
 
 	return;
 }				/* end of glBusRelease() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -846,7 +839,6 @@ INT_32 glBusSetIrq(PVOID pvData, PVOID pfnIsr, PVOID pvCookie)
 
 	return ret;
 }				/* end of glBusSetIrq() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -911,14 +903,6 @@ BOOLEAN glIsReadClearReg(UINT_32 u4Address)
 	}
 }
 
-static UINT_32 u4ReadlCrcErr = 0;
-static UINT_32 u4ReadlTimeout = 0;
-static UINT_32 u4WritelCrcErr = 0;
-static UINT_32 u4WritelTimeout = 0;
-static UINT_32 u4ReadSbCrcErr = 0;
-static UINT_32 u4ReadSbTimeout = 0;
-static UINT_32 u4WriteSbCrcErr = 0;
-static UINT_32 u4WriteSbTimeout = 0;
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Read a 32-bit device register
@@ -941,9 +925,7 @@ BOOL kalDevRegRead(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT
 
 	do {
 #if MTK_WCN_HIF_SDIO
-		ret =
-		    mtk_wcn_hif_sdio_readl(prGlueInfo->rHifInfo.cltCtx, u4Register,
-					   (PUINT_32) pu4Value);
+		ret = mtk_wcn_hif_sdio_readl(prGlueInfo->rHifInfo.cltCtx, u4Register, (PUINT_32) pu4Value);
 #else
 		if (!in_interrupt)
 			sdio_claim_host(prGlueInfo->rHifInfo.func);
@@ -956,8 +938,8 @@ BOOL kalDevRegRead(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT
 
 		if (ret || ucRetryCount) {
 			/* DBGLOG(HAL, ERROR,
-			       ("sdio_readl() addr: 0x%08x value: 0x%08x status: %x retry: %u\n",
-				u4Register, (unsigned int)*pu4Value, (unsigned int)ret, ucRetryCount)); */
+			   ("sdio_readl() addr: 0x%08x value: 0x%08x status: %x retry: %u\n",
+			   u4Register, (unsigned int)*pu4Value, (unsigned int)ret, ucRetryCount)); */
 
 			if (glIsReadClearReg(u4Register) && (ucRetryCount == 0)) {
 				/* Read Snapshot CR instead */
@@ -971,21 +953,13 @@ BOOL kalDevRegRead(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT
 	} while (ret);
 
 	if (ret) {
-		if (ret == -EIO)
-			u4ReadlCrcErr++;
-		if (ret == -ETIMEDOUT)
-			u4ReadlTimeout++;
-
 		kalSendAeeWarning(HIF_SDIO_ERR_TITLE_STR,
-				  HIF_SDIO_ERR_DESC_STR "sdio_readl() reports error: %x retry: %u",
-				  ret, ucRetryCount);
-		DBGLOG(HAL, ERROR,
-		       ("sdio_readl() reports error: %x retry: %u\n", ret, ucRetryCount));
+				  HIF_SDIO_ERR_DESC_STR "sdio_readl() reports error: %x retry: %u", ret, ucRetryCount);
+		DBGLOG(HAL, ERROR, "sdio_readl() reports error: %x retry: %u\n", ret, ucRetryCount);
 	}
 
 	return (ret) ? FALSE : TRUE;
 }				/* end of kalDevRegRead() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1021,8 +995,8 @@ BOOL kalDevRegWrite(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_
 
 		if (ret || ucRetryCount) {
 			/* DBGLOG(HAL, ERROR,
-			       ("sdio_writel() addr: 0x%x status: %x retry: %u\n", u4Register,
-				ret, ucRetryCount)); */
+			   ("sdio_writel() addr: 0x%x status: %x retry: %u\n", u4Register,
+			   ret, ucRetryCount)); */
 		}
 
 		ucRetryCount++;
@@ -1032,21 +1006,13 @@ BOOL kalDevRegWrite(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_
 	} while (ret);
 
 	if (ret) {
-		if (ret == -EIO)
-			u4WritelCrcErr++;
-		if (ret == -ETIMEDOUT)
-			u4WritelTimeout++;
-
 		kalSendAeeWarning(HIF_SDIO_ERR_TITLE_STR,
-				  HIF_SDIO_ERR_DESC_STR "sdio_writel() reports error: %x retry: %u",
-				  ret, ucRetryCount);
-		DBGLOG(HAL, ERROR,
-		       ("sdio_writel() reports error: %x retry: %u\n", ret, ucRetryCount));
+				  HIF_SDIO_ERR_DESC_STR "sdio_writel() reports error: %x retry: %u", ret, ucRetryCount);
+		DBGLOG(HAL, ERROR, "sdio_writel() reports error: %x retry: %u\n", ret, ucRetryCount);
 	}
 
 	return (ret) ? FALSE : TRUE;
 }				/* end of kalDevRegWrite() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1064,8 +1030,7 @@ BOOL kalDevRegWrite(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_
 /*----------------------------------------------------------------------------*/
 BOOL
 kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
-	       IN UINT_16 u2Port,
-	       IN UINT_32 u4Len, OUT PUINT_8 pucBuf, IN UINT_32 u4ValidOutBufSize)
+	       IN UINT_16 u2Port, IN UINT_32 u4Len, OUT PUINT_8 pucBuf, IN UINT_32 u4ValidOutBufSize)
 {
 	P_GL_HIF_INFO_T prHifInfo = NULL;
 	PUINT_8 pucDst = NULL;
@@ -1137,26 +1102,17 @@ kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
 		    mtk_wcn_hif_sdio_read_buf(prGlueInfo->rHifInfo.cltCtx, u2Port, (PUINT_32) pucDst,
 					      ((prGlueInfo->rHifInfo).prFuncInfo->blk_sz) * bNum);
 	} else {
-		ret =
-		    mtk_wcn_hif_sdio_read_buf(prGlueInfo->rHifInfo.cltCtx, u2Port, (PUINT_32) pucDst,
-					      count);
+		ret = mtk_wcn_hif_sdio_read_buf(prGlueInfo->rHifInfo.cltCtx, u2Port, (PUINT_32) pucDst, count);
 	}
 #endif
 
 	if (ret) {
-		if (ret == -EIO)
-			u4ReadSbCrcErr++;
-		if (ret == -ETIMEDOUT)
-			u4ReadSbTimeout++;
-
-		kalSendAeeWarning(HIF_SDIO_ERR_TITLE_STR,
-				  HIF_SDIO_ERR_DESC_STR "sdio_readsb() reports error: %x", ret);
-		DBGLOG(HAL, ERROR, ("sdio_readsb() reports error: %x\n", ret));
+		kalSendAeeWarning(HIF_SDIO_ERR_TITLE_STR, HIF_SDIO_ERR_DESC_STR "sdio_readsb() reports error: %x", ret);
+		DBGLOG(HAL, ERROR, "sdio_readsb() reports error: %x\n", ret);
 	}
 
 	return (ret) ? FALSE : TRUE;
 }				/* end of kalDevPortRead() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1243,52 +1199,21 @@ kalDevPortWrite(IN P_GLUE_INFO_T prGlueInfo,
 	if (bNum > 0) {		/* block mode */
 		ret =
 		    mtk_wcn_hif_sdio_write_buf(prGlueInfo->rHifInfo.cltCtx, u2Port,
-					       (PUINT_32) pucSrc,
-					       ((prGlueInfo->rHifInfo).prFuncInfo->blk_sz) * bNum);
+					       (PUINT_32) pucSrc, ((prGlueInfo->rHifInfo).prFuncInfo->blk_sz) * bNum);
 	} else {		/* byte mode */
-		ret =
-		    mtk_wcn_hif_sdio_write_buf(prGlueInfo->rHifInfo.cltCtx, u2Port,
-					       (PUINT_32) pucSrc, count);
+		ret = mtk_wcn_hif_sdio_write_buf(prGlueInfo->rHifInfo.cltCtx, u2Port, (PUINT_32) pucSrc, count);
 	}
 #endif
 
 	if (ret) {
-		if (ret == -EIO)
-			u4WriteSbCrcErr++;
-		if (ret == -ETIMEDOUT)
-			u4WriteSbTimeout++;
-
 		kalSendAeeWarning(HIF_SDIO_ERR_TITLE_STR,
 				  HIF_SDIO_ERR_DESC_STR "sdio_writesb() reports error: %x", ret);
-		DBGLOG(HAL, ERROR, ("sdio_writesb() reports error: %x\n", ret));
+		DBGLOG(HAL, ERROR, "sdio_writesb() reports error: %x\n", ret);
 	}
 
 	return (ret) ? FALSE : TRUE;
 }				/* end of kalDevPortWrite() */
 
-UINT_32 kalDevGetSdioErrInfo(IN ENUM_GET_SDIO_ERR_INFO_T eSdioErrInfo)
-{
-	UINT_32 ret = 0;
-
-	if (eSdioErrInfo == SDIO_READL_CRC_ERR)
-		ret = u4ReadlCrcErr;
-	if (eSdioErrInfo == SDIO_READL_TIMEOUT)
-		ret = u4ReadlTimeout;
-	if (eSdioErrInfo == SDIO_WRITEL_CRC_ERR)
-		ret = u4WritelCrcErr;
-	if (eSdioErrInfo == SDIO_WRITEL_TIMEOUT)
-		ret = u4WritelTimeout;
-	if (eSdioErrInfo == SDIO_READ_SB_CRC_ERR)
-		ret = u4ReadSbCrcErr;
-	if (eSdioErrInfo == SDIO_READ_SB_TIMEOUT)
-		ret = u4ReadSbTimeout;
-	if (eSdioErrInfo == SDIO_WRITE_SB_CRC_ERR)
-		ret = u4WriteSbCrcErr;
-	if (eSdioErrInfo == SDIO_WRITE_SB_TIMEOUT)
-		ret = u4WriteSbTimeout;
-
-	return ret;
-}
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Write device I/O port in byte with CMD52
@@ -1318,15 +1243,13 @@ BOOL kalDevWriteWithSdioCmd52(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Addr, IN
 #endif
 
 	if (ret) {
-		kalSendAeeWarning(HIF_SDIO_ERR_TITLE_STR,
-				  HIF_SDIO_ERR_DESC_STR "sdio_writeb() reports error: %x", ret);
-		DBGLOG(HAL, ERROR, ("sdio_writeb() reports error: %x\n", ret));
+		kalSendAeeWarning(HIF_SDIO_ERR_TITLE_STR, HIF_SDIO_ERR_DESC_STR "sdio_writeb() reports error: %x", ret);
+		DBGLOG(HAL, ERROR, "sdio_writeb() reports error: %x\n", ret);
 	}
 
 	return (ret) ? FALSE : TRUE;
 
 }				/* end of kalDevWriteWithSdioCmd52() */
-
 
 VOID glSetPowerState(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 ePowerMode)
 {

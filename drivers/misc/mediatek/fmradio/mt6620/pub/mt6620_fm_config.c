@@ -56,8 +56,7 @@ static fm_s32 MT6620fm_cust_config_print(fm_cust_cfg *cfg)
 	WCN_DBG(FM_NTC | MAIN, "MT6620 power_level:\t%d\n", cfg->tx_cfg.power_level);
 
 	WCN_DBG(FM_NTC | MAIN, "aud path[%d]I2S state[%d]mode[%d]rate[%d]\n", cfg->aud_cfg.aud_path,
-		cfg->aud_cfg.i2s_info.status, cfg->aud_cfg.i2s_info.mode,
-		cfg->aud_cfg.i2s_info.rate);
+		cfg->aud_cfg.i2s_info.status, cfg->aud_cfg.i2s_info.mode, cfg->aud_cfg.i2s_info.rate);
 	return 0;
 }
 
@@ -69,15 +68,9 @@ static fm_s32 MT6620cfg_item_handler(fm_s8 *grp, fm_s8 *key, fm_s8 *val, fm_cust
 
 	if (0 <= (ret = cfg_item_match(key, val, "FM_RX_RSSI_TH_LONG_MT6620", &rx_cfg->long_ana_rssi_th))) {	/* FMR_RSSI_TH_L = 0x0301 */
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FM_RX_RSSI_TH_SHORT_MT6620",
-				   &rx_cfg->short_ana_rssi_th))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_RSSI_TH_SHORT_MT6620", &rx_cfg->short_ana_rssi_th))) {
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FM_RX_DESENSE_RSSI_MT6620",
-				   &rx_cfg->desene_rssi_th))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_DESENSE_RSSI_MT6620", &rx_cfg->desene_rssi_th))) {
 		return ret;
 	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_PAMD_TH_MT6620", &rx_cfg->pamd_th))) {
 		return ret;
@@ -89,24 +82,15 @@ static fm_s32 MT6620cfg_item_handler(fm_s8 *grp, fm_s8 *key, fm_s8 *val, fm_cust
 		return ret;
 	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_SMG_TH_MT6620", &rx_cfg->smg_th))) {
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FM_RX_DEEMPHASIS_MT6620", &rx_cfg->deemphasis))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_DEEMPHASIS_MT6620", &rx_cfg->deemphasis))) {
 		return ret;
-	} else if (0 <=
-		   (ret = cfg_item_match(key, val, "FM_RX_OSC_FREQ_MT6620", &rx_cfg->osc_freq))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_OSC_FREQ_MT6620", &rx_cfg->osc_freq))) {
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FMT_SCAN_HOLE_L_MT6620", &tx_cfg->scan_hole_low))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FMT_SCAN_HOLE_L_MT6620", &tx_cfg->scan_hole_low))) {
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FMT_SCAN_HOLE_H_MT6620", &tx_cfg->scan_hole_high))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FMT_SCAN_HOLE_H_MT6620", &tx_cfg->scan_hole_high))) {
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FMT_PWR_LVL_MAX_MT6620", &tx_cfg->power_level))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FMT_PWR_LVL_MAX_MT6620", &tx_cfg->power_level))) {
 		return ret;
 	} else {
 		WCN_DBG(FM_WAR | MAIN, "invalid key\n");
@@ -209,7 +193,7 @@ static fm_s32 MT6620fm_cust_config_file(const fm_s8 *filename, fm_cust_cfg *cfg)
 
 	ret = cfg_parser(buf, MT6620cfg_item_handler, cfg);
 
- out:
+out:
 
 	if (buf) {
 		fm_free(buf);

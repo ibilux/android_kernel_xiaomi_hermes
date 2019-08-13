@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/nic_rx.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/nic_rx.h#1
 */
 
 /*! \file   "nic_rx.h"
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: nic_rx.h $
+** Log: nic_rx.h
  *
  * 11 07 2011 tsaiyuan.hsu
  * [WCXRP00001083] [MT6620 Wi-Fi][DRV]] dump debug counter or frames when debugging is triggered
@@ -25,7 +23,8 @@
  * Remove flag CFG_WIFI_DIRECT_MOVED.
  *
  * 01 24 2011 cm.chang
- * [WCXRP00000384] [MT6620 Wi-Fi][Driver][FW] Handle 20/40 action frame in AP mode and stop ampdu timer when sta_rec is freed
+ * [WCXRP00000384] [MT6620 Wi-Fi][Driver][FW] Handle 20/40 action frame in AP mode
+ * and stop ampdu timer when sta_rec is freed
  * Process received 20/40 coexistence action frame for AP mode
  *
  * 09 08 2010 cp.wu
@@ -143,7 +142,8 @@
 **  \main\maintrunk.MT6620WiFiDriver_Prj\13 2009-11-13 13:45:50 GMT mtk02752
 **  add port param for nicRxEnhanceReadBuffer()
 **  \main\maintrunk.MT6620WiFiDriver_Prj\12 2009-11-11 10:12:31 GMT mtk02752
-**  nicSDIOReadIntStatus() always read sizeof(ENHANCE_MODE_DATA_STRUCT_T) for int response, thus the number should be set to 0(:=16) instead of 10
+**  nicSDIOReadIntStatus() always read sizeof(ENHANCE_MODE_DATA_STRUCT_T) for int response,
+**  thus the number should be set to 0(:=16) instead of 10
 **  \main\maintrunk.MT6620WiFiDriver_Prj\11 2009-10-29 19:53:32 GMT mtk01084
 **  modify structure naming
 **  \main\maintrunk.MT6620WiFiDriver_Prj\10 2009-10-23 16:08:23 GMT mtk01084
@@ -178,6 +178,12 @@
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
+extern P_SW_RFB_T g_arGscnResultsTempBuffer[];
+extern UINT_8 g_GscanResultsTempBufferIndex;
+extern UINT_8 g_arGscanResultsIndicateNumber[];
+extern UINT_8 g_GetResultsBufferedCnt;
+extern UINT_8 g_GetResultsCmdCnt;
+extern void kalDevLoopbkRxHandle(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb);
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -194,18 +200,18 @@
 #define CFG_RX_MAX_BA_TID_NUM          8
 
 #define RX_STATUS_FLAG_MORE_PACKET    BIT(30)
-#define RX_STATUS_CHKSUM_MASK         BITS(0,10)
+#define RX_STATUS_CHKSUM_MASK         BITS(0, 10)
 
 #define RX_RFB_LEN_FIELD_LEN        4
 #define RX_HEADER_OFFSET            2
 
 #define RX_RETURN_INDICATED_RFB_TIMEOUT_SEC      3
 
-#if defined(_HIF_SDIO) && defined (WINDOWS_DDK)
+#if defined(_HIF_SDIO) && defined(WINDOWS_DDK)
 /*! On XP, maximum Tx+Rx Statue <= 64-4(HISR)*/
-    #define SDIO_MAXIMUM_RX_LEN_NUM              0 /*!< 0~15 (0: un-limited) */
+#define SDIO_MAXIMUM_RX_LEN_NUM              0	/*!< 0~15 (0: un-limited) */
 #else
-    #define SDIO_MAXIMUM_RX_LEN_NUM              0 /*!< 0~15 (0: un-limited) */
+#define SDIO_MAXIMUM_RX_LEN_NUM              0	/*!< 0~15 (0: un-limited) */
 #endif
 
 /*******************************************************************************
@@ -213,102 +219,102 @@
 ********************************************************************************
 */
 typedef enum _ENUM_RX_STATISTIC_COUNTER_T {
-    RX_MPDU_TOTAL_COUNT = 0,
-    RX_SIZE_ERR_DROP_COUNT,
+	RX_MPDU_TOTAL_COUNT = 0,
+	RX_SIZE_ERR_DROP_COUNT,
 
-    RX_DATA_INDICATION_COUNT,
-    RX_DATA_RETURNED_COUNT,
-    RX_DATA_RETAINED_COUNT,
+	RX_DATA_INDICATION_COUNT,
+	RX_DATA_RETURNED_COUNT,
+	RX_DATA_RETAINED_COUNT,
 
-    RX_DROP_TOTAL_COUNT,
-    RX_TYPE_ERR_DROP_COUNT,
-    RX_CLASS_ERR_DROP_COUNT,
-    RX_DST_NULL_DROP_COUNT,
-    
+	RX_DROP_TOTAL_COUNT,
+	RX_TYPE_ERR_DROP_COUNT,
+	RX_CLASS_ERR_DROP_COUNT,
+	RX_DST_NULL_DROP_COUNT,
+
 #if CFG_TCP_IP_CHKSUM_OFFLOAD || CFG_TCP_IP_CHKSUM_OFFLOAD_NDIS_60
-    RX_CSUM_TCP_FAILED_COUNT,
-    RX_CSUM_UDP_FAILED_COUNT,
-    RX_CSUM_IP_FAILED_COUNT,
-    RX_CSUM_TCP_SUCCESS_COUNT,
-    RX_CSUM_UDP_SUCCESS_COUNT,
-    RX_CSUM_IP_SUCCESS_COUNT,
-    RX_CSUM_UNKNOWN_L4_PKT_COUNT,
-    RX_CSUM_UNKNOWN_L3_PKT_COUNT,
-    RX_IP_V6_PKT_CCOUNT,
+	RX_CSUM_TCP_FAILED_COUNT,
+	RX_CSUM_UDP_FAILED_COUNT,
+	RX_CSUM_IP_FAILED_COUNT,
+	RX_CSUM_TCP_SUCCESS_COUNT,
+	RX_CSUM_UDP_SUCCESS_COUNT,
+	RX_CSUM_IP_SUCCESS_COUNT,
+	RX_CSUM_UNKNOWN_L4_PKT_COUNT,
+	RX_CSUM_UNKNOWN_L3_PKT_COUNT,
+	RX_IP_V6_PKT_CCOUNT,
 #endif
-    RX_STATISTIC_COUNTER_NUM
+	RX_STATISTIC_COUNTER_NUM
 } ENUM_RX_STATISTIC_COUNTER_T;
 
 typedef enum _ENUM_RX_PKT_DESTINATION_T {
-    RX_PKT_DESTINATION_HOST,                    /* to OS */
-    RX_PKT_DESTINATION_FORWARD,                 /* to TX queue for forward, AP mode */
-    RX_PKT_DESTINATION_HOST_WITH_FORWARD,       /* to both TX and OS, AP mode broadcast packet */
-    RX_PKT_DESTINATION_NULL,                    /* packet to be freed */
-    RX_PKT_DESTINATION_NUM
+	RX_PKT_DESTINATION_HOST,	/* to OS */
+	RX_PKT_DESTINATION_FORWARD,	/* to TX queue for forward, AP mode */
+	RX_PKT_DESTINATION_HOST_WITH_FORWARD,	/* to both TX and OS, AP mode broadcast packet */
+	RX_PKT_DESTINATION_NULL,	/* packet to be freed */
+	RX_PKT_DESTINATION_NUM
 } ENUM_RX_PKT_DESTINATION_T;
 
 struct _SW_RFB_T {
-    QUE_ENTRY_T             rQueEntry;
-    PVOID                   pvPacket;      /*!< ptr to rx Packet Descriptor */
-    PUINT_8                 pucRecvBuff;   /*!< ptr to receive data buffer */
-    P_HIF_RX_HEADER_T       prHifRxHdr;
-    UINT_32                 u4HifRxHdrFlag;
-    PVOID                   pvHeader;
-    UINT_16                 u2PacketLen;
-    UINT_16                 u2HeaderLen;
-    UINT_16                 u2SSN;
-    UINT_8                  ucTid;
-    UINT_8                  ucWlanIdx;
-    UINT_8                  ucPacketType;
-    UINT_8                  ucStaRecIdx;
+	QUE_ENTRY_T rQueEntry;
+	PVOID pvPacket;		/*!< ptr to rx Packet Descriptor */
+	PUINT_8 pucRecvBuff;	/*!< ptr to receive data buffer */
+	P_HIF_RX_HEADER_T prHifRxHdr;
+	UINT_32 u4HifRxHdrFlag;
+	PVOID pvHeader;
+	UINT_16 u2PacketLen;
+	UINT_16 u2HeaderLen;
+	UINT_16 u2SSN;
+	UINT_8 ucTid;
+	UINT_8 ucWlanIdx;
+	UINT_8 ucPacketType;
+	UINT_8 ucStaRecIdx;
 
-    ENUM_CSUM_RESULT_T      aeCSUM[CSUM_TYPE_NUM];
-    ENUM_RX_PKT_DESTINATION_T   eDst;
-    ENUM_TRAFFIC_CLASS_INDEX_T  eTC;        /* only valid when eDst == FORWARD */
+	ENUM_CSUM_RESULT_T aeCSUM[CSUM_TYPE_NUM];
+	ENUM_RX_PKT_DESTINATION_T eDst;
+	ENUM_TRAFFIC_CLASS_INDEX_T eTC;	/* only valid when eDst == FORWARD */
 
-	UINT_64					rRxTime;
+	UINT_64 rRxTime;
 };
 
 /*! RX configuration type structure */
 typedef struct _RX_CTRL_T {
-    UINT_32                 u4RxCachedSize;
-    PUINT_8                 pucRxCached;
-    QUE_T                   rFreeSwRfbList;
-    QUE_T                   rReceivedRfbList;
-    QUE_T                   rIndicatedRfbList;
+	UINT_32 u4RxCachedSize;
+	PUINT_8 pucRxCached;
+	QUE_T rFreeSwRfbList;
+	QUE_T rReceivedRfbList;
+	QUE_T rIndicatedRfbList;
 
 #if CFG_SDIO_RX_AGG
-    PUINT_8                 pucRxCoalescingBufPtr;
+	PUINT_8 pucRxCoalescingBufPtr;
 #endif
 
-    PVOID                   apvIndPacket[CFG_RX_MAX_PKT_NUM];
-    PVOID                   apvRetainedPacket[CFG_RX_MAX_PKT_NUM];
+	PVOID apvIndPacket[CFG_RX_MAX_PKT_NUM];
+	PVOID apvRetainedPacket[CFG_RX_MAX_PKT_NUM];
 
-    UINT_8                  ucNumIndPacket;
-    UINT_8                  ucNumRetainedPacket;
-    UINT_64                 au8Statistics[RX_STATISTIC_COUNTER_NUM]; /*!< RX Counters */
+	UINT_8 ucNumIndPacket;
+	UINT_8 ucNumRetainedPacket;
+	UINT_64 au8Statistics[RX_STATISTIC_COUNTER_NUM];	/*!< RX Counters */
 
 #if CFG_HIF_STATISTICS
-    UINT_32                 u4TotalRxAccessNum;
-    UINT_32                 u4TotalRxPacketNum;
+	UINT_32 u4TotalRxAccessNum;
+	UINT_32 u4TotalRxPacketNum;
 #endif
 
 #if CFG_HIF_RX_STARVATION_WARNING
-    UINT_32                 u4QueuedCnt;
-    UINT_32                 u4DequeuedCnt;
+	UINT_32 u4QueuedCnt;
+	UINT_32 u4DequeuedCnt;
 #endif
 
 #if CFG_RX_PKTS_DUMP
-    UINT_32                 u4RxPktsDumpTypeMask;
+	UINT_32 u4RxPktsDumpTypeMask;
 #endif
 
 } RX_CTRL_T, *P_RX_CTRL_T;
 
 typedef struct _RX_MAILBOX_T {
-    UINT_32                 u4RxMailbox[2]; /* for Device-to-Host Mailbox */
+	UINT_32 u4RxMailbox[2];	/* for Device-to-Host Mailbox */
 } RX_MAILBOX_T, *P_RX_MAILBOX_T;
 
-typedef WLAN_STATUS (*PROCESS_RX_MGT_FUNCTION)(P_ADAPTER_T, P_SW_RFB_T);
+typedef WLAN_STATUS(*PROCESS_RX_MGT_FUNCTION) (P_ADAPTER_T, P_SW_RFB_T);
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -325,208 +331,90 @@ typedef WLAN_STATUS (*PROCESS_RX_MGT_FUNCTION)(P_ADAPTER_T, P_SW_RFB_T);
 ********************************************************************************
 */
 #define RX_INC_CNT(prRxCtrl, eCounter)              \
-    {((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter]++;}
+	{((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter]++; }
 
 #define RX_ADD_CNT(prRxCtrl, eCounter, u8Amount)    \
-    {((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter] += (UINT_64)u8Amount;}
+	{((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter] += (UINT_64)u8Amount; }
 
 #define RX_GET_CNT(prRxCtrl, eCounter)              \
-    (((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter])
+	(((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter])
 
 #define RX_RESET_ALL_CNTS(prRxCtrl)                 \
-    {kalMemZero(&prRxCtrl->au8Statistics[0], sizeof(prRxCtrl->au8Statistics));}
+	{kalMemZero(&prRxCtrl->au8Statistics[0], sizeof(prRxCtrl->au8Statistics)); }
 
 #define RX_STATUS_TEST_MORE_FLAG(flag) \
-    ((BOOLEAN)((flag & RX_STATUS_FLAG_MORE_PACKET) ? TRUE : FALSE))
+	((BOOLEAN)((flag & RX_STATUS_FLAG_MORE_PACKET) ? TRUE : FALSE))
 
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
 
-VOID
-nicRxInitialize (
-    IN P_ADAPTER_T prAdapter
-    );
+VOID nicRxInitialize(IN P_ADAPTER_T prAdapter);
 
-#if defined(MT5931)
-VOID
-nicRxPostInitialize (
-    IN P_ADAPTER_T prAdapter
-    );
-#endif
+VOID nicRxUninitialize(IN P_ADAPTER_T prAdapter);
 
-VOID
-nicRxUninitialize (
-    IN P_ADAPTER_T prAdapter
-    );
-
-VOID
-nicRxProcessRFBs (
-    IN  P_ADAPTER_T prAdapter
-    );
+VOID nicRxProcessRFBs(IN P_ADAPTER_T prAdapter);
 
 #if !CFG_SDIO_INTR_ENHANCE
-VOID
-nicRxReceiveRFBs (
-    IN  P_ADAPTER_T prAdapter
-    );
+VOID nicRxReceiveRFBs(IN P_ADAPTER_T prAdapter);
 
-WLAN_STATUS
-nicRxReadBuffer (
-    IN P_ADAPTER_T prAdapter,
-    IN OUT P_SW_RFB_T prSwRfb
-    );
+WLAN_STATUS nicRxReadBuffer(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb);
 
 #else
-VOID
-nicRxSDIOReceiveRFBs (
-    IN  P_ADAPTER_T prAdapter
-    );
+VOID nicRxSDIOReceiveRFBs(IN P_ADAPTER_T prAdapter);
 
 WLAN_STATUS
-nicRxEnhanceReadBuffer (
-    IN P_ADAPTER_T prAdapter,
-    IN UINT_32 u4DataPort,
-    IN UINT_16 u2RxLength,
-    IN OUT P_SW_RFB_T prSwRfb
-    );
+nicRxEnhanceReadBuffer(IN P_ADAPTER_T prAdapter,
+		       IN UINT_32 u4DataPort, IN UINT_16 u2RxLength, IN OUT P_SW_RFB_T prSwRfb);
 #endif /* CFG_SDIO_INTR_ENHANCE */
 
-
 #if CFG_SDIO_RX_AGG
-VOID
-nicRxSDIOAggReceiveRFBs (
-    IN  P_ADAPTER_T prAdapter
-    );
+VOID nicRxSDIOAggReceiveRFBs(IN P_ADAPTER_T prAdapter);
 #endif
 
-WLAN_STATUS
-nicRxSetupRFB (
-    IN P_ADAPTER_T prAdapter,
-    IN P_SW_RFB_T  prRfb
-    );
+WLAN_STATUS nicRxSetupRFB(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prRfb);
 
-VOID
-nicRxReturnRFB (
-    IN P_ADAPTER_T prAdapter,
-    IN P_SW_RFB_T  prRfb
-    );
+VOID nicRxReturnRFB(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prRfb);
 
-VOID
-nicProcessRxInterrupt (
-    IN  P_ADAPTER_T prAdapter
-    );
+VOID nicProcessRxInterrupt(IN P_ADAPTER_T prAdapter);
 
-VOID
-nicRxProcessPktWithoutReorder (
-    IN P_ADAPTER_T prAdapter,
-    IN P_SW_RFB_T  prSwRfb
-    );
+VOID nicRxProcessPktWithoutReorder(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
-VOID
-nicRxProcessForwardPkt (
-    IN P_ADAPTER_T prAdapter,
-    IN P_SW_RFB_T  prSwRfb
-    );
+VOID nicRxProcessForwardPkt(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
-VOID
-nicRxProcessGOBroadcastPkt (
-    IN P_ADAPTER_T prAdapter,
-    IN P_SW_RFB_T  prSwRfb
-    );
+VOID nicRxProcessGOBroadcastPkt(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
+VOID nicRxFillRFB(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb);
 
-VOID
-nicRxFillRFB (
-    IN P_ADAPTER_T    prAdapter,
-    IN OUT P_SW_RFB_T prSwRfb
-    );
+VOID nicRxProcessDataPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb);
 
-VOID
-nicRxProcessDataPacket (
-    IN P_ADAPTER_T    prAdapter,
-    IN OUT P_SW_RFB_T prSwRfb
-    );
+VOID nicRxProcessEventPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb);
 
-VOID
-nicRxProcessEventPacket (
-    IN P_ADAPTER_T    prAdapter,
-    IN OUT P_SW_RFB_T prSwRfb
-    );
-
-VOID
-nicRxProcessMgmtPacket (
-    IN P_ADAPTER_T    prAdapter,
-    IN OUT P_SW_RFB_T prSwRfb
-    );
+VOID nicRxProcessMgmtPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb);
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
-VOID
-nicRxFillChksumStatus(
-    IN  P_ADAPTER_T   prAdapter,
-    IN OUT P_SW_RFB_T prSwRfb,
-    IN  UINT_32 u4TcpUdpIpCksStatus
-    );
+VOID nicRxFillChksumStatus(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb, IN UINT_32 u4TcpUdpIpCksStatus);
 
-VOID
-nicRxUpdateCSUMStatistics (
-    IN P_ADAPTER_T prAdapter,
-    IN const ENUM_CSUM_RESULT_T aeCSUM[]
-    );
+VOID nicRxUpdateCSUMStatistics(IN P_ADAPTER_T prAdapter, IN const ENUM_CSUM_RESULT_T aeCSUM[]);
 #endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
 
+VOID nicRxQueryStatus(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuffer, OUT PUINT_32 pu4Count);
 
-VOID
-nicRxQueryStatus (
-    IN P_ADAPTER_T prAdapter,
-    IN PUINT_8 pucBuffer,
-    OUT PUINT_32 pu4Count
-    );
+VOID nicRxClearStatistics(IN P_ADAPTER_T prAdapter);
 
-VOID
-nicRxClearStatistics (
-    IN P_ADAPTER_T prAdapter
-    );
-
-VOID
-nicRxQueryStatistics (
-    IN P_ADAPTER_T prAdapter,
-    IN PUINT_8 pucBuffer,
-    OUT PUINT_32 pu4Count
-    );
+VOID nicRxQueryStatistics(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuffer, OUT PUINT_32 pu4Count);
 
 WLAN_STATUS
-nicRxWaitResponse (
-    IN P_ADAPTER_T  prAdapter,
-    IN UINT_8       ucPortIdx,
-    OUT PUINT_8     pucRspBuffer,
-    IN UINT_32      u4MaxRespBufferLen,
-    OUT PUINT_32    pu4Length
-    );
+nicRxWaitResponse(IN P_ADAPTER_T prAdapter,
+		  IN UINT_8 ucPortIdx, OUT PUINT_8 pucRspBuffer, IN UINT_32 u4MaxRespBufferLen, OUT PUINT_32 pu4Length);
 
-VOID
-nicRxEnablePromiscuousMode (
-    IN P_ADAPTER_T prAdapter
-    );
+VOID nicRxEnablePromiscuousMode(IN P_ADAPTER_T prAdapter);
 
+VOID nicRxDisablePromiscuousMode(IN P_ADAPTER_T prAdapter);
 
-VOID
-nicRxDisablePromiscuousMode (
-    IN P_ADAPTER_T prAdapter
-    );
+WLAN_STATUS nicRxFlush(IN P_ADAPTER_T prAdapter);
 
-
-WLAN_STATUS
-nicRxFlush (
-    IN P_ADAPTER_T  prAdapter
-    );
-
-WLAN_STATUS
-nicRxProcessActionFrame (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_SW_RFB_T   prSwRfb
-    );
+WLAN_STATUS nicRxProcessActionFrame(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
 #endif /* _NIC_RX_H */
-

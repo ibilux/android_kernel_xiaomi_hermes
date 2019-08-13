@@ -93,7 +93,6 @@ typedef struct fm_audio_info {
 	fm_i2s_pad_sel_e i2s_pad;
 } fm_audio_info_t;
 
-
 struct fm_platform {
 	struct cdev cdev;
 	dev_t dev_t;
@@ -220,8 +219,7 @@ struct fm_rds_interface {
 	/* rds lib interfaces */
 	fm_s32(*rds_blercheck) (rds_t *dst);
 	fm_bool(*rds_onoff) (rds_t *dst, fm_bool onoff);
-	fm_s32(*rds_parser) (rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size,
-			     fm_u16(*getfreq) (void));
+	fm_s32(*rds_parser) (rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size, fm_u16(*getfreq) (void));
 	fm_u16(*rds_gbc_get) (void);	/* good block counter */
 	fm_u16(*rds_bbc_get) (void);	/* bad block counter */
 	fm_u8(*rds_bbr_get) (void);	/* bad block ratio */
@@ -243,7 +241,7 @@ struct fm_lowlevel_ops {
 	struct fm_rds_interface ri;
 };
 
-#if (!defined(MT6620_FM) && !defined(MT6628_FM) && !defined(MT6627_FM) && !defined(MT6630_FM))
+#if (!defined(MT6620_FM) && !defined(MT6628_FM) && !defined(MT6627_FM) && !defined(MT6580_FM) && !defined(MT6630_FM))
 extern fm_s32 fm_low_ops_register(struct fm_lowlevel_ops *ops);
 extern fm_s32 fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
 extern fm_s32 fm_rds_ops_register(struct fm_lowlevel_ops *ops);
@@ -267,6 +265,12 @@ extern fm_s32 MT6627fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
 extern fm_s32 MT6627fm_rds_ops_register(struct fm_lowlevel_ops *ops);
 extern fm_s32 MT6627fm_rds_ops_unregister(struct fm_lowlevel_ops *ops);
 #endif
+#ifdef MT6580_FM
+extern fm_s32 MT6580fm_low_ops_register(struct fm_lowlevel_ops *ops);
+extern fm_s32 MT6580fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
+extern fm_s32 MT6580fm_rds_ops_register(struct fm_lowlevel_ops *ops);
+extern fm_s32 MT6580fm_rds_ops_unregister(struct fm_lowlevel_ops *ops);
+#endif
 #ifdef MT6630_FM
 extern fm_s32 MT6630fm_low_ops_register(struct fm_lowlevel_ops *ops);
 extern fm_s32 MT6630fm_low_ops_unregister(struct fm_lowlevel_ops *ops);
@@ -282,4 +286,4 @@ extern fm_s32 MT6630fm_rds_ops_unregister(struct fm_lowlevel_ops *ops);
  */
 
 extern fm_s32 fm_get_channel_space(int freq);
-#endif				/* __FM_INTERFACE_H__ */
+#endif /* __FM_INTERFACE_H__ */

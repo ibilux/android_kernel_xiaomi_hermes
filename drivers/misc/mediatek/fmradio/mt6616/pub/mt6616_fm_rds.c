@@ -28,7 +28,6 @@
 
 #include "mt6626_fm_reg.h"
 
-
 static fm_bool bRDS_FirstIn = fm_false;
 static fm_u32 gBLER_CHK_INTERVAL = 5000;
 static fm_u16 GOOD_BLK_CNT = 0, BAD_BLK_CNT;
@@ -36,7 +35,6 @@ static fm_u8 BAD_BLK_RATIO;
 
 static struct fm_callback *fm_cb;
 static struct fm_basic_interface *fm_bi;
-
 
 static fm_bool mt6626_RDS_support(void);
 static fm_s32 mt6626_RDS_enable(void);
@@ -47,8 +45,6 @@ static fm_u8 mt6626_RDS_Get_BadBlock_Ratio(void);
 static fm_u32 mt6626_RDS_Get_BlerCheck_Interval(void);
 static void mt6626_RDS_GetData(fm_u16 *data, fm_u16 datalen);
 static void mt6626_RDS_Init_Data(rds_t *pstRDSData);
-
-
 
 static fm_bool mt6626_RDS_support(void)
 {
@@ -238,15 +234,13 @@ fm_bool mt6626_RDS_OnOff(struct fm *fm, fm_bool bFlag)
 	return fm_true;
 }
 
-extern fm_s32 rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size,
-			 fm_u16(*getfreq) (void));
+extern fm_s32 rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size, fm_u16(*getfreq) (void));
 
 /* mt6626_RDS_Efm_s32_Handler    -    response FM RDS fm_s32errupt
  * @fm - main data structure of FM driver
  * This function first get RDS raw data, then call RDS spec parser
  */
-fm_s32 mt6628_rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size,
-			 fm_u16(*getfreq) (void))
+fm_s32 mt6628_rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size, fm_u16(*getfreq) (void))
 {
 	struct rds_rx_t raw;
 	fm_u16 fifo_offset;

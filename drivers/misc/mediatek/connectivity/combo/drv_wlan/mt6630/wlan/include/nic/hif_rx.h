@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/hif_rx.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/hif_rx.h#1
 */
 
 /*! \file   "hif_rx.h"
@@ -8,9 +8,8 @@
     N/A
 */
 
-
 /*
-** $Log: hif_rx.h $
+** Log: hif_rx.h
 **
 ** 03 29 2013 cp.wu
 ** [BORA00002227] [MT6630 Wi-Fi][Driver] Update for Makefile and HIFSYS modifications
@@ -123,8 +122,6 @@
 #define HIF_RX_HDR_TID_MASK              BITS(12, 14)
 #define HIF_RX_HDR_TID_OFFSET            12
 #define HIF_RX_HDR_BAR_FRAME             BIT(15)
-
-
 
 #define HIF_RX_HDR_FLAG_AMP_WDS             BIT(0)
 #define HIF_RX_HDR_FLAG_802_11_FORMAT       BIT(1)

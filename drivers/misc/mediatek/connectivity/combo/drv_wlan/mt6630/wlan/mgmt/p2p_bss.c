@@ -1,5 +1,5 @@
 /*
-** $Id: @(#) p2p_bss.c@@
+** Id: @(#) p2p_bss.c@@
 */
 
 /*! \file   "p2p_bss.c"
@@ -9,10 +9,6 @@
  *  network, or merge with exist IBSS network and sending Beacon Frame or reply
  *  the Probe Response Frame for received Probe Request Frame.
  */
-
-
-
-
 
 /*******************************************************************************
  *                         C O M P I L E R   F L A G S
@@ -45,7 +41,6 @@
  *                           P R I V A T E   D A T A
  ********************************************************************************
  */
-
 
 /*******************************************************************************
  *                                 M A C R O S

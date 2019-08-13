@@ -234,7 +234,7 @@ static struct platform_device mtk_device_btif = {
     .name			= "mtk_btif",
     .id				= -1,
 };
-#if (defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_EVDO_DT_SUPPORT))
+#if (defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_MTK_C2K_SUPPORT))
 static struct platform_device mtk_device_ext_md_ctl = {
     .name			= "ext-md-ctl",
     .id				= 0,
@@ -1027,6 +1027,18 @@ static struct resource mt_resource_i2c3[] = {
     },
 };
 
+static struct resource mt_resource_i2c4[] = {
+    {
+        .start  = IO_VIRT_TO_PHYS(I2C4_BASE),
+        .end    = IO_VIRT_TO_PHYS(I2C4_BASE) + 0x70,
+        .flags  = IORESOURCE_MEM,
+    },
+    {
+        .start  = I2C4_IRQ_BIT_ID,
+        .flags  = IORESOURCE_IRQ,
+    },
+};
+
 static struct platform_device mt_device_i2c[] = {
     {
         .name           = "mt-i2c",
@@ -1051,6 +1063,12 @@ static struct platform_device mt_device_i2c[] = {
         .id             = 3,
         .num_resources  = ARRAY_SIZE(mt_resource_i2c3),
         .resource       = mt_resource_i2c3,
+    },
+    {
+        .name           = "mt-i2c",
+        .id             = 4,
+        .num_resources  = ARRAY_SIZE(mt_resource_i2c4),
+        .resource       = mt_resource_i2c4,
     },
 };
 
@@ -2066,7 +2084,7 @@ __init int mt_board_init(void)
 
     printk("[mt_board_init] %d\n", __LINE__);
 
-#if (defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_EVDO_DT_SUPPORT))
+#if (defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_MTK_C2K_SUPPORT))
     retval = platform_device_register(&mtk_device_ext_md_ctl);
     printk("[%s]: mtk_device_ext_md_ctl, retval=%d \n!", __func__, retval);
     if (retval != 0){
@@ -2797,7 +2815,7 @@ void get_text_region (unsigned int *s, unsigned int *e)
 }
 EXPORT_SYMBOL(get_text_region) ;
 
-extern void DFS_Reserved_Memory(void);
+//extern void DFS_Reserved_Memory(void);
 
 void mt_reserve(void)
 {
@@ -2807,7 +2825,7 @@ void mt_reserve(void)
 	memblock_reserve(CONFIG_MTK_RAM_CONSOLE_DRAM_ADDR, CONFIG_MTK_RAM_CONSOLE_DRAM_SIZE);
 #endif
         mrdump_mini_reserve_memory();
-	DFS_Reserved_Memory();
+	//DFS_Reserved_Memory();
 
 #ifdef CONFIG_MTK_ECCCI_DRIVER
 	ccci_md_mem_reserve();

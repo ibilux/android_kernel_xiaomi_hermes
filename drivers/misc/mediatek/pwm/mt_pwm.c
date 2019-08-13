@@ -565,11 +565,10 @@ static S32 mt_set_pwm_GuardDur ( U32 pwm_no, U16 DurVal )
 * Set pwm_buf0_addr register
 * pwm_no: pwm1~pwm7 (0~6)
 * addr: data address
-*****************************************************/
+******************************************************/
 S32 mt_set_pwm_buf0_addr (U32 pwm_no, U32 addr )
 {
 	unsigned long flags;
-	U32 reg_buff0_addr;
 
 	struct pwm_device *dev = pwm_dev;
 	if ( !dev ) {
@@ -597,7 +596,6 @@ S32 mt_set_pwm_buf0_addr (U32 pwm_no, U32 addr )
 S32 mt_set_pwm_buf0_size ( U32 pwm_no, U16 size)
 {
 	unsigned long flags;
-	U32 reg_buff0_size;
 	
 	struct pwm_device *dev = pwm_dev;
 	if ( !dev ) {
@@ -615,7 +613,6 @@ S32 mt_set_pwm_buf0_size ( U32 pwm_no, U16 size)
 	spin_unlock_irqrestore ( &dev->lock, flags );
 
 	return RSUCCESS;
-
 }
 #endif
 
@@ -1219,7 +1216,7 @@ EXPORT_SYMBOL(pwm_set_easy_config);
 	
 S32 pwm_set_spec_config(struct pwm_spec_config *conf)
 {
-	PWMDBG("pwm_set_spec_config\n");
+	//PWMDBG("pwm_set_spec_config\n");
 	if ( conf->pwm_no >= PWM_MAX ) {
 		PWMDBG("pwm number excess PWM_MAX\n");
 		return -EEXCESSPWMNO;
@@ -1281,7 +1278,6 @@ S32 pwm_set_spec_config(struct pwm_spec_config *conf)
 			mt_set_pwm_wave_num(conf->pwm_no, conf->PWM_MODE_FIFO_REGS.WAVE_NUM);
 			mt_set_pwm_con_stpbit(conf->pwm_no, conf->PWM_MODE_FIFO_REGS.STOP_BITPOS_VALUE,PWM_FIFO);
 			break;
-			
 		case PWM_MODE_MEMORY:
 			PWMDBG("PWM_MODE_MEMORY\n");
 			mt_set_pwm_con_oldmode(conf->pwm_no, OLDMODE_DISABLE);
@@ -1397,6 +1393,286 @@ static ssize_t pwm_debug_store(struct device *dev, struct device_attribute *attr
 {
 	printk("<0>""pwm power_flag: 0x%x\n", (unsigned int)pwm_dev->power_flag); 
 	pwm_debug_store_hal();
+// PWM LDVT Hight Test Case
+#if 0
+	printk("Enter into pwm_debug_store\n");
+	int cmd, sub_cmd, pwm_no;
+	sscanf(buf, "%d %d %d", &cmd, &sub_cmd, &pwm_no);
+	// set gpio mode 
+	//pwm0
+	if (pwm_no == 0) {
+		mt_set_gpio_mode(GPIO44, GPIO_MODE_06);
+		mt_set_gpio_mode(GPIO78, GPIO_MODE_05);
+		mt_set_gpio_mode(GPIO201, GPIO_MODE_03);
+	} else if (pwm_no == 1) {
+		mt_set_gpio_mode(GPIO10, GPIO_MODE_01);
+		mt_set_gpio_mode(GPIO69, GPIO_MODE_02);
+	} else if (pwm_no == 2) {
+		mt_set_gpio_mode(GPIO1, GPIO_MODE_01);
+		mt_set_gpio_mode(GPIO21, GPIO_MODE_02);
+		mt_set_gpio_mode(GPIO55, GPIO_MODE_02);
+	} else if (pwm_no == 3) {
+		mt_set_gpio_mode(GPIO0, GPIO_MODE_05);
+		mt_set_gpio_mode(GPIO59, GPIO_MODE_05);
+		mt_set_gpio_mode(GPIO79, GPIO_MODE_05);
+	} else if (pwm_no == 4) {
+		mt_set_gpio_mode(GPIO60, GPIO_MODE_05);
+		mt_set_gpio_mode(GPIO80, GPIO_MODE_05);
+	} else {
+		printk("Invalid PWM Number!\n");
+	}
+
+	if (cmd == 0) {
+		printk("********** HELP **********\n");
+		printk(" \t1 -> clk source select: 26M or Others source clock\n");
+		printk("\t\t1.1 -> sub cmd 1 : 26M\n");
+		printk("\t\t1.1 -> sub cmd 2 : 66M or Others\n");
+		printk(" \t2 -> FIFO stop bit test: PWM0~PWM4 63, 62, 31\n");
+		printk("\t\t2.1 -> sub cmd 1 : stop bit is 63\n");
+		printk("\t\t2.2 -> sub cmd 2 : stop bit is 62\n");
+		printk("\t\t2.3 -> sub cmd 3 : stop bit is 31\n");
+		printk(" \t3 -> FIFO wavenum test: PWM0~PWM4 num=1/num=0\n");
+		printk(" \t\t3.1 -> sub cmd 1 : PWM0~PWM4 num=0\n");
+		printk(" \t\t3.2 -> sub cmd 2 : PWM0~PWM4 num=1\n");
+		printk(" \t4 -> 32K select or use internal frequency individal\n");
+		printk("\t\t4.1 -> sub cmd 1 : 32KHz selected\n");
+		printk("\t\t4.2 -> sub cmd 2 : 26MHz 1625 setting selected\n");
+		printk("\t\t4.3 -> sub cmd 3 : 26MHz selected\n");
+		printk(" \t5 -> 3D LCM\n");
+		printk(" \t6 -> Test all gpio, This coverd by above test case\n");
+		printk(" \t7 -> MEMO Mode test\n");
+	} else if (cmd == 1) {
+		if (sub_cmd == 1) {
+			struct pwm_spec_config conf;
+			printk("<0>""=============clk source select test : 26M===============\n");
+			conf.pwm_no = pwm_no;  
+			conf.mode = PWM_MODE_FIFO;
+			conf.clk_div = CLK_DIV6;
+			conf.clk_src = PWM_CLK_NEW_MODE_BLOCK;
+			conf.PWM_MODE_FIFO_REGS.IDLE_VALUE = IDLE_FALSE;
+			conf.PWM_MODE_FIFO_REGS.GUARD_VALUE = GUARD_FALSE;
+			conf.PWM_MODE_FIFO_REGS.STOP_BITPOS_VALUE = 63;
+			conf.PWM_MODE_FIFO_REGS.HDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.LDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.GDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA0 = 0xffffffff;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA1 = 0x00000000;
+			conf.PWM_MODE_FIFO_REGS.WAVE_NUM = 0;
+			mt_pwm_26M_clk_enable_hal(1);
+			pwm_set_spec_config(&conf);
+		} else if (sub_cmd == 2) {
+			struct pwm_spec_config conf;
+			printk("<0>""=============clk source select test: Others===============\n");
+			conf.pwm_no = pwm_no;  
+			conf.mode = PWM_MODE_FIFO;
+			conf.clk_div = CLK_DIV1;
+			conf.clk_src = PWM_CLK_NEW_MODE_BLOCK;
+			conf.PWM_MODE_FIFO_REGS.IDLE_VALUE = IDLE_FALSE;
+			conf.PWM_MODE_FIFO_REGS.GUARD_VALUE = GUARD_FALSE;
+			conf.PWM_MODE_FIFO_REGS.STOP_BITPOS_VALUE = 63;
+			conf.PWM_MODE_FIFO_REGS.HDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.LDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.GDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA0 = 0xf0f0f0f0;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA1 = 0xf0f0f0f0;
+			conf.PWM_MODE_FIFO_REGS.WAVE_NUM = 0;
+			mt_pwm_26M_clk_enable_hal(0);
+			pwm_set_spec_config(&conf);
+		} // end sub cmd
+	} else if (cmd == 2) {
+		if (sub_cmd == 1) {
+			struct pwm_spec_config conf;
+			printk("<0>""=============Stop bit test : 63===============\n");
+			conf.pwm_no = pwm_no;  
+			conf.mode = PWM_MODE_FIFO;
+			conf.clk_div = CLK_DIV1;
+			conf.clk_src = PWM_CLK_NEW_MODE_BLOCK;
+			conf.PWM_MODE_FIFO_REGS.IDLE_VALUE = IDLE_FALSE;
+			conf.PWM_MODE_FIFO_REGS.GUARD_VALUE = GUARD_FALSE;
+			conf.PWM_MODE_FIFO_REGS.STOP_BITPOS_VALUE = 63;
+			conf.PWM_MODE_FIFO_REGS.HDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.LDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.GDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA0 = 0x0000ff11;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA1 = 0xffffffff;
+			conf.PWM_MODE_FIFO_REGS.WAVE_NUM = 0;
+			mt_pwm_26M_clk_enable_hal(1);
+			pwm_set_spec_config(&conf);
+		} else if (sub_cmd == 2) {
+			struct pwm_spec_config conf;
+			printk("<0>""=============Stop bit test: 62===============\n");
+			conf.pwm_no = pwm_no;
+			conf.mode = PWM_MODE_FIFO;
+			conf.clk_div = CLK_DIV1;
+			conf.clk_src = PWM_CLK_NEW_MODE_BLOCK;
+			conf.PWM_MODE_FIFO_REGS.IDLE_VALUE = IDLE_FALSE;
+			conf.PWM_MODE_FIFO_REGS.GUARD_VALUE = GUARD_FALSE;
+			conf.PWM_MODE_FIFO_REGS.STOP_BITPOS_VALUE = 62;
+			conf.PWM_MODE_FIFO_REGS.HDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.LDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.GDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA0 = 0x0000ff11;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA1 = 0xffffffff;
+			conf.PWM_MODE_FIFO_REGS.WAVE_NUM = 0;
+			mt_pwm_26M_clk_enable_hal(1);
+			pwm_set_spec_config(&conf);
+		} else if (sub_cmd == 3) {
+			struct pwm_spec_config conf;
+			printk("<0>""=============Stop bit test: 31===============\n");
+			conf.pwm_no = pwm_no;
+			conf.mode = PWM_MODE_FIFO;
+			conf.clk_div = CLK_DIV1;
+			conf.clk_src = PWM_CLK_NEW_MODE_BLOCK;
+			conf.PWM_MODE_FIFO_REGS.IDLE_VALUE = IDLE_FALSE;
+			conf.PWM_MODE_FIFO_REGS.GUARD_VALUE = GUARD_FALSE;
+			conf.PWM_MODE_FIFO_REGS.STOP_BITPOS_VALUE = 31;
+			conf.PWM_MODE_FIFO_REGS.HDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.LDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.GDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA0 = 0x0000ff11;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA1 = 0xffffffff;
+			conf.PWM_MODE_FIFO_REGS.WAVE_NUM = 0;
+			mt_pwm_26M_clk_enable_hal(1);
+			pwm_set_spec_config(&conf);
+		} // end sub cmd
+	} else if (cmd == 3) {
+		if (sub_cmd == 1) {
+			struct pwm_spec_config conf;
+			printk("<0>""=============Wave number test : 0===============\n");
+			conf.pwm_no = pwm_no;  
+			conf.mode = PWM_MODE_FIFO;
+			conf.clk_div = CLK_DIV1;
+			conf.clk_src = PWM_CLK_NEW_MODE_BLOCK;
+			conf.PWM_MODE_FIFO_REGS.IDLE_VALUE = IDLE_FALSE;
+			conf.PWM_MODE_FIFO_REGS.GUARD_VALUE = GUARD_FALSE;
+			conf.PWM_MODE_FIFO_REGS.STOP_BITPOS_VALUE = 63;
+			conf.PWM_MODE_FIFO_REGS.HDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.LDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.GDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA0 = 0xf0f0f0f0;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA1 = 0xf0f0f0f0;
+			conf.PWM_MODE_FIFO_REGS.WAVE_NUM = 0;
+			mt_pwm_26M_clk_enable_hal(1);
+			pwm_set_spec_config(&conf);
+		} else if (sub_cmd == 2) {
+			struct pwm_spec_config conf;
+			mt_set_intr_enable_hal(0);
+			printk("<0>""=============Wave Number test: 1===============\n");
+			conf.pwm_no = pwm_no;  
+			conf.mode = PWM_MODE_FIFO;
+			conf.clk_div = CLK_DIV1;
+			conf.clk_src = PWM_CLK_NEW_MODE_BLOCK;
+			conf.PWM_MODE_FIFO_REGS.IDLE_VALUE = IDLE_FALSE;
+			conf.PWM_MODE_FIFO_REGS.GUARD_VALUE = GUARD_FALSE;
+			conf.PWM_MODE_FIFO_REGS.STOP_BITPOS_VALUE = 63;
+			conf.PWM_MODE_FIFO_REGS.HDURATION = 119;
+			conf.PWM_MODE_FIFO_REGS.LDURATION = 119;
+			conf.PWM_MODE_FIFO_REGS.GDURATION = 0;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA0 = 0x0000ff11;
+			conf.PWM_MODE_FIFO_REGS.SEND_DATA1 = 0xffffffff;
+			conf.PWM_MODE_FIFO_REGS.WAVE_NUM = 2;
+			mt_pwm_26M_clk_enable_hal(1);
+			pwm_set_spec_config(&conf);
+			
+			mt_set_intr_ack_hal(0);
+			
+		} // end sub cmd
+	} else if (cmd == 4) {
+		if (sub_cmd == 1) {
+			struct pwm_spec_config conf;
+			printk("<0>""=============Clk select test : 32KHz===============\n");
+			conf.pwm_no = pwm_no;  
+			conf.mode = PWM_MODE_OLD;
+			conf.clk_div = CLK_DIV1;
+			conf.clk_src = PWM_CLK_OLD_MODE_32K; // 16KHz
+			conf.PWM_MODE_OLD_REGS.IDLE_VALUE = IDLE_FALSE;
+			conf.PWM_MODE_OLD_REGS.GUARD_VALUE = GUARD_FALSE;
+			conf.PWM_MODE_OLD_REGS.GDURATION = 0;
+			conf.PWM_MODE_OLD_REGS.WAVE_NUM = 0;
+			conf.PWM_MODE_OLD_REGS.DATA_WIDTH = 10;
+			conf.PWM_MODE_OLD_REGS.THRESH = 5;
+			pwm_set_spec_config(&conf);
+		} else if (sub_cmd == 2) {
+			struct pwm_spec_config conf;
+			printk("<0>""=============Clk select test : 26MHz/1625===============\n");
+			conf.pwm_no = pwm_no;  
+			conf.mode = PWM_MODE_OLD;
+			conf.clk_div = CLK_DIV1;
+			conf.clk_src = PWM_CLK_OLD_MODE_32K;  // 16KHz
+			conf.PWM_MODE_OLD_REGS.IDLE_VALUE = IDLE_FALSE;
+			conf.PWM_MODE_OLD_REGS.GUARD_VALUE = GUARD_FALSE;
+			conf.PWM_MODE_OLD_REGS.GDURATION = 0;
+			conf.PWM_MODE_OLD_REGS.WAVE_NUM = 0;
+			conf.PWM_MODE_OLD_REGS.DATA_WIDTH = 10;
+			conf.PWM_MODE_OLD_REGS.THRESH = 5;
+			pwm_set_spec_config(&conf);
+		} else if (sub_cmd == 3) {
+			struct pwm_spec_config conf;
+			printk("<0>""=============Clk select test : 26MHz===============\n");
+			conf.pwm_no = pwm_no;
+			conf.mode = PWM_MODE_OLD;
+			conf.clk_div = CLK_DIV1;
+			conf.clk_src = PWM_CLK_OLD_MODE_BLOCK; // 26MHz
+			conf.PWM_MODE_OLD_REGS.IDLE_VALUE = IDLE_FALSE;
+			conf.PWM_MODE_OLD_REGS.GUARD_VALUE = GUARD_FALSE;
+			conf.PWM_MODE_OLD_REGS.GDURATION = 0;
+			conf.PWM_MODE_OLD_REGS.WAVE_NUM = 0;
+			conf.PWM_MODE_OLD_REGS.DATA_WIDTH = 10;
+			conf.PWM_MODE_OLD_REGS.THRESH = 5;
+			pwm_set_spec_config(&conf);
+		} // end sub cmd
+	} else if (cmd == 5) {
+		struct pwm_spec_config conf;
+		printk("<0>""=============3DLCM test===============\n");
+		conf.mode = PWM_MODE_3DLCM;
+		conf.pwm_no = pwm_no;
+		conf.clk_div = CLK_DIV1;
+		conf.clk_src = PWM_CLK_NEW_MODE_BLOCK;
+		conf.PWM_MODE_FIFO_REGS.IDLE_VALUE = IDLE_FALSE;
+		conf.PWM_MODE_FIFO_REGS.GUARD_VALUE = GUARD_FALSE;
+		conf.PWM_MODE_FIFO_REGS.STOP_BITPOS_VALUE = 63;
+		conf.PWM_MODE_FIFO_REGS.HDURATION = 0;
+		conf.PWM_MODE_FIFO_REGS.LDURATION = 0;
+		conf.PWM_MODE_FIFO_REGS.GDURATION = 0;
+		conf.PWM_MODE_FIFO_REGS.SEND_DATA0 = 0xf0f0f0f0;
+		conf.PWM_MODE_FIFO_REGS.SEND_DATA1 = 0xf0f0f0f0;
+		conf.PWM_MODE_FIFO_REGS.WAVE_NUM = 0;
+		mt_pwm_26M_clk_enable_hal(1);
+		pwm_set_spec_config(&conf);	
+	} else if (cmd == 6) {
+		printk(" \tTest all gpio, This coverd by above test case!\n");
+	} else if (cmd == 7) {
+		struct pwm_spec_config conf;
+		printk("<0>""=============MEMO test===============\n");
+		conf.mode = PWM_MODE_MEMORY;
+		conf.pwm_no = pwm_no;
+		conf.clk_div = CLK_DIV1;
+		conf.clk_src = PWM_CLK_NEW_MODE_BLOCK;
+		conf.PWM_MODE_MEMORY_REGS.IDLE_VALUE = IDLE_FALSE;
+		conf.PWM_MODE_MEMORY_REGS.GUARD_VALUE = GUARD_FALSE;
+		conf.PWM_MODE_MEMORY_REGS.HDURATION = 119;
+		conf.PWM_MODE_MEMORY_REGS.LDURATION = 119;
+		conf.PWM_MODE_MEMORY_REGS.GDURATION = 0;
+		conf.PWM_MODE_MEMORY_REGS.WAVE_NUM = 0;
+		conf.PWM_MODE_MEMORY_REGS.STOP_BITPOS_VALUE = 32;
+		
+		mt_pwm_26M_clk_enable_hal(1);
+		unsigned int *phys;
+		unsigned int *virt;
+		virt = dma_alloc_coherent(NULL, 8, &phys, GFP_KERNEL);
+		//virt = (unsigned int*)malloc(sizeof(unsigned int) * 128);
+		unsigned int *membuff = virt;
+		//static unsigned int data = {0xaaaaaaaa, 0xaaaaaaaa};
+		membuff[0] = 0xaaaaaaaa;
+		membuff[1] = 0xffff0000;
+		//conf.PWM_MODE_MEMORY_REGS.BUF0_SIZE = sizeof(data)/sizeof(data[0])-1;
+		conf.PWM_MODE_MEMORY_REGS.BUF0_SIZE = 8;
+		conf.PWM_MODE_MEMORY_REGS.BUF0_BASE_ADDR = phys;
+		pwm_set_spec_config(&conf);
+	} else {
+		printk(" \tInvalid Command!\n");
+	}
+#endif
 	return count;
 }
 
@@ -1444,6 +1720,12 @@ PWMDBG("pwm base: 0x%p\n", pwm_base);
 #else
 //	request_irq(69, mt_pwm_irq, IRQF_TRIGGER_LOW, "mt6589_pwm", NULL);
 #endif
+	mt_pwm_power_on(PWM1, false);
+	mt_pwm_power_on(PWM2, false);
+	mt_pwm_power_on(PWM3, false);
+	mt_pwm_power_off(PWM1, false);
+	mt_pwm_power_off(PWM2, false);
+	mt_pwm_power_off(PWM3, false);
 
 	return RSUCCESS;
 }

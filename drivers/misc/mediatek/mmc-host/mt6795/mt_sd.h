@@ -37,8 +37,8 @@
 #define WRITE_TUNE_UHS_MAX_TIME          (2*32*8)
 
 #ifdef CONFIG_EMMC_50_FEATURE
-#define MAX_HS400_TUNE_COUNT (576) //(32*18)
-#endif 
+#define MAX_HS400_TUNE_COUNT (576)	/* (32*18) */
+#endif
 
 #define MAX_GPD_NUM         (1 + 1)	/* one null gpd */
 #define MAX_BD_NUM          (1024)
@@ -320,7 +320,7 @@ enum {
 #define MSDC_PS_CDDEBOUNCE      (0xf  << 12)	/* RW */
 #define MSDC_PS_DAT             (0xff << 16)	/* R  */
 #define MSDC_PS_CMD             (0x1  << 24)	/* R  */
-#define MSDC_PS_WP              (0x1UL<< 31)    /* R  */
+#define MSDC_PS_WP              (0x1UL << 31)	/* R  */
 
 /* MSDC_INT mask */
 #define MSDC_INT_MMCIRQ         (0x1  << 0)	/* W1C */
@@ -378,7 +378,7 @@ enum {
 /* MSDC_FIFOCS mask */
 #define MSDC_FIFOCS_RXCNT       (0xff << 0)	/* R */
 #define MSDC_FIFOCS_TXCNT       (0xff << 16)	/* R */
-#define MSDC_FIFOCS_CLR         (0x1UL<< 31)    /* RW */
+#define MSDC_FIFOCS_CLR         (0x1UL << 31)	/* RW */
 
 /* SDC_CFG mask */
 #define SDC_CFG_SDIOINTWKUP     (0x1  << 0)	/* RW */
@@ -387,7 +387,7 @@ enum {
 #define SDC_CFG_SDIO            (0x1  << 19)	/* RW */
 #define SDC_CFG_SDIOIDE         (0x1  << 20)	/* RW */
 #define SDC_CFG_INTATGAP        (0x1  << 21)	/* RW */
-#define SDC_CFG_DTOC            (0xffUL << 24)  /* RW */
+#define SDC_CFG_DTOC            (0xffUL << 24)	/* RW */
 
 /* SDC_CMD mask */
 #define SDC_CMD_OPC             (0x3f << 0)	/* RW */
@@ -422,7 +422,7 @@ enum {
 
 /* EMMC_CFG1 mask */
 #define EMMC_CFG1_BOOTDATTMC    (0xfffff << 0)	/* RW */
-#define EMMC_CFG1_BOOTACKTMC    (0xfffUL << 20) /* RW */
+#define EMMC_CFG1_BOOTACKTMC    (0xfffUL << 20)	/* RW */
 
 /* EMMC_STS mask */
 #define EMMC_STS_BOOTCRCERR     (0x1  << 0)	/* W1C */
@@ -456,13 +456,13 @@ enum {
 #define MSDC_DMA_CFG_OUTB_STOP  (0x1  << 17)	/* RW */
 
 /* MSDC_PATCH_BIT mask */
-/* #define CKGEN_RX_SDClKO_SEL     (0x1  << 0) */    /*This bit removed on MT6589/MT8585*/
+/* #define CKGEN_RX_SDClKO_SEL     (0x1  << 0) *//*This bit removed on MT6589/MT8585 */
 #define MSDC_PATCH_BIT_ODDSUPP    (0x1  <<  1)	/* RW */
 
 #if defined(MTK_SDIO30_ONLINE_TUNING_SUPPORT) || defined(ONLINE_TUNING_DVTTEST)
 #define MSDC_MASK_ACMD53_CRC_ERR_INTR   (0x1<<4)
 #define MSDC_ACMD53_FAIL_ONE_SHOT       (0X1<<5)
-#endif				/* #if defined(MTK_SDIO30_ONLINE_TUNING_SUPPORT) || defined(ONLINE_TUNING_DVTTEST) */
+#endif/* #if defined(MTK_SDIO30_ONLINE_TUNING_SUPPORT) || defined(ONLINE_TUNING_DVTTEST) */
 
 /* MSDC_PAD_TUNE mask */
 #define MSDC_PAD_TUNE_DATWRDLY  (0x1F << 0)	/* RW */
@@ -787,9 +787,9 @@ typedef struct {
 	u32 chksum:8;
 	u32 intr:1;
 	u32 rsv1:15;
-	u32  next;
-	u32  ptr;
-	u32  buflen:16;
+	u32 next;
+	u32 ptr;
+	u32 buflen:16;
 	u32 extlen:8;
 	u32 rsv2:8;
 	u32 arg;
@@ -805,8 +805,8 @@ typedef struct {
 	u32 blkpad:1;
 	u32 dwpad:1;
 	u32 rsv2:13;
-	u32  next;
-	u32  ptr;
+	u32 next;
+	u32 ptr;
 	u32 buflen:16;
 	u32 rsv3:16;
 } bd_t;
@@ -1240,14 +1240,14 @@ struct msdc_saved_para {
 	u8 int_dat_latch_ck_sel;
 	u8 ckgen_msdc_dly_sel;
 	u8 inten_sdio_irq;
-	u8     write_busy_margin; /* for write: 3T need wait before host check busy after crc status */
-	u8     write_crc_margin; /* for write: host check timeout change to 16T */
+	u8 write_busy_margin;	/* for write: 3T need wait before host check busy after crc status */
+	u8 write_crc_margin;	/* for write: host check timeout change to 16T */
 #ifdef CONFIG_EMMC_50_FEATURE
 	u8 ds_dly1;
 	u8 ds_dly3;
 	u32 emmc50_pad_cmd_tune;
 #endif
-	u32 vcore_uv;//ALPS01919187
+	u32 vcore_uv;		/* ALPS01919187 */
 };
 
 #if defined(MTK_SDIO30_ONLINE_TUNING_SUPPORT) || defined(ONLINE_TUNING_DVTTEST)
@@ -1300,12 +1300,12 @@ struct ot_data {
 };
 
 struct ot_work_t {
-	struct      delayed_work ot_delayed_work;
-	struct      msdc_host *host;
-	int         chg_volt;
-	atomic_t    ot_disable;
-	atomic_t	autok_done;
-	struct      completion ot_complete;
+	struct delayed_work ot_delayed_work;
+	struct msdc_host *host;
+	int chg_volt;
+	atomic_t ot_disable;
+	atomic_t autok_done;
+	struct completion ot_complete;
 };
 #endif				/* #if defined(MTK_SDIO30_ONLINE_TUNING_SUPPORT) || defined(ONLINE_TUNING_DVTTEST) */
 
@@ -1328,13 +1328,14 @@ struct msdc_host {
 	struct semaphore sem;
 
 	u32 blksz;		/* host block size */
-	void __iomem                *base;           /* host base address */    
+	void __iomem *base;	/* host base address */
 	int id;			/* host id */
 	int pwr_ref;		/* core power reference count */
 
 	u32 xfer_size;		/* total transferred size */
 
 	struct msdc_dma dma;	/* dma channel */
+	u64 dma_mask;
 	u32 dma_addr;		/* dma transfer address */
 	u32 dma_left_size;	/* dma transfer left size */
 	u32 dma_xfer_size;	/* dma transfer size in bytes */
@@ -1342,6 +1343,9 @@ struct msdc_host {
 
 	u32 timeout_ns;		/* data timeout ns */
 	u32 timeout_clks;	/* data timeout clks */
+
+	u32 write_timeout_ms;	/* data write busy timeout ms */
+	struct delayed_work write_timeout;	/* check if write busy timeout */
 
 	atomic_t abort;		/* abort transfer */
 
@@ -1367,50 +1371,50 @@ struct msdc_host {
 	struct completion xfer_done;
 	struct pm_message pm_state;
 
-    u32                         mclk;           /* mmc subsystem clock */
-    u32                         hclk;           /* host clock speed */        
-    u32                         sclk;           /* SD/MS clock speed */
-    u8                          core_clkon;     /* Host core clock on ? */
-    u8                          card_clkon;     /* Card clock on ? */
-    u8                          core_power;     /* core power */    
-    u8                          power_mode;     /* host power mode */
-    u8                          card_inserted;  /* card inserted ? */
-    u8                          suspend;        /* host suspended ? */    
-    u8                          reserved;
-    u8                          app_cmd;        /* for app command */     
-    u32                         app_cmd_arg;    
-    u64                         starttime;
-    struct timer_list           timer;     
-    struct tune_counter         t_counter;
-    u32                         rwcmd_time_tune;
-    int                         read_time_tune;
-    int                         write_time_tune;
-    u32                         write_timeout_uhs104;
-    u32                         read_timeout_uhs104;
-    u32                         write_timeout_emmc;
-    u32                         read_timeout_emmc;
-    u8                          autocmd;
-    u32                         sw_timeout;
-    u32                         power_cycle; /* power cycle done in tuning flow*/
-	bool                        power_cycle_enable;/*Enable power cycle*/
+	u32 mclk;		/* mmc subsystem clock */
+	u32 hclk;		/* host clock speed */
+	u32 sclk;		/* SD/MS clock speed */
+	u8 core_clkon;		/* Host core clock on ? */
+	u8 card_clkon;		/* Card clock on ? */
+	u8 core_power;		/* core power */
+	u8 power_mode;		/* host power mode */
+	u8 card_inserted;	/* card inserted ? */
+	u8 suspend;		/* host suspended ? */
+	u8 reserved;
+	u8 app_cmd;		/* for app command */
+	u32 app_cmd_arg;
+	u64 starttime;
+	struct timer_list timer;
+	struct tune_counter t_counter;
+	u32 rwcmd_time_tune;
+	int read_time_tune;
+	int write_time_tune;
+	u32 write_timeout_uhs104;
+	u32 read_timeout_uhs104;
+	u32 write_timeout_emmc;
+	u32 read_timeout_emmc;
+	u8 autocmd;
+	u32 sw_timeout;
+	u32 power_cycle;	/* power cycle done in tuning flow */
+	bool power_cycle_enable;	/*Enable power cycle */
 
-	u32							continuous_fail_request_count;
+	u32 continuous_fail_request_count;
 
-    u32                         sd_30_busy;
-    bool                        tune;
-    MSDC_POWER_DOMAIN           power_domain;
-    u32                         state;
-    struct msdc_saved_para      saved_para;    
-    int                         sd_cd_polarity;
-    int                         sd_cd_insert_work; //to make sure insert mmc_rescan this work in start_host when boot up
-                                                   //driver will get a EINT(Level sensitive) when boot up phone with card insert
-    struct wake_lock            trans_lock;
-    bool                        block_bad_card;                                               
-#ifdef SDIO_ERROR_BYPASS      
-    int                         sdio_error;     /* sdio error can't recovery */
-#endif									   
-    void    (*power_control)(struct msdc_host *host,u32 on);
-    void    (*power_switch)(struct msdc_host *host,u32 on);
+	u32 sd_30_busy;
+	bool tune;
+	MSDC_POWER_DOMAIN power_domain;
+	u32 state;
+	struct msdc_saved_para saved_para;
+	int sd_cd_polarity;
+	int sd_cd_insert_work;	/* to make sure insert mmc_rescan this work in start_host when boot up */
+	/* driver will get a EINT(Level sensitive) when boot up phone with card insert */
+	struct wake_lock trans_lock;
+	bool block_bad_card;
+#ifdef SDIO_ERROR_BYPASS
+	int sdio_error;		/* sdio error can't recovery */
+#endif
+	void (*power_control) (struct msdc_host *host, u32 on);
+	void (*power_switch) (struct msdc_host *host, u32 on);
 };
 
 typedef enum {
@@ -1449,7 +1453,7 @@ struct dma_addr {
 #define MSDC_TOP_RESET_ERROR_TUNE
 #if 1
 struct msdc_reg_control {
-        ulong addr;
+	ulong addr;
 	u32 mask;
 	u32 value;
 	u32 default_value;
@@ -1495,13 +1499,13 @@ static inline unsigned int uffs(unsigned int x)
     do {\
 	volatile unsigned int tv = sdr_read32(reg);\
 	tv |= (u32)(bs); \
-        sdr_write32(reg, tv); \
+	sdr_write32(reg, tv); \
     } while (0)
 #define sdr_clr_bits(reg, bs) \
     do {\
 	volatile unsigned int tv = sdr_read32(reg);\
 	tv &= ~((u32)(bs)); \
-        sdr_write32(reg, tv); \
+	sdr_write32(reg, tv); \
     } while (0)
 
 
@@ -1510,7 +1514,7 @@ static inline unsigned int uffs(unsigned int x)
 	volatile unsigned int tv = sdr_read32(reg);    \
 	tv &= ~(field); \
 	tv |= ((val) << (uffs((unsigned int)field) - 1)); \
-        sdr_write32(reg, tv); \
+	sdr_write32(reg, tv); \
     } while (0)
 #define sdr_get_field(reg, field, val) \
     do {    \
@@ -1521,17 +1525,18 @@ static inline unsigned int uffs(unsigned int x)
     do {    \
 	volatile unsigned int tv = sdr_read32(reg); \
 	tv = (val == 1) ? (tv|(field)):(tv & ~(field));\
-        sdr_write32(reg, tv); \
+	sdr_write32(reg, tv); \
     } while (0)
 #define sdr_get_field_discrete(reg, field, val) \
     do {    \
 	volatile unsigned int tv = sdr_read32(reg); \
 	val = tv & (field); \
-        val = (val == field) ? 1 : 0;\
+	val = (val == field) ? 1 : 0;\
     } while (0)
 
 extern void mmc_remove_card(struct mmc_card *card);
 extern void mmc_detach_bus(struct mmc_host *host);
 extern void mmc_power_off(struct mmc_host *host);
-#endif /* end of  MT_SD_H */
-
+extern void Ana_Log_Print(void);
+extern void Afe_Log_Print(void);
+#endif				/* end of  MT_SD_H */

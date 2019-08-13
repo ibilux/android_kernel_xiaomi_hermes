@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/ehpi/include/colibri.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/ehpi/include/colibri.h#1
 */
 
 /*! \file   "colibri.h"
@@ -8,10 +8,8 @@
     N/A
 */
 
-
-
 /*
-** $Log: colibri.h $
+** Log: colibri.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -62,7 +60,6 @@
 *                              C O N S T A N T S
 ********************************************************************************
 */
-
 
 #define WLAN_STA_IRQ_GPIO   23	/* use SSP_EXTCLK as interrupt source */
 #define WLAN_STA_IRQ IRQ_GPIO(WLAN_STA_IRQ_GPIO)
@@ -123,8 +120,6 @@
 #endif
 /* PXA270 specific part -- end */
 
-
-
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -166,11 +161,9 @@
 #define MSC2        __REG(0x48000010)	/* Static Memory Control Register 2 */
 #endif
 
-
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
 
-
-#endif				/* _COLIBRI_H */
+#endif /* _COLIBRI_H */

@@ -1,11 +1,9 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/hif_tx.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/hif_tx.h#1
 */
 
-
-
 /*
-** $Log: hif_tx.h $
+** Log: hif_tx.h
 **
 ** 03 12 2013 terry.wu
 ** [BORA00002207] [MT6630 Wi-Fi] TXM & MQM Implementation
@@ -123,7 +121,6 @@
 
 #define CMD_PKT_SIZE_FOR_IMAGE              2048	/* !< 2048 Bytes CMD payload buffer */
 
-
 /*! NIC_HIF_TX_HEADER_T (for short-header format) */
 /* DW 0, Byte 0,1 */
 #define HIF_TX_HDR_TX_BYTE_COUNT_MASK       BITS(0, 15)
@@ -138,7 +135,6 @@
 #define HIF_TX_HDR_QUEUE_IDX_OFFSET         3
 #define HIF_TX_HDR_PORT_IDX_MASK            BIT(7)
 #define HIF_TX_HDR_PORT_IDX_OFFSET          7
-
 
 /*******************************************************************************
 *                         D A T A   T Y P E S

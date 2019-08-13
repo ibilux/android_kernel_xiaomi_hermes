@@ -15,9 +15,9 @@
  *
  */
 
-
 /*kpd.h file path: ALPS/mediatek/kernel/include/linux */
 #include <linux/kpd.h>
+#include <linux/wakelock.h>
 #ifdef CONFIG_OF
 #include <linux/of.h>
 #include <linux/of_address.h>
@@ -30,12 +30,13 @@
 #ifdef CONFIG_OF
 void __iomem *kp_base;
 static unsigned int kp_irqnr;
-#endif	
+#endif
 struct input_dev *kpd_input_dev;
 static bool kpd_suspend = false;
 static int kpd_show_hw_keycode = 1;
 static int kpd_show_register = 1;
 static volatile int call_status = 0;
+struct wake_lock kpd_suspend_lock;	/* For suspend usage */
 
 /*for kpd_memory_setting() function*/
 static u16 kpd_keymap[KPD_NUM_KEYS];
@@ -48,7 +49,9 @@ static void kpd_slide_handler(unsigned long data);
 static DECLARE_TASKLET(kpd_slide_tasklet, kpd_slide_handler, 0);
 static u8 kpd_slide_state = !KPD_SLIDE_POLARITY;
 #endif
-
+#if !defined(CONFIG_MTK_LEGACY)
+struct keypad_dts_data kpd_dts_data;
+#endif
 /* for Power key using EINT */
 #if KPD_PWRKEY_USE_EINT
 static void kpd_pwrkey_handler(unsigned long data);
@@ -65,7 +68,7 @@ static void kpd_memory_setting(void);
 /*********************************************************************/
 static int kpd_pdrv_probe(struct platform_device *pdev);
 static int kpd_pdrv_remove(struct platform_device *pdev);
-#if 1//ndef USE_EARLY_SUSPEND
+#ifndef USE_EARLY_SUSPEND
 static int kpd_pdrv_suspend(struct platform_device *pdev, pm_message_t state);
 static int kpd_pdrv_resume(struct platform_device *pdev);
 #endif
@@ -80,7 +83,7 @@ static const struct of_device_id kpd_of_match[] = {
 static struct platform_driver kpd_pdrv = {
 	.probe = kpd_pdrv_probe,
 	.remove = kpd_pdrv_remove,
-#if 1//ndef USE_EARLY_SUSPEND
+#ifndef USE_EARLY_SUSPEND
 	.suspend = kpd_pdrv_suspend,
 	.resume = kpd_pdrv_resume,
 #endif
@@ -100,7 +103,6 @@ static void kpd_memory_setting(void)
 	kpd_init_keymap_state(kpd_keymap_state);
 	return;
 }
-
 
 /*****************for kpd auto set wake up source*************************/
 
@@ -136,24 +138,10 @@ static ssize_t kpd_show_call_state(struct device_driver *ddri, char *buf)
 	return res;
 }
 
-unsigned int g_kpd_as_wake = 0;
-static ssize_t show_kpd_as_wake(struct device_driver *ddri, char *buf)
-{
-    return sprintf(buf, "%d\n", g_kpd_as_wake); 
-}
-
-static ssize_t store_kpd_as_wake(struct device_driver *ddri, char *buf, size_t count)
-{
-        strict_strtoul(buf, "%u", &g_kpd_as_wake);
-        return count;
-}
-
 static DRIVER_ATTR(kpd_call_state, S_IWUSR | S_IRUGO, kpd_show_call_state, kpd_store_call_state);
-static DRIVER_ATTR(kpd_as_wake, S_IWUSR | S_IRUGO, show_kpd_as_wake, store_kpd_as_wake);
 
 static struct driver_attribute *kpd_attr_list[] = {
 	&driver_attr_kpd_call_state,
-	&driver_attr_kpd_as_wake,
 };
 
 /*----------------------------------------------------------------------------*/
@@ -161,14 +149,13 @@ static int kpd_create_attr(struct device_driver *driver)
 {
 	int idx, err = 0;
 	int num = (int)(sizeof(kpd_attr_list) / sizeof(kpd_attr_list[0]));
-	if (driver == NULL) {
+	if (driver == NULL)
 		return -EINVAL;
-	}
 
 	for (idx = 0; idx < num; idx++) {
-		if ((err = driver_create_file(driver, kpd_attr_list[idx]))) {
-			kpd_print("driver_create_file (%s) = %d\n", kpd_attr_list[idx]->attr.name,
-				  err);
+		err = driver_create_file(driver, kpd_attr_list[idx]);
+		if (err) {
+			kpd_info("driver_create_file (%s) = %d\n", kpd_attr_list[idx]->attr.name, err);
 			break;
 		}
 	}
@@ -184,9 +171,8 @@ static int kpd_delete_attr(struct device_driver *driver)
 	if (!driver)
 		return -EINVAL;
 
-	for (idx = 0; idx < num; idx++) {
+	for (idx = 0; idx < num; idx++)
 		driver_remove_file(driver, kpd_attr_list[idx]);
-	}
 
 	return err;
 }
@@ -234,21 +220,19 @@ static inline void kpd_update_aee_state(void)
 		hrtimer_start(&aee_timer, ktime_set(AEE_DELAY_TIME, 0), HRTIMER_MODE_REL);
 		kpd_print("aee_timer started\n");
 	} else {
+		/*
+		 * hrtimer_cancel - cancel a timer and wait for the handler to finish.
+		 * Returns:
+		 * 0 when the timer was not active.
+		 * 1 when the timer was active.
+		 */
 		if (aee_timer_started) {
-/*
-  * hrtimer_cancel - cancel a timer and wait for the handler to finish.
-  * Returns:
-  *	0 when the timer was not active.
-  *	1 when the timer was active.
- */
 			if (hrtimer_cancel(&aee_timer)) {
 				kpd_print("try to cancel hrtimer\n");
 #if AEE_ENABLE_5_15
 				if (flags_5s) {
-					printk
-					    ("Pressed Volup + Voldown5s~15s then trigger aee manual dump.\n");
-					aee_kernel_reminding("manual dump",
-							     "Trigger Vol Up +Vol Down 5s");
+					kpd_print("Pressed Volup + Voldown5s~15s then trigger aee manual dump.\n");
+					aee_kernel_reminding("manual dump", "Trigger Vol Up +Vol Down 5s");
 				}
 #endif
 
@@ -260,16 +244,15 @@ static inline void kpd_update_aee_state(void)
 			kpd_print("aee_timer canceled\n");
 		}
 #if AEE_ENABLE_5_15
+		/*
+		 * hrtimer_cancel - cancel a timer and wait for the handler to finish.
+		 * Returns:
+		 * 0 when the timer was not active.
+		 * 1 when the timer was active.
+		 */
 		if (aee_timer_5s_started) {
-/*
-  * hrtimer_cancel - cancel a timer and wait for the handler to finish.
-  * Returns:
-  *	0 when the timer was not active.
-  *	1 when the timer was active.
- */
-			if (hrtimer_cancel(&aee_timer_5s)) {
+			if (hrtimer_cancel(&aee_timer_5s))
 				kpd_print("try to cancel hrtimer (5s)\n");
-			}
 			aee_timer_5s_started = false;
 			kpd_print("aee_timer canceled (5s)\n");
 		}
@@ -280,29 +263,27 @@ static inline void kpd_update_aee_state(void)
 static void kpd_aee_handler(u32 keycode, u16 pressed)
 {
 	if (pressed) {
-		if (keycode == KEY_VOLUMEUP) {
+		if (keycode == KEY_VOLUMEUP)
 			__set_bit(AEE_VOLUMEUP_BIT, &aee_pressed_keys);
-		} else if (keycode == KEY_VOLUMEDOWN) {
+		else if (keycode == KEY_VOLUMEDOWN)
 			__set_bit(AEE_VOLUMEDOWN_BIT, &aee_pressed_keys);
-		} else {
+		else
 			return;
-		}
 		kpd_update_aee_state();
 	} else {
-		if (keycode == KEY_VOLUMEUP) {
+		if (keycode == KEY_VOLUMEUP)
 			__clear_bit(AEE_VOLUMEUP_BIT, &aee_pressed_keys);
-		} else if (keycode == KEY_VOLUMEDOWN) {
+		else if (keycode == KEY_VOLUMEDOWN)
 			__clear_bit(AEE_VOLUMEDOWN_BIT, &aee_pressed_keys);
-		} else {
+		else
 			return;
-		}
 		kpd_update_aee_state();
 	}
 }
 
 static enum hrtimer_restart aee_timer_func(struct hrtimer *timer)
 {
-	/* printk("kpd: vol up+vol down AEE manual dump!\n"); */
+	/* kpd_info("kpd: vol up+vol down AEE manual dump!\n"); */
 	/* aee_kernel_reminding("manual dump ", "Triggered by press KEY_VOLUMEUP+KEY_VOLUMEDOWN"); */
 	aee_trigger_kdb();
 	return HRTIMER_NORESTART;
@@ -312,13 +293,13 @@ static enum hrtimer_restart aee_timer_func(struct hrtimer *timer)
 static enum hrtimer_restart aee_timer_5s_func(struct hrtimer *timer)
 {
 
-	/* printk("kpd: vol up+vol down AEE manual dump timer 5s !\n"); */
+	/* kpd_info("kpd: vol up+vol down AEE manual dump timer 5s !\n"); */
 	flags_5s = true;
 	return HRTIMER_NORESTART;
 }
 #endif
 
-/************************************************************************************************************************************************/
+/************************************************************************/
 
 #if KPD_HAS_SLIDE_QWERTY
 static void kpd_slide_handler(unsigned long data)
@@ -333,11 +314,10 @@ static void kpd_slide_handler(unsigned long data)
 	input_sync(kpd_input_dev);
 	kpd_print("report QWERTY = %s\n", slid ? "slid" : "closed");
 
-	if (old_state) {
+	if (old_state)
 		mt_set_gpio_pull_select(GPIO_QWERTYSLIDE_EINT_PIN, 0);
-	} else {
+	else
 		mt_set_gpio_pull_select(GPIO_QWERTYSLIDE_EINT_PIN, 1);
-	}
 	/* for detecting the return to old_state */
 	mt65xx_eint_set_polarity(KPD_SLIDE_EINT, old_state);
 	mt65xx_eint_unmask(KPD_SLIDE_EINT);
@@ -366,21 +346,20 @@ static void kpd_pwrkey_eint_handler(void)
 #if KPD_PWRKEY_USE_PMIC
 void kpd_pwrkey_pmic_handler(unsigned long pressed)
 {
-	printk(KPD_SAY "Power Key generate, pressed=%ld\n", pressed);
+	kpd_print("Power Key generate, pressed=%ld\n", pressed);
 	if (!kpd_input_dev) {
-		printk("KPD input device not ready\n");
+		kpd_print("KPD input device not ready\n");
 		return;
 	}
 	kpd_pmic_pwrkey_hal(pressed);
 }
 #endif
 
-
 void kpd_pmic_rstkey_handler(unsigned long pressed)
 {
-	printk(KPD_SAY "PMIC reset Key generate, pressed=%ld\n", pressed);
+	kpd_print("PMIC reset Key generate, pressed=%ld\n", pressed);
 	if (!kpd_input_dev) {
-		printk("KPD input device not ready\n");
+		kpd_print("KPD input device not ready\n");
 		return;
 	}
 	kpd_pmic_rstkey_hal(pressed);
@@ -400,6 +379,8 @@ static void kpd_keymap_handler(unsigned long data)
 	u16 hw_keycode, linux_keycode;
 	kpd_get_keymap_state(new_state);
 
+	wake_lock_timeout(&kpd_suspend_lock, HZ / 2);
+
 	for (i = 0; i < KPD_NUM_MEMS; i++) {
 		change = new_state[i] ^ kpd_keymap_state[i];
 		if (!change)
@@ -413,10 +394,8 @@ static void kpd_keymap_handler(unsigned long data)
 			hw_keycode = (i << 4) + j;
 			/* bit is 1: not pressed, 0: pressed */
 			pressed = !(new_state[i] & mask);
-			if (kpd_show_hw_keycode) {
-				printk(KPD_SAY "(%s) HW keycode = %u\n",
-				       pressed ? "pressed" : "released", hw_keycode);
-			}
+			if (kpd_show_hw_keycode)
+				kpd_print("(%s) HW keycode = %u\n", pressed ? "pressed" : "released", hw_keycode);
 			BUG_ON(hw_keycode >= KPD_NUM_KEYS);
 			linux_keycode = kpd_keymap[hw_keycode];
 			if (unlikely(linux_keycode == 0)) {
@@ -464,282 +443,282 @@ long kpd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 #if KPD_AUTOTEST
 	case PRESS_OK_KEY:	/* KPD_AUTOTEST disable auto test setting to resolve CR ALPS00464496 */
 		if (test_bit(KEY_OK, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS OK KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS OK KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_OK, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support OK KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support OK KEY!!\n");
 		}
 		break;
 	case RELEASE_OK_KEY:
 		if (test_bit(KEY_OK, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE OK KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE OK KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_OK, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support OK KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support OK KEY!!\n");
 		}
 		break;
 	case PRESS_MENU_KEY:
 		if (test_bit(KEY_MENU, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS MENU KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS MENU KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_MENU, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support MENU KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support MENU KEY!!\n");
 		}
 		break;
 	case RELEASE_MENU_KEY:
 		if (test_bit(KEY_MENU, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE MENU KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE MENU KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_MENU, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support MENU KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support MENU KEY!!\n");
 		}
 
 		break;
 	case PRESS_UP_KEY:
 		if (test_bit(KEY_UP, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS UP KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS UP KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_UP, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support UP KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support UP KEY!!\n");
 		}
 		break;
 	case RELEASE_UP_KEY:
 		if (test_bit(KEY_UP, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE UP KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE UP KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_UP, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support UP KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support UP KEY!!\n");
 		}
 		break;
 	case PRESS_DOWN_KEY:
 		if (test_bit(KEY_DOWN, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS DOWN KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS DOWN KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_DOWN, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support DOWN KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support DOWN KEY!!\n");
 		}
 		break;
 	case RELEASE_DOWN_KEY:
 		if (test_bit(KEY_DOWN, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE DOWN KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE DOWN KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_DOWN, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support DOWN KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support DOWN KEY!!\n");
 		}
 		break;
 	case PRESS_LEFT_KEY:
 		if (test_bit(KEY_LEFT, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS LEFT KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS LEFT KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_LEFT, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support LEFT KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support LEFT KEY!!\n");
 		}
 		break;
 	case RELEASE_LEFT_KEY:
 		if (test_bit(KEY_LEFT, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE LEFT KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE LEFT KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_LEFT, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support LEFT KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support LEFT KEY!!\n");
 		}
 		break;
 
 	case PRESS_RIGHT_KEY:
 		if (test_bit(KEY_RIGHT, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS RIGHT KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS RIGHT KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_RIGHT, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support RIGHT KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support RIGHT KEY!!\n");
 		}
 		break;
 	case RELEASE_RIGHT_KEY:
 		if (test_bit(KEY_RIGHT, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE RIGHT KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE RIGHT KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_RIGHT, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support RIGHT KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support RIGHT KEY!!\n");
 		}
 		break;
 	case PRESS_HOME_KEY:
 		if (test_bit(KEY_HOME, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS HOME KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS HOME KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_HOME, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support HOME KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support HOME KEY!!\n");
 		}
 		break;
 	case RELEASE_HOME_KEY:
 		if (test_bit(KEY_HOME, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE HOME KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE HOME KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_HOME, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support HOME KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support HOME KEY!!\n");
 		}
 		break;
 	case PRESS_BACK_KEY:
 		if (test_bit(KEY_BACK, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS BACK KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS BACK KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_BACK, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support BACK KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support BACK KEY!!\n");
 		}
 		break;
 	case RELEASE_BACK_KEY:
 		if (test_bit(KEY_BACK, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE BACK KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE BACK KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_BACK, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support BACK KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support BACK KEY!!\n");
 		}
 		break;
 	case PRESS_CALL_KEY:
 		if (test_bit(KEY_CALL, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS CALL KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS CALL KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_CALL, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support CALL KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support CALL KEY!!\n");
 		}
 		break;
 	case RELEASE_CALL_KEY:
 		if (test_bit(KEY_CALL, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE CALL KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE CALL KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_CALL, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support CALL KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support CALL KEY!!\n");
 		}
 		break;
 
 	case PRESS_ENDCALL_KEY:
 		if (test_bit(KEY_ENDCALL, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS ENDCALL KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS ENDCALL KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_ENDCALL, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support ENDCALL KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support ENDCALL KEY!!\n");
 		}
 		break;
 	case RELEASE_ENDCALL_KEY:
 		if (test_bit(KEY_ENDCALL, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE ENDCALL KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE ENDCALL KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_ENDCALL, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support ENDCALL KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support ENDCALL KEY!!\n");
 		}
 		break;
 	case PRESS_VLUP_KEY:
 		if (test_bit(KEY_VOLUMEUP, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS VOLUMEUP KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS VOLUMEUP KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_VOLUMEUP, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support VOLUMEUP KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support VOLUMEUP KEY!!\n");
 		}
 		break;
 	case RELEASE_VLUP_KEY:
 		if (test_bit(KEY_VOLUMEUP, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE VOLUMEUP KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE VOLUMEUP KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_VOLUMEUP, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support VOLUMEUP KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support VOLUMEUP KEY!!\n");
 		}
 		break;
 	case PRESS_VLDOWN_KEY:
 		if (test_bit(KEY_VOLUMEDOWN, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS VOLUMEDOWN KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS VOLUMEDOWN KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_VOLUMEDOWN, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support VOLUMEDOWN KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support VOLUMEDOWN KEY!!\n");
 		}
 		break;
 	case RELEASE_VLDOWN_KEY:
 		if (test_bit(KEY_VOLUMEDOWN, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE VOLUMEDOWN KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE VOLUMEDOWN KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_VOLUMEDOWN, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support VOLUMEDOWN KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support VOLUMEDOWN KEY!!\n");
 		}
 		break;
 	case PRESS_FOCUS_KEY:
 		if (test_bit(KEY_FOCUS, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS FOCUS KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS FOCUS KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_FOCUS, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support FOCUS KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support FOCUS KEY!!\n");
 		}
 		break;
 	case RELEASE_FOCUS_KEY:
 		if (test_bit(KEY_FOCUS, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE FOCUS KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE FOCUS KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_FOCUS, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support RELEASE KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support RELEASE KEY!!\n");
 		}
 		break;
 	case PRESS_CAMERA_KEY:
 		if (test_bit(KEY_CAMERA, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS CAMERA KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS CAMERA KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_CAMERA, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support CAMERA KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support CAMERA KEY!!\n");
 		}
 		break;
 	case RELEASE_CAMERA_KEY:
 		if (test_bit(KEY_CAMERA, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE CAMERA KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE CAMERA KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_CAMERA, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support CAMERA KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support CAMERA KEY!!\n");
 		}
 		break;
 	case PRESS_POWER_KEY:
 		if (test_bit(KEY_POWER, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] PRESS POWER KEY!!\n");
+			kpd_print("[AUTOTEST] PRESS POWER KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_POWER, 1);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support POWER KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support POWER KEY!!\n");
 		}
 		break;
 	case RELEASE_POWER_KEY:
 		if (test_bit(KEY_POWER, kpd_input_dev->keybit)) {
-			printk("[AUTOTEST] RELEASE POWER KEY!!\n");
+			kpd_print("[AUTOTEST] RELEASE POWER KEY!!\n");
 			input_report_key(kpd_input_dev, KEY_POWER, 0);
 			input_sync(kpd_input_dev);
 		} else {
-			printk("[AUTOTEST] Not Support POWER KEY!!\n");
+			kpd_print("[AUTOTEST] Not Support POWER KEY!!\n");
 		}
 		break;
 #endif
 
 	case SET_KPD_KCOL:
 		kpd_auto_test_for_factorymode();	/* API 3 for kpd factory mode auto-test */
-		printk("[kpd_auto_test_for_factorymode] test performed!!\n");
+		kpd_print("[kpd_auto_test_for_factorymode] test performed!!\n");
 		break;
 	default:
 		return -EINVAL;
@@ -748,13 +727,12 @@ long kpd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return 0;
 }
 
-
 int kpd_dev_open(struct inode *inode, struct file *file)
 {
 	return 0;
 }
 
-static struct file_operations kpd_dev_fops = {
+static const struct file_operations kpd_dev_fops = {
 	.owner = THIS_MODULE,
 	.unlocked_ioctl = kpd_dev_ioctl,
 	.open = kpd_dev_open,
@@ -773,7 +751,36 @@ static int kpd_open(struct input_dev *dev)
 	return 0;
 }
 
+#if !defined(CONFIG_MTK_LEGACY)
+void kpd_get_dts_info(void)
+{
+	struct device_node *node;
+	node = of_find_compatible_node(NULL, NULL, "mediatek, kpd");
+	if (node) {
+		of_property_read_u32(node, "kpd-key-debounce", &kpd_dts_data.kpd_key_debounce);
+		of_property_read_u32(node, "kpd-sw-pwrkey", &kpd_dts_data.kpd_sw_pwrkey);
+		of_property_read_u32(node, "kpd-hw-pwrkey", &kpd_dts_data.kpd_hw_pwrkey);
+		of_property_read_u32(node, "kpd-sw-rstkey", &kpd_dts_data.kpd_sw_rstkey);
+		of_property_read_u32(node, "kpd-hw-rstkey", &kpd_dts_data.kpd_hw_rstkey);
+		of_property_read_u32(node, "kpd-use-extend-type", &kpd_dts_data.kpd_use_extend_type);
+		of_property_read_u32(node, "kpd-pwrkey-eint-gpio", &kpd_dts_data.kpd_pwrkey_eint_gpio);
+		of_property_read_u32(node, "kpd-pwrkey-gpio-din", &kpd_dts_data.kpd_pwrkey_gpio_din);
+		of_property_read_u32(node, "kpd-hw-dl-key1", &kpd_dts_data.kpd_hw_dl_key1);
+		of_property_read_u32(node, "kpd-hw-dl-key2", &kpd_dts_data.kpd_hw_dl_key2);
+		of_property_read_u32(node, "kpd-hw-dl-key3", &kpd_dts_data.kpd_hw_dl_key3);
+		of_property_read_u32(node, "kpd-hw-recovery-key", &kpd_dts_data.kpd_hw_recovery_key);
+		of_property_read_u32(node, "kpd-hw-factory-key", &kpd_dts_data.kpd_hw_factory_key);
+		of_property_read_u32_array(node, "kpd-hw-init-map", kpd_dts_data.kpd_hw_init_map,
+					   ARRAY_SIZE(kpd_dts_data.kpd_hw_init_map));
 
+		kpd_info("key-debounce = %d, sw-pwrkey = %d, hw-pwrkey = %d, hw-rstkey = %d, sw-rstkey = %d\n",
+			 kpd_dts_data.kpd_key_debounce, kpd_dts_data.kpd_sw_pwrkey, kpd_dts_data.kpd_hw_pwrkey,
+			 kpd_dts_data.kpd_hw_rstkey, kpd_dts_data.kpd_sw_rstkey);
+	} else {
+		kpd_info("[kpd]%s can't find compatible custom node\n", __func__);
+	}
+}
+#endif
 static int kpd_pdrv_probe(struct platform_device *pdev)
 {
 
@@ -783,20 +790,22 @@ static int kpd_pdrv_probe(struct platform_device *pdev)
 #ifdef CONFIG_OF
 	kp_base = of_iomap(pdev->dev.of_node, 0);
 	if (!kp_base) {
-		pr_warn(KPD_SAY "KP iomap failed\n");
+		kpd_info("KP iomap failed\n");
 		return -ENODEV;
 	};
 
 	kp_irqnr = irq_of_parse_and_map(pdev->dev.of_node, 0);
 	if (!kp_irqnr) {
-		pr_warn(KPD_SAY "KP get irqnr failed\n");
+		kpd_info("KP get irqnr failed\n");
 		return -ENODEV;
 	}
-	pr_warn(KPD_SAY "kp base: 0x%p, addr:0x%p,  kp irq: %d\n", kp_base,&kp_base, kp_irqnr);
+	kpd_info("kp base: 0x%p, addr:0x%p,  kp irq: %d\n", kp_base, &kp_base, kp_irqnr);
 #endif
-
+#if defined(CONFIG_MTK_LEGACY)	/* This not need now */
+#ifdef CONFIG_MTK_LDVT
 	kpd_ldvt_test_init();	/* API 2 for kpd LFVT test enviroment settings */
-
+#endif
+#endif
 	/* initialize and register input device (/dev/input/eventX) */
 	kpd_input_dev = input_allocate_device();
 	if (!kpd_input_dev)
@@ -808,22 +817,33 @@ static int kpd_pdrv_probe(struct platform_device *pdev)
 	kpd_input_dev->id.product = 0x6500;
 	kpd_input_dev->id.version = 0x0010;
 	kpd_input_dev->open = kpd_open;
-
+#if !defined(CONFIG_MTK_LEGACY)
+	kpd_get_dts_info();
+#endif
 	/* fulfill custom settings */
 	kpd_memory_setting();
 
 	__set_bit(EV_KEY, kpd_input_dev->evbit);
 
 #if (KPD_PWRKEY_USE_EINT || KPD_PWRKEY_USE_PMIC)
+#if !defined(CONFIG_MTK_LEGACY)
+	__set_bit(kpd_dts_data.kpd_sw_pwrkey, kpd_input_dev->keybit);
+#else
 	__set_bit(KPD_PWRKEY_MAP, kpd_input_dev->keybit);
+#endif
 	kpd_keymap[8] = 0;
 #endif
-
+#if !defined(CONFIG_MTK_LEGACY)
+	if (!kpd_dts_data.kpd_use_extend_type) {
+		for (i = 17; i < KPD_NUM_KEYS; i += 9)	/* only [8] works for Power key */
+			kpd_keymap[i] = 0;
+	}
+#else
 #if !KPD_USE_EXTEND_TYPE
 	for (i = 17; i < KPD_NUM_KEYS; i += 9)	/* only [8] works for Power key */
 		kpd_keymap[i] = 0;
 #endif
-
+#endif
 	for (i = 0; i < KPD_NUM_KEYS; i++) {
 		if (kpd_keymap[i] != 0)
 			__set_bit(kpd_keymap[i], kpd_input_dev->keybit);
@@ -838,19 +858,21 @@ static int kpd_pdrv_probe(struct platform_device *pdev)
 	__set_bit(EV_SW, kpd_input_dev->evbit);
 	__set_bit(SW_LID, kpd_input_dev->swbit);
 #endif
-
+#if !defined(CONFIG_MTK_LEGACY)
+	if (kpd_dts_data.kpd_sw_rstkey)
+		__set_bit(kpd_dts_data.kpd_sw_rstkey, kpd_input_dev->keybit);
+#else
 #ifdef KPD_PMIC_RSTKEY_MAP
 	__set_bit(KPD_PMIC_RSTKEY_MAP, kpd_input_dev->keybit);
 #endif
-
-#ifdef KPD_KEY_MAP
-		__set_bit(KPD_KEY_MAP, kpd_input_dev->keybit);
 #endif
-
+#ifdef KPD_KEY_MAP
+	__set_bit(KPD_KEY_MAP, kpd_input_dev->keybit);
+#endif
 	kpd_input_dev->dev.parent = &pdev->dev;
 	r = input_register_device(kpd_input_dev);
 	if (r) {
-		printk(KPD_SAY "register input device failed (%d)\n", r);
+		kpd_info("register input device failed (%d)\n", r);
 		input_free_device(kpd_input_dev);
 		return r;
 	}
@@ -859,20 +881,26 @@ static int kpd_pdrv_probe(struct platform_device *pdev)
 	kpd_dev.parent = &pdev->dev;
 	r = misc_register(&kpd_dev);
 	if (r) {
-		printk(KPD_SAY "register device failed (%d)\n", r);
+		kpd_info("register device failed (%d)\n", r);
 		input_unregister_device(kpd_input_dev);
 		return r;
 	}
 
+	wake_lock_init(&kpd_suspend_lock, WAKE_LOCK_SUSPEND, "kpd wakelock");
+
 	/* register IRQ and EINT */
+#if !defined(CONFIG_MTK_LEGACY)
+	kpd_set_debounce(kpd_dts_data.kpd_key_debounce);
+#else
 	kpd_set_debounce(KPD_KEY_DEBOUNCE);
+#endif
 #ifdef CONFIG_OF
 	r = request_irq(kp_irqnr, kpd_irq_handler, IRQF_TRIGGER_NONE, KPD_NAME, NULL);
 #else
 	r = request_irq(MT_KP_IRQ_ID, kpd_irq_handler, IRQF_TRIGGER_FALLING, KPD_NAME, NULL);
 #endif
 	if (r) {
-		printk(KPD_SAY "register IRQ failed (%d)\n", r);
+		kpd_info("register IRQ failed (%d)\n", r);
 		misc_deregister(&kpd_dev);
 		input_unregister_device(kpd_input_dev);
 		return r;
@@ -889,13 +917,13 @@ static int kpd_pdrv_probe(struct platform_device *pdev)
 	hrtimer_init(&aee_timer_5s, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	aee_timer_5s.function = aee_timer_5s_func;
 #endif
-
-	if ((err = kpd_create_attr(&kpd_pdrv.driver))) {
-		kpd_print("create attr file fail\n");
+	err = kpd_create_attr(&kpd_pdrv.driver);
+	if (err) {
+		kpd_info("create attr file fail\n");
 		kpd_delete_attr(&kpd_pdrv.driver);
 		return err;
 	}
-    pr_warn(KPD_SAY "%s Done\n", __FUNCTION__);
+	kpd_info("%s Done\n", __func__);
 	return 0;
 }
 
@@ -905,22 +933,16 @@ static int kpd_pdrv_remove(struct platform_device *pdev)
 	return 0;
 }
 
-#if 1//ndef USE_EARLY_SUSPEND
+#ifndef USE_EARLY_SUSPEND
 static int kpd_pdrv_suspend(struct platform_device *pdev, pm_message_t state)
 {
 	kpd_suspend = true;
 #ifdef MTK_KP_WAKESOURCE
 	if (call_status == 2) {
-		kpd_print("kpd_early_suspend wake up source enable!! (%d)\n", kpd_suspend);
+		kpd_print("kpd_pdrv_suspend wake up source enable!! (%d)\n", kpd_suspend);
 	} else {
-		if (g_kpd_as_wake == 0 ){
-			kpd_wakeup_src_setting(0);
-			kpd_print("kpd_early_suspend wake up source disable!! (%d)\n", kpd_suspend);
-		}
-		else
-		{
-			kpd_print("kpd_early_suspend wake up source enable!! (%d)\n", kpd_suspend);
-		}
+		kpd_wakeup_src_setting(0);
+		kpd_print("kpd_pdrv_suspend wake up source disable!! (%d)\n", kpd_suspend);
 	}
 #endif
 	kpd_disable_backlight();
@@ -933,9 +955,9 @@ static int kpd_pdrv_resume(struct platform_device *pdev)
 	kpd_suspend = false;
 #ifdef MTK_KP_WAKESOURCE
 	if (call_status == 2) {
-		kpd_print("kpd_early_suspend wake up source enable!! (%d)\n", kpd_suspend);
+		kpd_print("kpd_pdrv_suspend wake up source enable!! (%d)\n", kpd_suspend);
 	} else {
-		kpd_print("kpd_early_suspend wake up source resume!! (%d)\n", kpd_suspend);
+		kpd_print("kpd_pdrv_suspend wake up source resume!! (%d)\n", kpd_suspend);
 		kpd_wakeup_src_setting(1);
 	}
 #endif
@@ -946,7 +968,6 @@ static int kpd_pdrv_resume(struct platform_device *pdev)
 #define kpd_pdrv_suspend	NULL
 #define kpd_pdrv_resume		NULL
 #endif
-
 
 #ifdef USE_EARLY_SUSPEND
 static void kpd_early_suspend(struct early_suspend *h)
@@ -1001,7 +1022,7 @@ static int __init kpd_mod_init(void)
 
 	r = platform_driver_register(&kpd_pdrv);
 	if (r) {
-		printk(KPD_SAY "register driver failed (%d)\n", r);
+		kpd_info("register driver failed (%d)\n", r);
 		return r;
 	}
 #ifdef USE_EARLY_SUSPEND
@@ -1021,6 +1042,7 @@ static int __init kpd_mod_init(void)
 static void __exit kpd_mod_exit(void)
 {
 }
+
 module_init(kpd_mod_init);
 module_exit(kpd_mod_exit);
 

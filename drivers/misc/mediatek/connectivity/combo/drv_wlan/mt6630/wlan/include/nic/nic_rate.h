@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/nic_rate.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/nic_rate.h#1
 */
 
 /*! \file  nic_rate.h
@@ -7,10 +7,8 @@
 	   IEEE 802.11 family for MediaTek 802.11 Wireless LAN Adapters.
 */
 
-
-
 /*
-** $Log: nic_rate.h $
+** Log: nic_rate.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -76,12 +74,11 @@
 ********************************************************************************
 */
 
-WLAN_STATUS
-nicRateIndex2RateCode(IN UINT_8 ucPreambleOption, IN UINT_8 ucRateIndex, OUT PUINT_16 pu2RateCode);
+WLAN_STATUS nicRateIndex2RateCode(IN UINT_8 ucPreambleOption, IN UINT_8 ucRateIndex, OUT PUINT_16 pu2RateCode);
 
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
 */
 
-#endif				/* _NIC_RATE_H */
+#endif /* _NIC_RATE_H */

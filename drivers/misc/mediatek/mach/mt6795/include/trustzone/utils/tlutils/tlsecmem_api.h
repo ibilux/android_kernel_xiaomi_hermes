@@ -23,7 +23,9 @@
 #define CMD_SEC_MEM_ALLOC_TBL     4
 #define CMD_SEC_MEM_UNREF_TBL     5
 #define CMD_SEC_MEM_USAGE_DUMP    6
-#define CMD_SEC_MEM_SYS_TRACE     7
+#define CMD_SEC_MEM_ALLOC_PA      7
+#define CMD_SEC_MEM_REF_PA        8
+#define CMD_SEC_MEM_UNREF_PA      9
 
 
 

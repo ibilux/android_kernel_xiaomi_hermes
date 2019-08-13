@@ -214,6 +214,10 @@ INT32 wmt_plat_audio_ctrl(CMB_STUB_AIF_X state, CMB_STUB_AIF_CTRL ctrl)
 		iRet += wmt_plat_gpio_ctrl(PIN_I2S_GRP, PIN_STA_INIT);
 		break;
 
+	case CMB_STUB_AIF_4:
+		WMT_INFO_FUNC("BT use I2S for SCO,No need to ctrl I2S pinmux\n");
+		break;
+		
 	default:
 		/* FIXME: move to cust folder? */
 		WMT_ERR_FUNC("invalid state [%d]\n", state);
@@ -932,6 +936,8 @@ INT32 wmt_plat_all_eint_ctrl(ENUM_PIN_STATE state)
 
 INT32 wmt_plat_uart_ctrl(ENUM_PIN_STATE state)
 {
+#ifdef GPIO_COMBO_URXD_PIN
+#ifdef GPIO_COMBO_UTXD_PIN
 	switch (state) {
 	case PIN_STA_MUX:
 	case PIN_STA_INIT:
@@ -961,6 +967,12 @@ INT32 wmt_plat_uart_ctrl(ENUM_PIN_STATE state)
 		WMT_WARN_FUNC("WMT-PLAT:Warnning, invalid state(%d) on UART Group\n", state);
 		break;
 	}
+#else
+	WMT_WARN_FUNC("WMT-PLAT:Warnning, GPIO_COMBO_UTXD_PIN is not define\n");
+#endif
+#else
+	WMT_WARN_FUNC("WMT-PLAT:Warnning, GPIO_COMBO_URXD_PIN is not define\n");
+#endif
 
 	return 0;
 }
@@ -969,7 +981,7 @@ INT32 wmt_plat_uart_ctrl(ENUM_PIN_STATE state)
 INT32 wmt_plat_pcm_ctrl(ENUM_PIN_STATE state)
 {
 	UINT32 normalPCMFlag = 0;
-
+#ifdef GPIO_PCM_DAICLK_PIN
 	/*check if combo chip support merge if or not */
 	if (0 != wmt_plat_merge_if_flag_get()) {
 #if (MTK_WCN_CMB_MERGE_INTERFACE_SUPPORT)
@@ -1081,7 +1093,9 @@ INT32 wmt_plat_pcm_ctrl(ENUM_PIN_STATE state)
 			break;
 		}
 	}
-
+#else
+	WMT_WARN_FUNC("!!!!!!!!!!!GPIO_PCM_DAICLK_PIN is not defined.!!!!!!!!!!!!!!!!\n");
+#endif
 	return 0;
 }
 
@@ -1275,6 +1289,10 @@ static INT32 wmt_plat_gps_sync_ctrl(ENUM_PIN_STATE state)
 #ifdef GPIO_GPS_SYNC_PIN_M_GPS_FRAME_SYNC
 #define GPIO_GPS_SYNC_PIN_M_GPS_SYNC GPIO_GPS_SYNC_PIN_M_GPS_FRAME_SYNC
 #endif
+#elif defined(GPIO_GPS_SYNC_PIN_M_AGPS_SYNC)
+#ifdef GPIO_GPS_SYNC_PIN_M_AGPS_SYNC
+#define GPIO_GPS_SYNC_PIN_M_GPS_SYNC GPIO_GPS_SYNC_PIN_M_AGPS_SYNC
+#endif
 #endif
 #endif
 	switch (state) {
@@ -1377,6 +1395,13 @@ static INT32 wmt_plat_uart_rx_ctrl(ENUM_PIN_STATE state)
 		mt_set_gpio_dir(GPIO_COMBO_URXD_PIN, GPIO_DIR_IN);
 		mt_set_gpio_pull_enable(GPIO_COMBO_URXD_PIN, GPIO_PULL_DISABLE);
 		WMT_DBG_FUNC("WMT-PLAT:UART Rx input pull none\n");
+		break;
+	case PIN_STA_IN_H:
+		mt_set_gpio_mode(GPIO_COMBO_URXD_PIN, GPIO_COMBO_URXD_PIN_M_GPIO);
+		mt_set_gpio_dir(GPIO_COMBO_URXD_PIN, GPIO_DIR_OUT);
+		mt_set_gpio_out(GPIO_COMBO_URXD_PIN, GPIO_OUT_ONE);
+		mt_set_gpio_dir(GPIO_COMBO_URXD_PIN, GPIO_DIR_IN);
+		WMT_DBG_FUNC("WMT-PLAT:UART Rx input pull high\n");
 		break;
 	case PIN_STA_OUT_H:
 		mt_set_gpio_mode(GPIO_COMBO_URXD_PIN, GPIO_COMBO_URXD_PIN_M_GPIO);

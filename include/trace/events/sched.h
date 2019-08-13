@@ -621,67 +621,42 @@ TRACE_EVENT(sched_pi_setprio,
 			__entry->oldprio, __entry->newprio)
 );
 
-#ifdef CONFIG_MT_RT_SCHED_CRIT 
-TRACE_EVENT(sched_rt_crit,
+#ifdef CONFIG_MT_SCHED_TRACE
+#define sched_trace(event) \
+TRACE_EVENT(event,             		\
+    TP_PROTO(char *strings),			\
+    TP_ARGS(strings),				\
+    TP_STRUCT__entry(				\
+        __array(    char,  strings, 128)	\
+    ),						\
+    TP_fast_assign(				\
+        memcpy(__entry->strings, strings, 128);	\
+    ),						\
+    TP_printk("%s",__entry->strings))		
 
-	TP_PROTO(int cpu,
-		 int rt_throttled),
+sched_trace(sched_log);
+// mtk rt enhancement 
+sched_trace(sched_rt);
+sched_trace(sched_rt_info);
+sched_trace(sched_lb);
+sched_trace(sched_lb_info);
+ #ifdef CONFIG_MTK_SCHED_CMP
+sched_trace(sched_cmp);
+sched_trace(sched_cmp_info);
+ #endif
 
-	TP_ARGS(cpu, rt_throttled),
+ #if defined (CONFIG_MTK_SCHED_CMP_PACK_SMALL_TASK) || defined (CONFIG_HMP_PACK_SMALL_TASK)
+sched_trace(sched_pa);
+ #endif
 
-	TP_STRUCT__entry(
-		__field(	int,	cpu				)
-		__field(	int,	rt_throttled			)
-	),
+// mtk scheduling interopertion enhancement 
+ #ifdef CONFIG_MT_SCHED_INTEROP
+sched_trace(sched_interop);
+ #endif
 
-	TP_fast_assign(
-		__entry->cpu		= cpu;
-		__entry->rt_throttled 	= rt_throttled; 
-	),
-
-	TP_printk(
-            "cpu=%d rt_throttled=%d",
-		__entry->cpu, __entry->rt_throttled)
-        
-);
-#endif
-
-#ifdef CONFIG_MT_RT_SCHED_LOG
-TRACE_EVENT(sched_rt_log,
-
-    TP_PROTO(char *strings),
-
-    TP_ARGS(strings),
-
-    TP_STRUCT__entry(
-	__array(    char,  strings, 128)
-    ),
-
-    TP_fast_assign(
-	memcpy(__entry->strings, strings, 128);
-    ),
-
-    TP_printk("%s",__entry->strings)
-);
-#endif 
-
-#ifdef CONFIG_MT_SCHED_NOTICE
-TRACE_EVENT(sched_log,
-
-    TP_PROTO(char *strings),
-
-    TP_ARGS(strings),
-
-    TP_STRUCT__entry(
-        __array(    char,  strings, 128)
-    ),
-
-    TP_fast_assign(
-        memcpy(__entry->strings, strings, 128);
-    ),
-
-    TP_printk("%s",__entry->strings)
-);
+ #ifdef CONFIG_MT_DEBUG_PREEMPT
+sched_trace(sched_preempt);
+ #endif
 #endif
 
 TRACE_EVENT(sched_task_entity_avg,

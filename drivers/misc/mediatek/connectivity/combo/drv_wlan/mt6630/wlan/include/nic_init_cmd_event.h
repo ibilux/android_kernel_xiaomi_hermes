@@ -7,8 +7,6 @@
 	   for MediaTek Inc. 802.11 Wireless LAN Adapters.
 */
 
-
-
 #ifndef _NIC_INIT_CMD_EVENT_H
 #define _NIC_INIT_CMD_EVENT_H
 
@@ -36,13 +34,11 @@
 
 #define EVENT_HDR_SIZE          OFFSET_OF(WIFI_EVENT_T, aucBuffer[0])
 
-
 #define INIT_CMD_PQ_ID              (0x8000)
 #define INIT_CMD_PACKET_TYPE_ID     (0xA0)
 
 #define INIT_CMD_PDA_PQ_ID          (0xC000)
 #define INIT_CMD_PDA_PACKET_TYPE_ID (0xA0)
-
 
 typedef enum _ENUM_INIT_CMD_ID {
 	INIT_CMD_ID_DOWNLOAD_CONFIG = 1,
@@ -130,8 +126,7 @@ typedef struct _INIT_EVENT_CMD_RESULT {
 	/* 4: unknown CMD */
 	/* 5: timeout */
 	UINT_8 aucReserved[3];
-} INIT_EVENT_CMD_RESULT, *P_INIT_EVENT_CMD_RESULT, INIT_EVENT_PENDING_ERROR,
-	*P_INIT_EVENT_PENDING_ERROR;
+} INIT_EVENT_CMD_RESULT, *P_INIT_EVENT_CMD_RESULT, INIT_EVENT_PENDING_ERROR, *P_INIT_EVENT_PENDING_ERROR;
 
 typedef struct _INIT_EVENT_ACCESS_REG {
 	UINT_32 u4Address;
@@ -163,4 +158,4 @@ typedef struct _INIT_EVENT_ACCESS_REG {
 ********************************************************************************
 */
 
-#endif				/* _NIC_INIT_CMD_EVENT_H */
+#endif /* _NIC_INIT_CMD_EVENT_H */

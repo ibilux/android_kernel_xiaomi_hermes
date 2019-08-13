@@ -263,15 +263,16 @@ void force_two_core(void)
 {
     bool raise_freq = false;
 
-    mutex_lock(&hp_mutex);
-    g_cpu_down_count = 0;
-    g_cpu_down_sum_load = 0;
-    if (num_online_cpus() < dbs_tuners_ins.cpu_num_limit) {
-        raise_freq = true;
-        g_next_hp_action = 1;
-        schedule_delayed_work_on(0, &hp_work, 0);
+    if (mutex_trylock(&hp_mutex)) {
+        g_cpu_down_count = 0;
+        g_cpu_down_sum_load = 0;
+        if (num_online_cpus() < dbs_tuners_ins.cpu_num_limit) {
+            raise_freq = true;
+            g_next_hp_action = 1;
+            schedule_delayed_work_on(0, &hp_work, 0);
+        }
+        mutex_unlock(&hp_mutex);
     }
-    mutex_unlock(&hp_mutex);
 
     if (raise_freq == true) {
 	wake_up_process(freq_up_task);

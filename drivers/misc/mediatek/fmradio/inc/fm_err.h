@@ -22,9 +22,9 @@ typedef enum fm_drv_err_t {
 
 #define FMR_ASSERT(a) { \
 			if ((a) == NULL) { \
-				printk("%s,invalid pointer\n", __func__);\
+				pr_err("%s,invalid pointer\n", __func__);\
 				return -FM_EPARA; \
 			} \
 		}
 
-#endif				/* __FM_ERR_H__ */
+#endif /* __FM_ERR_H__ */

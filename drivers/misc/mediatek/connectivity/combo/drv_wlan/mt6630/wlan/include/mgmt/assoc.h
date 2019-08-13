@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/assoc.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/assoc.h#1
 */
 
 /*! \file  assoc.h
@@ -7,10 +7,8 @@
 	   IEEE 802.11 family for MediaTek 802.11 Wireless LAN Adapters.
 */
 
-
-
 /*
-** $Log: assoc.h $
+** Log: assoc.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -97,21 +95,15 @@ WLAN_STATUS assocCheckTxReAssocReqFrame(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO
 WLAN_STATUS assocCheckTxReAssocRespFrame(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo);
 
 WLAN_STATUS
-assocCheckRxReAssocRspFrameStatus(IN P_ADAPTER_T prAdapter,
-				  IN P_SW_RFB_T prSwRfb, OUT PUINT_16 pu2StatusCode);
+assocCheckRxReAssocRspFrameStatus(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT PUINT_16 pu2StatusCode);
 
-WLAN_STATUS
-assocSendDisAssocFrame(IN P_ADAPTER_T prAdapter,
-		       IN P_STA_RECORD_T prStaRec, IN UINT_16 u2ReasonCode);
+WLAN_STATUS assocSendDisAssocFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN UINT_16 u2ReasonCode);
 
 WLAN_STATUS
 assocProcessRxDisassocFrame(IN P_ADAPTER_T prAdapter,
-			    IN P_SW_RFB_T prSwRfb,
-			    IN UINT_8 aucBSSID[], OUT PUINT_16 pu2ReasonCode);
+			    IN P_SW_RFB_T prSwRfb, IN UINT_8 aucBSSID[], OUT PUINT_16 pu2ReasonCode);
 
-WLAN_STATUS
-assocProcessRxAssocReqFrame(IN P_ADAPTER_T prAdapter,
-			    IN P_SW_RFB_T prSwRfb, OUT PUINT_16 pu2StatusCode);
+WLAN_STATUS assocProcessRxAssocReqFrame(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT PUINT_16 pu2StatusCode);
 
 WLAN_STATUS assocSendReAssocRespFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec);
 
@@ -122,4 +114,4 @@ UINT_16 assocBuildCapabilityInfo(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prS
 ********************************************************************************
 */
 
-#endif				/* _ASSOC_H */
+#endif /* _ASSOC_H */

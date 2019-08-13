@@ -9,23 +9,13 @@
 #include <asm/suspend.h>
 #include <asm/tlbflush.h>
 
-extern phys_addr_t sleep_aee_rec_cpu_dormant_va;
+extern unsigned long * sleep_aee_rec_cpu_dormant_va;
 
-#define pclog()                                                         \
-        do {                                                            \
-                __asm__ __volatile__  (                                 \
-                        "mrs	x7, mpidr_el1 \n\t"                     \
-                        "ubfx   x8, x7, #0, #8 \n\t"                    \
-                        "ubfx   x9, x7, #8, #8 \n\t"                    \
-                        "add    x8, x8, x9, lsl #2 \n\t"                \
-                        "ldr    x9, =sleep_aee_rec_cpu_dormant_va \n\t" \
-                        "ldr    x9, [x9] \n\t"                          \
-                        "cbz    x9, 1f \n\t"                            \
-                        "adr    x10, 1f \n\t"                           \
-                        "str    x10, [ x9, x8, lsl #3 ] \n\t"           \
-                        "1: \n\t"                                       \
-                        ::: "x7", "x8", "x9", "x10");                   \
-        } while(0)
+#define DORMANT_LOG(cpu,pattern) do {				\
+	if (sleep_aee_rec_cpu_dormant_va != 0) {		\
+		sleep_aee_rec_cpu_dormant_va[cpu] = pattern;	\
+	}							\
+} while(0)
 
 extern int __cpu_suspend(unsigned long);
 /*
@@ -84,6 +74,8 @@ int cpu_suspend(unsigned long arg)
 	int ret, cpu = smp_processor_id();
 	unsigned long flags;
 
+	DORMANT_LOG(cpu, 0x201);
+
 	/*
 	 * If cpu_ops have not been registered or suspend
 	 * has not been initialized, cpu_suspend call fails early.
@@ -105,7 +97,6 @@ int cpu_suspend(unsigned long arg)
 	 * set-up on function return.
 	 */
 	ret = __cpu_suspend(arg);
-        pclog();
 
 	if (ret == 0) {
 		cpu_switch_mm(mm->pgd, mm);

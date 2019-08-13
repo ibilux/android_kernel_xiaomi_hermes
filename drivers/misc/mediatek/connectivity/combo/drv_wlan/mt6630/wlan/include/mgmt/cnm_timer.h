@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/cnm_timer.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/cnm_timer.h#1
 */
 
 /*! \file   cnm_timer.h
@@ -10,10 +10,8 @@
     Protocol functional blocks to setup their own time out event.
 */
 
-
-
 /*
-** $Log: cnm_timer.h $
+** Log: cnm_timer.h
 **
 ** 05 24 2013 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -110,11 +108,11 @@
 
 #define MSEC_PER_MIN                    (60 * MSEC_PER_SEC)
 
-
 #define MGMT_MAX_TIMEOUT_INTERVAL       ((UINT_32)0x7fffffff)
 
 #define WAKE_LOCK_MAX_TIME              5	/* Unit: sec */
 
+#define OBSS_SCAN_MIN_INTERVAL  10	/* In unit of sec */
 /* If WAKE_LOCK_MAX_TIME is too large, the whole system may always keep awake
  * because of periodic timer of OBSS scanning
  */
@@ -133,7 +131,7 @@ typedef struct _TIMER_T {
 	OS_SYSTIME rExpiredSysTime;
 	UINT_16 u2Minutes;
 	UINT_16 u2Reserved;
-	ULONG 	ulDataPtr;
+	ULONG ulDataPtr;
 	PFN_MGMT_TIMEOUT_FUNC pfMgmtTimeOutFunc;
 } TIMER_T, *P_TIMER_T;
 
@@ -168,31 +166,25 @@ typedef struct _TIMER_T {
 #define SYSTIME_TO_SEC(_systime)            ((_systime) / KAL_HZ)
 #define SEC_TO_SYSTIME(_sec)                ((_sec) * KAL_HZ)
 
-
 /* The macros to convert second & millisecond */
 #define MSEC_TO_SEC(_msec)                  ((_msec) / MSEC_PER_SEC)
 #define SEC_TO_MSEC(_sec)                   ((UINT_32)(_sec) * MSEC_PER_SEC)
-
 
 /* The macros to convert millisecond & microsecond */
 #define USEC_TO_MSEC(_usec)                 ((_usec) / USEC_PER_MSEC)
 #define MSEC_TO_USEC(_msec)                 ((UINT_32)(_msec) * USEC_PER_MSEC)
 
-
 /* The macros to convert TU & microsecond, TU & millisecond */
 #define TU_TO_USEC(_tu)                     ((_tu) * USEC_PER_TU)
 #define TU_TO_MSEC(_tu)                     USEC_TO_MSEC(TU_TO_USEC(_tu))
-
 
 /* The macros to convert TU & & OS system time, round up by 0.5 */
 #define TU_TO_SYSTIME(_tu)                  MSEC_TO_SYSTIME(TU_TO_MSEC(_tu))
 #define SYSTIME_TO_TU(_systime)             \
 	((SYSTIME_TO_USEC(_systime) + ((USEC_PER_TU / 2) - 1)) / USEC_PER_TU)
 
-
 /* The macros to convert OS system time & microsecond */
 #define SYSTIME_TO_USEC(_systime)           (((_systime) * USEC_PER_SEC) / KAL_HZ)
-
 
 /* The macro to get the current OS system time */
 #define GET_CURRENT_SYSTIME(_systime_p)     {*(_systime_p) = kalGetTimeTick(); }
@@ -212,7 +204,7 @@ typedef struct _TIMER_T {
 #define CHECK_FOR_TIMEOUT(_currentTime, _timeoutStartingTime, _timeout) \
 	CHECK_FOR_EXPIRATION((_currentTime), ((_timeoutStartingTime) + (_timeout)))
 
-								   /* The macro to set the expiration time with a specified timeout *//* Watch out for round up. */
+/* The macro to set the expiration time with a specified timeout *//* Watch out for round up. */
 #define SET_EXPIRATION_TIME(_expirationTime, _timeout) \
 	{ \
 	    GET_CURRENT_SYSTIME(&(_expirationTime)); \
@@ -225,7 +217,6 @@ typedef struct _TIMER_T {
 #define MGMT_INIT_TIMER(_adapter_p, _timer, _callbackFunc) \
 	timerInitTimer(_adapter_p, &(_timer), (UINT_32)(_callbackFunc))
 
-
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
@@ -235,8 +226,7 @@ VOID cnmTimerInitialize(IN P_ADAPTER_T prAdapter);
 VOID cnmTimerDestroy(IN P_ADAPTER_T prAdapter);
 
 VOID
-cnmTimerInitTimer(IN P_ADAPTER_T prAdapter,
-		  IN P_TIMER_T prTimer, IN PFN_MGMT_TIMEOUT_FUNC pfFunc, IN ULONG ulDataPtr);
+cnmTimerInitTimer(IN P_ADAPTER_T prAdapter, IN P_TIMER_T prTimer, IN PFN_MGMT_TIMEOUT_FUNC pfFunc, IN ULONG ulDataPtr);
 
 VOID cnmTimerStopTimer(IN P_ADAPTER_T prAdapter, IN P_TIMER_T prTimer);
 
@@ -255,4 +245,4 @@ static __KAL_INLINE__ INT_32 timerPendingTimer(IN P_TIMER_T prTimer)
 	return prTimer->rLinkEntry.prNext != NULL;
 }
 
-#endif				/* _CNM_TIMER_H */
+#endif /* _CNM_TIMER_H */

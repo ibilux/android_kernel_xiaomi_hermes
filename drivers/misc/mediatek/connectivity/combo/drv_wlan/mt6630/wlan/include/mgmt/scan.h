@@ -1,5 +1,5 @@
 /*
-** $Id: @(#)
+** Id: @(#)
 */
 
 /*! \file   "scan.h"
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: scan.h $
+** Log: scan.h
 **
 ** 04 21 2014 eason.tsai
 ** [ALPS01511962] [WFD][Case Fail]Device can't connect to another AP successfully after connect to WFD.
@@ -57,8 +55,10 @@
 ** (Davinci label: MT6620_WIFI_Driver_V2_3_120913_1942_As_MT6630_Base)
  *
  * 01 16 2012 cp.wu
- * [MT6620 Wi-Fi][Driver] API and behavior modification for preferred band configuration with corresponding network configuration
- * add wlanSetPreferBandByNetwork() for glue layer to invoke for setting preferred band configuration corresponding to network type.
+ * [MT6620 Wi-Fi][Driver] API and behavior modification for preferred band configuration
+ * with corresponding network configuration
+ * add wlanSetPreferBandByNetwork() for glue layer to invoke for setting
+ * preferred band configuration corresponding to network type.
  *
  * 08 11 2011 cp.wu
  * [WCXRP00000830] [MT6620 Wi-Fi][Firmware] Use MDRDY counter to detect empty channel for shortening scan time
@@ -67,11 +67,14 @@
 
  *
  * 07 18 2011 cp.wu
- * [WCXRP00000858] [MT5931][Driver][Firmware] Add support for scan to search for more than one SSID in a single scanning request
- * add framework in driver domain for supporting new SCAN_REQ_V2 for more than 1 SSID support as well as uProbeDelay in NDIS 6.x driver model
+ * [WCXRP00000858] [MT5931][Driver][Firmware] Add support for scan to search for more than one SSID
+ * in a single scanning request
+ * add framework in driver domain for supporting new SCAN_REQ_V2 for more than 1 SSID
+ * support as well as uProbeDelay in NDIS 6.x driver model
  *
  * 06 27 2011 cp.wu
- * [WCXRP00000815] [MT6620 Wi-Fi][Driver] allow single BSSID with multiple SSID settings to work around some tricky AP which use space character as hidden SSID
+ * [WCXRP00000815] [MT6620 Wi-Fi][Driver] allow single BSSID with multiple SSID settings
+ * to work around some tricky AP which use space character as hidden SSID
  * allow to have a single BSSID with multiple SSID to be presented in scanning result
  *
  * 04 18 2011 terry.wu
@@ -79,7 +82,8 @@
  * Remove flag CFG_WIFI_DIRECT_MOVED.
  *
  * 02 09 2011 wh.su
- * [WCXRP00000433] [MT6620 Wi-Fi][Driver] Remove WAPI structure define for avoid P2P module with structure miss-align pointer issue
+ * [WCXRP00000433] [MT6620 Wi-Fi][Driver] Remove WAPI structure define for avoid P2P module
+ * with structure miss-align pointer issue
  * always pre-allio WAPI related structure for align p2p module.
  *
  * 01 14 2011 yuche.tsai
@@ -154,7 +158,8 @@
  *
  * 1) separate AIS_FSM state for two kinds of scanning. (OID triggered scan, and scan-for-connection)
  * 2) eliminate PRE_BSS_DESC_T, Beacon/PrebResp is now parsed in single pass
- * 3) implment DRV-SCN module, currently only accepts single scan request, other request will be directly dropped by returning BUSY
+ * 3) implment DRV-SCN module, currently only accepts single scan request, other request
+ * will be directly dropped by returning BUSY
  *
  * 07 08 2010 cp.wu
  *
@@ -305,19 +310,22 @@
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
-
+#include "gl_vendor.h"
+#include "cnm_timer.h"
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
 */
 /*! Maximum buffer size of SCAN list */
 #define SCN_MAX_BUFFER_SIZE                 (CFG_MAX_NUM_BSS_LIST * ALIGN_4(sizeof(BSS_DESC_T)))
+#define SCN_ROAM_MAX_BUFFER_SIZE			(CFG_MAX_NUM_ROAM_BSS_LIST * ALIGN_4(sizeof(ROAM_BSS_DESC_T)))
 
 #define SCN_RM_POLICY_EXCLUDE_CONNECTED     BIT(0)	/* Remove SCAN result except the connected one. */
 #define SCN_RM_POLICY_TIMEOUT               BIT(1)	/* Remove the timeout one */
 #define SCN_RM_POLICY_OLDEST_HIDDEN         BIT(2)	/* Remove the oldest one with hidden ssid */
 #define SCN_RM_POLICY_SMART_WEAKEST         BIT(3)	/* If there are more than half BSS which has the
-							 * same ssid as connection setting, remove the weakest one from them
+							 * same ssid as connection setting, remove the
+							 * weakest one from them
 							 * Else remove the weakest one.
 							 */
 #define SCN_RM_POLICY_ENTIRE                BIT(4)	/* Remove entire SCAN result */
@@ -326,9 +334,12 @@
 						 * If exceed this value, remove weakest BSS_DESC_T
 						 * with same SSID first in large network.
 						 */
+
+#define REMOVE_TIMEOUT_TWO_DAY     60*60*24*2
+
 #if 1
-#define SCN_BSS_DESC_REMOVE_TIMEOUT_SEC     30 
-#define SCN_BSS_DESC_STALE_SEC				10 //2.4G + 5G need 8.1s
+#define SCN_BSS_DESC_REMOVE_TIMEOUT_SEC     30
+#define SCN_BSS_DESC_STALE_SEC				10	/* 2.4G + 5G need 8.1s */
 #else
 #define SCN_BSS_DESC_REMOVE_TIMEOUT_SEC     5	/* Second. */
 					      /* This is used by POLICY TIMEOUT,
@@ -337,7 +348,6 @@
 
 #endif
 
-
 #define SCN_PROBE_DELAY_MSEC                0
 
 #define SCN_ADHOC_BSS_DESC_TIMEOUT_SEC      5	/* Second. */
@@ -345,15 +355,13 @@
 #define SCN_NLO_NETWORK_CHANNEL_NUM         (4)
 
 #define SCAN_DONE_DIFFERENCE                3
-
-
+#define SCAN_DONE_TIMEOUT_THRESHOLD 3
 /*----------------------------------------------------------------------------*/
 /* MSG_SCN_SCAN_REQ                                                           */
 /*----------------------------------------------------------------------------*/
 #define SCAN_REQ_SSID_WILDCARD              BIT(0)
 #define SCAN_REQ_SSID_P2P_WILDCARD          BIT(1)
 #define SCAN_REQ_SSID_SPECIFIED             BIT(2)
-
 
 /*----------------------------------------------------------------------------*/
 /* Support Multiple SSID SCAN                                                 */
@@ -365,8 +373,8 @@
 #define SCN_AGPS_AP_LIST_MAX_NUM					32
 #endif
 
-#define SCN_BSS_JOIN_FAIL_THRESOLD				5
-#define SCN_BSS_JOIN_FAIL_CNT_RESET_SEC			15
+#define SCN_BSS_JOIN_FAIL_THRESOLD				4
+#define SCN_BSS_JOIN_FAIL_CNT_RESET_SEC				15
 #define SCN_BSS_JOIN_FAIL_RESET_STEP				2
 
 #if CFG_SUPPORT_BATCH_SCAN
@@ -380,6 +388,12 @@
 
 #define SCAN_NLO_CHECK_SSID_ONLY    0x00000001
 #define SCAN_NLO_DEFAULT_INTERVAL           30000
+
+#define SWC_NUM_BSSID_THRESHOLD_DEFAULT 8
+#define SWC_RSSI_WINDSIZE_DEFAULT 8
+#define LOST_AP_WINDOW 16
+#define MAX_CHANNEL_NUM_PER_BUCKETS 8
+
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -396,25 +410,23 @@ typedef enum _ENUM_SCAN_STATE_T {
 	SCAN_STATE_NUM
 } ENUM_SCAN_STATE_T;
 
-
 typedef enum _ENUM_FW_SCAN_STATE_T {
-    FW_SCAN_STATE_IDLE = 0,					/* 0 */
-    FW_SCAN_STATE_SCAN_START,					/* 1 */
-    FW_SCAN_STATE_REQ_CHANNEL,					/* 2 */
-    FW_SCAN_STATE_SET_CHANNEL,					/* 3 */
-    FW_SCAN_STATE_DELAYED_ACTIVE_PROB_REQ,		        /* 4 */
-    FW_SCAN_STATE_ACTIVE_PROB_REQ,				/* 5 */
-    FW_SCAN_STATE_LISTEN,					/* 6 */
-    FW_SCAN_STATE_SCAN_DONE,					/* 7 */
-    FW_SCAN_STATE_NLO_START,					/* 8 */
-    FW_SCAN_STATE_NLO_HIT_CHECK,				/* 9 */
-    FW_SCAN_STATE_NLO_STOP,					    /* 10*/   
-    FW_SCAN_STATE_BATCH_START,					/* 11*/
-    FW_SCAN_STATE_BATCH_CHECK,					/* 12*/
-    FW_SCAN_STATE_BATCH_STOP,					/* 13*/
-    FW_SCAN_STATE_NUM							/* 14*/
+	FW_SCAN_STATE_IDLE = 0,	/* 0 */
+	FW_SCAN_STATE_SCAN_START,	/* 1 */
+	FW_SCAN_STATE_REQ_CHANNEL,	/* 2 */
+	FW_SCAN_STATE_SET_CHANNEL,	/* 3 */
+	FW_SCAN_STATE_DELAYED_ACTIVE_PROB_REQ,	/* 4 */
+	FW_SCAN_STATE_ACTIVE_PROB_REQ,	/* 5 */
+	FW_SCAN_STATE_LISTEN,	/* 6 */
+	FW_SCAN_STATE_SCAN_DONE,	/* 7 */
+	FW_SCAN_STATE_NLO_START,	/* 8 */
+	FW_SCAN_STATE_NLO_HIT_CHECK,	/* 9 */
+	FW_SCAN_STATE_NLO_STOP,	/* 10 */
+	FW_SCAN_STATE_BATCH_START,	/* 11 */
+	FW_SCAN_STATE_BATCH_CHECK,	/* 12 */
+	FW_SCAN_STATE_BATCH_STOP,	/* 13 */
+	FW_SCAN_STATE_NUM	/* 14 */
 } ENUM_FW_SCAN_STATE_T;
-
 
 typedef enum _ENUM_SCAN_CHANNEL_T {
 	SCAN_CHANNEL_FULL = 0,
@@ -430,7 +442,12 @@ typedef struct _MSG_SCN_FSM_T {
 	UINT_32 u4Dummy;
 } MSG_SCN_FSM_T, *P_MSG_SCN_FSM_T;
 
-
+typedef enum _ENUM_PSCAN_STATE_T {
+	PSCN_IDLE = 1,
+	PSCN_SCANNING,
+	PSCN_RESET,
+	PSCAN_STATE_T_NUM
+} ENUM_PSCAN_STATE_T;
 
 /*----------------------------------------------------------------------------*/
 /* BSS Descriptors                                                            */
@@ -521,8 +538,8 @@ struct _BSS_DESC_T {
 	P_P2P_DEVICE_DESC_T prP2pDesc;
 
 	UINT_8 aucIntendIfAddr[MAC_ADDR_LEN];	/* For IBSS, the SrcAddr is different from BSSID */
-/* UINT_8 ucDevCapabilityBitmap; */ /* Device Capability Attribute. (P2P_DEV_CAPABILITY_XXXX) */
-/* UINT_8 ucGroupCapabilityBitmap; */ /* Group Capability Attribute. (P2P_GROUP_CAPABILITY_XXXX) */
+	/* UINT_8 ucDevCapabilityBitmap; *//* Device Capability Attribute. (P2P_DEV_CAPABILITY_XXXX) */
+	/* UINT_8 ucGroupCapabilityBitmap; *//* Group Capability Attribute. (P2P_GROUP_CAPABILITY_XXXX) */
 
 	LINK_T rP2pDeviceList;
 
@@ -547,9 +564,14 @@ struct _BSS_DESC_T {
 	UINT_8 aucIEBuf[CFG_IE_BUFFER_SIZE];
 	UINT_8 ucJoinFailureCount;
 	OS_SYSTIME rJoinFailTime;
-	UINT_16 u2StatusCode;
 };
 
+struct _ROAM_BSS_DESC_T {
+	LINK_ENTRY_T rLinkEntry;
+	UINT_8 ucSSIDLen;
+	UINT_8 aucSSID[ELEM_MAX_LEN_SSID];
+	OS_SYSTIME rUpdateTime;
+};
 
 typedef struct _SCAN_PARAM_T {	/* Used by SCAN FSM */
 	/* Active or Passive */
@@ -620,6 +642,16 @@ typedef struct _NLO_PARAM_T {	/* Used by SCAN FSM */
 
 } NLO_PARAM_T, *P_NLO_PARAM_T;
 
+typedef struct _PSCN_PARAM_T {
+	UINT_8 ucVersion;
+	CMD_NLO_REQ rCurrentCmdNloReq;
+	CMD_BATCH_REQ_T rCurrentCmdBatchReq;
+	CMD_GSCN_REQ_T rCurrentCmdGscnReq;
+	BOOLEAN fgNLOScnEnable;
+	BOOLEAN fgBatchScnEnable;
+	BOOLEAN fgGScnEnable;
+	UINT_32 u4BasePeriod;	/*GSCAN_ATTRIBUTE_BASE_PERIOD */
+} PSCN_PARAM_T, *P_PSCN_PARAM_T;
 
 typedef struct _SCAN_INFO_T {
 	ENUM_SCAN_STATE_T eCurrentState;	/* Store the STATE variable of SCAN FSM */
@@ -639,21 +671,26 @@ typedef struct _SCAN_INFO_T {
 
 	LINK_T rPendingMsgList;
 
+	UINT_8 aucScanRoamBuffer[SCN_ROAM_MAX_BUFFER_SIZE];
+	LINK_T rRoamFreeBSSDescList;
+	LINK_T rRoamBSSDescList;
+
 	/* Sparse Channel Detection */
 	BOOLEAN fgIsSparseChannelValid;
 	RF_CHANNEL_INFO_T rSparseChannel;
 
 	/* NLO scanning state tracking */
 	BOOLEAN fgNloScanning;
-
+#if CFG_SUPPORT_SCN_PSCN
+	BOOLEAN fgPscnOnnning;
+	BOOLEAN fgGScnConfigSet;
+	BOOLEAN fgGScnParamSet;
+	P_PSCN_PARAM_T prPscnParam;
+	ENUM_PSCAN_STATE_T eCurrentPSCNState;
+	TIMER_T rWaitForGscanResutsTimer;
+	BOOLEAN fgGscnGetResWaiting;
+#endif
 } SCAN_INFO_T, *P_SCAN_INFO_T;
-
-/*use to save partioal scan channel information*/
-typedef struct _PARTIAL_SCAN_INFO_T {
-	UINT_8 ucChannelListNum;
-	RF_CHANNEL_INFO_T arChnlInfoList[MAXIMUM_OPERATION_CHANNEL_LIST];
-} PARTIAL_SCAN_INFO, *P_PARTIAL_SCAN_INFO;
-
 
 /* Incoming Mailbox Messages */
 typedef struct _MSG_SCN_SCAN_REQ_T {
@@ -745,13 +782,13 @@ typedef enum {
 	AGPS_PHY_A,
 	AGPS_PHY_B,
 	AGPS_PHY_G,
-}AP_PHY_TYPE;
+} AP_PHY_TYPE;
 
-typedef struct _AGPS_AP_INFO_T{
-    UINT_8 aucBSSID[MAC_ADDR_LEN]; 
-    INT_16 i2ApRssi; //-127..128
-    UINT_16 u2Channel;   //0..256
-    AP_PHY_TYPE ePhyType;
+typedef struct _AGPS_AP_INFO_T {
+	UINT_8 aucBSSID[MAC_ADDR_LEN];
+	INT_16 i2ApRssi;	/* -127..128 */
+	UINT_16 u2Channel;	/* 0..256 */
+	AP_PHY_TYPE ePhyType;
 } AGPS_AP_INFO_T, *P_AGPS_AP_INFO_T;
 
 typedef struct _AGPS_AP_LIST_T {
@@ -759,7 +796,6 @@ typedef struct _AGPS_AP_LIST_T {
 	AGPS_AP_INFO_T arApInfo[SCN_AGPS_AP_LIST_MAX_NUM];
 } AGPS_AP_LIST_T, *P_AGPS_AP_LIST_T;
 #endif
-
 
 typedef enum _ENUM_NLO_STATUS_T {
 	NLO_STATUS_FOUND = 0,
@@ -803,36 +839,28 @@ VOID scnInit(IN P_ADAPTER_T prAdapter);
 VOID scnUninit(IN P_ADAPTER_T prAdapter);
 
 /* BSS-DESC Search */
-P_BSS_DESC_T scanSearchBssDescByBssid(IN P_ADAPTER_T prAdapter, IN UINT_8 aucBSSID[]
-    );
+P_BSS_DESC_T scanSearchBssDescByBssid(IN P_ADAPTER_T prAdapter, IN UINT_8 aucBSSID[]);
 
 P_BSS_DESC_T
 scanSearchBssDescByBssidAndSsid(IN P_ADAPTER_T prAdapter,
-				IN UINT_8 aucBSSID[],
-				IN BOOLEAN fgCheckSsid, IN P_PARAM_SSID_T prSsid);
+				IN UINT_8 aucBSSID[], IN BOOLEAN fgCheckSsid, IN P_PARAM_SSID_T prSsid);
 
-P_BSS_DESC_T scanSearchBssDescByTA(IN P_ADAPTER_T prAdapter, IN UINT_8 aucSrcAddr[]
-    );
+P_BSS_DESC_T scanSearchBssDescByTA(IN P_ADAPTER_T prAdapter, IN UINT_8 aucSrcAddr[]);
 
 P_BSS_DESC_T
 scanSearchBssDescByTAAndSsid(IN P_ADAPTER_T prAdapter,
-			     IN UINT_8 aucSrcAddr[],
-			     IN BOOLEAN fgCheckSsid, IN P_PARAM_SSID_T prSsid);
-
+			     IN UINT_8 aucSrcAddr[], IN BOOLEAN fgCheckSsid, IN P_PARAM_SSID_T prSsid);
 
 /* BSS-DESC Search - Alternative */
 P_BSS_DESC_T
 scanSearchExistingBssDesc(IN P_ADAPTER_T prAdapter,
-			  IN ENUM_BSS_TYPE_T eBSSType, IN UINT_8 aucBSSID[], IN UINT_8 aucSrcAddr[]
-    );
+			  IN ENUM_BSS_TYPE_T eBSSType, IN UINT_8 aucBSSID[], IN UINT_8 aucSrcAddr[]);
 
 P_BSS_DESC_T
 scanSearchExistingBssDescWithSsid(IN P_ADAPTER_T prAdapter,
 				  IN ENUM_BSS_TYPE_T eBSSType,
 				  IN UINT_8 aucBSSID[],
-				  IN UINT_8 aucSrcAddr[],
-				  IN BOOLEAN fgCheckSsid, IN P_PARAM_SSID_T prSsid);
-
+				  IN UINT_8 aucSrcAddr[], IN BOOLEAN fgCheckSsid, IN P_PARAM_SSID_T prSsid);
 
 /* BSS-DESC Allocation */
 P_BSS_DESC_T scanAllocateBssDesc(IN P_ADAPTER_T prAdapter);
@@ -840,16 +868,12 @@ P_BSS_DESC_T scanAllocateBssDesc(IN P_ADAPTER_T prAdapter);
 /* BSS-DESC Removal */
 VOID scanRemoveBssDescsByPolicy(IN P_ADAPTER_T prAdapter, IN UINT_32 u4RemovePolicy);
 
-VOID scanRemoveBssDescByBssid(IN P_ADAPTER_T prAdapter, IN UINT_8 aucBSSID[]
-    );
+VOID scanRemoveBssDescByBssid(IN P_ADAPTER_T prAdapter, IN UINT_8 aucBSSID[]);
 
-VOID
-scanRemoveBssDescByBandAndNetwork(IN P_ADAPTER_T prAdapter,
-				  IN ENUM_BAND_T eBand, IN UINT_8 ucBssIndex);
+VOID scanRemoveBssDescByBandAndNetwork(IN P_ADAPTER_T prAdapter, IN ENUM_BAND_T eBand, IN UINT_8 ucBssIndex);
 
 /* BSS-DESC State Change */
-VOID scanRemoveConnFlagOfBssDescByBssid(IN P_ADAPTER_T prAdapter, IN UINT_8 aucBSSID[]
-    );
+VOID scanRemoveConnFlagOfBssDescByBssid(IN P_ADAPTER_T prAdapter, IN UINT_8 aucBSSID[]);
 
 /* BSS-DESC Insertion - ALTERNATIVE */
 P_BSS_DESC_T scanAddToBssDesc(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
@@ -858,8 +882,7 @@ WLAN_STATUS scanProcessBeaconAndProbeResp(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_
 
 VOID
 scanBuildProbeReqFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo,
-				IN PUINT_8 pucDesiredSsid,
-				IN UINT_32 u4DesiredSsidLen, IN UINT_16 u2SupportedRateSet);
+				IN PUINT_8 pucDesiredSsid, IN UINT_32 u4DesiredSsidLen, IN UINT_16 u2SupportedRateSet);
 
 WLAN_STATUS scanSendProbeReqFrames(IN P_ADAPTER_T prAdapter, IN P_SCAN_PARAM_T prScanParam);
 
@@ -867,12 +890,15 @@ VOID scanUpdateBssDescForSearch(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBssD
 
 P_BSS_DESC_T scanSearchBssDescByPolicy(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex);
 
-WLAN_STATUS
-scanAddScanResult(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBssDesc, IN P_SW_RFB_T prSwRfb);
+WLAN_STATUS scanAddScanResult(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBssDesc, IN P_SW_RFB_T prSwRfb);
 
-VOID
-scanReportBss2Cfg80211(IN P_ADAPTER_T prAdapter,
-		       IN ENUM_BSS_TYPE_T eBSSType, IN P_BSS_DESC_T SpecificprBssDesc);
+VOID scanReportBss2Cfg80211(IN P_ADAPTER_T prAdapter, IN ENUM_BSS_TYPE_T eBSSType, IN P_BSS_DESC_T SpecificprBssDesc);
+
+P_ROAM_BSS_DESC_T scanSearchRoamBssDescBySsid(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBssDesc);
+P_ROAM_BSS_DESC_T scanAllocateRoamBssDesc(IN P_ADAPTER_T prAdapter);
+VOID scanAddToRoamBssDesc(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBssDesc);
+VOID scanSearchBssDescOfRoamSsid(IN P_ADAPTER_T prAdapter);
+VOID scanRemoveRoamBssDescsByTime(IN P_ADAPTER_T prAdapter, IN UINT_32 u4RemoveTime);
 /*----------------------------------------------------------------------------*/
 /* Routines in scan_fsm.c                                                     */
 /*----------------------------------------------------------------------------*/
@@ -888,7 +914,7 @@ VOID scnSendScanReqV2(IN P_ADAPTER_T prAdapter);
 /*----------------------------------------------------------------------------*/
 /* RX Event Handling                                                          */
 /*----------------------------------------------------------------------------*/
-VOID scnEventScanDone(IN P_ADAPTER_T prAdapter, IN P_EVENT_SCAN_DONE prScanDone,  BOOLEAN fgIsNewVersion);
+VOID scnEventScanDone(IN P_ADAPTER_T prAdapter, IN P_EVENT_SCAN_DONE prScanDone, BOOLEAN fgIsNewVersion);
 
 VOID scnEventNloDone(IN P_ADAPTER_T prAdapter, IN P_EVENT_NLO_DONE_T prNloDone);
 
@@ -916,16 +942,12 @@ VOID scnFsmHandleNloMsg(IN P_ADAPTER_T prAdapter, IN P_MSG_SCN_NLO_REQ prNloReqM
 /*----------------------------------------------------------------------------*/
 VOID
 scnFsmGenerateScanDoneMsg(IN P_ADAPTER_T prAdapter,
-			  IN UINT_8 ucSeqNum,
-			  IN UINT_8 ucBssIndex, IN ENUM_SCAN_STATUS eScanStatus);
+			  IN UINT_8 ucSeqNum, IN UINT_8 ucBssIndex, IN ENUM_SCAN_STATUS eScanStatus);
 
 /*----------------------------------------------------------------------------*/
 /* Query for sparse channel                                                   */
 /*----------------------------------------------------------------------------*/
-BOOLEAN
-scnQuerySparseChannel(IN P_ADAPTER_T prAdapter,
-		      P_ENUM_BAND_T prSparseBand, PUINT_8 pucSparseChannel);
-
+BOOLEAN scnQuerySparseChannel(IN P_ADAPTER_T prAdapter, P_ENUM_BAND_T prSparseBand, PUINT_8 pucSparseChannel);
 
 /*----------------------------------------------------------------------------*/
 /* OID/IOCTL Handling                                                         */
@@ -933,19 +955,66 @@ scnQuerySparseChannel(IN P_ADAPTER_T prAdapter,
 BOOLEAN
 scnFsmSchedScanRequest(IN P_ADAPTER_T prAdapter,
 		       IN UINT_8 ucSsidNum,
-		       IN P_PARAM_SSID_T prSsid,
-		       IN UINT_32 u4IeLength, IN PUINT_8 pucIe, IN UINT_16 u2Interval);
+		       IN P_PARAM_SSID_T prSsid, IN UINT_32 u4IeLength, IN PUINT_8 pucIe, IN UINT_16 u2Interval);
 
 BOOLEAN scnFsmSchedScanStopRequest(IN P_ADAPTER_T prAdapter);
 
 #if CFG_SUPPORT_PASSPOINT
-P_BSS_DESC_T
-scanSearchBssDescByBssidAndLatestUpdateTime(IN P_ADAPTER_T prAdapter, IN UINT_8 aucBSSID[]
-    );
-#endif				/* CFG_SUPPORT_PASSPOINT */
+P_BSS_DESC_T scanSearchBssDescByBssidAndLatestUpdateTime(IN P_ADAPTER_T prAdapter, IN UINT_8 aucBSSID[]);
+#endif /* CFG_SUPPORT_PASSPOINT */
 
 #if CFG_SUPPORT_AGPS_ASSIST
 VOID scanReportScanResultToAgps(P_ADAPTER_T prAdapter);
 #endif
 
-#endif				/* _SCAN_H */
+BOOLEAN scnFsmPSCNAction(IN P_ADAPTER_T prAdapter, IN UINT_8 ucPscanAct);
+
+BOOLEAN scnFsmPSCNSetParam(IN P_ADAPTER_T prAdapter, IN P_CMD_SET_PSCAN_PARAM prCmdPscnParam);
+
+BOOLEAN scnFsmGSCNSetHotlist(IN P_ADAPTER_T prAdapter, IN P_CMD_SET_PSCAN_PARAM prCmdPscnParam);
+
+#if 0
+
+BOOLEAN scnFsmGSCNSetRssiSignificatn(IN P_ADAPTER_T prAdapter, IN P_CMD_SET_PSCAN_PARAM prCmdPscnParam);
+#endif
+
+BOOLEAN scnFsmPSCNAddSWCBssId(IN P_ADAPTER_T prAdapter, IN P_CMD_SET_PSCAN_ADD_SWC_BSSID prCmdPscnAddSWCBssId);
+
+BOOLEAN scnFsmPSCNSetMacAddr(IN P_ADAPTER_T prAdapter, IN P_CMD_SET_PSCAN_MAC_ADDR prCmdPscnSetMacAddr);
+
+#if 1
+BOOLEAN scnSetGSCNParam(IN P_ADAPTER_T prAdapter, IN P_PARAM_WIFI_GSCAN_CMD_PARAMS prCmdGscnParam);
+
+#else
+BOOLEAN scnSetGSCNParam(IN P_ADAPTER_T prAdapter, IN P_CMD_GSCN_REQ_T prCmdGscnParam);
+
+#endif
+
+BOOLEAN
+scnCombineParamsIntoPSCN(IN P_ADAPTER_T prAdapter,
+			 IN P_CMD_NLO_REQ prCmdNloReq,
+			 IN P_CMD_BATCH_REQ_T prCmdBatchReq,
+			 IN P_CMD_GSCN_REQ_T prCmdGscnReq,
+			 IN P_CMD_GSCN_SCN_COFIG_T prNewCmdGscnConfig,
+			 IN BOOLEAN fgRemoveNLOfromPSCN,
+			 IN BOOLEAN fgRemoveBatchSCNfromPSCN, IN BOOLEAN fgRemoveGSCNfromPSCN);
+
+BOOLEAN scnFsmSetGSCNConfig(IN P_ADAPTER_T prAdapter, IN P_CMD_GSCN_SCN_COFIG_T prCmdGscnScnConfig);
+
+BOOLEAN scnFsmGetGSCNResult(IN P_ADAPTER_T prAdapter, IN P_CMD_GET_GSCAN_RESULT_T prGetGscnScnResultCmd);
+
+BOOLEAN
+scnPSCNFsm(IN P_ADAPTER_T prAdapter,
+	   ENUM_PSCAN_STATE_T eNextPSCNState,
+	   IN P_CMD_NLO_REQ prCmdNloReq,
+	   IN P_CMD_BATCH_REQ_T prCmdBatchReq,
+	   IN P_CMD_GSCN_REQ_T prCmdGscnReq,
+	   IN P_CMD_GSCN_SCN_COFIG_T prNewCmdGscnConfig,
+	   IN BOOLEAN fgRemoveNLOfromPSCN,
+	   IN BOOLEAN fgRemoveBatchSCNfromPSCN, IN BOOLEAN fgRemoveGSCNfromPSCN, IN BOOLEAN fgEnableGSCN);
+
+VOID scnGscnGetResultReplyCheck(IN P_ADAPTER_T prAdapter);
+
+VOID scnGscnGetResultReplyCheckTimeout(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr);
+
+#endif /* _SCAN_H */

@@ -97,76 +97,76 @@ static unsigned int pin_ext_dac_rst_mode, pin_ext_hp_en_mode, pin_nxpspk_lrck_mo
 static int smartpa_parse_gpio(void)
 {
     struct device_node *node = NULL;
-    printk("+%s\n",__func__);
+    pr_debug("+%s\n",__func__);
     node = of_find_compatible_node(NULL, NULL, "mediatek,mtksmartpa");
     if (node)
     {
         if (of_property_read_u32_index(node, "aud_ext_dacrst_gpio", 0, &pin_ext_dac_rst))
         {
-            printk("aud_ext_dacrst_gpio get pin fail!!!\n");
+            pr_debug("aud_ext_dacrst_gpio get pin fail!!!\n");
         }
         if (of_property_read_u32_index(node, "aud_ext_dacrst_gpio", 1, &pin_ext_dac_rst_mode))
         {
-            printk("aud_ext_dacrst_gpio get pin_mode fail!!!\n");
+            pr_debug("aud_ext_dacrst_gpio get pin_mode fail!!!\n");
         }
-        printk("pin_ext_dac_rst = %u pin_ext_dac_rst_mode = %u\n",pin_ext_dac_rst,pin_ext_dac_rst_mode);
+        pr_debug("pin_ext_dac_rst = %u pin_ext_dac_rst_mode = %u\n",pin_ext_dac_rst,pin_ext_dac_rst_mode);
 
         if (of_property_read_u32_index(node, "aud_ext_hpen_gpio", 0, &pin_ext_hp_en))
         {
-            printk("aud_ext_hpen_gpio get pin fail!!!\n");
+            pr_debug("aud_ext_hpen_gpio get pin fail!!!\n");
         }
         if (of_property_read_u32_index(node, "aud_ext_hpen_gpio", 1, &pin_ext_hp_en_mode))
         {
-            printk("aud_ext_hpen_gpio get pin_mode fail!!!\n");
+            pr_debug("aud_ext_hpen_gpio get pin_mode fail!!!\n");
         }
-        printk("pin_ext_hp_en = %u pin_ext_hp_en_mode = %u\n",pin_ext_hp_en,pin_ext_hp_en_mode);
+        pr_debug("pin_ext_hp_en = %u pin_ext_hp_en_mode = %u\n",pin_ext_hp_en,pin_ext_hp_en_mode);
 
          if (of_property_read_u32_index(node, "nxpws_gpio", 0, &pin_nxpspk_lrck))
         {
-            printk("nxpws_gpio get pin fail!!!\n");
+            pr_debug("nxpws_gpio get pin fail!!!\n");
         }
         if (of_property_read_u32_index(node, "nxpws_gpio", 1, &pin_nxpspk_lrck_mode))
         {
-            printk("nxpws_gpio get pin_mode fail!!!\n");
+            pr_debug("nxpws_gpio get pin_mode fail!!!\n");
         }
-        printk("pin_nxpspk_lrck = %u pin_nxpspk_lrck_mode = %u\n",pin_nxpspk_lrck,pin_nxpspk_lrck_mode);
+        pr_debug("pin_nxpspk_lrck = %u pin_nxpspk_lrck_mode = %u\n",pin_nxpspk_lrck,pin_nxpspk_lrck_mode);
 
          if (of_property_read_u32_index(node, "nxpclk_gpio", 0, &pin_nxpspk_bck))
         {
-            printk("nxpclk_gpio get pin fail!!!\n");
+            pr_debug("nxpclk_gpio get pin fail!!!\n");
         }
         if (of_property_read_u32_index(node, "nxpclk_gpio", 1, &pin_nxpspk_bck_mode))
         {
-            printk("nxpclk_gpio get pin_mode fail!!!\n");
+            pr_debug("nxpclk_gpio get pin_mode fail!!!\n");
         }
-        printk("pin_nxpspk_bck = %u pin_nxpspk_bck_mode = %u\n",pin_nxpspk_bck,pin_nxpspk_bck_mode);
+        pr_debug("pin_nxpspk_bck = %u pin_nxpspk_bck_mode = %u\n",pin_nxpspk_bck,pin_nxpspk_bck_mode);
 
          if (of_property_read_u32_index(node, "nxpdatai_gpio", 0, &pin_nxpspk_datai))
         {
-            printk("nxpdatai_gpio get pin fail!!!\n");
+            pr_debug("nxpdatai_gpio get pin fail!!!\n");
         }
         if (of_property_read_u32_index(node, "nxpdatai_gpio", 1, &pin_nxpspk_datai_mode))
         {
-            printk("nxpdatai_gpio get pin_mode fail!!!\n");
+            pr_debug("nxpdatai_gpio get pin_mode fail!!!\n");
         }
-        printk("pin_nxpspk_bck = %u pin_nxpspk_bck_mode = %u\n",pin_nxpspk_bck,pin_nxpspk_bck_mode);
+        pr_debug("pin_nxpspk_bck = %u pin_nxpspk_bck_mode = %u\n",pin_nxpspk_bck,pin_nxpspk_bck_mode);
 
         if (of_property_read_u32_index(node, "nxpdatao_gpio", 0, &pin_nxpspk_datao))
         {
-            printk("nxpdatao_gpio get pin fail!!!\n");
+            pr_debug("nxpdatao_gpio get pin fail!!!\n");
         }
         if (of_property_read_u32_index(node, "nxpdatao_gpio", 1, &pin_nxpspk_datao_mode))
         {
-            printk("nxpdatao_gpio get pin_mode fail!!!\n");
+            pr_debug("nxpdatao_gpio get pin_mode fail!!!\n");
         }
-        printk("pin_nxpspk_datao = %u pin_nxpspk_datao_mode = %u\n",pin_nxpspk_datao,pin_nxpspk_datao_mode);
+        pr_debug("pin_nxpspk_datao = %u pin_nxpspk_datao_mode = %u\n",pin_nxpspk_datao,pin_nxpspk_datao_mode);
     }
     else
     {
-        printk("Auddrv_OF_ParseGPIO node NULL!!!\n");
+        pr_debug("Auddrv_OF_ParseGPIO node NULL!!!\n");
         return -1;
     }
-    printk("-%s\n",__func__);
+    pr_debug("-%s\n",__func__);
     return 0;
 }
 
@@ -220,7 +220,7 @@ static int NXPExtSpk_i2c_probe(struct i2c_client *client, const struct i2c_devic
 {
     new_client = client;
     new_client->timing = 400;
-    printk("NXPExtSpk_i2c_probe \n");
+    pr_debug("NXPExtSpk_i2c_probe \n");
 #ifdef CONFIG_MTK_NXP_TFA9890
     mt_set_gpio_mode(GPIO_AUD_EXTDAC_RST_PIN/*GPIO130*/, GPIO_MODE_00);
     mt_set_gpio_out(GPIO_AUD_EXTDAC_RST_PIN/*GPIO130*/, GPIO_OUT_ZERO);
@@ -273,23 +273,23 @@ ssize_t NXPSpk_read_byte(u8 addr, u8 *returnData)
 
     if (!new_client)
     {
-        printk("NXPSpk_read_byte I2C client not initialized!!");
+        pr_debug("NXPSpk_read_byte I2C client not initialized!!");
         return -1;
     }
     ret = i2c_master_send(new_client, &cmd_buf[0], 1);
     if (ret < 0)
     {
-        printk("NXPSpk_read_byte read sends command error!!\n");
+        pr_debug("NXPSpk_read_byte read sends command error!!\n");
         return -1;
     }
     ret = i2c_master_recv(new_client, &readData, 1);
     if (ret < 0)
     {
-        printk("NXPSpk_read_byte reads recv data error!!\n");
+        pr_debug("NXPSpk_read_byte reads recv data error!!\n");
         return -1;
     }
     *returnData = readData;
-    /* printk("addr 0x%x data 0x%x\n", addr, readData); */
+    /* pr_debug("addr 0x%x data 0x%x\n", addr, readData); */
     return 0;
 }
 
@@ -300,7 +300,7 @@ ssize_t NXPExt_write_byte(u8 addr, u8 writeData)
     int ret = 0;
     if (!new_client)
     {
-        printk("I2C client not initialized!!");
+        pr_debug("I2C client not initialized!!");
         return -1;
     }
     write_data[0] = addr;   /* ex. 0x01 */
@@ -308,17 +308,17 @@ ssize_t NXPExt_write_byte(u8 addr, u8 writeData)
     ret = i2c_master_send(new_client, write_data, 2);
     if (ret < 0)
     {
-        printk("write sends command error!!");
+        pr_debug("write sends command error!!");
         return -1;
     }
-    /* printk("addr 0x%x data 0x%x\n", addr, writeData); */
+    /* pr_debug("addr 0x%x data 0x%x\n", addr, writeData); */
     return 0;
 }
 
 
 static int NXPExtSpk_register()
 {
-    printk("NXPExtSpk_register \n");
+    pr_debug("NXPExtSpk_register \n");
 
 #ifdef CONFIG_MTK_NXP_TFA9890
     mt_set_gpio_mode(GPIO_AUD_EXTHP_EN_PIN, GPIO_MODE_00);
@@ -330,7 +330,7 @@ static int NXPExtSpk_register()
     i2c_register_board_info(TFA_I2C_CHANNEL, &nxpExt_dev, 1);
     if (i2c_add_driver(&NXPExtSpk_i2c_driver))
     {
-        printk("fail to add device into i2c");
+        pr_debug("fail to add device into i2c");
         return -1;
     }
     return 0;
@@ -339,14 +339,14 @@ static int NXPExtSpk_register()
 
 bool NXPExtSpk_Register(void)
 {
-    printk("NXPExtSpk_Register \n");
+    pr_debug("NXPExtSpk_Register \n");
     NXPExtSpk_register();
     return true;
 }
 
 void AudDrv_NXPSpk_Init(void)
 {
-    printk("Set GPIO for AFE I2S output to external DAC \n");
+    pr_debug("Set GPIO for AFE I2S output to external DAC \n");
     mt_set_gpio_mode(smart_set_gpio(pin_nxpspk_lrck) , pin_nxpspk_lrck_mode);
     mt_set_gpio_mode(smart_set_gpio(pin_nxpspk_bck), pin_nxpspk_bck_mode);
     mt_set_gpio_mode(smart_set_gpio(pin_nxpspk_datai), pin_nxpspk_datai_mode);
@@ -366,13 +366,13 @@ static long AudDrv_nxpspk_ioctl(struct file *fp, unsigned int cmd, unsigned long
 {
     int ret = 0;
 
-    /* printk("AudDrv_nxpspk_ioctl cmd = 0x%x arg = %lu\n", cmd, arg); */
+    /* pr_debug("AudDrv_nxpspk_ioctl cmd = 0x%x arg = %lu\n", cmd, arg); */
 
     switch (cmd)
     {
         default:
         {
-            /* printk("AudDrv_nxpspk_ioctl Fail command: %x\n", cmd); */
+            /* pr_debug("AudDrv_nxpspk_ioctl Fail command: %x\n", cmd); */
             ret = -1;
             break;
         }
@@ -383,11 +383,11 @@ static long AudDrv_nxpspk_ioctl(struct file *fp, unsigned int cmd, unsigned long
 static int AudDrv_nxpspk_probe(struct platform_device *dev)
 {
     int ret = 0;
-    printk("AudDrv_nxpspk_probe \n");
+    pr_debug("AudDrv_nxpspk_probe \n");
 
     if (ret < 0)
     {
-        printk("AudDrv_nxpspk_probe request_irq MT6582_AP_BT_CVSD_IRQ_LINE Fail \n");
+        pr_debug("AudDrv_nxpspk_probe request_irq MT6582_AP_BT_CVSD_IRQ_LINE Fail \n");
     }
     smartpa_parse_gpio();
     NXPExtSpk_Register();
@@ -396,7 +396,7 @@ static int AudDrv_nxpspk_probe(struct platform_device *dev)
     memset((void *)WriteBuffer, 0, RW_BUFFER_LENGTH);
     memset((void *)ReadBuffer, 0, RW_BUFFER_LENGTH);
 
-    printk("-AudDrv_nxpspk_probe \n");
+    pr_debug("-AudDrv_nxpspk_probe \n");
     return 0;
 }
 
@@ -608,17 +608,17 @@ static struct platform_device *AudDrv_NXPSpk_dev;
 static int AudDrv_nxpspk_mod_init(void)
 {
     int ret = 0;
-    printk("+AudDrv_nxpspk_mod_init\n");
+    pr_debug("+AudDrv_nxpspk_mod_init\n");
 
 #ifndef CONFIG_OF
-    printk("platform_device_alloc \n");
+    pr_debug("platform_device_alloc \n");
     AudDrv_NXPSpk_dev = platform_device_alloc("AudioMTKNXPSPK", -1);
     if (!AudDrv_NXPSpk_dev)
     {
         return -ENOMEM;
     }
 
-    printk("platform_device_add \n");
+    pr_debug("platform_device_add \n");
 
     ret = platform_device_add(AudDrv_NXPSpk_dev);
     if (ret != 0)
@@ -632,25 +632,25 @@ static int AudDrv_nxpspk_mod_init(void)
     ret = platform_driver_register(&AudDrv_nxpspk);
     if (ret)
     {
-        printk("AudDrv Fail:%d - Register DRIVER\n", ret);
+        pr_debug("AudDrv Fail:%d - Register DRIVER\n", ret);
         return ret;
     }
     /* register MISC device */
     if ((ret = misc_register(&AudDrv_nxpspk_device)))
     {
-        printk("AudDrv_nxpspk_mod_init misc_register Fail:%d\n", ret);
+        pr_debug("AudDrv_nxpspk_mod_init misc_register Fail:%d\n", ret);
         return ret;
     }
 
-    printk("-AudDrv_nxpspk_mod_init\n");
+    pr_debug("-AudDrv_nxpspk_mod_init\n");
     return 0;
 }
 
 static void AudDrv_nxpspk_mod_exit(void)
 {
-    printk("+AudDrv_nxpspk_mod_exit\n");
+    pr_debug("+AudDrv_nxpspk_mod_exit\n");
 
-    printk("-AudDrv_nxpspk_mod_exit\n");
+    pr_debug("-AudDrv_nxpspk_mod_exit\n");
 }
 
 MODULE_LICENSE("GPL");

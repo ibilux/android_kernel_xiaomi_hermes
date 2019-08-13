@@ -49,8 +49,8 @@
 	orr	\dst, \dst, \mask		// dst|=(aff3>>rs3)
 	.endm
 
-#if 1        
-        .macro pclog_va t1, t2, t3, t4
+
+        .macro dormant_va_log t1, t2, t3, t4, tag
         mrs	\t1, mpidr_el1
         ubfx    \t2, \t1, #0, #8
         ubfx    \t3, \t1, #8, #8
@@ -58,14 +58,12 @@
         ldr     \t3, =sleep_aee_rec_cpu_dormant_va
         ldr     \t3, [\t3]
         cbz     \t3, 1f
-        adr     \t4, 1f
+        ldr     \t4, =\tag
         str     \t4, [ \t3, \t2, lsl #3 ]
 1:      
         .endm
 
-        .macro pclog_pa t1, t2, t3, t4
-/* since SRAM CONSOLE BUFFER is not kernel mapping space,..
-        
+        .macro dormant_pa_log t1, t2, t3, t4, tag
         mrs	\t1, mpidr_el1
         ubfx    \t2, \t1, #0, #8
         ubfx    \t3, \t1, #8, #8
@@ -73,12 +71,11 @@
         adr     \t3, sleep_aee_rec_cpu_dormant
         ldr     \t3, [\t3]
         cbz     \t3, 1f
-        adr     \t4, 1f
+        ldr     \t4, =\tag
         str     \t4, [ \t3, \t2, lsl #3 ]
 1:
-*/        
         .endm
-#endif        
+
 
 /*
  * Save CPU state for a suspend.  This saves callee registers, and allocates
@@ -98,7 +95,7 @@ ENTRY(__cpu_suspend)
 	sub	sp, sp, #CPU_SUSPEND_SZ	// allocate cpu_suspend_ctx
 	mov	x1, sp
 
-        pclog_va   x7, x8, x9, x10
+        dormant_va_log   x7, x8, x9, x10, 0x202
 	/*
 	 * x1 now points to struct cpu_suspend_ctx allocated on the stack
 	 */
@@ -150,7 +147,7 @@ ENTRY(cpu_resume_mmu)
 	br	x3			// global jump to virtual address
 ENDPROC(cpu_resume_mmu)
 cpu_resume_after_mmu:
-        pclog_va   x7, x8, x9, x10
+        dormant_va_log   x7, x8, x9, x10, 0x503
 	mov	x0, #0			// return zero on success
 	ldp	x19, x20, [sp, #16]
 	ldp	x21, x22, [sp, #32]
@@ -163,11 +160,10 @@ ENDPROC(cpu_resume_after_mmu)
 
 	.data
 ENTRY(cpu_resume)
-//1:      b       1b
+	dormant_pa_log   x7, x8, x9, x10, 0x501
         bl      __calc_phys_offset      //el2_setup needs x28 for phys-page_offset
 	bl	el2_setup		// if in EL2 drop to EL1 cleanly
 
-        pclog_pa   x7, x8, x9, x10
 #ifdef CONFIG_SMP
 	mrs	x1, mpidr_el1
 	adr	x4, mpidr_hash_ptr

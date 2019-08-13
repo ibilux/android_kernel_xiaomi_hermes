@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ddk/hif/sdio/include/hif.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ddk/hif/sdio/include/hif.h#1
 */
 /*! \file   hif.h"
     \brief  Sdio specific structure for GLUE layer on WinXP
@@ -7,10 +7,8 @@
     Sdio specific structure for GLUE layer on WinXP
 */
 
-
-
 /*
-** $Log: hif.h $
+** Log: hif.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -33,9 +31,9 @@
  * 01 27 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
  * 1. eliminate improper variable in rHifInfo
- *  *  *  *  *  *  *  *  *  *  *  *  * 2. block TX/ordinary OID when RF test mode is engaged
- *  *  *  *  *  *  *  *  *  *  *  *  * 3. wait until firmware finish operation when entering into and leaving from RF test mode
- *  *  *  *  *  *  *  *  *  *  *  *  * 4. correct some HAL implementation
+ * 2. block TX/ordinary OID when RF test mode is engaged
+ * 3. wait until firmware finish operation when entering into and leaving from RF test mode
+ * 4. correct some HAL implementation
 **  \main\maintrunk.MT6620WiFiDriver_Prj\3 2009-12-16 17:59:46 GMT mtk02752
 **  add fields to record mailbox/interrupt-status read-clear state
 **  \main\maintrunk.MT6620WiFiDriver_Prj\2 2009-11-09 22:56:49 GMT mtk01084
@@ -160,7 +158,6 @@ typedef struct _GL_HIF_INFO_T {
 
 } GL_HIF_INFO_T, *P_GL_HIF_INFO_T;
 
-
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -186,4 +183,4 @@ typedef struct _GL_HIF_INFO_T {
 ********************************************************************************
 */
 
-#endif				/* _HIF_H */
+#endif /* _HIF_H */

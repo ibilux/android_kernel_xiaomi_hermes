@@ -1,8 +1,10 @@
 #include <accdet_hal.h>
 #include <mach/mt_boot.h>
+#if defined(CONFIG_MTK_LEGACY)
 #include <cust_eint.h>
 #include <cust_gpio_usage.h>
 #include <mach/mt_gpio.h>
+#endif
 /* #include "accdet_drv.h" */
 
 static struct platform_driver accdet_driver;

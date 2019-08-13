@@ -91,7 +91,7 @@ typedef struct {
 }m4u_buf_param_t;
 
 typedef struct {
-    unsigned int nonsec_pt_pa;
+    unsigned long long nonsec_pt_pa;
     int l2_en;
     unsigned int sec_pt_pa;
     unsigned int sec_pa_start;

@@ -1,5 +1,5 @@
 /*
-** $Id: @(#) p2p_scan.c@@
+** Id: @(#) p2p_scan.c@@
 */
 
 /*! \file   "p2p_scan.c"
@@ -11,10 +11,6 @@
     In this file we also define the process of SCAN Result including adding, searching
     and removing SCAN record from the list.
 */
-
-
-
-
 
 /*******************************************************************************
 *                         C O M P I L E R   F L A G S
@@ -63,14 +59,13 @@
 ********************************************************************************
 */
 
-
 VOID
 scanP2pProcessBeaconAndProbeResp(IN P_ADAPTER_T prAdapter,
 				 IN P_SW_RFB_T prSwRfb,
 				 IN P_WLAN_STATUS prStatus,
-				 IN P_BSS_DESC_T prBssDesc,
-				 IN P_WLAN_BEACON_FRAME_T prWlanBeaconFrame)
+				 IN P_BSS_DESC_T prBssDesc, IN P_WLAN_BEACON_FRAME_T prWlanBeaconFrame)
 {
+	BOOLEAN fgIsSkipThisBeacon = FALSE;
 	if (prBssDesc->fgIsP2PPresent) {
 		if ((prBssDesc->fgIsConnected) &&	/* P2P GC connected. */
 		    ((prWlanBeaconFrame->u2FrameCtrl & MASK_FRAME_TYPE) == MAC_FRAME_BEACON)	/* TX Beacon */
@@ -83,9 +78,8 @@ scanP2pProcessBeaconAndProbeResp(IN P_ADAPTER_T prAdapter,
 				/* Check BSSID. */
 				prP2pBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, (UINT_8) u4Idx);
 
-				if (!IS_BSS_ACTIVE(prP2pBssInfo)) {
+				if (!IS_BSS_ACTIVE(prP2pBssInfo))
 					continue;
-				}
 
 				if ((prP2pBssInfo->eNetworkType != NETWORK_TYPE_P2P) ||
 				    (UNEQUAL_MAC_ADDR(prP2pBssInfo->aucBSSID, prBssDesc->aucBSSID)
@@ -95,13 +89,13 @@ scanP2pProcessBeaconAndProbeResp(IN P_ADAPTER_T prAdapter,
 				       prBssDesc->aucSSID, prBssDesc->ucSSIDLen)))) {
 					continue;
 				}
-
 				if ((prP2pBssInfo->eCurrentOPMode == OP_MODE_INFRASTRUCTURE) &&	/* P2P GC */
-				    (prP2pBssInfo->eConnectionState == PARAM_MEDIA_STATE_CONNECTED) &&	/* Connected */
-				    (!prP2pBssInfo->ucDTIMPeriod)) {	/* First Time. */
-					prP2pBssInfo->ucDTIMPeriod = prBssDesc->ucDTIMPeriod;
-					nicPmIndicateBssConnected(prAdapter,
-								  prP2pBssInfo->ucBssIndex);
+				    (prP2pBssInfo->eConnectionState == PARAM_MEDIA_STATE_CONNECTED)) {	/* Connected */
+					fgIsSkipThisBeacon = TRUE;
+					if ((!prP2pBssInfo->ucDTIMPeriod)) {	/* First Time. */
+						prP2pBssInfo->ucDTIMPeriod = prBssDesc->ucDTIMPeriod;
+						nicPmIndicateBssConnected(prAdapter, prP2pBssInfo->ucBssIndex);
+					}
 				}
 
 			}
@@ -113,25 +107,23 @@ scanP2pProcessBeaconAndProbeResp(IN P_ADAPTER_T prAdapter,
 
 			ASSERT_BREAK((prSwRfb != NULL) && (prBssDesc != NULL));
 
-			if (((prWlanBeaconFrame->u2FrameCtrl & MASK_FRAME_TYPE) !=
-			     MAC_FRAME_PROBE_RSP)) {
-				/* Only report Probe Response frame to supplicant. */
+			if (((prWlanBeaconFrame->u2FrameCtrl & MASK_FRAME_TYPE) != MAC_FRAME_PROBE_RSP)) {
+				/* Only report Probe Response frame to supplicant except passive scan. */
 				/* Probe response collect much more information. */
-				break;
+				if (fgIsSkipThisBeacon)
+					break;
 			}
 
 			rChannelInfo.ucChannelNum = prBssDesc->ucChannelNum;
 			rChannelInfo.eBand = prBssDesc->eBand;
 			prBssDesc->fgIsP2PReport = TRUE;
 
-			DBGLOG(P2P, INFO,
-			       ("indicate %s [%d]\n", prBssDesc->aucSSID, prBssDesc->ucChannelNum));
+			DBGLOG(P2P, STATE, "indicate %s [%d]\n", prBssDesc->aucSSID, prBssDesc->ucChannelNum);
 
 			kalP2PIndicateBssInfo(prAdapter->prGlueInfo,
 					      (PUINT_8) prSwRfb->pvHeader,
 					      (UINT_32) prSwRfb->u2PacketLen,
 					      &rChannelInfo, RCPI_TO_dBm(prBssDesc->ucRCPI));
-
 
 		} while (FALSE);
 	}
@@ -149,10 +141,7 @@ VOID scnEventReturnChannel(IN P_ADAPTER_T prAdapter, IN UINT_8 ucScnSeqNum)
 	wlanSendSetQueryCmd(prAdapter,
 			    CMD_ID_SCAN_CANCEL,
 			    TRUE,
-			    FALSE,
-			    FALSE,
-			    NULL,
-			    NULL, sizeof(CMD_SCAN_CANCEL), (PUINT_8) & rCmdScanCancel, NULL, 0);
+			    FALSE, FALSE, NULL, NULL, sizeof(CMD_SCAN_CANCEL), (PUINT_8) & rCmdScanCancel, NULL, 0);
 
 	return;
 }				/* scnEventReturnChannel */
@@ -179,42 +168,34 @@ VOID scanRemoveP2pBssDesc(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBssDesc)
 	return;
 }				/* scanRemoveP2pBssDesc */
 
-
-P_BSS_DESC_T
-scanP2pSearchDesc(IN P_ADAPTER_T prAdapter, IN P_P2P_CONNECTION_REQ_INFO_T prConnReqInfo)
+P_BSS_DESC_T scanP2pSearchDesc(IN P_ADAPTER_T prAdapter, IN P_P2P_CONNECTION_REQ_INFO_T prConnReqInfo)
 {
 	P_BSS_DESC_T prCandidateBssDesc = (P_BSS_DESC_T) NULL, prBssDesc = (P_BSS_DESC_T) NULL;
 	P_LINK_T prBssDescList = (P_LINK_T) NULL;
 
 	do {
-		if ((prAdapter == NULL) || (prConnReqInfo == NULL)) {
+		if ((prAdapter == NULL) || (prConnReqInfo == NULL))
 			break;
-		}
-
 
 		prBssDescList = &(prAdapter->rWifiVar.rScanInfo.rBSSDescList);
 
+		DBGLOG(P2P, LOUD, "Connecting to BSSID: " MACSTR "\n", MAC2STR(prConnReqInfo->aucBssid));
 		DBGLOG(P2P, LOUD,
-		       ("Connecting to BSSID: " MACSTR "\n", MAC2STR(prConnReqInfo->aucBssid)));
-		DBGLOG(P2P, LOUD,
-		       ("Connecting to SSID:%s, length:%d\n", prConnReqInfo->rSsidStruct.aucSsid,
-			prConnReqInfo->rSsidStruct.ucSsidLen));
+		       "Connecting to SSID:%s, length:%d\n", prConnReqInfo->rSsidStruct.aucSsid,
+			prConnReqInfo->rSsidStruct.ucSsidLen);
 
 		LINK_FOR_EACH_ENTRY(prBssDesc, prBssDescList, rLinkEntry, BSS_DESC_T) {
-			DBGLOG(P2P, LOUD,
-			       ("Checking BSS: " MACSTR "\n", MAC2STR(prBssDesc->aucBSSID)));
+			DBGLOG(P2P, LOUD, "Checking BSS: " MACSTR "\n", MAC2STR(prBssDesc->aucBSSID));
 
 			if (prBssDesc->eBSSType != BSS_TYPE_INFRASTRUCTURE) {
-				DBGLOG(P2P, LOUD, ("Ignore mismatch BSS type.\n"));
+				DBGLOG(P2P, LOUD, "Ignore mismatch BSS type.\n");
 				continue;
 			}
-
 
 			if (UNEQUAL_MAC_ADDR(prBssDesc->aucBSSID, prConnReqInfo->aucBssid)) {
-				DBGLOG(P2P, LOUD, ("Ignore mismatch BSSID.\n"));
+				DBGLOG(P2P, LOUD, "Ignore mismatch BSSID.\n");
 				continue;
 			}
-
 
 			/* SSID should be the same? SSID is vary for each connection. so... */
 			if (UNEQUAL_SSID(prConnReqInfo->rSsidStruct.aucSsid,
@@ -222,23 +203,19 @@ scanP2pSearchDesc(IN P_ADAPTER_T prAdapter, IN P_P2P_CONNECTION_REQ_INFO_T prCon
 					 prBssDesc->aucSSID, prBssDesc->ucSSIDLen)) {
 
 				DBGLOG(P2P, TRACE,
-				       ("Connecting to BSSID: " MACSTR "\n",
-					MAC2STR(prConnReqInfo->aucBssid)));
+				       "Connecting to BSSID: " MACSTR "\n", MAC2STR(prConnReqInfo->aucBssid));
 				DBGLOG(P2P, TRACE,
-				       ("Connecting to SSID:%s, length:%d\n",
-					prConnReqInfo->rSsidStruct.aucSsid,
-					prConnReqInfo->rSsidStruct.ucSsidLen));
+				       "Connecting to SSID:%s, length:%d\n",
+					prConnReqInfo->rSsidStruct.aucSsid, prConnReqInfo->rSsidStruct.ucSsidLen);
 				DBGLOG(P2P, TRACE,
-				       ("Checking SSID:%s, length:%d\n", prBssDesc->aucSSID,
-					prBssDesc->ucSSIDLen));
-				DBGLOG(P2P, TRACE, ("Ignore mismatch SSID, (But BSSID match).\n"));
-				//ASSERT(FALSE); /*let p2p re-scan again */
+				       "Checking SSID:%s, length:%d\n", prBssDesc->aucSSID, prBssDesc->ucSSIDLen);
+				DBGLOG(P2P, TRACE, "Ignore mismatch SSID, (But BSSID match).\n");
+				/* ASSERT(FALSE); */ /*let p2p re-scan again */
 				continue;
 			}
 
 			if (!prBssDesc->fgIsP2PPresent) {
-				DBGLOG(P2P, ERROR,
-				       ("SSID, BSSID, BSSTYPE match, but no P2P IE present.\n"));
+				DBGLOG(P2P, ERROR, "SSID, BSSID, BSSTYPE match, but no P2P IE present.\n");
 				continue;
 			}
 
@@ -246,8 +223,6 @@ scanP2pSearchDesc(IN P_ADAPTER_T prAdapter, IN P_P2P_CONNECTION_REQ_INFO_T prCon
 			prCandidateBssDesc = prBssDesc;
 			break;
 		}
-
-
 
 	} while (FALSE);
 

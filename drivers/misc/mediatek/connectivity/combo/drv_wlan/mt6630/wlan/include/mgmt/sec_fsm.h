@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/sec_fsm.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/sec_fsm.h#1
 */
 
 /*! \file   sec_fsm.h
@@ -8,10 +8,8 @@
     Function declaration for privacy.c and SEC_STATE for SECURITY FSM.
 */
 
-
-
 /*
-** $Log: sec_fsm.h $
+** Log: sec_fsm.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -56,7 +54,8 @@
  *
  * 03 03 2010 wh.su
  * [BORA00000637][MT6620 Wi-Fi] [Bug] WPA2 pre-authentication timer not correctly initialize
- * Fixed the pre-authentication timer not correctly init issue, and modify the security related callback function prototype.
+ * Fixed the pre-authentication timer not correctly init issue, and modify the security
+ * related callback function prototype.
  *
  * 03 01 2010 wh.su
  * [BORA00000605][WIFISYS] Phase3 Integration
@@ -221,14 +220,12 @@ VOID secFsmEvent2ndEapolTx(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta);
 VOID secFsmEvent4ndEapolTxDone(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta);
 
 VOID
-secFsmEventEapolTxDone(IN P_ADAPTER_T prAdapter,
-		       IN P_STA_RECORD_T prStaRec, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
+secFsmEventEapolTxDone(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
 
 VOID secFsmEventEapolTxTimeout(IN P_ADAPTER_T prAdapter, IN ULONG ulParamPtr);
 
 VOID
-secFsmEventDeauthTxDone(IN P_ADAPTER_T prAdapter,
-			IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
+secFsmEventDeauthTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
 
 VOID secFsmEventStartCounterMeasure(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta);
 
@@ -238,4 +235,4 @@ VOID secFsmEventEndOfCounterMeasure(IN P_ADAPTER_T prAdapter, IN ULONG ulParamPt
 *                              F U N C T I O N S
 ********************************************************************************
 */
-#endif				/* _SEC_FSM_H */
+#endif /* _SEC_FSM_H */

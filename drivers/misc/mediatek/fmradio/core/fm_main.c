@@ -32,7 +32,7 @@
 #include "osal_typedef.h"
 #include "wmt_exp.h"
 /* fm main data structure */
-static struct fm *g_fm_struct = NULL;
+static struct fm *g_fm_struct;
 /* we must get low level interface first, when add a new chip, the main effort is this interface */
 static struct fm_lowlevel_ops fm_low_ops;
 #ifdef MT6620_FM
@@ -43,6 +43,9 @@ static struct fm_lowlevel_ops MT6628fm_low_ops;
 #endif
 #ifdef MT6627_FM
 static struct fm_lowlevel_ops MT6627fm_low_ops;
+#endif
+#ifdef MT6580_FM
+static struct fm_lowlevel_ops MT6580fm_low_ops;
 #endif
 #ifdef MT6630_FM
 static struct fm_lowlevel_ops MT6630fm_low_ops;
@@ -66,10 +69,10 @@ static struct fm_timer *fm_timer_sys;
 
 static fm_bool scan_stop_flag = fm_false;
 static struct fm_gps_rtc_info gps_rtc_info;
-volatile static bool g_fm_stat[3] = {
-	fm_false,	//RX power
-	fm_false,	//TX power
-	fm_false,	//TX scan
+static volatile bool g_fm_stat[3] = {
+	fm_false,		/* RX power */
+	fm_false,		/* TX power */
+	fm_false,		/* TX scan */
 };
 
 /* RDS reset related functions */
@@ -145,7 +148,7 @@ enum fm_pwr_state fm_pwr_state_set(struct fm *fmp, enum fm_pwr_state sta)
 {
 	if (fmp && (sta < FM_PWR_MAX)) {
 		fmp->pwr_sta = sta;
-		WCN_DBG(FM_NTC | MAIN, "pwr state set to %d\n", sta);
+		WCN_DBG(FM_DBG | MAIN, "pwr state set to %d\n", sta);
 		return fmp->pwr_sta;
 	} else {
 		WCN_DBG(FM_ERR | MAIN, "pwr state set para error, %d\n", sta);
@@ -155,45 +158,41 @@ enum fm_pwr_state fm_pwr_state_set(struct fm *fmp, enum fm_pwr_state sta)
 
 fm_s32 fm_set_stat(struct fm *fmp, int which, bool stat)
 {
-    fm_s32 ret = 0;
-    FMR_ASSERT(fmp);
+	fm_s32 ret = 0;
+	FMR_ASSERT(fmp);
 
-    if (FM_LOCK(fm_ops_lock)) return (-FM_ELOCK);
+	if (FM_LOCK(fm_ops_lock))
+		return -FM_ELOCK;
 
-	if(which < (sizeof(g_fm_stat)/sizeof(g_fm_stat[0])))
-	{
+	if (which < (sizeof(g_fm_stat) / sizeof(g_fm_stat[0]))) {
 		g_fm_stat[which] = stat;
-        WCN_DBG(FM_DBG | MAIN, "fm set stat object=%d, stat=%d\n", which, stat);
-	}
-	else
-	{
+		WCN_DBG(FM_DBG | MAIN, "fm set stat object=%d, stat=%d\n", which, stat);
+	} else {
 		ret = -1;
 		WCN_DBG(FM_ERR | MAIN, "fm set stat error, object=%d, stat=%d\n", which, stat);
 	}
-	
-    FM_UNLOCK(fm_ops_lock);
+
+	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
 
 fm_s32 fm_get_stat(struct fm *fmp, int which, bool *stat)
-{	
-    fm_s32 ret = 0;
-    FMR_ASSERT(fmp);
-    FMR_ASSERT(stat);	
-    if (FM_LOCK(fm_ops_lock)) return (-FM_ELOCK);
+{
+	fm_s32 ret = 0;
+	FMR_ASSERT(fmp);
+	FMR_ASSERT(stat);
+	if (FM_LOCK(fm_ops_lock))
+		return -FM_ELOCK;
 
-	if(which < (sizeof(g_fm_stat)/sizeof(g_fm_stat[0])))
-	{
-		*stat = g_fm_stat[which];		
-        WCN_DBG(FM_DBG | MAIN, "fm get stat object=%d, stat=%d\n", which, *stat);
-	}
-	else
-	{
+	if (which < (sizeof(g_fm_stat) / sizeof(g_fm_stat[0]))) {
+		*stat = g_fm_stat[which];
+		WCN_DBG(FM_DBG | MAIN, "fm get stat object=%d, stat=%d\n", which, *stat);
+	} else {
 		ret = -1;
 		WCN_DBG(FM_ERR | MAIN, "fm get stat error, object=%d\n", which);
 	}
-	
-    FM_UNLOCK(fm_ops_lock);	
+
+	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
 
@@ -216,7 +215,6 @@ fm_s32 fm_sys_state_set(struct fm *fmp, fm_s32 sta)
 	return subsys_rst_state;
 }
 
-
 fm_s32 fm_subsys_reset(struct fm *fm)
 {
 	/* check if we are resetting */
@@ -228,10 +226,9 @@ fm_s32 fm_subsys_reset(struct fm *fm)
 	FMR_ASSERT(fm);
 	fm->timer_wkthd->add_work(fm->timer_wkthd, fm->rst_wk);
 
- out:
+out:
 	return 0;
 }
-
 
 fm_s32 fm_wholechip_rst_cb(fm_s32 sta)
 {
@@ -241,9 +238,8 @@ fm_s32 fm_wholechip_rst_cb(fm_s32 sta)
 		return 0;
 
 	if (sta == 1) {
-		if (fm_sys_state_get(fm) == FM_SUBSYS_RST_OFF) {
+		if (fm_sys_state_get(fm) == FM_SUBSYS_RST_OFF)
 			fm_sys_state_set(fm, FM_SUBSYS_RST_START);
-		}
 	} else {
 		fm->timer_wkthd->add_work(fm->timer_wkthd, fm->rst_wk);
 	}
@@ -256,7 +252,7 @@ fm_s32 fm_open(struct fm *fmp)
 	fm_s32 chipid;
 	FMR_ASSERT(fmp);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	/* makesure fmp->ref >= 0 */
 	/* fmp->ref = (fmp->ref < 0) ? 0 : fmp->ref; */
@@ -266,31 +262,39 @@ fm_s32 fm_open(struct fm *fmp)
 	if (fmp->chipon == fm_false) {
 		chipid = mtk_wcn_wmt_chipid_query();
 		WCN_DBG(FM_NTC | MAIN, "wmt chip id=0x%x\n", chipid);
-		if (chipid == 0x6628)	/* get WCN chip ID */
-		{
+		if (chipid == 0x6628) {	/* get WCN chip ID */
 #ifdef MT6628_FM
 			fm_low_ops = MT6628fm_low_ops;
 			fmp->chip_id = 0x6628;
-			WCN_DBG(FM_NTC | MAIN, "get 6628 low ops\n");
+			WCN_DBG(FM_DBG | MAIN, "get 6628 low ops\n");
 #endif
 		} else if (chipid == 0x6620) {
 #ifdef MT6620_FM
 			fm_low_ops = MT6620fm_low_ops;
 			fmp->chip_id = 0x6620;
-			WCN_DBG(FM_NTC | MAIN, "get 6620 low ops\n");
+			WCN_DBG(FM_DBG | MAIN, "get 6620 low ops\n");
 #endif
 		} else if ((chipid == 0x6572) || (chipid == 0x6582) || (chipid == 0x6592)
-			   || (chipid == 0x8127) || (chipid == 0x6571)||(chipid == 0x6752)) {
+			   || (chipid == 0x8127) || (chipid == 0x6571) || (chipid == 0x6752)
+			   || (chipid == 0x0321) || (chipid == 0x0335) || (chipid == 0x0337)
+			   || (chipid == 0x6735) || (chipid == 0x8163) || (chipid == 0x6755)
+			   || (chipid == 0x0326)) {
 #ifdef MT6627_FM
 			fm_low_ops = MT6627fm_low_ops;
 			fmp->chip_id = 0x6627;
-			WCN_DBG(FM_NTC | MAIN, "get 6627 low ops\n");
+			WCN_DBG(FM_DBG | MAIN, "get 6627 low ops\n");
+#endif
+		} else if (chipid == 0x6580) {
+#ifdef MT6580_FM
+			fm_low_ops = MT6580fm_low_ops;
+			fmp->chip_id = 0x6580;
+			WCN_DBG(FM_DBG | MAIN, "get 6580 low ops\n");
 #endif
 		} else if (chipid == 0x6630) {
 #ifdef MT6630_FM
 			fm_low_ops = MT6630fm_low_ops;
 			fmp->chip_id = 0x6630;
-			WCN_DBG(FM_NTC | MAIN, "get 6630 low ops\n");
+			WCN_DBG(FM_DBG | MAIN, "get 6630 low ops\n");
 #endif
 		}
 
@@ -310,7 +314,6 @@ fm_s32 fm_open(struct fm *fmp)
 	    goto out;
 	}
 
-
 	fmp->chipon = fm_true;
 */
 		fm_eint_pin_cfg(FM_EINT_PIN_EINT_MODE);
@@ -328,7 +331,7 @@ fm_s32 fm_close(struct fm *fmp)
 
 	FMR_ASSERT(fmp);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 /*
     fmp->ref--;
@@ -383,13 +386,13 @@ fm_s32 fm_rds_read(struct fm *fmp, fm_s8 *dst, fm_s32 len)
 
 	if (FM_EVENT_GET(fmp->rds_event) == FM_RDS_DATA_READY) {
 		if (FM_LOCK(fm_read_lock))
-			return (-FM_ELOCK);
+			return -FM_ELOCK;
 
-		if ((left = copy_to_user((void *)dst, fmp->pstRDSData, (unsigned long)copy_len))) {
+		left = copy_to_user((void *)dst, fmp->pstRDSData, (unsigned long)copy_len);
+		if (left)
 			WCN_DBG(FM_ALT | MAIN, "fm_read copy failed\n");
-		} else {
+		else
 			fmp->pstRDSData->event_status = 0x0000;
-		}
 
 		WCN_DBG(FM_DBG | MAIN, "fm_read copy len:%d\n", (copy_len - left));
 
@@ -408,7 +411,7 @@ fm_s32 fm_rds_read(struct fm *fmp, fm_s8 *dst, fm_s32 len)
 		return 0;
 	}
 
-	return (copy_len - left);
+	return copy_len - left;
 }
 
 fm_s32 fm_powerup(struct fm *fm, struct fm_tune_parm *parm)
@@ -420,7 +423,7 @@ fm_s32 fm_powerup(struct fm *fm, struct fm_tune_parm *parm)
 	FMR_ASSERT(fm_low_ops.bi.pwrupseq);
 
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	/* for normal case */
 	if (fm_low_ops.bi.pwron == NULL) {
@@ -456,9 +459,8 @@ fm_s32 fm_powerup(struct fm *fm, struct fm_tune_parm *parm)
 
 	/* execute power on sequence */
 	ret = fm_low_ops.bi.pwrupseq(&fm->chip_id, &fm->device_id);
-	if (ret) {
+	if (ret)
 		goto out;
-	}
 
 	fm_enable_eint();
 
@@ -466,12 +468,11 @@ fm_s32 fm_powerup(struct fm *fm, struct fm_tune_parm *parm)
 	fm_cur_freq_set(parm->freq);
 
 	parm->err = FM_SUCCESS;
-	if (fm_low_ops.bi.low_pwr_wa) {
+	if (fm_low_ops.bi.low_pwr_wa)
 		fm_low_ops.bi.low_pwr_wa(1);
-	}
 
 	fm_low_ops.bi.volget(&tmp_vol);
-	WCN_DBG(FM_NTC | MAIN, "vol=%d!!!\n", tmp_vol);
+	WCN_DBG(FM_DBG | MAIN, "vol=%d!!!\n", tmp_vol);
 
 	/* fm_low_ops.bi.volset(0); */
 	fm->vol = 15;
@@ -479,12 +480,12 @@ fm_s32 fm_powerup(struct fm *fm, struct fm_tune_parm *parm)
 		fm_timer_sys->init(fm_timer_sys, fm_timer_func, (unsigned long)g_fm_struct,
 				   fm_low_ops.ri.rds_bci_get(), 0);
 		fm_timer_sys->start(fm_timer_sys);
-		WCN_DBG(FM_NTC | MAIN, "start timer ok\n");
+		WCN_DBG(FM_DBG | MAIN, "start timer ok\n");
 	} else {
 		WCN_DBG(FM_NTC | MAIN, "start timer fail!!!\n");
 	}
 
- out:
+out:
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
@@ -513,7 +514,7 @@ fm_s32 fm_powerup_tx(struct fm *fm, struct fm_tune_parm *parm)
 	}
 
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	/* for normal case */
 	if (fm->chipon == fm_false) {
@@ -527,7 +528,7 @@ fm_s32 fm_powerup_tx(struct fm *fm, struct fm_tune_parm *parm)
 	if (ret) {
 		parm->err = FM_FAILED;
 		fm_pwr_state_set(fm, FM_PWR_OFF);
-		WCN_DBG(FM_ERR | MAIN,"FM pwr up Tx fail!\n"); 
+		WCN_DBG(FM_ERR | MAIN, "FM pwr up Tx fail!\n");
 	} else {
 		parm->err = FM_SUCCESS;
 	}
@@ -540,13 +541,12 @@ fm_s32 fm_powerup_tx(struct fm *fm, struct fm_tune_parm *parm)
 		fm_timer_sys->tx_rtc_ctrl_en = FM_TX_RTC_CTRL_ENABLE;
 		fm_timer_sys->tx_desense_en = FM_TX_DESENSE_ENABLE;
 
-		fm_timer_sys->init(fm_timer_sys, fmtx_timer_func, (unsigned long)g_fm_struct,
-				   FM_TIMER_TIMEOUT_MIN, 0);
+		fm_timer_sys->init(fm_timer_sys, fmtx_timer_func, (unsigned long)g_fm_struct, FM_TIMER_TIMEOUT_MIN, 0);
 		fm_timer_sys->start(fm_timer_sys);
 		WCN_DBG(FM_NTC | MAIN, "start timer ok\n");
 	}
 #endif
- out:
+out:
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
@@ -573,27 +573,25 @@ static fm_s32 pwrdown_flow(struct fm *fm)
 		/* execute power down sequence */
 		ret = fm_low_ops.bi.pwrdownseq();
 
-		if (fm_low_ops.bi.low_pwr_wa) {
+		if (fm_low_ops.bi.low_pwr_wa)
 			fm_low_ops.bi.low_pwr_wa(0);
-		}
 
 		WCN_DBG(FM_ALT | MAIN, "pwrdown_flow exit\n");
 	}
- out:
+out:
 	return ret;
 }
 
 fm_s32 fm_powerdown(struct fm *fm, int type)
 {
 	fm_s32 ret = 0;
-	if (1 == type)		/* 0: RX 1: TX */
-	{
+	if (1 == type) {	/* 0: RX 1: TX */
 		ret = fm_powerdowntx(fm);
 	} else {
 		if (FM_LOCK(fm_ops_lock))
-			return (-FM_ELOCK);
+			return -FM_ELOCK;
 		if (FM_LOCK(fm_rxtx_lock))
-			return (-FM_ELOCK);
+			return -FM_ELOCK;
 
 		ret = pwrdown_flow(fm);
 
@@ -616,12 +614,12 @@ fm_s32 fm_powerdowntx(struct fm *fm)
 	FMR_ASSERT(fm_low_ops.bi.pwrdownseq_tx);
 	/* if (FM_LOCK(fm_ops_lock)) return (-FM_ELOCK); */
 	if (FM_LOCK(fm_rxtx_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	if (FM_PWR_TX_ON == fm_pwr_state_get(fm)) {
 #ifdef MT6620_FM
 		if (FM_LOCK(fm_timer_lock))
-			return (-FM_ELOCK);
+			return -FM_ELOCK;
 		fm_timer_sys->stop(fm_timer_sys);
 		FM_UNLOCK(fm_timer_lock);
 		fm_timer_sys->count = 0;
@@ -632,9 +630,8 @@ fm_s32 fm_powerdowntx(struct fm *fm)
 		/* fm_low_ops.ri.rds_onoff(fm->pstRDSData, fm_false); */
 		/* execute power down sequence */
 		ret = fm_low_ops.bi.pwrdownseq_tx();
-		if (ret) {
+		if (ret)
 			WCN_DBG(FM_ERR | MAIN, "pwrdown tx fail\n");
-		}
 
 		fm_pwr_state_set(fm, FM_PWR_OFF);
 		WCN_DBG(FM_NTC | MAIN, "pwrdown tx ok\n");
@@ -652,7 +649,7 @@ fm_s32 fm_seek(struct fm *fm, struct fm_seek_parm *parm)
 
 	FMR_ASSERT(fm_low_ops.bi.seek);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON) {
 		parm->err = FM_BADSTATUS;
@@ -681,7 +678,7 @@ fm_s32 fm_seek(struct fm *fm, struct fm_seek_parm *parm)
 	} else if (parm->band == FM_BAND_SPECIAL) {
 		fm->min_freq = FM_RX_BAND_FREQ_L;
 		fm->max_freq = FM_RX_BAND_FREQ_H;
-	} 
+	}
 #else
 	if (parm->band == FM_BAND_UE) {
 		fm->min_freq = FM_UE_FREQ_MIN * 10;
@@ -692,7 +689,7 @@ fm_s32 fm_seek(struct fm *fm, struct fm_seek_parm *parm)
 	} else if (parm->band == FM_BAND_SPECIAL) {
 		fm->min_freq = FM_RX_BAND_FREQ_L * 10;
 		fm->max_freq = FM_RX_BAND_FREQ_H * 10;
-	} 
+	}
 #endif
 	else {
 		WCN_DBG(FM_ALT | MAIN, "band:%d out of range\n", parm->band);
@@ -708,29 +705,26 @@ fm_s32 fm_seek(struct fm *fm, struct fm_seek_parm *parm)
 		goto out;
 	}
 
-	if (parm->seekdir == FM_SEEK_UP) {
+	if (parm->seekdir == FM_SEEK_UP)
 		seekdir = FM_SEEK_UP;
-	} else {
+	else
 		seekdir = FM_SEEK_DOWN;
-	}
 
 	fm_op_state_set(fm, FM_STA_SEEK);
 
 	/* seek successfully */
-	if (fm_true ==
-	    fm_low_ops.bi.seek(fm->min_freq, fm->max_freq, &(parm->freq), seekdir, space)) {
+	if (fm_true == fm_low_ops.bi.seek(fm->min_freq, fm->max_freq, &(parm->freq), seekdir, space)) {
 		parm->err = FM_SUCCESS;
 	} else {
 		parm->err = FM_SEEK_FAILED;
 		ret = -EPERM;
 	}
 
-	if ((parm->space != FM_SPACE_50K) && (1 == fm_get_channel_space(parm->freq))) {
+	if ((parm->space != FM_SPACE_50K) && (1 == fm_get_channel_space(parm->freq)))
 		parm->freq /= 10;	/* (8750 / 10) = 875 */
-	}
 
 	fm_op_state_set(fm, FM_STA_PLAY);
- out:
+out:
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
@@ -754,7 +748,7 @@ fm_s32 fm_tx_scan(struct fm *fm, struct fm_tx_scan_parm *parm)
 	FMR_ASSERT(fm_low_ops.bi.tx_scan);
 
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	if (fm->chipon != fm_true) {
 		parm->err = FM_BADSTATUS;
@@ -794,7 +788,7 @@ fm_s32 fm_tx_scan(struct fm *fm, struct fm_tx_scan_parm *parm)
 	} else if (parm->band == FM_BAND_SPECIAL) {
 		fm->min_freq = FM_FREQ_MIN * 10;
 		fm->max_freq = FM_FREQ_MAX * 10;
-	}	
+	}
 #else
 	if (parm->band == FM_BAND_UE) {
 		fm->min_freq = FM_UE_FREQ_MIN;
@@ -803,9 +797,9 @@ fm_s32 fm_tx_scan(struct fm *fm, struct fm_tx_scan_parm *parm)
 		fm->min_freq = FM_JP_FREQ_MIN;
 		fm->max_freq = FM_JP_FREQ_MAX;
 	} else if (parm->band == FM_BAND_SPECIAL) {
- 		fm->min_freq = FM_FREQ_MIN;
+		fm->min_freq = FM_FREQ_MIN;
 		fm->max_freq = FM_FREQ_MAX;
-	} 	
+	}
 #endif
 	else {
 		WCN_DBG(FM_ERR | MAIN, "band:%d out of range\n", parm->band);
@@ -832,14 +826,15 @@ fm_s32 fm_tx_scan(struct fm *fm, struct fm_tx_scan_parm *parm)
 		goto out;
 	}
 	/* do tx scan */
-	if (!(ret = fm_low_ops.bi.tx_scan(fm->min_freq, fm->max_freq, &(parm->freq),
-					  parm->ScanTBL, &(parm->ScanTBLSize), scandir, space))) {
+	ret = fm_low_ops.bi.tx_scan(fm->min_freq, fm->max_freq, &(parm->freq),
+					  parm->ScanTBL, &(parm->ScanTBLSize), scandir, space);
+	if (!ret) {
 		parm->err = FM_SUCCESS;
 	} else {
 		WCN_DBG(FM_ERR | MAIN, "fm_tx_scan failed\n");
 		parm->err = FM_SCAN_FAILED;
 	}
- out:
+out:
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
@@ -852,7 +847,7 @@ fm_s32 fm_scan(struct fm *fm, struct fm_scan_parm *parm)
 	FMR_ASSERT(fm_low_ops.bi.scan);
 	WCN_DBG(FM_NTC | MAIN, "fm_scan:start\n");
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON) {
 		parm->err = FM_BADSTATUS;
@@ -872,16 +867,16 @@ fm_s32 fm_scan(struct fm *fm, struct fm_scan_parm *parm)
 	}
 
 #ifdef MTK_FM_50KHZ_SUPPORT
-		if (parm->band == FM_BAND_UE) {
-			fm->min_freq = FM_UE_FREQ_MIN * 10;
-			fm->max_freq = FM_UE_FREQ_MAX * 10;
-		} else if (parm->band == FM_BAND_JAPANW) {
-			fm->min_freq = FM_JP_FREQ_MIN * 10;
-			fm->max_freq = FM_JP_FREQ_MAX * 10;
-		} else if (parm->band == FM_BAND_SPECIAL) {
-			fm->min_freq = FM_FREQ_MIN * 10;
-			fm->max_freq = FM_FREQ_MAX * 10;
-		}	
+	if (parm->band == FM_BAND_UE) {
+		fm->min_freq = FM_UE_FREQ_MIN * 10;
+		fm->max_freq = FM_UE_FREQ_MAX * 10;
+	} else if (parm->band == FM_BAND_JAPANW) {
+		fm->min_freq = FM_JP_FREQ_MIN * 10;
+		fm->max_freq = FM_JP_FREQ_MAX * 10;
+	} else if (parm->band == FM_BAND_SPECIAL) {
+		fm->min_freq = FM_FREQ_MIN * 10;
+		fm->max_freq = FM_FREQ_MAX * 10;
+	}
 #else
 	if (parm->band == FM_BAND_UE) {
 		fm->min_freq = FM_UE_FREQ_MIN;
@@ -892,7 +887,7 @@ fm_s32 fm_scan(struct fm *fm, struct fm_scan_parm *parm)
 	} else if (parm->band == FM_BAND_SPECIAL) {
 		fm->min_freq = FM_RX_BAND_FREQ_L;
 		fm->max_freq = FM_RX_BAND_FREQ_H;
-	} 
+	}
 #endif
 	else {
 		WCN_DBG(FM_ALT | MAIN, "band:%d out of range\n", parm->band);
@@ -916,12 +911,11 @@ fm_s32 fm_scan(struct fm *fm, struct fm_scan_parm *parm)
 
 	fm_op_state_set(fm, FM_STA_STOP);
 
- out:
+out:
 	FM_UNLOCK(fm_ops_lock);
 	WCN_DBG(FM_NTC | MAIN, "fm_scan:done\n");
 	return ret;
 }
-
 
 #define SCAN_SEG_LEN 250
 static struct fm_cqi cqi_buf[SCAN_SEG_LEN];
@@ -946,11 +940,12 @@ fm_s32 fm_scan_new(struct fm *fm, struct fm_scan_t *parm)
 	FMR_ASSERT(fm_low_ops.bi.scan);
 	FMR_ASSERT(fm_low_ops.bi.cqi_get);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	/* caculate channel number, get segment count */
 	cnt = (parm->upper - parm->lower) / parm->space + 1;	/* Eg, (10800 - 8750) / 5 = 411 */
-	seg = (cnt / SCAN_SEG_LEN) + ((cnt % SCAN_SEG_LEN) ? 1 : 0);	/* Eg, (411 / 200) + ((411 % 200) ? 1 : 0) = 2 + 1 = 3 */
+	/* Eg, (411 / 200) + ((411 % 200) ? 1 : 0) = 2 + 1 = 3 */
+	seg = (cnt / SCAN_SEG_LEN) + ((cnt % SCAN_SEG_LEN) ? 1 : 0);
 
 	WCN_DBG(FM_NTC | MAIN, "total ch %d, seg %d\n", cnt, seg);
 
@@ -973,14 +968,12 @@ fm_s32 fm_scan_new(struct fm *fm, struct fm_scan_t *parm)
 		}
 	}
 
-	if (parm->space == 5) {
+	if (parm->space == 5)
 		space_idx = 0x0001;	/* 50Khz */
-	} else if (parm->space == 10) {
+	else if (parm->space == 10)
 		space_idx = 0x0002;	/* 100Khz */
-	} else if (parm->space == 20) {
+	else if (parm->space == 20)
 		space_idx = 0x0004;	/* 200Khz */
-	}
-
 
 	fm_op_state_set(fm, FM_STA_SCAN);
 
@@ -996,8 +989,7 @@ fm_s32 fm_scan_new(struct fm *fm, struct fm_scan_t *parm)
 
 		WCN_DBG(FM_NTC | MAIN, "seg %d, start %d, end %d\n", i, start_freq, end_freq);
 		if (fm_false ==
-		    fm_low_ops.bi.scan(start_freq, end_freq, &tmp_freq, scan_tbl, &tbl_size,
-				       FM_SEEK_UP, space_idx)) {
+		    fm_low_ops.bi.scan(start_freq, end_freq, &tmp_freq, scan_tbl, &tbl_size, FM_SEEK_UP, space_idx)) {
 			ret = -1;
 			goto out;
 		}
@@ -1007,8 +999,7 @@ fm_s32 fm_scan_new(struct fm *fm, struct fm_scan_t *parm)
 				continue;
 			for (step = 0; step < 16; step++) {
 				if (scan_tbl[ch_offset] & (1 << step)) {
-					tmp_val =
-					    start_freq + (ch_offset * 16 + step) * parm->space;
+					tmp_val = start_freq + (ch_offset * 16 + step) * parm->space;
 					if (tmp_val <= end_freq) {
 						/* record valid  result channel */
 						WCN_DBG(FM_NTC | MAIN, "freq %d\n", tmp_val);
@@ -1027,11 +1018,9 @@ fm_s32 fm_scan_new(struct fm *fm, struct fm_scan_t *parm)
 				ret =
 				    fm_low_ops.bi.cqi_get(buf +
 							  (16 * sizeof(struct fm_cqi) * cqi_idx),
-							  sizeof(cqi_buf) -
-							  (16 * sizeof(struct fm_cqi) * cqi_idx));
-				if (ret) {
+							  sizeof(cqi_buf) - (16 * sizeof(struct fm_cqi) * cqi_idx));
+				if (ret)
 					goto out;
-				}
 
 				cqi_cnt -= 16;
 				cqi_idx++;
@@ -1044,8 +1033,7 @@ fm_s32 fm_scan_new(struct fm *fm, struct fm_scan_t *parm)
 				parm->sr.ch_rssi_buf[tmp].freq = (fm_u16) cqi_buf[j].ch;
 				parm->sr.ch_rssi_buf[tmp].rssi = cqi_buf[j].rssi;
 				WCN_DBG(FM_NTC | MAIN, "idx %d, freq %d, rssi %d\n", tmp,
-					parm->sr.ch_rssi_buf[tmp].freq,
-					parm->sr.ch_rssi_buf[tmp].rssi);
+					parm->sr.ch_rssi_buf[tmp].freq, parm->sr.ch_rssi_buf[tmp].rssi);
 			}
 		}
 		/* 6620 won't get rssi in scan new */
@@ -1054,13 +1042,12 @@ fm_s32 fm_scan_new(struct fm *fm, struct fm_scan_t *parm)
 
 	fm_op_state_set(fm, FM_STA_STOP);
 
- out:
+out:
 	scan_stop_flag = fm_false;
 	FM_UNLOCK(fm_ops_lock);
 	parm->num = chl_cnt;
 	return ret;
 }
-
 
 fm_s32 fm_seek_new(struct fm *fm, struct fm_seek_t *parm)
 {
@@ -1073,7 +1060,7 @@ fm_s32 fm_seek_new(struct fm *fm, struct fm_seek_t *parm)
 	FMR_ASSERT(fm_low_ops.bi.seek);
 
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	if (parm->freq < parm->lower || parm->freq > parm->upper) {
 		WCN_DBG(FM_ERR | MAIN, "seek start freq:%d out of range\n", parm->freq);
@@ -1084,17 +1071,15 @@ fm_s32 fm_seek_new(struct fm *fm, struct fm_seek_t *parm)
 	fm_low_ops.bi.rampdown();
 	fm_low_ops.bi.setfreq(parm->freq);
 
-	if (parm->space == 5) {
+	if (parm->space == 5)
 		space_idx = 0x0001;
-	} else if (parm->space == 10) {
+	else if (parm->space == 10)
 		space_idx = 0x0002;
-	} else if (parm->space == 20) {
+	else if (parm->space == 20)
 		space_idx = 0x0004;
-	}
 
 	fm_op_state_set(fm, FM_STA_SEEK);
-	if (fm_false ==
-	    fm_low_ops.bi.seek(parm->lower, parm->upper, &(parm->freq), parm->dir, space_idx)) {
+	if (fm_false == fm_low_ops.bi.seek(parm->lower, parm->upper, &(parm->freq), parm->dir, space_idx)) {
 		ret = -1;
 		goto out;
 	}
@@ -1102,11 +1087,10 @@ fm_s32 fm_seek_new(struct fm *fm, struct fm_seek_t *parm)
 	fm_low_ops.bi.setfreq(parm->freq);
 	fm_low_ops.bi.rssiget(&parm->th);
 
- out:
+out:
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
-
 
 fm_s32 fm_tune_new(struct fm *fm, struct fm_tune_t *parm)
 {
@@ -1117,7 +1101,7 @@ fm_s32 fm_tune_new(struct fm *fm, struct fm_tune_t *parm)
 	FMR_ASSERT(fm_low_ops.bi.setfreq);
 
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	WCN_DBG(FM_DBG | MAIN, "%s\n", __func__);
 
@@ -1134,43 +1118,9 @@ fm_s32 fm_tune_new(struct fm *fm, struct fm_tune_t *parm)
 /* fm_low_ops.bi.mute(fm_true); */
 	fm_low_ops.bi.rampdown();
 
-	if (fm_cur_freq_get() != parm->freq) {
+	if (fm_cur_freq_get() != parm->freq)
 		fm_memset(fm->pstRDSData, 0, sizeof(rds_t));
-	}
-#if 0				/* (!defined(MT6620_FM)&&!defined(MT6628_FM)) */
-	/* HILO side adjust if need */
-	if (priv_adv.priv_tbl.hl_dese) {
-		if ((ret = priv_adv.priv_tbl.hl_dese(parm->freq, NULL)) < 0) {
-			goto out;
-		}
 
-		WCN_DBG(FM_INF | MAIN, "HILO side %d\n", ret);
-	}
-	/* Frequency avoid adjust if need */
-	if (priv_adv.priv_tbl.fa_dese) {
-		if ((ret = priv_adv.priv_tbl.fa_dese(parm->freq, NULL)) < 0) {
-			goto out;
-		}
-
-		WCN_DBG(FM_INF | MAIN, "FA %d\n", ret);
-	}
-	/* MCU clock adjust if need */
-	if (priv_adv.priv_tbl.mcu_dese) {
-		if ((ret = priv_adv.priv_tbl.mcu_dese(parm->freq, NULL)) < 0) {
-			goto out;
-		}
-
-		WCN_DBG(FM_INF | MAIN, "MCU %d\n", ret);
-	}
-	/* GPS clock adjust if need */
-	if (priv_adv.priv_tbl.gps_dese) {
-		if ((ret = priv_adv.priv_tbl.gps_dese(parm->freq, NULL)) < 0) {
-			goto out;
-		}
-
-		WCN_DBG(FM_INF | MAIN, "GPS %d\n", ret);
-	}
-#endif
 	fm_op_state_set(fm, FM_STA_TUNE);
 	WCN_DBG(FM_ALT | MAIN, "tuning to %d\n", parm->freq);
 
@@ -1181,11 +1131,10 @@ fm_s32 fm_tune_new(struct fm *fm, struct fm_tune_t *parm)
 	}
 /* fm_low_ops.bi.mute(fm_false); */
 	fm_op_state_set(fm, FM_STA_PLAY);
- out:
+out:
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
-
 
 fm_s32 fm_cqi_get(struct fm *fm, fm_s32 ch_num, fm_s8 *buf, fm_s32 buf_size)
 {
@@ -1194,7 +1143,7 @@ fm_s32 fm_cqi_get(struct fm *fm, fm_s32 ch_num, fm_s8 *buf, fm_s32 buf_size)
 
 	FMR_ASSERT(fm_low_ops.bi.cqi_get);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	if (fm_true == scan_stop_flag) {
 		WCN_DBG(FM_NTC | MAIN, "scan flow aborted, do not get CQI\n");
@@ -1222,9 +1171,8 @@ fm_s32 fm_cqi_get(struct fm *fm, fm_s32 ch_num, fm_s8 *buf, fm_s32 buf_size)
 		    fm_low_ops.bi.cqi_get(buf + 16 * sizeof(struct fm_cqi) * idx,
 					  buf_size - 16 * sizeof(struct fm_cqi) * idx);
 
-		if (ret) {
+		if (ret)
 			goto out;
-		}
 
 		ch_num -= 16;
 		idx++;
@@ -1232,11 +1180,10 @@ fm_s32 fm_cqi_get(struct fm *fm, fm_s32 ch_num, fm_s8 *buf, fm_s32 buf_size)
 
 	fm_op_state_set(fm, FM_STA_STOP);
 
- out:
+out:
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
-
 
 /*  fm_is_dese_chan -- check if gived channel is a de-sense channel or not
   *  @pfm - fm driver global DS
@@ -1249,14 +1196,13 @@ fm_s32 fm_is_dese_chan(struct fm *pfm, fm_u16 freq)
 	FMR_ASSERT(pfm);
 	if (fm_low_ops.bi.is_dese_chan) {
 		if (FM_LOCK(fm_ops_lock))
-			return (-FM_ELOCK);
+			return -FM_ELOCK;
 		ret = fm_low_ops.bi.is_dese_chan(freq);
 		FM_UNLOCK(fm_ops_lock);
 	}
 
 	return ret;
 }
-
 
 /*  fm_is_dese_chan -- check if gived channel is a de-sense channel or not
   *  @pfm - fm driver global DS
@@ -1269,7 +1215,7 @@ fm_s32 fm_desense_check(struct fm *pfm, fm_u16 freq, fm_s32 rssi)
 	FMR_ASSERT(pfm);
 	if (fm_low_ops.bi.desense_check) {
 		if (FM_LOCK(fm_ops_lock))
-			return (-FM_ELOCK);
+			return -FM_ELOCK;
 		ret = fm_low_ops.bi.desense_check(freq, rssi);
 		FM_UNLOCK(fm_ops_lock);
 	}
@@ -1282,7 +1228,7 @@ fm_s32 fm_dump_reg(void)
 	fm_s32 ret = 0;
 	if (fm_low_ops.bi.dumpreg) {
 		if (FM_LOCK(fm_ops_lock))
-			return (-FM_ELOCK);
+			return -FM_ELOCK;
 		ret = fm_low_ops.bi.dumpreg();
 		FM_UNLOCK(fm_ops_lock);
 	}
@@ -1310,7 +1256,7 @@ fm_s32 fm_get_hw_info(struct fm *pfm, struct fm_hw_info *req)
 	/* get actual chip hw info */
 	if (fm_low_ops.bi.hwinfo_get) {
 		if (FM_LOCK(fm_ops_lock))
-			return (-FM_ELOCK);
+			return -FM_ELOCK;
 		ret = fm_low_ops.bi.hwinfo_get(req);
 		FM_UNLOCK(fm_ops_lock);
 	}
@@ -1344,7 +1290,6 @@ fm_s32 fm_get_i2s_info(struct fm *pfm, struct fm_i2s_info *req)
 	return fm_low_ops.bi.i2s_get(&req->status, &req->mode, &req->rate);
 }
 
-
 fm_s32 fm_hwscan_stop(struct fm *fm)
 {
 	fm_s32 ret = 0;
@@ -1362,7 +1307,7 @@ fm_s32 fm_hwscan_stop(struct fm *fm)
 	WCN_DBG(FM_DBG | MAIN, "fm will stop scan\n");
 
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	fm_low_ops.bi.rampdown();
 	fm_low_ops.bi.setfreq(fm_cur_freq_get());
@@ -1383,21 +1328,18 @@ fm_s32 fm_ana_switch(struct fm *fm, fm_s32 antenna)
 
 	FMR_ASSERT(fm_low_ops.bi.anaswitch);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	WCN_DBG(FM_DBG | MAIN, "Switching ana to %s\n", antenna ? "short" : "long");
 	fm->ana_type = antenna;
 
-	if((FM_PWR_RX_ON == fm_pwr_state_get(fm)) || (FM_PWR_TX_ON == fm_pwr_state_get(fm)))
-	{
+	if ((FM_PWR_RX_ON == fm_pwr_state_get(fm)) || (FM_PWR_TX_ON == fm_pwr_state_get(fm)))
 		ret = fm_low_ops.bi.anaswitch(antenna);
-	}
 
-	if (ret) {
+	if (ret)
 		WCN_DBG(FM_ALT | MAIN, "Switch ana Failed\n");
-	} else {
+	else
 		WCN_DBG(FM_DBG | MAIN, "Switch ana OK!\n");
-	}
 
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
@@ -1408,12 +1350,12 @@ fm_s32 fm_setvol(struct fm *fm, fm_u32 vol)
 {
 	fm_u8 tmp_vol;
 
-	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON) {
+	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON)
 		return -EPERM;
-	}
+
 	FMR_ASSERT(fm_low_ops.bi.volset);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	tmp_vol = (vol > 15) ? 15 : vol;
 	fm_low_ops.bi.volset(tmp_vol);
@@ -1427,12 +1369,12 @@ fm_s32 fm_getvol(struct fm *fm, fm_u32 *vol)
 {
 	fm_u8 tmp_vol;
 
-	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON) {
+	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON)
 		return -EPERM;
-	}
+
 	FMR_ASSERT(fm_low_ops.bi.volget);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	fm_low_ops.bi.volget(&tmp_vol);
 	*vol = (fm_u32) tmp_vol;
@@ -1451,7 +1393,7 @@ fm_s32 fm_mute(struct fm *fm, fm_u32 bmute)
 	}
 	FMR_ASSERT(fm_low_ops.bi.mute);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	if (bmute) {
 		ret = fm_low_ops.bi.mute(fm_true);
@@ -1475,7 +1417,7 @@ fm_s32 fm_getrssi(struct fm *fm, fm_s32 *rssi)
 	}
 	FMR_ASSERT(fm_low_ops.bi.rssiget);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.bi.rssiget(rssi);
 
@@ -1489,7 +1431,7 @@ fm_s32 fm_reg_read(struct fm *fm, fm_u8 addr, fm_u16 *val)
 
 	FMR_ASSERT(fm_low_ops.bi.read);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.bi.read(addr, val);
 
@@ -1503,7 +1445,7 @@ fm_s32 fm_reg_write(struct fm *fm, fm_u8 addr, fm_u16 val)
 
 	FMR_ASSERT(fm_low_ops.bi.write);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.bi.write(addr, val);
 
@@ -1517,7 +1459,7 @@ fm_s32 fm_top_read(struct fm *fm, fm_u16 addr, fm_u32 *val)
 
 	FMR_ASSERT(fm_low_ops.bi.top_read);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.bi.top_read(addr, val);
 
@@ -1531,7 +1473,7 @@ fm_s32 fm_top_write(struct fm *fm, fm_u16 addr, fm_u32 val)
 
 	FMR_ASSERT(fm_low_ops.bi.top_write);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.bi.top_write(addr, val);
 
@@ -1545,7 +1487,7 @@ fm_s32 fm_host_read(struct fm *fm, fm_u32 addr, fm_u32 *val)
 
 	FMR_ASSERT(fm_low_ops.bi.host_read);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.bi.host_read(addr, val);
 
@@ -1559,7 +1501,7 @@ fm_s32 fm_host_write(struct fm *fm, fm_u32 addr, fm_u32 val)
 
 	FMR_ASSERT(fm_low_ops.bi.host_write);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.bi.host_write(addr, val);
 
@@ -1571,7 +1513,7 @@ fm_s32 fm_chipid_get(struct fm *fm, fm_u16 *chipid)
 {
 	FMR_ASSERT(chipid);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	*chipid = fm->chip_id;
 
@@ -1586,11 +1528,10 @@ fm_s32 fm_monostereo_get(struct fm *fm, fm_u16 *ms)
 	FMR_ASSERT(fm_low_ops.bi.msget);
 	FMR_ASSERT(ms);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
-	if (fm_low_ops.bi.msget(ms) == fm_false) {
+	if (fm_low_ops.bi.msget(ms) == fm_false)
 		ret = -FM_EPARA;
-	}
 
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
@@ -1607,7 +1548,7 @@ fm_s32 fm_monostereo_set(struct fm *fm, fm_s32 ms)
 
 	FMR_ASSERT(fm_low_ops.bi.msset);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.bi.msset(ms);
 
@@ -1622,11 +1563,10 @@ fm_s32 fm_pamd_get(struct fm *fm, fm_u16 *pamd)
 	FMR_ASSERT(fm_low_ops.bi.pamdget);
 	FMR_ASSERT(pamd);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
-	if (fm_low_ops.bi.pamdget(pamd) == fm_false) {
+	if (fm_low_ops.bi.pamdget(pamd) == fm_false)
 		ret = -FM_EPARA;
-	}
 
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
@@ -1639,7 +1579,7 @@ fm_s32 fm_caparray_get(struct fm *fm, fm_s32 *ca)
 	FMR_ASSERT(fm_low_ops.bi.caparray_get);
 	FMR_ASSERT(ca);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.bi.caparray_get(ca);
 
@@ -1653,11 +1593,10 @@ fm_s32 fm_em_test(struct fm *fm, fm_u16 group, fm_u16 item, fm_u32 val)
 
 	FMR_ASSERT(fm_low_ops.bi.em);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
-	if (fm_false == fm_low_ops.bi.em(group, item, val)) {
+	if (fm_false == fm_low_ops.bi.em(group, item, val))
 		ret = -FM_EPARA;
-	}
 
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
@@ -1669,7 +1608,7 @@ fm_s32 fm_set_search_th(struct fm *fm, struct fm_search_threshold_t parm)
 
 	FMR_ASSERT(fm_low_ops.bi.set_search_th);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 	ret = fm_low_ops.bi.set_search_th(parm.th_type, parm.th_val, parm.reserve);
 
 	FM_UNLOCK(fm_ops_lock);
@@ -1704,7 +1643,7 @@ fm_s32 fm_rds_tx(struct fm *fm, struct fm_rds_tx_parm *parm)
 /* memcpy(fm_cxt->txcxt.ps, parm->ps,sizeof(parm->ps)); */
 /* memcpy(fm_cxt->txcxt.other_rds, parm->other_rds,sizeof(parm->other_rds)); */
 /* fm_cxt->txcxt.other_rds_cnt = parm->other_rds_cnt; */
- out :
+out:
 	return ret;
 }
 
@@ -1718,7 +1657,7 @@ fm_s32 fm_rds_onoff(struct fm *fm, fm_u16 rdson_off)
 	}
 	FMR_ASSERT(fm_low_ops.ri.rds_onoff);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	if (rdson_off) {
 		fm->rds_on = fm_true;
@@ -1738,7 +1677,7 @@ fm_s32 fm_rds_onoff(struct fm *fm, fm_u16 rdson_off)
 		};
 	}
 
- out:
+out:
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
@@ -1750,7 +1689,7 @@ fm_s32 fm_rds_good_bc_get(struct fm *fm, fm_u16 *gbc)
 	FMR_ASSERT(fm_low_ops.ri.rds_gbc_get);
 	FMR_ASSERT(gbc);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	*gbc = fm_low_ops.ri.rds_gbc_get();
 
@@ -1765,7 +1704,7 @@ fm_s32 fm_rds_bad_bc_get(struct fm *fm, fm_u16 *bbc)
 	FMR_ASSERT(fm_low_ops.ri.rds_bbc_get);
 	FMR_ASSERT(bbc);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	*bbc = fm_low_ops.ri.rds_bbc_get();
 
@@ -1780,7 +1719,7 @@ fm_s32 fm_rds_bler_ratio_get(struct fm *fm, fm_u16 *bbr)
 	FMR_ASSERT(fm_low_ops.ri.rds_bbr_get);
 	FMR_ASSERT(bbr);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	*bbr = (fm_u16) fm_low_ops.ri.rds_bbr_get();
 
@@ -1795,7 +1734,7 @@ fm_s32 fm_rds_group_cnt_get(struct fm *fm, struct rds_group_cnt_t *dst)
 	FMR_ASSERT(fm_low_ops.ri.rds_gc_get);
 	FMR_ASSERT(dst);
 	if (FM_LOCK(fm_rds_cnt))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.ri.rds_gc_get(dst, fm->pstRDSData);
 
@@ -1809,7 +1748,7 @@ fm_s32 fm_rds_group_cnt_reset(struct fm *fm)
 
 	FMR_ASSERT(fm_low_ops.ri.rds_gc_reset);
 	if (FM_LOCK(fm_rds_cnt))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.ri.rds_gc_reset(fm->pstRDSData);
 
@@ -1825,7 +1764,7 @@ fm_s32 fm_rds_log_get(struct fm *fm, struct rds_rx_t *dst, fm_s32 *dst_len)
 	FMR_ASSERT(dst);
 	FMR_ASSERT(dst_len);
 	if (FM_LOCK(fm_read_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.ri.rds_log_get(dst, dst_len);
 
@@ -1839,7 +1778,7 @@ fm_s32 fm_rds_block_cnt_reset(struct fm *fm)
 
 	FMR_ASSERT(fm_low_ops.ri.rds_bc_reset);
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.ri.rds_bc_reset();
 
@@ -1852,13 +1791,20 @@ fm_s32 fm_i2s_set(struct fm *fm, fm_s32 onoff, fm_s32 mode, fm_s32 sample)
 	fm_s32 ret = 0;
 
 	FMR_ASSERT(fm_low_ops.bi.i2s_set);
-	if ((onoff != 0) || (onoff != 1)) {
+	if ((onoff != 0) || (onoff != 1))
 		onoff = 0;	/* default on. */
-	}
-	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
 
+	if (FM_LOCK(fm_ops_lock))
+		return -FM_ELOCK;
+
+	if ((FM_PWR_RX_ON == fm_pwr_state_get(fm)) || (FM_PWR_TX_ON == fm_pwr_state_get(fm))) {
 	ret = fm_low_ops.bi.i2s_set(onoff, mode, sample);
+		if (ret)
+			WCN_DBG(FM_ALT | MAIN, "i2s_set Failed\n");
+		else
+			WCN_DBG(FM_DBG | MAIN, "i2s_set OK!\n");
+	} else
+		WCN_DBG(FM_ALT | MAIN, "FM power off, not support i2s setting\n");
 
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
@@ -1878,7 +1824,7 @@ fm_s32 fm_tune_tx(struct fm *fm, struct fm_tune_parm *parm)
 		return -EPERM;
 	}
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	WCN_DBG(FM_DBG | MAIN, "%s\n", __func__);
 
@@ -1908,7 +1854,7 @@ fm_s32 fm_tune(struct fm *fm, struct fm_tune_parm *parm)
 	FMR_ASSERT(fm_low_ops.bi.setfreq);
 
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	WCN_DBG(FM_DBG | MAIN, "%s\n", __func__);
 
@@ -1922,41 +1868,41 @@ fm_s32 fm_tune(struct fm *fm, struct fm_tune_parm *parm)
 	if (ret) {
 		WCN_DBG(FM_ALT | MAIN, "FM ramp down failed\n");
 		goto out;
-	}		
-
-	if (fm_cur_freq_get() != parm->freq) {
-		fm_memset(fm->pstRDSData, 0, sizeof(rds_t));
 	}
+
+	if (fm_cur_freq_get() != parm->freq)
+		fm_memset(fm->pstRDSData, 0, sizeof(rds_t));
+
 #if 0				/* (!defined(MT6620_FM)&&!defined(MT6628_FM)) */
 	/* HILO side adjust if need */
 	if (priv_adv.priv_tbl.hl_dese) {
-		if ((ret = priv_adv.priv_tbl.hl_dese(parm->freq, NULL)) < 0) {
+		ret = priv_adv.priv_tbl.hl_dese(parm->freq, NULL);
+		if (ret < 0)
 			goto out;
-		}
 
 		WCN_DBG(FM_INF | MAIN, "HILO side %d\n", ret);
 	}
 	/* Frequency avoid adjust if need */
 	if (priv_adv.priv_tbl.fa_dese) {
-		if ((ret = priv_adv.priv_tbl.fa_dese(parm->freq, NULL)) < 0) {
+		ret = priv_adv.priv_tbl.fa_dese(parm->freq, NULL);
+		if (ret < 0)
 			goto out;
-		}
 
 		WCN_DBG(FM_INF | MAIN, "FA %d\n", ret);
 	}
 	/* MCU clock adjust if need */
 	if (priv_adv.priv_tbl.mcu_dese) {
-		if ((ret = priv_adv.priv_tbl.mcu_dese(parm->freq, NULL)) < 0) {
+		ret = priv_adv.priv_tbl.mcu_dese(parm->freq, NULL);
+		if (ret < 0)
 			goto out;
-		}
 
 		WCN_DBG(FM_INF | MAIN, "MCU %d\n", ret);
 	}
 	/* GPS clock adjust if need */
 	if (priv_adv.priv_tbl.gps_dese) {
-		if ((ret = priv_adv.priv_tbl.gps_dese(parm->freq, NULL)) < 0) {
+		ret = priv_adv.priv_tbl.gps_dese(parm->freq, NULL);
+		if (ret < 0)
 			goto out;
-		}
 
 		WCN_DBG(FM_INF | MAIN, "GPS %d\n", ret);
 	}
@@ -1971,7 +1917,7 @@ fm_s32 fm_tune(struct fm *fm, struct fm_tune_parm *parm)
 	}
 	/* fm_low_ops.bi.mute(fm_false);//open for dbg */
 	fm_op_state_set(fm, FM_STA_PLAY);
- out:
+out:
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
 }
@@ -1983,14 +1929,15 @@ fm_s32 fm_cqi_log(void)
 	fm_u16 freq;
 	FMR_ASSERT(fm_low_ops.bi.cqi_log);
 	freq = fm_cur_freq_get();
-	if (0 == fm_get_channel_space(freq)) {
+	if (0 == fm_get_channel_space(freq))
 		freq *= 10;
-	}
-	if ((freq != 10000) && (0xffffffff != g_dbg_level)) {
+
+	if ((freq != 10000) && (0xffffffff != g_dbg_level))
 		return -FM_EPARA;
-	}
+
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
+
 	ret = fm_low_ops.bi.cqi_log(8750, 10800, 2, 5);
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
@@ -2000,12 +1947,12 @@ fm_s32 fm_pre_search(struct fm *fm)
 {
 	fm_s32 ret = 0;
 	FMR_ASSERT(fm_low_ops.bi.pre_search);
-	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON) {
+	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON)
 		return -FM_EPARA;
-	}
-	if (FM_LOCK(fm_ops_lock)) {
-		return (-FM_ELOCK);
-	}
+
+	if (FM_LOCK(fm_ops_lock))
+		return -FM_ELOCK;
+
 	ret = fm_low_ops.bi.pre_search();
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
@@ -2015,12 +1962,12 @@ fm_s32 fm_restore_search(struct fm *fm)
 {
 	fm_s32 ret = 0;
 	FMR_ASSERT(fm_low_ops.bi.restore_search);
-	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON) {
+	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON)
 		return -FM_EPARA;
-	}
-	if (FM_LOCK(fm_ops_lock)) {
-		return (-FM_ELOCK);
-	}
+
+	if (FM_LOCK(fm_ops_lock))
+		return -FM_ELOCK;
+
 	ret = fm_low_ops.bi.restore_search();
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
@@ -2034,8 +1981,7 @@ fm_s32 fm_soft_mute_tune(struct fm *fm, struct fm_softmute_tune_t *parm)
 	FMR_ASSERT(fm_low_ops.bi.softmute_tune);
 
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
-
+		return -FM_ELOCK;
 
 	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON) {
 		parm->valid = fm_false;
@@ -2043,7 +1989,7 @@ fm_s32 fm_soft_mute_tune(struct fm *fm, struct fm_softmute_tune_t *parm)
 		goto out;
 	}
 	/* fm_low_ops.bi.mute(fm_true); */
-	WCN_DBG(FM_NTC | MAIN, "+%s():[freq=%d]\n", __func__, parm->freq);
+	WCN_DBG(FM_DBG | MAIN, "+%s():[freq=%d]\n", __func__, parm->freq);
 	/* fm_op_state_set(fm, FM_STA_TUNE); */
 
 	if (fm_false == fm_low_ops.bi.softmute_tune(parm->freq, &parm->rssi, &parm->valid)) {
@@ -2052,8 +1998,8 @@ fm_s32 fm_soft_mute_tune(struct fm *fm, struct fm_softmute_tune_t *parm)
 		ret = -EPERM;
 	}
 /* fm_low_ops.bi.mute(fm_false); */
- out :
-	WCN_DBG(FM_NTC | MAIN, "-%s()\n", __func__);
+out:
+	WCN_DBG(FM_DBG | MAIN, "-%s()\n", __func__);
 	FM_UNLOCK(fm_ops_lock);
 
 	return ret;
@@ -2064,18 +2010,18 @@ fm_s32 fm_over_bt(struct fm *fm, fm_s32 flag)
 	fm_s32 ret = 0;
 	FMR_ASSERT(fm_low_ops.bi.fm_via_bt);
 
-	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON) {
+	if (fm_pwr_state_get(fm) != FM_PWR_RX_ON)
 		return -EPERM;
-	}
+
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 
 	ret = fm_low_ops.bi.fm_via_bt(flag);
-	if (ret) {
+	if (ret)
 		WCN_DBG(FM_ALT | MAIN, "%s(),failed!\n", __func__);
-	} else {
+	else
 		fm->via_bt = flag;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "%s(),[ret=%d]!\n", __func__, ret);
 	FM_UNLOCK(fm_ops_lock);
 	return ret;
@@ -2084,12 +2030,13 @@ fm_s32 fm_over_bt(struct fm *fm, fm_s32 flag)
 fm_s32 fm_tx_support(struct fm *fm, fm_s32 *support)
 {
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
-	if (fm_low_ops.bi.tx_support) {
+		return -FM_ELOCK;
+
+	if (fm_low_ops.bi.tx_support)
 		fm_low_ops.bi.tx_support(support);
-	} else {
+	else
 		*support = 0;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "%s(),[%d]!\n", __func__, *support);
 	FM_UNLOCK(fm_ops_lock);
 	return 0;
@@ -2098,12 +2045,13 @@ fm_s32 fm_tx_support(struct fm *fm, fm_s32 *support)
 fm_s32 fm_rdstx_support(struct fm *fm, fm_s32 *support)
 {
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
-	if (fm_low_ops.ri.rdstx_support) {
+		return -FM_ELOCK;
+
+	if (fm_low_ops.ri.rdstx_support)
 		fm_low_ops.ri.rdstx_support(support);
-	} else {
+	else
 		*support = 0;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "support=[%d]!\n", *support);
 	FM_UNLOCK(fm_ops_lock);
 	return 0;
@@ -2113,24 +2061,26 @@ fm_s32 fm_rdstx_support(struct fm *fm, fm_s32 *support)
 fm_s32 fm_rdstx_enable(struct fm *fm, fm_s32 enable)
 {
 	fm_s32 ret = -1;
+
 	FMR_ASSERT(fm_low_ops.ri.rds_tx_enable);
 	FMR_ASSERT(fm_low_ops.ri.rds_tx_disable);
-	if (fm_pwr_state_get(fm) != FM_PWR_TX_ON) {
+
+	if (fm_pwr_state_get(fm) != FM_PWR_TX_ON)
 		return -FM_EPARA;
-	}
+
 	if (FM_LOCK(fm_ops_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 	if (enable == 1) {
 		ret = fm_low_ops.ri.rds_tx_enable();
-		if (ret) {
+		if (ret)
 			FM_LOG_ERR(MAIN, "rds_tx_enable fail=[%d]!\n", ret);
-		}
+
 		fm->rdstx_on = fm_true;
 	} else {
 		ret = fm_low_ops.ri.rds_tx_disable();
-		if (ret) {
+		if (ret)
 			FM_LOG_ERR(MAIN, "rds_tx_disable fail=[%d]!\n", ret);
-		}
+
 		fm->rdstx_on = fm_false;
 	}
 	FM_LOG_NTC(MAIN, "rds tx enable=[%d]!\n", enable);
@@ -2155,7 +2105,7 @@ static void fm_timer_func(unsigned long data)
 		fm->timer_wkthd->add_work(fm->timer_wkthd, fm->rds_wk);
 	}
 
- out:
+out:
 	FM_UNLOCK(fm_timer_lock);
 }
 
@@ -2203,7 +2153,7 @@ static void fmtx_timer_func(unsigned long data)
 		goto out;	/* fm timer is stoped before timeout */
 	}
 
- out:
+out:
 	FM_UNLOCK(fm_timer_lock);
 }
 #endif
@@ -2227,11 +2177,10 @@ static void fm_tx_power_ctrl_worker_func(unsigned long data)
 	ctrl = fm->tx_pwr;
 	WCN_DBG(FM_NTC | MAIN, "tx pwr %ddb\n", ctrl);
 	ret = fm_low_ops.bi.tx_pwr_ctrl(fm_cur_freq_get(), &ctrl);
-	if (ret) {
+	if (ret)
 		WCN_DBG(FM_ERR | MAIN, "tx_pwr_ctrl fail\n");
-	}
 
- out:
+out:
 	FM_UNLOCK(fm_rxtx_lock);
 	WCN_DBG(FM_NTC | MAIN, "-%s()\n", __func__);
 	return;
@@ -2294,10 +2243,12 @@ static void fm_tx_rtc_ctrl_worker_func(unsigned long data)
 	if (fm_low_ops.bi.rtc_drift_ctrl != NULL) {
 		ctrl = rtcInfo.drift;
 		WCN_DBG(FM_NTC | MAIN, "RTC_drift_ctrl[0x%08x]\n", ctrl);
-		if ((ret = fm_low_ops.bi.rtc_drift_ctrl(fm_cur_freq_get(), &ctrl)))
+
+		ret = fm_low_ops.bi.rtc_drift_ctrl(fm_cur_freq_get(), &ctrl);
+		if (ret)
 			goto out;
 	}
- out:
+out:
 	WCN_DBG(FM_NTC | MAIN, "-%s()\n", __func__);
 	return;
 }
@@ -2324,11 +2275,10 @@ static void fm_tx_desense_wifi_worker_func(unsigned long data)
 	if (fm_low_ops.bi.tx_desense_wifi) {
 		WCN_DBG(FM_NTC | MAIN, "tx_desense_wifi[%d]\n", ctrl);
 		ret = fm_low_ops.bi.tx_desense_wifi(fm_cur_freq_get(), &ctrl);
-		if (ret) {
+		if (ret)
 			WCN_DBG(FM_ERR | MAIN, "tx_desense_wifi fail\n");
-		}
 	}
- out:
+out:
 	FM_UNLOCK(fm_rxtx_lock);
 	WCN_DBG(FM_NTC | MAIN, "-%s()\n", __func__);
 	return;
@@ -2368,13 +2318,12 @@ fm_s32 fm_get_gps_rtc_info(struct fm_gps_rtc_info *src)
 	}
 	if (src->tvThd.tv_sec > 0) {
 		dst->tvThd.tv_sec = src->tvThd.tv_sec;
-		WCN_DBG(FM_NTC | MAIN, "%s, new [tvThd=%d]\n", __func__,
-			(fm_s32) dst->tvThd.tv_sec);
+		WCN_DBG(FM_NTC | MAIN, "%s, new [tvThd=%d]\n", __func__, (fm_s32) dst->tvThd.tv_sec);
 	}
 	ret = fm_rtc_mutex->trylock(fm_rtc_mutex, dst->retryCnt);
-	if (ret) {
+	if (ret)
 		goto out;
-	}
+
 	dst->age = src->age;
 	dst->drift = src->drift;
 	dst->stamp = jiffies;	/* get curren time stamp */
@@ -2390,7 +2339,7 @@ fm_s32 fm_get_gps_rtc_info(struct fm_gps_rtc_info *src)
 	   }
 	 */
 
- out:
+out:
 	return ret;
 }
 
@@ -2416,29 +2365,29 @@ void fm_rds_reset_work_func(unsigned long data)
 {
 	fm_s32 ret = 0;
 
-	if (!fm_low_ops.ri.rds_blercheck) {
+	if (!fm_low_ops.ri.rds_blercheck)
 		return;
-	}
+
 	if (FM_LOCK(fm_rxtx_lock))
 		return;
 
 	if (FM_LOCK(fm_rds_cnt))
 		return;
+
 	ret = fm_low_ops.ri.rds_blercheck(g_fm_struct->pstRDSData);
 
 	WCN_DBG(FM_NTC | MAIN, "Addr_Cnt=%x\n", g_fm_struct->pstRDSData->AF_Data.Addr_Cnt);
-	if (g_fm_struct->pstRDSData->AF_Data.Addr_Cnt == 0xFF)	/* check af list get,can't use event==af_list because event will clear after read rds every time */
-	{
+	/* check af list get,can't use event==af_list because event will clear after read rds every time */
+	if (g_fm_struct->pstRDSData->AF_Data.Addr_Cnt == 0xFF)
 		g_fm_struct->pstRDSData->event_status |= RDS_EVENT_AF;
-	}
-	if (!ret && g_fm_struct->pstRDSData->event_status) {
+
+	if (!ret && g_fm_struct->pstRDSData->event_status)
 		FM_EVENT_SEND(g_fm_struct->rds_event, FM_RDS_DATA_READY);
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "rds event check=%x\n", g_fm_struct->pstRDSData->event_status);
 	FM_UNLOCK(fm_rds_cnt);
 	FM_UNLOCK(fm_rxtx_lock);
 }
-
 
 void fm_subsys_reset_work_func(unsigned long data)
 {
@@ -2453,7 +2402,8 @@ void fm_subsys_reset_work_func(unsigned long data)
 		goto out;
 	}
 
-	/* if whole chip reset, wmt will clear fm-on-flag, and firmware turn fm to off status, so no need turn fm off again */
+	/* if whole chip reset, wmt will clear fm-on-flag, and firmware turn fm to off status,
+	so no need turn fm off again */
 	if (g_fm_struct->wholechiprst == fm_false) {
 		fm_low_ops.bi.pwrdownseq();
 		/* subsystem power off */
@@ -2462,7 +2412,7 @@ void fm_subsys_reset_work_func(unsigned long data)
 			goto out;
 		}
 	}
-	
+
 	/* prepare to reset */
 
 	/* wait 3s */
@@ -2496,13 +2446,11 @@ void fm_subsys_reset_work_func(unsigned long data)
 	g_fm_struct->mute = 0;
 	fm_low_ops.bi.mute(g_fm_struct->mute);
 
-	if(fm_low_ops.ri.rds_bci_get)
-	{
-		fm_timer_sys->init(fm_timer_sys, fm_timer_func, (unsigned long)g_fm_struct, fm_low_ops.ri.rds_bci_get(), 0);
+	if (fm_low_ops.ri.rds_bci_get) {
+		fm_timer_sys->init(fm_timer_sys, fm_timer_func, (unsigned long)g_fm_struct, fm_low_ops.ri.rds_bci_get(),
+				   0);
 		WCN_DBG(FM_NTC | MAIN, "initial timer ok\n");
-	}
-	else
-	{
+	} else {
 		WCN_DBG(FM_NTC | MAIN, "initial timer fail!!!\n");
 	}
 
@@ -2511,7 +2459,7 @@ void fm_subsys_reset_work_func(unsigned long data)
 
 	WCN_DBG(FM_ALT | MAIN, "recover done\n");
 
- out:
+out:
 	fm_sys_state_set(g_fm_struct, FM_SUBSYS_RST_END);
 	fm_sys_state_set(g_fm_struct, FM_SUBSYS_RST_OFF);
 	g_fm_struct->wholechiprst = fm_true;
@@ -2525,9 +2473,8 @@ static void fm_eint_handler(void)
 	struct fm *fm = g_fm_struct;
 	WCN_DBG(FM_DBG | MAIN, "intr occur, ticks:%d\n", jiffies_to_msecs(jiffies));
 
-	if (fm != NULL) {
+	if (fm != NULL)
 		fm->eint_wkthd->add_work(fm->eint_wkthd, fm->eint_wk);
-	}
 }
 
 static fm_s32 fm_rds_parser(struct rds_rx_t *rds_raw, fm_s32 rds_size)
@@ -2536,14 +2483,13 @@ static fm_s32 fm_rds_parser(struct rds_rx_t *rds_raw, fm_s32 rds_size)
 	rds_t *pstRDSData = fm->pstRDSData;
 
 	if (FM_LOCK(fm_read_lock))
-		return (-FM_ELOCK);
+		return -FM_ELOCK;
 	/* parsing RDS data */
 	fm_low_ops.ri.rds_parser(pstRDSData, rds_raw, rds_size, fm_cur_freq_get);
 	FM_UNLOCK(fm_read_lock);
 
 	if ((pstRDSData->event_status != 0x0000) && (pstRDSData->event_status != RDS_EVENT_AF_LIST)) {
-		WCN_DBG(FM_NTC | MAIN, "Notify user to read, [event:%04x]\n",
-			pstRDSData->event_status);
+		WCN_DBG(FM_NTC | MAIN, "Notify user to read, [event:%04x]\n", pstRDSData->event_status);
 		FM_EVENT_SEND(fm->rds_event, FM_RDS_DATA_READY);
 	}
 
@@ -2574,7 +2520,6 @@ static fm_s32 fm_callback_unregister(struct fm_lowlevel_ops *ops)
 	return 0;
 }
 
-
 static fm_s32 fm_para_init(struct fm *fmp)
 {
 	FMR_ASSERT(fmp);
@@ -2590,36 +2535,36 @@ static fm_s32 fm_para_init(struct fm *fmp)
 fm_s32 fm_cust_config_setup(fm_s8 *filename)
 {
 	fm_s32 ret;
-#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6630_FM))
+#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6630_FM) || defined(MT6580_FM))
 #ifdef MT6628_FM
 	ret = MT6628fm_cust_config_setup(filename);
-	if (ret < 0) {
+	if (ret < 0)
 		WCN_DBG(FM_ERR | MAIN, "MT6628fm_cust_config_setup failed\n");
-	}
 #endif
 #ifdef MT6620_FM
 	ret = MT6620fm_cust_config_setup(filename);
-	if (ret < 0) {
+	if (ret < 0)
 		WCN_DBG(FM_ERR | MAIN, "MT6620fm_cust_config_setup failed\n");
-	}
 #endif
 #ifdef MT6627_FM
 	ret = MT6627fm_cust_config_setup(filename);
-	if (ret < 0) {
+	if (ret < 0)
 		WCN_DBG(FM_ERR | MAIN, "MT6627fm_cust_config_setup failed\n");
-	}
+#endif
+#ifdef MT6580_FM
+	ret = MT6580fm_cust_config_setup(filename);
+	if (ret < 0)
+		WCN_DBG(FM_ERR | MAIN, "MT6580fm_cust_config_setup failed\n");
 #endif
 #ifdef MT6630_FM
 	ret = MT6630fm_cust_config_setup(filename);
-	if (ret < 0) {
+	if (ret < 0)
 		WCN_DBG(FM_ERR | MAIN, "MT6630fm_cust_config_setup failed\n");
-	}
 #endif
 #else
-	fm_cust_config(filename);
-	if (ret < 0) {
+	ret = fm_cust_config(filename);
+	if (ret < 0)
 		WCN_DBG(FM_ERR | MAIN, "fm_cust_config failed\n");
-	}
 #endif
 	return ret;
 }
@@ -2636,7 +2581,8 @@ struct fm *fm_dev_init(fm_u32 arg)
 /* return NULL; */
 
 	/* alloc fm main data structure */
-	if (!(fm = fm_zalloc(sizeof(struct fm)))) {
+	fm = fm_zalloc(sizeof(struct fm));
+	if (!fm) {
 		WCN_DBG(FM_ALT | MAIN, "-ENOMEM\n");
 		ret = -ENOMEM;
 		goto ERR_EXIT;
@@ -2663,7 +2609,8 @@ struct fm *fm_dev_init(fm_u32 arg)
 	gps_rtc_info.retryCnt = FM_GPS_RTC_RETRY_CNT;
 	gps_rtc_info.flag = FM_GPS_RTC_INFO_OLD;
 
-	if (!(fm->rds_event = fm_flag_event_create("fm_rds_event"))) {
+	fm->rds_event = fm_flag_event_create("fm_rds_event");
+	if (!fm->rds_event) {
 		WCN_DBG(FM_ALT | MAIN, "-ENOMEM for RDS event\n");
 		ret = -ENOMEM;
 		goto ERR_EXIT;
@@ -2672,7 +2619,8 @@ struct fm *fm_dev_init(fm_u32 arg)
 	fm_flag_event_get(fm->rds_event);
 
 	/* alloc fm rds data structure */
-	if (!(fm->pstRDSData = fm_zalloc(sizeof(rds_t)))) {
+	fm->pstRDSData = fm_zalloc(sizeof(rds_t));
+	if (!fm->pstRDSData) {
 		WCN_DBG(FM_ALT | MAIN, "-ENOMEM for RDS\n");
 		ret = -ENOMEM;
 		goto ERR_EXIT;
@@ -2752,8 +2700,7 @@ struct fm *fm_dev_init(fm_u32 arg)
 	} else {
 		fm_work_get(fm->fm_tx_desense_wifi_work);
 		fm->fm_tx_desense_wifi_work->init(fm->fm_tx_desense_wifi_work,
-						  fm_tx_desense_wifi_worker_func,
-						  (unsigned long)fm);
+						  fm_tx_desense_wifi_worker_func, (unsigned long)fm);
 	}
 
 	/* fm timer was created in fm_env_setp() */
@@ -2767,7 +2714,7 @@ struct fm *fm_dev_init(fm_u32 arg)
 
 	return g_fm_struct;
 
- ERR_EXIT:
+ERR_EXIT:
 
 	if (fm->eint_wkthd) {
 		ret = fm_workthread_put(fm->eint_wkthd);
@@ -2898,142 +2845,157 @@ fm_s32 fm_env_setup(void)
 	fm_s32 ret = 0;
 
 	WCN_DBG(FM_NTC | MAIN, "%s\n", __func__);
-#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6630_FM))
+#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6580_FM) || defined(MT6630_FM))
 #ifdef MT6620_FM
 	/* register call back functions */
 	ret = fm_callback_register(&MT6620fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "1. fm callback registered\n");
 	/* get low level functions */
 	ret = MT6620fm_low_ops_register(&MT6620fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
 	/* get rds level functions */
 	ret = MT6620fm_rds_ops_register(&MT6620fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
 #endif
 #ifdef MT6628_FM
 	/* register call back functions */
 	ret = fm_callback_register(&MT6628fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "1. fm callback registered\n");
 	/* get low level functions */
 	ret = MT6628fm_low_ops_register(&MT6628fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
 	/* get rds level functions */
 	ret = MT6628fm_rds_ops_register(&MT6628fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
 #endif
 #ifdef MT6627_FM
 	/* register call back functions */
 	ret = fm_callback_register(&MT6627fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "1. fm callback registered\n");
 	/* get low level functions */
 	ret = MT6627fm_low_ops_register(&MT6627fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
 	/* get rds level functions */
 	ret = MT6627fm_rds_ops_register(&MT6627fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
+	WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
+#endif
+#ifdef MT6580_FM
+	/* register call back functions */
+	ret = fm_callback_register(&MT6580fm_low_ops);
+	if (ret)
+		return ret;
+
+	WCN_DBG(FM_NTC | MAIN, "1. fm callback registered\n");
+	/* get low level functions */
+	ret = MT6580fm_low_ops_register(&MT6580fm_low_ops);
+	if (ret)
+		return ret;
+
+	WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
+	/* get rds level functions */
+	ret = MT6580fm_rds_ops_register(&MT6580fm_low_ops);
+	if (ret)
+		return ret;
+
 	WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
 #endif
 #ifdef MT6630_FM
 	/* register call back functions */
 	ret = fm_callback_register(&MT6630fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "1. fm callback registered\n");
 	/* get low level functions */
 	ret = MT6630fm_low_ops_register(&MT6630fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
 	/* get rds level functions */
 	ret = MT6630fm_rds_ops_register(&MT6630fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
 #endif
 #else
 	/* register call back functions */
 	ret = fm_callback_register(&fm_low_ops);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "1. fm callback registered\n");
 	/* get low level functions */
 	ret = fm_low_ops_register(&fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	WCN_DBG(FM_NTC | MAIN, "2. fm low ops registered\n");
 	/* get rds level functions */
 	ret = fm_rds_ops_register(&fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+
 	WCN_DBG(FM_NTC | MAIN, "3. fm rds ops registered\n");
 #endif
 
 	fm_ops_lock = fm_lock_create("ops_lock");
 
-	if (!fm_ops_lock) {
+	if (!fm_ops_lock)
 		return -1;
-	}
 
 	fm_read_lock = fm_lock_create("rds_read");
 
-	if (!fm_read_lock) {
+	if (!fm_read_lock)
 		return -1;
-	}
 
 	fm_rds_cnt = fm_lock_create("rds_cnt");
 
-	if (!fm_rds_cnt) {
+	if (!fm_rds_cnt)
 		return -1;
-	}
 
 	fm_timer_lock = fm_spin_lock_create("timer_lock");
 
-	if (!fm_timer_lock) {
+	if (!fm_timer_lock)
 		return -1;
-	}
+
 	fm_rxtx_lock = fm_lock_create("rxtx_lock");
-	if (!fm_rxtx_lock) {
+	if (!fm_rxtx_lock)
 		return -1;
-	}
+
 	fm_rtc_mutex = fm_lock_create("rxtx_lock");
-	if (!fm_rxtx_lock) {
+	if (!fm_rxtx_lock)
 		return -1;
-	}
 
 	fm_lock_get(fm_ops_lock);
 	fm_lock_get(fm_read_lock);
@@ -3044,9 +3006,8 @@ fm_s32 fm_env_setup(void)
 
 	fm_timer_sys = fm_timer_create("fm_sys_timer");
 
-	if (!fm_timer_sys) {
+	if (!fm_timer_sys)
 		return -1;
-	}
 
 	fm_timer_get(fm_timer_sys);
 	WCN_DBG(FM_NTC | MAIN, "5. fm timer created\n");
@@ -3069,106 +3030,120 @@ fm_s32 fm_env_destroy(void)
 
 	fm_link_release();
 
-#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6630_FM))
+#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6580_FM) || defined(MT6630_FM))
 #if defined(MT6620_FM)
 	/* register call back functions */
 	ret = fm_callback_unregister(&MT6620fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+
 	/* put low level functions */
 	ret = MT6620fm_low_ops_unregister(&MT6620fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+
 	/* put rds func */
 	ret = MT6620fm_rds_ops_unregister(&MT6620fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
 #endif
 #if defined(MT6628_FM)
 	/* register call back functions */
 	ret = fm_callback_unregister(&MT6628fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+
 	/* put low level functions */
 	ret = MT6628fm_low_ops_unregister(&MT6628fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+
 	/* put rds func */
 	ret = MT6628fm_rds_ops_unregister(&MT6628fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
 #endif
 #if defined(MT6627_FM)
 	/* register call back functions */
 	ret = fm_callback_unregister(&MT6627fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+
 	/* put low level functions */
 	ret = MT6627fm_low_ops_unregister(&MT6627fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+
 	/* put rds func */
 	ret = MT6627fm_rds_ops_unregister(&MT6627fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+#endif
+#if defined(MT6580_FM)
+	/* register call back functions */
+	ret = fm_callback_unregister(&MT6580fm_low_ops);
+
+	if (ret)
+		return -1;
+
+	/* put low level functions */
+	ret = MT6580fm_low_ops_unregister(&MT6580fm_low_ops);
+
+	if (ret)
+		return -1;
+
+	/* put rds func */
+	ret = MT6580fm_rds_ops_unregister(&MT6580fm_low_ops);
+
+	if (ret)
+		return -1;
 #endif
 #if defined(MT6630_FM)
 	/* register call back functions */
 	ret = fm_callback_unregister(&MT6630fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+
 	/* put low level functions */
 	ret = MT6630fm_low_ops_unregister(&MT6630fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+
 	/* put rds func */
 	ret = MT6630fm_rds_ops_unregister(&MT6630fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
 #endif
 #else
 	/* register call back functions */
 	ret = fm_callback_unregister(&fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+
 	/* put low level functions */
 	ret = fm_low_ops_unregister(&fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
+
 	/* put rds func */
 	ret = fm_rds_ops_unregister(&fm_low_ops);
 
-	if (ret) {
+	if (ret)
 		return -1;
-	}
 #endif
 	ret = fm_lock_put(fm_ops_lock);
 
@@ -3205,11 +3180,10 @@ fm_s32 fm_env_destroy(void)
  */
 fm_s32 fm_get_channel_space(fm_s32 freq)
 {
-	if ((freq >= 640) && (freq <= 1080)) {
+	if ((freq >= 640) && (freq <= 1080))
 		return 0;
-	} else if ((freq >= 6400) && (freq <= 10800)) {
+	else if ((freq >= 6400) && (freq <= 10800))
 		return 1;
-	} else {
+	else
 		return -1;
-	}
 }

@@ -97,9 +97,44 @@ config MTK_MET_PLF
 
 endmenu
 
+menuconfig MALI_MIDGARD
+	tristate "Mali Midgard series support"
+	depends on MTK_MET
+	default n
+	help
+	  Enable this option to build support for a ARM Mali Midgard GPU.
+
+	  To compile this driver as a module, choose M here:
+	  this will generate a single module, called mali_kbase.
+
+config MALI_GATOR_SUPPORT
+	bool "Streamline Debug support"
+	depends on MTK_MET && MALI_MIDGARD
+	default n
+	help
+	  Adds diagnostic support for use with the ARM Streamline Performance Analyzer.
+	  You will need the Gator device driver already loaded before loading this driver when enabling
+	  Streamline debug support.
+
+config MALI_GPU_TRACEPOINTS
+	bool "Enable GPU tracepoints"
+	depends on MTK_MET && MALI_MIDGARD && ANDROID
+	select GPU_TRACEPOINTS
+	help
+	  Enables GPU tracepoints using Android trace event definitions.
+
 endmenu
 
 menu "MTPROF tools"
+
+config MTPROF
+	bool "Enable MTK profiler/debugger tool"
+	default y
+	help
+	  CONFIG_MTPROF define if mtk profiling tools should be built-in or not. It
+	  includes workqueue debugger, signal debugger, cputime, bootprof, and other
+	  misc tools. If you are not sure about whether to enable it or not, please
+	  set n.
 
 config MTK_MUTATION
 	bool "Support some MTK debug/profiling patches"
@@ -193,6 +228,15 @@ config MT_SCHED_MONITOR
 	bool "mt scheduler monitor"
 	default n
 
+config MT_RT_THROTTLE_MON
+	bool "mt rt throttle monitor"
+	default n
+	help
+	  MT_RT_THROTTLE_MON is used to monitor rt throttle. When rt throttle activated
+	  print 5 longest execusion time rt tasks. Say Y here to enable rt throttle
+	  monitor.
+	  If you are not sure about whether to enable it or not, please set n.
+
 config MT_CHRDEV_REG
 	bool "mt char driver number table"
 	default n
@@ -213,6 +257,20 @@ config PRINTK_PROCESS_INFO
 config MT_PRINTK_UART_CONSOLE
 	bool "MTK printk UART controller"
 	default n
+
+config LOG_TOO_MUCH_WARNING
+	bool "printk too much warning"
+	default y
+
+config LOG_TOO_MUCH_DETECT_COUNT
+	hex "printk too much detect count"
+	default 300
+	depends on LOG_TOO_MUCH_WARNING
+
+config LOG_TOO_MUCH_DETECT_GAP
+	hex "detect log too much delay time"
+	default 10
+	depends on LOG_TOO_MUCH_WARNING
 
 config MT_ENG_BUILD
 	bool "flag for MTK eng/usr build verification"
@@ -240,8 +298,13 @@ config MTK_ETM
 	default y
 	help
 
+config MTK_MEM
+	bool "Support platform memory information"
+	default y
+
 config MTK_MEMCFG
 	bool "Support enhanced memory configurations"
+	depends on MTK_MEM
 	default n
 	help
 
@@ -253,10 +316,30 @@ config MT_SCHED
 config MT_LOAD_BALANCE_ENHANCEMENT
 	bool "mt load balance enhancement"
 	depends on  SMP
+	default y
 
 config MT_LOAD_BALANCE_PROFILER
 	bool "mt load balance profiler"
 	depends on SCHEDSTATS && SMP
+	default n
+
+config MT_RT_SCHED
+	bool "mt RT scheduling enhancement for big.LITTLE"
+	depends on SCHED_HMP
+	default n
+
+config MTK_COMPAT
+	bool "mt fast mode switching enhancement"
+	depends on COMPAT
+	default n
+
+config MT_SCHED_INTEROP
+	bool "mtk scheduling interopation enhancement"
+	default n
+
+config MT_SCHED_TRACE
+	bool "mt scheduling trace, output mtk schedule trace into FTRACE"
+	default n
 
 config MT_SCHED_NOTICE
 	bool "mt scheduling log, output important log into FTRACE, ftrace event: sched_log, default ENABLE"
@@ -267,13 +350,51 @@ config MT_SCHED_INFO
 
 config MT_SCHED_DEBUG
 	bool "mt scheduling log, also output the scheduling log into Kernel log"
-	depends on MT_SCHED_NOTICE
-
-config MTK_COMPAT
-	bool "fast mode switching"
-	depends on COMPAT
+	depends on MT_SCHED_TRACE
 	default n
 
+config MT_DEBUG_PREEMPT
+	bool "debug preempt, output the preempt enable/disable to FTRACE"
+	default n
+
+endmenu
+
+menu "MTK Cluster MultiProcessor Scheduler"
+config MTK_SCHED_CMP
+        bool "Enable CMP scheduler"
+        depends on SMP && SCHED_MC
+        default n
+        help
+          CMP Scheduler Enhancement for MTK SoC.
+          Attempts to introspectively select tasks to optimize
+          energy and performance.
+          say no if not sure.
+
+config MTK_SCHED_CMP_TGS
+        bool "Enable thread group scheduling"
+        depends on MTK_SCHED_CMP
+        default n
+
+config MTK_SCHED_CMP_TGS_WAKEUP
+        bool "Enable thread group scheduling"
+        depends on MTK_SCHED_CMP_TGS
+        default n
+
+config MTK_SCHED_CMP_PACK_SMALL_TASK
+        bool "Packing small task"
+        depends on MTK_SCHED_CMP && MTK_SCHED_CMP_TGS
+        default n
+
+config MTK_SCHED_CMP_LAZY_BALANCE
+        bool "Enable CMP lazy balance"
+        depends on MTK_SCHED_CMP_PACK_SMALL_TASK
+        default n
+
+config MTK_SCHED_CMP_POWER_AWARE_CONTROLLER
+	bool "(EXPERIMENTAL) Power-aware Scheduler for MP Controller"
+	depends on MTK_SCHED_CMP_PACK_SMALL_TASK && MTK_SCHED_CMP_LAZY_BALANCE
+	help
+		Power-aware scheduler for MP controller and status interface
 endmenu
 
 config MTK_CIRQ
@@ -368,4 +489,12 @@ config MTK_TETHERINGIPV6_SUPPORT
 	bool "MTK_TETHERINGIPV6_SUPPORT"
 	help
 	  support tethering over ipv6
+
+config MTK_LEGACY
+	bool "MTK LEGACY driver API support"
+	default y
+	help
+	  This is an option for MTK legacy driver that using old API
+	  It will be deprecated after all drivers changed to new structure
+
 

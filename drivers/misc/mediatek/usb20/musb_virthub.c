@@ -47,9 +47,9 @@
 
 static void musb_port_suspend(struct musb *musb, bool do_suspend)
 {
-	struct usb_otg	*otg = musb->xceiv->otg;
-	u8		power;
-	void __iomem	*mbase = musb->mregs;
+	struct usb_otg *otg = musb->xceiv->otg;
+	u8 power;
+	void __iomem *mbase = musb->mregs;
 
 	if (!is_host_active(musb))
 		return;
@@ -84,8 +84,7 @@ static void musb_port_suspend(struct musb *musb, bool do_suspend)
 			musb->is_active = otg->host->b_hnp_enable;
 			if (musb->is_active)
 				mod_timer(&musb->otg_timer, jiffies
-					+ msecs_to_jiffies(
-						OTG_TIME_A_AIDL_BDIS));
+					  + msecs_to_jiffies(OTG_TIME_A_AIDL_BDIS));
 			musb_platform_try_idle(musb, 0);
 			break;
 		case OTG_STATE_B_HOST:
@@ -94,8 +93,7 @@ static void musb_port_suspend(struct musb *musb, bool do_suspend)
 			musb_platform_try_idle(musb, 0);
 			break;
 		default:
-			DBG(0, "bogus rh suspend? %s\n",
-				otg_state_string(musb->xceiv->state));
+			DBG(0, "bogus rh suspend? %s\n", otg_state_string(musb->xceiv->state));
 		}
 	} else if (power & MUSB_POWER_SUSPENDM) {
 		power &= ~MUSB_POWER_SUSPENDM;
@@ -112,8 +110,8 @@ static void musb_port_suspend(struct musb *musb, bool do_suspend)
 
 static void musb_port_reset(struct musb *musb, bool do_reset)
 {
-	u8		power;
-	void __iomem	*mbase = musb->mregs;
+	u8 power;
+	void __iomem *mbase = musb->mregs;
 
 	if (musb->xceiv->state == OTG_STATE_B_IDLE) {
 		DBG(2, "HNP: Returning from HNP; no hub reset from b_idle\n");
@@ -137,26 +135,23 @@ static void musb_port_reset(struct musb *musb, bool do_reset)
 		 * fail with "Error! Did not receive an SOF before suspend
 		 * detected".
 		 */
-		if (power &  MUSB_POWER_RESUME) {
+		if (power & MUSB_POWER_RESUME) {
 			while (time_before(jiffies, musb->rh_timer))
 				msleep(1);
-			musb_writeb(mbase, MUSB_POWER,
-				power & ~MUSB_POWER_RESUME);
+			musb_writeb(mbase, MUSB_POWER, power & ~MUSB_POWER_RESUME);
 			msleep(1);
 		}
 
 		musb->ignore_disconnect = true;
 		power &= 0xf0;
-		musb_writeb(mbase, MUSB_POWER,
-				power | MUSB_POWER_RESET);
+		musb_writeb(mbase, MUSB_POWER, power | MUSB_POWER_RESET);
 
 		musb->port1_status |= USB_PORT_STAT_RESET;
 		musb->port1_status &= ~USB_PORT_STAT_ENABLE;
 		musb->rh_timer = jiffies + msecs_to_jiffies(50);
 	} else {
 		DBG(4, "root port reset stopped\n");
-		musb_writeb(mbase, MUSB_POWER,
-				power & ~MUSB_POWER_RESET);
+		musb_writeb(mbase, MUSB_POWER, power & ~MUSB_POWER_RESET);
 
 		musb->ignore_disconnect = false;
 
@@ -167,9 +162,8 @@ static void musb_port_reset(struct musb *musb, bool do_reset)
 		}
 
 		musb->port1_status &= ~USB_PORT_STAT_RESET;
-		musb->port1_status |= USB_PORT_STAT_ENABLE
-					| (USB_PORT_STAT_C_RESET << 16)
-					| (USB_PORT_STAT_C_ENABLE << 16);
+		musb->port1_status |= USB_PORT_STAT_ENABLE | (USB_PORT_STAT_C_RESET << 16)
+		    | (USB_PORT_STAT_C_ENABLE << 16);
 		usb_hcd_poll_rh_status(musb_to_hcd(musb));
 
 		musb->vbuserr_retry = VBUSERR_RETRY_COUNT;
@@ -178,28 +172,25 @@ static void musb_port_reset(struct musb *musb, bool do_reset)
 
 void musb_root_disconnect(struct musb *musb)
 {
-	struct usb_otg	*otg = musb->xceiv->otg;
+	struct usb_otg *otg = musb->xceiv->otg;
 
-	musb->port1_status = USB_PORT_STAT_POWER
-			| (USB_PORT_STAT_C_CONNECTION << 16);
+	musb->port1_status = USB_PORT_STAT_POWER | (USB_PORT_STAT_C_CONNECTION << 16);
 
 	usb_hcd_poll_rh_status(musb_to_hcd(musb));
 	musb->is_active = 0;
 
-	
 	/* when UMS device is detached, khubd need to wait for usb-storage
-		  thread to stop, then it will disable all endpoints, and clean up pending
-		  URBs. But if usb-storage is waiting for some URBs, it will never stop.
-		  So there is a dead lock: khubd need to end usb-storage then flush URB,
-		  but usb-storage need that URB to end itself. So we flush URB here first,
-		  this will cause usb-storage quit waiting and end itself when khubd asks.
-	*/
+	   thread to stop, then it will disable all endpoints, and clean up pending
+	   URBs. But if usb-storage is waiting for some URBs, it will never stop.
+	   So there is a dead lock: khubd need to end usb-storage then flush URB,
+	   but usb-storage need that URB to end itself. So we flush URB here first,
+	   this will cause usb-storage quit waiting and end itself when khubd asks.
+	 */
 	spin_unlock(&musb->lock);
 	musb_h_pre_disable(musb);
 	spin_lock(&musb->lock);
-	
-	DBG(0, "host disconnect (%s)\n",
-			otg_state_string(musb->xceiv->state));
+
+	DBG(0, "host disconnect (%s)\n", otg_state_string(musb->xceiv->state));
 
 	switch (musb->xceiv->state) {
 	case OTG_STATE_A_SUSPEND:
@@ -217,8 +208,7 @@ void musb_root_disconnect(struct musb *musb)
 		musb->xceiv->state = OTG_STATE_B_IDLE;
 		break;
 	default:
-		DBG(0, "host disconnect (%s)\n",
-			otg_state_string(musb->xceiv->state));
+		DBG(0, "host disconnect (%s)\n", otg_state_string(musb->xceiv->state));
 	}
 }
 
@@ -228,8 +218,8 @@ void musb_root_disconnect(struct musb *musb)
 /* Caller may or may not hold musb->lock */
 int musb_hub_status_data(struct usb_hcd *hcd, char *buf)
 {
-	struct musb	*musb = hcd_to_musb(hcd);
-	int		retval = 0;
+	struct musb *musb = hcd_to_musb(hcd);
+	int retval = 0;
 
 	/* called in_irq() via usb_hcd_poll_rh_status() */
 	if (musb->port1_status & 0xffff0000) {
@@ -239,18 +229,13 @@ int musb_hub_status_data(struct usb_hcd *hcd, char *buf)
 	return retval;
 }
 
-int musb_hub_control(
-	struct usb_hcd	*hcd,
-	u16		typeReq,
-	u16		wValue,
-	u16		wIndex,
-	char		*buf,
-	u16		wLength)
+int musb_hub_control(struct usb_hcd *hcd,
+		     u16 typeReq, u16 wValue, u16 wIndex, char *buf, u16 wLength)
 {
-	struct musb	*musb = hcd_to_musb(hcd);
-	u32		temp;
-	int		retval = 0;
-	unsigned long	flags;
+	struct musb *musb = hcd_to_musb(hcd);
+	u32 temp;
+	int retval = 0;
+	unsigned long flags;
 
 	spin_lock_irqsave(&musb->lock, flags);
 
@@ -302,21 +287,20 @@ int musb_hub_control(
 		break;
 	case GetHubDescriptor:
 		{
-		struct usb_hub_descriptor *desc = (void *)buf;
+			struct usb_hub_descriptor *desc = (void *)buf;
 
-		desc->bDescLength = 9;
-		desc->bDescriptorType = 0x29;
-		desc->bNbrPorts = 1;
-		desc->wHubCharacteristics = cpu_to_le16(
-				  0x0001	/* per-port power switching */
-				| 0x0010	/* no overcurrent reporting */
-				);
-		desc->bPwrOn2PwrGood = 5;	/* msec/2 */
-		desc->bHubContrCurrent = 0;
+			desc->bDescLength = 9;
+			desc->bDescriptorType = 0x29;
+			desc->bNbrPorts = 1;
+			desc->wHubCharacteristics = cpu_to_le16(0x0001	/* per-port power switching */
+								| 0x0010	/* no overcurrent reporting */
+			    );
+			desc->bPwrOn2PwrGood = 5;	/* msec/2 */
+			desc->bHubContrCurrent = 0;
 
-		/* workaround bogus struct definition */
-		desc->u.hs.DeviceRemovable[0] = 0x02;	/* port 1 */
-		desc->u.hs.DeviceRemovable[1] = 0xff;
+			/* workaround bogus struct definition */
+			desc->u.hs.DeviceRemovable[0] = 0x02;	/* port 1 */
+			desc->u.hs.DeviceRemovable[1] = 0xff;
 		}
 		break;
 	case GetHubStatus:
@@ -329,18 +313,17 @@ int musb_hub_control(
 
 		/* finish RESET signaling? */
 		if ((musb->port1_status & USB_PORT_STAT_RESET)
-				&& time_after_eq(jiffies, musb->rh_timer))
-				musb_port_reset(musb, false);
+		    && time_after_eq(jiffies, musb->rh_timer))
+			musb_port_reset(musb, false);
 
 		/* finish RESUME signaling? */
 		if ((musb->port1_status & MUSB_PORT_STAT_RESUME)
-				&& time_after_eq(jiffies, musb->rh_timer)) {
-			u8		power;
+		    && time_after_eq(jiffies, musb->rh_timer)) {
+			u8 power;
 
 			power = musb_readb(musb->mregs, MUSB_POWER);
 			power &= ~MUSB_POWER_RESUME;
-			DBG(4, "root port resume stopped, power %02x\n",
-					power);
+			DBG(4, "root port resume stopped, power %02x\n", power);
 			musb_writeb(musb->mregs, MUSB_POWER, power);
 
 			/* ISSUE:  DaVinci (RTL 1.300) disconnects after
@@ -349,8 +332,7 @@ int musb_hub_control(
 			 */
 
 			musb->is_active = 1;
-			musb->port1_status &= ~(USB_PORT_STAT_SUSPEND
-					| MUSB_PORT_STAT_RESUME);
+			musb->port1_status &= ~(USB_PORT_STAT_SUSPEND | MUSB_PORT_STAT_RESUME);
 			musb->port1_status |= USB_PORT_STAT_C_SUSPEND << 16;
 			usb_hcd_poll_rh_status(musb_to_hcd(musb));
 			/* NOTE: it might really be A_WAIT_BCON ... */
@@ -358,11 +340,11 @@ int musb_hub_control(
 		}
 
 		put_unaligned(cpu_to_le32(musb->port1_status
-					& ~MUSB_PORT_STAT_RESUME),
-				(__le32 *) buf);
+					  & ~MUSB_PORT_STAT_RESUME), (__le32 *) buf);
 
 		/* port change status is more interesting */
-		DBG(0,"port status %08x,devctl=0x%x\n",musb->port1_status,musb_readb(musb->mregs, MUSB_DEVCTL));
+		DBG(0, "port status %08x,devctl=0x%x\n", musb->port1_status,
+		    musb_readb(musb->mregs, MUSB_DEVCTL));
 		break;
 	case SetPortFeature:
 		if ((wIndex & 0xff) != 1)
@@ -381,8 +363,8 @@ int musb_hub_control(
 			 * logic relating to VBUS power-up.
 			 */
 			DBG(0, "try to call musb_start in virthub\n");
-			//if (!hcd->self.is_b_host)
-				//musb_start(musb);
+			/* if (!hcd->self.is_b_host) */
+			/* musb_start(musb); */
 			break;
 		case USB_PORT_FEAT_RESET:
 			musb_port_reset(musb, true);
@@ -391,9 +373,9 @@ int musb_hub_control(
 			musb_port_suspend(musb, true);
 			break;
 		case USB_PORT_FEAT_TEST:
-			break;//wz
-			//if (unlikely(is_host_active(musb)))
-			//	goto error;
+			break;	/* wz */
+			/* if (unlikely(is_host_active(musb))) */
+			/* goto error; */
 
 			wIndex >>= 8;
 			switch (wIndex) {
@@ -416,11 +398,9 @@ int musb_hub_control(
 				break;
 			case 5:
 				pr_debug("TEST_FORCE_ENABLE\n");
-				temp = MUSB_TEST_FORCE_HOST
-					| MUSB_TEST_FORCE_HS;
+				temp = MUSB_TEST_FORCE_HOST | MUSB_TEST_FORCE_HS;
 
-				musb_writeb(musb->mregs, MUSB_DEVCTL,
-						MUSB_DEVCTL_SESSION);
+				musb_writeb(musb->mregs, MUSB_DEVCTL, MUSB_DEVCTL_SESSION);
 				break;
 			case 6:
 				pr_debug("TEST_FIFO_ACCESS\n");

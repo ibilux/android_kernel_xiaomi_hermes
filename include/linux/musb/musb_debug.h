@@ -59,11 +59,11 @@
 #define xprintk(level,  format, args...) do { \
 	if (_dbg_level(level)) { \
 	if (musb_uart_debug) {\
-			printk(KERN_NOTICE "[MUSB]%s %d: " format , \
+			pr_warn("[MUSB]%s %d: " format , \
 				__func__, __LINE__ , ## args); \
 		} \
 		else{\
-			printk(KERN_DEBUG "[MUSB]%s %d: " format , \
+			pr_debug("[MUSB]%s %d: " format , \
 				__func__, __LINE__ , ## args); \
 	} \
 	} } while (0)

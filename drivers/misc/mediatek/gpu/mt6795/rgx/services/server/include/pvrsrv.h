@@ -43,17 +43,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef PVRSRV_H
 #define PVRSRV_H
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
-#if defined(KERNEL) && defined(ANDROID)
+#if defined(__KERNEL__) && defined(ANDROID) && !defined(__GENKSYMS__)
 #define __pvrsrv_defined_struct_enum__
 #include <services_kernel_client.h>
 #endif
 
 #include "device.h"
-#include "resman.h"
 #include "power.h"
 #include "sysinfo.h"
 #include "physheap.h"
@@ -88,12 +84,14 @@ typedef struct PVRSRV_DATA_TAG
 
 	IMG_HANDLE					hGlobalEventObject;			/*!< OS Global Event Object */
 	IMG_UINT32					ui32GEOConsecutiveTimeouts;	/*!< OS Global Event Object Timeouts */
-
+	
 	PVRSRV_CACHE_OP				uiCacheOp;					/*!< Pending cache operations in the system */
-	PRESMAN_DEFER_CONTEXTS_LIST	hResManDeferContext;		/*!< Device driver global deferred resman contexts list */
 
 	IMG_HANDLE					hCleanupThread;				/*!< Cleanup thread */
 	IMG_HANDLE					hCleanupEventObject;		/*!< Event object to drive cleanup thread */
+	POS_LOCK					hCleanupThreadWorkListLock;	/*!< Lock protecting the cleanup thread work list */
+	DLLIST_NODE					sCleanupThreadWorkList;		/*!< List of work to do by the cleanup thread */
+	IMG_PID						cleanupThreadPid;			/*!< Cleanup thread process id */
 
 	IMG_HANDLE					hDevicesWatchdogThread;		/*!< Devices Watchdog thread */
 	IMG_HANDLE					hDevicesWatchdogEvObj;		/*! Event object to drive devices watchdog thread */
@@ -224,7 +222,7 @@ PVRSRV_ERROR LMA_MMUPxMap(PVRSRV_DEVICE_NODE *psDevNode, Px_HANDLE *psMemHandle,
 
 IMG_VOID LMA_MMUPxUnmap(PVRSRV_DEVICE_NODE *psDevNode, Px_HANDLE *psMemHandle,
 						IMG_VOID *pvPtr);
-
+										
 
 /*!
 ******************************************************************************
@@ -265,6 +263,24 @@ PVRSRV_ERROR IMG_CALLCONV PVRSRVPollForGEValueKM (volatile IMG_UINT32	*pui32LinM
 IMG_IMPORT PVRSRV_ERROR IMG_CALLCONV PVRSRVWaitForValueKM(volatile IMG_UINT32	*pui32LinMemAddr,
 														IMG_UINT32			ui32Value,
 														IMG_UINT32			ui32Mask);
+
+/*!
+******************************************************************************
+ @Function	PVRSRVWaitForValueKMAndHoldBridgeLockKM
+
+ @Description
+ Waits without releasing bridge lock (using EventObjects) for a value
+ to match a masked read
+
+ @Input pui32LinMemAddr			: CPU linear address to poll
+ @Input ui32Value				: required value
+ @Input ui32Mask				: Mask
+
+ @Return   PVRSRV_ERROR :
+******************************************************************************/
+PVRSRV_ERROR IMG_CALLCONV PVRSRVWaitForValueKMAndHoldBridgeLockKM(volatile IMG_UINT32 *pui32LinMemAddr,
+                                                                  IMG_UINT32          ui32Value,
+                                                                  IMG_UINT32          ui32Mask);
 
 /*!
 *****************************************************************************
@@ -335,10 +351,10 @@ IMG_VOID PVRSRVSystemWaitCycles(PVRSRV_DEVICE_CONFIG *psDevConfig, IMG_UINT32 ui
  @Function	: PVRSRVCheckStatus
 
  @Description	: Notify any registered cmd complete function (except if its
-				  hPrivData matches the hCmdCompHandle handler) and raise the global
-				  event object.
+				  hPrivData matches the hCmdCompHandle handler) and raise the global 
+				  event object. 
 
- @Input hCmdCompHandle	: Identify the caller by the handler used when
+ @Input hCmdCompHandle	: Identify the caller by the handler used when 
 						  registering for cmd complete. IMG_NULL calls all
 						  the notify functions.
 
@@ -393,7 +409,7 @@ PVRSRV_ERROR PVRSRVUnregisterCmdCompleteNotify(IMG_HANDLE hNotify);
  @Function	: PVRSRVDebugRequest
 
  @Description	: Notify any registered debug request handler that a debug
-                  request has been made and at what level. It dumps information
+                  request has been made and at what level. It dumps information 
 		  for all debug handlers unlike RGXDumpDebugInfo
 
  @Input ui32VerbLevel	: The maximum verbosity level to dump
@@ -421,7 +437,7 @@ IMG_VOID IMG_CALLCONV PVRSRVDebugRequest(IMG_UINT32 ui32VerbLevel, DUMPDEBUG_PRI
  @Input pfnDbgRequestNotify : Notify function
 
  @Input ui32RequesterID : Used to determine the order debug request callbacks get
-                          called in with the table passed into
+                          called in with the table passed into 
 
  @Input hDbgReqeustHandle : Handler to data passed to the Notify function when called
 
@@ -486,5 +502,27 @@ PVRSRV_ERROR GetBIFTilingHeapXStride(IMG_UINT32 uiHeapNum, IMG_UINT32 *puiXStrid
 
 *****************************************************************************/
 PVRSRV_ERROR GetNumBifTilingHeapConfigs(IMG_UINT32 *puiNumHeaps);
+
+#if defined(SUPPORT_GPUVIRT_VALIDATION)
+/*!
+***********************************************************************************
+ @Function				: PopulateLMASubArenas
+
+ @Description			: Uses the Apphints passed by the client at initialization
+						  time to add bases and sizes in the various arenas in the
+						  LMA memory
+
+ @Input psDeviceNode	: Pointer to the device node struct containing all the
+						  arena information
+
+ @Input ui32OSidMin		: Single dimensional array containing the minimum values
+						  for each OSid area
+
+ @Input ui32OSidMax		: Single dimensional array containing the maximum values
+						  for each OSid area
+***********************************************************************************/
+
+IMG_VOID PopulateLMASubArenas(PVRSRV_DEVICE_NODE *psDeviceNode, IMG_UINT32 aui32OSidMin[GPUVIRT_VALIDATION_NUM_OS][GPUVIRT_VALIDATION_NUM_REGIONS], IMG_UINT32 aui32OSidMax[GPUVIRT_VALIDATION_NUM_OS][GPUVIRT_VALIDATION_NUM_REGIONS]);
+#endif
 
 #endif /* PVRSRV_H */

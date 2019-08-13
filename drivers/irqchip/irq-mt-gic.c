@@ -28,7 +28,7 @@
 
 #include "irqchip.h"
 #include <mach/mt_secure_api.h>
-
+#include <mach/mt_irq.h>
 
 union gic_base
 {
@@ -166,14 +166,14 @@ void mt_irq_set_polarity(unsigned int irq, unsigned int polarity)
 {
 	u32 offset, reg_index, value;
 
-	if (irq < 32)
+	if (irq < (NR_GIC_SGI+NR_GIC_PPI))
 	{
 		printk(KERN_CRIT "Fail to set polarity of interrupt %d\n", irq);
 		return ;
 	}
 
-	offset = (irq - 32) & 0x1F;
-	reg_index = (irq - 32) >> 5;
+	offset = (irq - (NR_GIC_SGI+NR_GIC_PPI)) & 0x1F;
+	reg_index = (irq - (NR_GIC_SGI+NR_GIC_PPI)) >> 5;
 
 	//raw_spin_lock(&irq_controller_lock);
 
@@ -223,7 +223,7 @@ static int gic_set_type(struct irq_data *d, unsigned int type)
 	} else if ((type == IRQ_TYPE_EDGE_RISING) || (type == IRQ_TYPE_EDGE_FALLING)) {
 		val |= confmask;
 	} else {
-		pr_err("[GIC] not correct trigger type(0x%x)\n", type);
+		pr_err("[GIC] not correct trigger type (0x%x)\n", type);
 		dump_stack();
 		raw_spin_unlock(&irq_controller_lock);
 		return -EINVAL;
@@ -482,7 +482,7 @@ static void __cpuinit gic_cpu_init(struct gic_chip_data *gic)
 	/*
 	 * Set priority on PPI and SGI interrupts
 	 */
-	for (i = 0; i < 32; i += 4)
+	for (i = 0; i < (NR_GIC_SGI+NR_GIC_PPI); i += 4)
 		writel_relaxed(0xa0a0a0a0, dist_base + GIC_DIST_PRI + i * 4 / 4);
 
 	writel_relaxed(0xf0, base + GIC_CPU_PRIMASK);
@@ -733,11 +733,11 @@ static int gic_irq_domain_xlate(struct irq_domain *d,
 		return -EINVAL;
 
 	/* Get the interrupt number and add 16 to skip over SGIs */
-	*out_hwirq = intspec[1] + 16;
+	*out_hwirq = intspec[1] + NR_GIC_SGI;
 
 	/* For SPIs, we need to add 16 more to get the GIC irq ID number */
 	if (!intspec[0])
-		*out_hwirq += 16;
+		*out_hwirq += NR_GIC_SGI;
 
 	*out_type = intspec[2] & IRQ_TYPE_SENSE_MASK;
 	return 0;
@@ -1019,6 +1019,24 @@ void mt_irq_set_pending_for_sleep(unsigned int irq)
 	dsb();
 }
 
+u32 mt_irq_get_pending(unsigned int irq)
+{
+	void __iomem *dist_base;
+	u32 bit = 1 << (irq % 32);
+
+	dist_base = gic_data_dist_base(&gic_data[0]);
+	
+	return ((readl_relaxed(dist_base + GIC_DIST_PENDING_SET + irq / 32 * 4) & bit)? 1 : 0);
+}
+
+void mt_irq_set_pending(unsigned int irq)
+{
+        void __iomem *dist_base;
+        u32 bit = 1 << (irq % 32);
+        dist_base = gic_data_dist_base(&gic_data[0]);
+        writel(bit, dist_base + GIC_DIST_PENDING_SET + irq / 32 * 4);
+}
+
 /*
  * mt_irq_unmask_for_sleep: enable an interrupt for the sleep manager's use
  * @irq: interrupt id
@@ -1073,7 +1091,7 @@ void mt_irq_set_sens(unsigned int irq, unsigned int sens)
     unsigned long flags;
     u32 config;
 
-    if (irq < 32) {
+    if (irq < (NR_GIC_SGI+NR_GIC_PPI)) {
         pr_err("Fail to set sensitivity of interrupt %d\n", irq);
         return ;
     }
@@ -1139,6 +1157,90 @@ void mt_irq_dump_status(int irq)
 	
 }
 
+static unsigned int get_pol(int irq)
+{
+	unsigned int bit;
+	bit = 1 << (irq % 32);
+	//0x0: high, 0x1:low
+	return ((readl(INT_POL_CTL0 + ((irq-32) / 32 * 4)) & bit)?1:0);
+}
+
+static unsigned int get_sens(int irq)
+{
+	unsigned int bit;
+	bit = 0x3 << ((irq % 16)*2);
+	//edge:0x2, level:0x1
+	return ((readl(GIC_DIST_BASE + GIC_DIST_CONFIG + irq / 16 * 4) & bit) >> ((irq % 16)*2));
+}
+
+static irqreturn_t gic_test_isr(void)
+{
+	return IRQ_HANDLED;
+}
+
+#define MT_EDGE_SENSITIVE 0
+#define MT_LEVEL_SENSITIVE 1
+#define MT_POLARITY_LOW   0
+#define MT_POLARITY_HIGH  1
+int mt_gic_test(int irq, int type)
+{	
+	int ret;
+    
+	ret = request_irq(irq, (irq_handler_t)gic_test_isr, type, "mtk_watchdog", NULL);
+	if(ret < 0)
+	{
+		pr_err("mtk gic test failed! fail num = %d\n", ret);
+	}
+	
+	switch(type)
+	{
+		case IRQF_TRIGGER_RISING:
+			if(get_pol(irq) == !MT_POLARITY_HIGH)
+				pr_notice("[IRQF_TRIGGER_RISING]mt_irq_set_polarity GIC_POL_HIGH test passed!!!\n");
+			else
+				pr_notice("[IRQF_TRIGGER_RISING]mt_irq_set_polarity GIC_POL_HIGH test failed!!!\n");
+			if(get_sens(irq)>>1)
+				pr_notice("[IRQF_TRIGGER_RISING]mt_irq_set_sens MT_EDGE_SENSITIVE test passed!!!\n");
+			else
+				pr_notice("[IRQF_TRIGGER_RISING]mt_irq_set_sens MT_EDGE_SENSITIVE test failed!!!\n");	
+			break;
+		case IRQF_TRIGGER_FALLING:
+			if(get_pol(irq) == !MT_POLARITY_LOW)
+				pr_notice("[IRQF_TRIGGER_FALLING]mt_irq_set_polarity GIC_POL_LOW test passed!!!\n");
+			else
+				pr_notice("[IRQF_TRIGGER_FALLING]mt_irq_set_polarity GIC_POL_LOW test failed!!!\n");
+			if(get_sens(irq)>>1)
+				pr_notice("[IRQF_TRIGGER_FALLING]mt_irq_set_sens MT_EDGE_SENSITIVE test passed!!!\n");
+			else
+				pr_notice("[IRQF_TRIGGER_FALLING]mt_irq_set_sens MT_EDGE_SENSITIVE test failed!!!\n");	
+			break;
+		case IRQF_TRIGGER_HIGH:
+			if(get_pol(irq) == !MT_POLARITY_HIGH)
+				pr_notice("[IRQF_TRIGGER_HIGH]mt_irq_set_polarity GIC_POL_HIGH test passed!!!\n");
+			else
+				pr_notice("[IRQF_TRIGGER_HIGH]mt_irq_set_polarity GIC_POL_HIGH test failed!!!\n");
+			if(!(get_sens(irq)>>1))
+				pr_notice("[IRQF_TRIGGER_HIGH]mt_irq_set_sens MT_LEVEL_SENSITIVE test passed!!!\n");
+			else
+				pr_notice("[IRQF_TRIGGER_HIGH]mt_irq_set_sens MT_LEVEL_SENSITIVE test failed!!!\n");	
+			break;
+		case IRQF_TRIGGER_LOW:
+			if(get_pol(irq) == !MT_POLARITY_LOW)
+				pr_notice("[IRQF_TRIGGER_LOW]mt_irq_set_polarity GIC_POL_LOW test passed!!!\n");
+			else
+				pr_notice("[IRQF_TRIGGER_LOW]mt_irq_set_polarity GIC_POL_LOW test failed!!!\n");
+			if(!(get_sens(irq)>>1))
+				pr_notice("[IRQF_TRIGGER_LOW]mt_irq_set_sens MT_LEVEL_SENSITIVE test passed!!!\n");
+			else
+				pr_notice("[IRQF_TRIGGER_LOW]mt_irq_set_sens MT_LEVEL_SENSITIVE test failed!!!\n");	
+			break;
+		default:
+			pr_err("[GIC] not correct trigger type\n");  
+			return -1;
+	}
+	
+	return ret;
+}
 
 #ifdef CONFIG_OF
 static int gic_cnt __initdata;
@@ -1188,6 +1290,11 @@ int __init mt_gic_of_init(struct device_node *node, struct device_node *parent)
 
 	/* FIXME: just used to test dump API */
 	//mt_irq_dump_status(160);
+	/* UT for gic functions */
+	//mt_gic_test(284, IRQF_TRIGGER_RISING);
+	//mt_gic_test(285, IRQF_TRIGGER_HIGH);
+	//mt_gic_test(286, IRQF_TRIGGER_LOW);
+	//mt_gic_test(287, IRQF_TRIGGER_FALLING);
 	
 	return 0;
 }

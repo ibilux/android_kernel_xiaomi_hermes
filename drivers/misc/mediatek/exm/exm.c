@@ -333,7 +333,7 @@ err_portio:
 	}
 	kobject_put(idev->portio_dir);
 err_map:
-	for (mi--; mi>=0; mi--) {
+	for (mi--; mi >= 0; mi--) {
 		mem = &idev->info->mem[mi];
 		map = mem->map;
 		kobject_put(&map->kobj);
@@ -369,26 +369,16 @@ static void exm_dev_del_attributes(struct exm_device *idev)
 static int exm_get_minor(struct exm_device *idev)
 {
 	int retval = -ENOMEM;
-	int id;
 
 	mutex_lock(&minor_lock);
-	if (idr_pre_get(&exm_idr, GFP_KERNEL) == 0)
-		goto exit;
-
-	retval = idr_get_new(&exm_idr, idev, &id);
-	if (retval < 0) {
-		if (retval == -EAGAIN)
-			retval = -ENOMEM;
-		goto exit;
-	}
-	if (id < EXM_MAX_DEVICES) {
-		idev->minor = id;
-	} else {
-		dev_err(idev->dev, "too many exm devices\n");
+	retval = idr_alloc(&exm_idr, idev, 0, EXM_MAX_DEVICES, GFP_KERNEL);
+	if (retval >= 0) {
+		idev->minor = retval;
+		retval = 0;
+	} else if (retval == -ENOSPC) {
+		dev_err(idev->dev, "too many uio devices\n");
 		retval = -EINVAL;
-		idr_remove(&exm_idr, id);
 	}
-exit:
 	mutex_unlock(&minor_lock);
 	return retval;
 }
@@ -694,7 +684,7 @@ static int exm_mmap(struct file *filep, struct vm_area_struct *vma)
 
 	requested_pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
 	actual_pages = ((idev->info->mem[mi].addr & ~PAGE_MASK)
-			+ idev->info->mem[mi].size + PAGE_SIZE -1) >> PAGE_SHIFT;
+			+ idev->info->mem[mi].size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 	if (requested_pages > actual_pages)
 		return -EINVAL;
 
@@ -704,13 +694,13 @@ static int exm_mmap(struct file *filep, struct vm_area_struct *vma)
 	}
 
 	switch (idev->info->mem[mi].memtype) {
-		case EXM_MEM_PHYS:
-			return exm_mmap_physical(vma);
-		case EXM_MEM_LOGICAL:
-		case EXM_MEM_VIRTUAL:
-			return exm_mmap_logical(vma);
-		default:
-			return -EINVAL;
+	case EXM_MEM_PHYS:
+		return exm_mmap_physical(vma);
+	case EXM_MEM_LOGICAL:
+	case EXM_MEM_VIRTUAL:
+		return exm_mmap_logical(vma);
+	default:
+		return -EINVAL;
 	}
 }
 
@@ -778,7 +768,7 @@ static int init_exm_class(void)
 
 	ret = class_register(&exm_class);
 	if (ret) {
-		printk(KERN_ERR "class_register failed for exm\n");
+		pr_err("class_register failed for exm\n");
 		goto err_class_register;
 	}
 	return 0;
@@ -834,7 +824,7 @@ int __exm_register_device(struct module *owner,
 				  MKDEV(exm_major, idev->minor), idev,
 				  "exm%d", idev->minor);
 	if (IS_ERR(idev->dev)) {
-		printk(KERN_ERR "EXM: device register failed\n");
+		pr_err("EXM: device register failed\n");
 		ret = PTR_ERR(idev->dev);
 		goto err_device_create;
 	}

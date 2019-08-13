@@ -1,2 +1,4 @@
-
-obj-$(CONFIG_TRUSTONIC_TEE_SUPPORT) += $(subst ",,$(CONFIG_MTK_PLATFORM))/
+ifeq ($(CONFIG_TRUSTONIC_TEE_SUPPORT),y)
+	# armv7
+	obj-$(CONFIG_TRUSTONIC_TEE_SUPPORT) += $(subst ",,$(CONFIG_MTK_PLATFORM))/
+endif

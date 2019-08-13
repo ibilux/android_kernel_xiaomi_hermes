@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm_protection.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm_protection.h#1
 */
 
 /*! \file   "rlm_protection.h"
     \brief
 */
 
-
-
 /*
-** $Log: rlm_protection.h $
+** Log: rlm_protection.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -86,7 +84,6 @@ typedef enum _ENUM_HT_PROTECT_MODE_T {
 	HT_PROTECT_MODE_NUM
 } ENUM_HT_PROTECT_MODE_T, *P_ENUM_HT_PROTECT_MODE_T;
 
-
 typedef enum _ENUM_GF_MODE_T {
 	GF_MODE_NORMAL = 0,
 	GF_MODE_PROTECT,
@@ -127,4 +124,4 @@ typedef enum _ENUM_RIFS_MODE_T {
 ********************************************************************************
 */
 
-#endif				/* _RLM_PROTECTION_H */
+#endif /* _RLM_PROTECTION_H */

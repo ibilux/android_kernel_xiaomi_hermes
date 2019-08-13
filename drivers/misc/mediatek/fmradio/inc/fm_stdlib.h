@@ -8,39 +8,39 @@
 #if 1
 #define fm_memset(buf, a, len)  \
 ({                                    \
-    void *__ret = (void *)0;              \
-    __ret = memset((buf), (a), (len)); \
-    __ret;                          \
+	void *__ret = (void *)0;              \
+	__ret = memset((buf), (a), (len)); \
+	__ret;                          \
 })
 
 #define fm_memcpy(dst, src, len)  \
 ({                                    \
-    void *__ret = (void *)0;              \
-    __ret = memcpy((dst), (src), (len)); \
-    __ret;                          \
+	void *__ret = (void *)0;              \
+	__ret = memcpy((dst), (src), (len)); \
+	__ret;                          \
 })
 
 #define fm_malloc(len)  \
 ({                                    \
-    void *__ret = (void *)0;              \
-    __ret = kmalloc(len, GFP_KERNEL); \
-    __ret;                          \
+	void *__ret = (void *)0;              \
+	__ret = kmalloc(len, GFP_KERNEL); \
+	__ret;                          \
 })
 
 #define fm_zalloc(len)  \
 ({                                    \
-    void *__ret = (void *)0;              \
-    __ret = kzalloc(len, GFP_KERNEL); \
-    __ret;                          \
+	void *__ret = (void *)0;              \
+	__ret = kzalloc(len, GFP_KERNEL); \
+	__ret;                          \
 })
 
 #define fm_free(ptr)  kfree(ptr)
 
 #define fm_vmalloc(len)  \
 ({                                    \
-    void *__ret = (void *)0;              \
-    __ret = vmalloc(len); \
-    __ret;                          \
+	void *__ret = (void *)0;              \
+	__ret = vmalloc(len); \
+	__ret;                          \
 })
 
 #define fm_vfree(ptr)  vfree(ptr)
@@ -58,4 +58,4 @@ inline void *fm_memcpy(void *dst, const void *src, fm_s32 len)
 
 #endif
 
-#endif				/* __FM_STDLIB_H__ */
+#endif /* __FM_STDLIB_H__ */

@@ -1,22 +1,3 @@
-/**
- * @file
- *   val_api_public.h
- *
- * @par Project:
- *   Video
- *
- * @par Description:
- *   Video Abstraction Layer API for internal use
- *
- * @par Author:
- *   Jackal Chen (mtk02532)
- *
- * @par $Revision: #1 $
- * @par $Modtime:$
- * @par $Log:$
- *
- */
-
 #ifndef _VAL_API_PRIVATE_H_
 #define _VAL_API_PRIVATE_H_
 
@@ -56,12 +37,16 @@ VAL_RESULT_T eVideoVCodecCoreNumber(int *CPUNums);
 
 VAL_RESULT_T eVideoConfigMCIPort(VAL_UINT32_T u4PortConfig, VAL_UINT32_T *pu4PortResult, VAL_MEM_CODEC_T eMemCodec);
 
-VAL_UINT32_T eVideoHwM4UEnable(VAL_BOOL_T bEnable); // MTK_SEC_VIDEO_PATH_SUPPORT
+VAL_UINT32_T eVideoHwM4UEnable(VAL_BOOL_T bEnable); /* MTK_SEC_VIDEO_PATH_SUPPORT */
 VAL_UINT32_T eVideoLibDecrypt(VIDEO_ENCRYPT_CODEC_T a_eVIDEO_ENCRYPT_CODEC);
 
 /* for DirectLink Meta Mode + */
 VAL_RESULT_T eVideoAllocMetaHandleList(VAL_HANDLE_T *a_MetaHandleList);
-VAL_RESULT_T eVideoGetBufInfoFromMetaHandle(VAL_HANDLE_T a_MetaHandleList, VAL_VOID_T *a_pvInParam, VAL_VOID_T *a_pvOutParam);
+VAL_RESULT_T eVideoGetBufInfoFromMetaHandle(
+	VAL_HANDLE_T a_MetaHandleList,
+	VAL_VOID_T *a_pvInParam,
+	VAL_VOID_T *a_pvOutParam
+);
 VAL_RESULT_T eVideoFreeMetaHandleList(VAL_HANDLE_T a_MetaHandleList);
 /* for DirectLink Meta Mode - */
 
@@ -69,4 +54,4 @@ VAL_RESULT_T eVideoFreeMetaHandleList(VAL_HANDLE_T a_MetaHandleList);
 }
 #endif
 
-#endif // #ifndef _VAL_API_PRIVATE_H_
+#endif /* #ifndef _VAL_API_PRIVATE_H_ */

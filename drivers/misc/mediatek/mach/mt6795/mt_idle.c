@@ -33,45 +33,15 @@
 
 //#define CCI400_CLOCK_SWITCH
 
-#define USING_XLOG
-
-#ifdef USING_XLOG
-#include <linux/xlog.h>
-
-#define IDLE_TAG     "Power/swap"
-
-#define idle_err(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_ERROR, IDLE_TAG, fmt, ##args)
-#define idle_warn(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_WARN, IDLE_TAG, fmt, ##args)
-#define idle_info(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_INFO, IDLE_TAG, fmt, ##args)
-#define idle_dbg(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_DEBUG, IDLE_TAG, fmt, ##args)
-#define idle_ver(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_VERBOSE, IDLE_TAG, fmt, ##args)
-
-#else /* !USING_XLOG */
-
-#define IDLE_TAG     "[Power/swap] "
-
-#define idle_err(fmt, args...)       \
-    printk(KERN_ERR IDLE_TAG);           \
-    printk(KERN_CONT fmt, ##args)
-#define idle_warn(fmt, args...)      \
-    printk(KERN_WARNING IDLE_TAG);       \
-    printk(KERN_CONT fmt, ##args)
-#define idle_info(fmt, args...)      \
-    printk(KERN_NOTICE IDLE_TAG);        \
-    printk(KERN_CONT fmt, ##args)
-#define idle_dbg(fmt, args...)       \
-    printk(KERN_INFO IDLE_TAG);          \
-    printk(KERN_CONT fmt, ##args)
-#define idle_ver(fmt, args...)       \
-    printk(KERN_DEBUG IDLE_TAG);         \
-    printk(KERN_CONT fmt, ##args)
-
-#endif
+#define IDLE_TAG     "[Power/swap]"
+#define spm_emerg(fmt, args...)		pr_emerg(IDLE_TAG fmt, ##args)
+#define spm_alert(fmt, args...)		pr_alert(IDLE_TAG fmt, ##args)
+#define spm_crit(fmt, args...)		pr_crit(IDLE_TAG fmt, ##args)
+#define idle_err(fmt, args...)		pr_err(IDLE_TAG fmt, ##args)
+#define idle_dbg(fmt, args...)		pr_warn(IDLE_TAG fmt, ##args)
+#define spm_notice(fmt, args...)	pr_notice(IDLE_TAG fmt, ##args)
+#define idle_info(fmt, args...)		pr_info(IDLE_TAG fmt, ##args)
+#define idle_ver(fmt, args...)		pr_info(IDLE_TAG fmt, ##args)	/* pr_debug show nothing */
 
 #define idle_gpt GPT4
 

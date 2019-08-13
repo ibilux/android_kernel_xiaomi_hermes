@@ -79,15 +79,10 @@ static struct kobj_attribute _name##_attr = {	\
 
 #define __ATTR_OF(_name)	(&_name##_attr.attr)
 
-#define vcorefs_emerg(fmt, args...)	pr_emerg(fmt, ##args)
-#define vcorefs_alert(fmt, args...)	pr_alert(fmt, ##args)
-#define vcorefs_crit(fmt, args...)	pr_crit(fmt, ##args)
+#define vcorefs_crit(fmt, args...)	pr_err(fmt, ##args)
 #define vcorefs_err(fmt, args...)	pr_err(fmt, ##args)
 #define vcorefs_warn(fmt, args...)	pr_warn(fmt, ##args)
-#define vcorefs_notice(fmt, args...)	pr_notice(fmt, ##args)
-#define vcorefs_info(fmt, args...)	pr_info(fmt, ##args)
-#define vcorefs_debug(fmt, args...)	pr_info(fmt, ##args)	/* pr_debug show nothing */
-
+#define vcorefs_debug(fmt, args...)	pr_debug(fmt, ##args)
 
 /**************************************
  * Define and Declare
@@ -579,7 +574,7 @@ KICK:
  **************************************/
 bool vcorefs_is_95m_segment(void)
 {
-#if defined(CONFIG_MTK_WQHD) || defined(MTK_DISABLE_EFUSE)
+#if defined(MTK_DISABLE_EFUSE)
 	return false;
 #else
 	u32 func;
@@ -592,6 +587,10 @@ bool vcorefs_is_95m_segment(void)
 	func = (func >> 24) & 0xf;
 
 	if (func >= 6 && func <= 10)	/* 95 segment */
+		return false;
+
+	if (!strcmp(CONFIG_LCM_WIDTH, "1440") &&
+	    !strcmp(CONFIG_LCM_HEIGHT, "2560"))		/* WQHD demo phone */
 		return false;
 
 	return true;
@@ -1134,7 +1133,7 @@ static int init_vcorefs_pwrctrl(void)
 		BUG_ON(opp->ddr_khz != FDDR_S2_KHZ);	/* violate spec */
 		pwrctrl->sonoff_dvfs_only = 0;
 		pwrctrl->lv_autok_trig = 0;
-		/*pwrctrl->stay_lv_en = 1;*/
+		pwrctrl->stay_lv_en = 1;
 	} else {
 		/*pwrctrl->feature_en = 0;*/
 		pwrctrl->lv_autok_trig = (pwrctrl->feature_en && pwrctrl->sdio_lv_check);

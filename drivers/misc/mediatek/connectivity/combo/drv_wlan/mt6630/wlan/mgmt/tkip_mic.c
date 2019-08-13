@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/TRUNK/MT6620_WiFi_Firmware/mcu/wifi/mgmt/tkip_mic.c#7 $
+** Id: //Department/DaVinci/TRUNK/MT6620_WiFi_Firmware/mcu/wifi/mgmt/tkip_mic.c#7
 */
 
 /*! \file tkip_sw.c
@@ -15,7 +15,7 @@
 ********************************************************************************
 */
 /*
-** $Log: tkip_mic.c $
+** Log: tkip_mic.c
 **
 ** 06 14 2013 eddie.chen
 ** [BORA00002450] [WIFISYS][MT6630] New design for mt6630
@@ -42,7 +42,8 @@
  * Add the initial value in the tikipMicGen function.
  *
  * 08 10 2011 chinglan.wang
- * [WCXRP00000903] [WiFi Direct][Driver] Support invitation request, invitation abort, invitation status, invitation indicate feature API
+ * [WCXRP00000903] [WiFi Direct][Driver] Support invitation request,
+ * invitation abort, invitation status, invitation indicate feature API
  * .
  *
  * 11 15 2010 wh.su
@@ -136,8 +137,8 @@
 
 #define XSWAP32(x)      ((((x) & 0xFF00FF00) >> 8) | (((x) & 0x00FF00FF) << 8))
 
-#define SBOX(x)         (tkipSBOX1[LO_8BITS(x)] ^ tkipSBOX2[HI_8BITS(x)])	/* obtain 16-bit entries SBOX form two 8-bit entries SBOX1 and SBOX2 */
-
+/* obtain 16-bit entries SBOX form two 8-bit entries SBOX1 and SBOX2 */
+#define SBOX(x)         (tkipSBOX1[LO_8BITS(x)] ^ tkipSBOX2[HI_8BITS(x)])
 
 /*******************************************************************************
 *                         D A T A   T Y P E S
@@ -258,7 +259,6 @@ VOID tkipMicB(IN OUT PUINT_32 pu4L, IN OUT PUINT_32 pu4R)
 	*pu4L = (*pu4L + *pu4R);	/* l <- (l+r) mod 2^32  */
 }				/* tkipMicB */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief TKIP Michael generation function
@@ -277,14 +277,12 @@ VOID tkipMicB(IN OUT PUINT_32 pu4L, IN OUT PUINT_32 pu4R)
 VOID
 tkipMicGen(IN PUCHAR pucMickey,
 	   IN PUCHAR pucData,
-	   IN UINT_32 u4DataLen,
-	   IN PUCHAR pucSa, IN PUCHAR pucDa, IN UCHAR ucPriority, OUT PUCHAR pucMic)
+	   IN UINT_32 u4DataLen, IN PUCHAR pucSa, IN PUCHAR pucDa, IN UCHAR ucPriority, OUT PUCHAR pucMic)
 {
 
 	UINT_32 i;
 	UINT_32 l, r;
 	UINT_32 au4Msg[3];
-
 
 	ASSERT(pucMickey);
 	ASSERT(pucData);
@@ -328,14 +326,12 @@ tkipMicGen(IN PUCHAR pucMickey,
 		break;
 
 	case 2:
-		au4Msg[0] = ((UINT_32) pucData[u4DataLen - 2]) |
-		    ((UINT_32) pucData[u4DataLen - 1] << 8) | 0x005A0000;
+		au4Msg[0] = ((UINT_32) pucData[u4DataLen - 2]) | ((UINT_32) pucData[u4DataLen - 1] << 8) | 0x005A0000;
 		break;
 
 	case 3:
 		au4Msg[0] = ((UINT_32) pucData[u4DataLen - 3]) |
-		    ((UINT_32) pucData[u4DataLen - 2] << 8) |
-		    ((UINT_32) pucData[u4DataLen - 1] << 16) | 0x5A000000;
+		    ((UINT_32) pucData[u4DataLen - 2] << 8) | ((UINT_32) pucData[u4DataLen - 1] << 16) | 0x5A000000;
 		break;
 
 	default:
@@ -352,7 +348,6 @@ tkipMicGen(IN PUCHAR pucMickey,
 	WLAN_SET_FIELD_32(pucMic + 4, r);
 
 }				/* tkipMicGen */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -374,8 +369,7 @@ VOID
 tkipMicEncapsulate(IN PUINT_8 pucDa,
 		   IN PUINT_8 pucSa,
 		   IN UINT_8 ucPriority,
-		   IN UINT_16 u2PayloadLen,
-		   IN PUINT_8 pucPayload, IN PUINT_8 pucMic, IN PUINT_8 pucMicKey)
+		   IN UINT_16 u2PayloadLen, IN PUINT_8 pucPayload, IN PUINT_8 pucMic, IN PUINT_8 pucMicKey)
 {
 	UCHAR aucMic[8];	/* MIC' */
 
@@ -387,20 +381,18 @@ tkipMicEncapsulate(IN PUINT_8 pucDa,
 	ASSERT(pucMic);
 	ASSERT(pucMicKey);
 
-	DBGLOG(RSN, LOUD, ("MIC key %02x-%02x-%02x-%02x %02x-%02x-%02x-%02x\n",
+	DBGLOG(RSN, LOUD, "MIC key %02x-%02x-%02x-%02x %02x-%02x-%02x-%02x\n",
 			   pucMicKey[0], pucMicKey[1], pucMicKey[2], pucMicKey[3],
-			   pucMicKey[4], pucMicKey[5], pucMicKey[6], pucMicKey[7]));
+			   pucMicKey[4], pucMicKey[5], pucMicKey[6], pucMicKey[7]);
 
 	tkipMicGen(pucMicKey, (PUINT_8) pucPayload, u2PayloadLen, pucSa, pucDa, ucPriority, aucMic);
 
 	kalMemCopy((PUINT_8) pucMic, &aucMic[0], WLAN_MAC_MIC_LEN);
 
-	DBGLOG(RSN, LOUD, ("Mic %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n",
-			   pucMic[0], pucMic[1], pucMic[2], pucMic[3],
-			   pucMic[4], pucMic[5], pucMic[6], pucMic[7]));
+	DBGLOG(RSN, LOUD, "Mic %02x-%02x-%02x-%02x-%02x-%02x-%02x-%02x\n",
+			   pucMic[0], pucMic[1], pucMic[2], pucMic[3], pucMic[4], pucMic[5], pucMic[6], pucMic[7]);
 
 }				/* tkipSwMsduEncapsulate */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -453,8 +445,8 @@ BOOLEAN tkipMicDecapsulate(IN P_SW_RFB_T prSwRfb, IN PUINT_8 pucMicKey)
 	/* return TRUE; */
 	/* } */
 
-	DBGLOG(RSN, LOUD, ("Before TKIP MSDU Decapsulate:\n"));
-	DBGLOG(RSN, LOUD, ("MIC key:\n"));
+	DBGLOG(RSN, LOUD, "Before TKIP MSDU Decapsulate:\n");
+	DBGLOG(RSN, LOUD, "MIC key:\n");
 	/* DBGLOG_MEM8(RSN, LOUD, pucMicKey, 8); */
 
 	prMacHeader = (P_WLAN_MAC_HEADER_T) prSwRfb->pvHeader;
@@ -477,17 +469,13 @@ BOOLEAN tkipMicDecapsulate(IN P_SW_RFB_T prSwRfb, IN PUINT_8 pucMicKey)
 		return TRUE;
 	}
 
-	if (RXM_IS_QOS_DATA_FRAME(prSwRfb->u2FrameCtrl)) {
-		ucPriority =
-		    (UCHAR) ((((P_WLAN_MAC_HEADER_QOS_T) prSwRfb->pvHeader)->
-			      u2QosCtrl) & MASK_QC_TID);
-	} else {
+	if (RXM_IS_QOS_DATA_FRAME(prSwRfb->u2FrameCtrl))
+		ucPriority = (UCHAR) ((((P_WLAN_MAC_HEADER_QOS_T) prSwRfb->pvHeader)->u2QosCtrl) & MASK_QC_TID);
+	else
 		ucPriority = 0;
-	}
 
 	/* generate MIC' */
-	tkipMicGen(pucMicKey, pucFrameBody, u2FrameBodyLen - WLAN_MAC_MIC_LEN,
-		   pucSa, pucDa, ucPriority, aucMic2);
+	tkipMicGen(pucMicKey, pucFrameBody, u2FrameBodyLen - WLAN_MAC_MIC_LEN, pucSa, pucDa, ucPriority, aucMic2);
 
 	/* verify MIC and MIC' */
 	pucMic1 = &pucFrameBody[u2FrameBodyLen - WLAN_MAC_MIC_LEN];
@@ -508,8 +496,8 @@ BOOLEAN tkipMicDecapsulate(IN P_SW_RFB_T prSwRfb, IN PUINT_8 pucMicKey)
 
 	prSwRfb->u2PayloadLength = u2FrameBodyLen;
 
-	DBGLOG(RSN, LOUD, ("After TKIP MSDU Decapsulate:\n"));
-	DBGLOG(RSN, LOUD, ("Frame body: (length = %u)\n", u2FrameBodyLen));
+	DBGLOG(RSN, LOUD, "After TKIP MSDU Decapsulate:\n");
+	DBGLOG(RSN, LOUD, "Frame body: (length = %u)\n", u2FrameBodyLen);
 	/* DBGLOG_MEM8(RSN, LOUD, pucFrameBody, u2FrameBodyLen); */
 
 	return fgStatus;

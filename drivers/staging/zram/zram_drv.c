@@ -108,6 +108,12 @@ static struct table * search_node_in_zram_list(struct zram *zram,struct zram_met
 		else
 		{
 			cmem = zs_map_object(meta->mem_pool, current_node->handle, ZS_MM_RO);
+#ifdef CONFIG_MT_ENG_BUILD
+                	/* Move to the start of bitstream */
+			if(current_node->size != PAGE_SIZE)
+                		cmem += GUIDE_BYTES_HALFLEN;
+#endif
+
 			ret = memcmp(cmem,match_content,input_node->size);
 			compare_count++;
 			if(ret == 0)
@@ -303,7 +309,7 @@ static int remove_node_from_zram_list(struct zram *zram,struct zram_meta *meta,u
                                 {
 					u32 tmp_index = 0;
 	                                printk("[ZRAM]ERROR !!can't find2 meta->table[%d].size %d chunksum %d in list\n",index,meta->table[index].size,meta->table[index].checksum);
-					tmp_index = meta->table[current_index].copy_count;
+					tmp_index = meta->table[current_index].copy_index; //.copy_count;
 					if(i > meta->table[tmp_index].copy_count)
                                         {
                                                 BUG_ON(1);

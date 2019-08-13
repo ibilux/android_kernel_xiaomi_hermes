@@ -40,10 +40,10 @@
 
 #ifdef CONFIG_TOI_FIXUP
 #define HIB_SHOW_MEMINFO()                                              \
-    do {                                                                \
-        hib_warn("%d MEMINFO ---\n", __LINE__);                         \
-        show_mem(SHOW_MEM_FILTER_NODES|SHOW_MEM_FILTER_PAGE_COUNT);     \
-    } while (0)
+do {                                                                \
+	hib_warn("%d MEMINFO ---\n", __LINE__);                         \
+	show_mem(SHOW_MEM_FILTER_NODES|SHOW_MEM_FILTER_PAGE_COUNT);     \
+} while (0)
 #endif
 
 struct toi_boot_kernel_data {
@@ -138,7 +138,7 @@ enum {
 	/* TOI_DPM_PREPARE_FAILED will exceed the # of bit when set_abort_result(TOI_DPM_SUSPEND_FAILED) is called!!! */
 	TOI_DPM_SUSPEND_FAILED = TOI_DPM_PREPARE_FAILED,
 #else
-    TOI_DPM_SUSPEND_FAILED,
+	TOI_DPM_SUSPEND_FAILED,
 #endif
 	TOI_NUM_RESULT_STATES	/* Used in printing debug info only */
 };
@@ -201,7 +201,7 @@ enum {
 
 #define get_toi_state()  (toi_state)
 #define restore_toi_state(saved_state) \
-	do { toi_state = saved_state; } while (0)
+	((toi_state) = (saved_state))
 
 /*		== Module support ==		*/
 

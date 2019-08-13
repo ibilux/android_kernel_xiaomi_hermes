@@ -1,18 +1,17 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm_obss.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm_obss.h#1
 */
 
 /*! \file   "rlm_obss.h"
     \brief
 */
 
-
-
 /*
-** $Log: rlm_obss.h $
+** Log: rlm_obss.h
  *
  * 01 24 2011 cm.chang
- * [WCXRP00000384] [MT6620 Wi-Fi][Driver][FW] Handle 20/40 action frame in AP mode and stop ampdu timer when sta_rec is freed
+ * [WCXRP00000384] [MT6620 Wi-Fi][Driver][FW] Handle 20/40 action frame in AP mode and stop
+ * ampdu timer when sta_rec is freed
  * Process received 20/40 coexistence action frame for AP mode
  *
  * 01 13 2011 cm.chang
@@ -84,16 +83,15 @@
 #define CHNL_LIST_SZ_2G         14
 #define CHNL_LIST_SZ_5G         14
 
-
 #define CHNL_LEVEL0             0
 #define CHNL_LEVEL1             1
 #define CHNL_LEVEL2             2
 
 #define AFFECTED_CHNL_OFFSET    5
 
-#define OBSS_SCAN_MIN_INTERVAL  10      /* In unit of sec */
+#define OBSS_SCAN_MIN_INTERVAL  10	/* In unit of sec */
 
-#define PUBLIC_ACTION_MAX_LEN   200     /* In unit of byte */
+#define PUBLIC_ACTION_MAX_LEN   200	/* In unit of byte */
 
 /* P2P GO only */
 /* Define default OBSS Scan parameters (from MIB in spec.) */
@@ -101,7 +99,7 @@
 #define dot11OBSSScanActiveDwell                    10
 #define dot11OBSSScanPassiveTotalPerChannel         200
 #define dot11OBSSScanActiveTotalPerChannel          20
-#define dot11BSSWidthTriggerScanInterval            300     /* Unit: sec */
+#define dot11BSSWidthTriggerScanInterval            300	/* Unit: sec */
 #define dot11BSSWidthChannelTransitionDelayFactor   5
 #define dot11OBSSScanActivityThreshold              25
 
@@ -114,9 +112,9 @@
 
 /* Control MAC PCO function */
 typedef enum _ENUM_SYS_PCO_PHASE_T {
-    SYS_PCO_PHASE_DISABLED = 0,
-    SYS_PCO_PHASE_20M,
-    SYS_PCO_PHASE_40M
+	SYS_PCO_PHASE_DISABLED = 0,
+	SYS_PCO_PHASE_20M,
+	SYS_PCO_PHASE_40M
 } ENUM_SYS_PCO_PHASE_T, *P_ENUM_SYS_PCO_PHASE_T;
 
 /*******************************************************************************
@@ -138,22 +136,11 @@ typedef enum _ENUM_SYS_PCO_PHASE_T {
 *                   F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-VOID
-rlmObssInit (
-    P_ADAPTER_T     prAdapter
-    );
+VOID rlmObssInit(P_ADAPTER_T prAdapter);
 
-VOID
-rlmObssScanDone (
-    P_ADAPTER_T prAdapter,
-    P_MSG_HDR_T prMsgHdr
-    );
+VOID rlmObssScanDone(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr);
 
-VOID
-rlmObssTriggerScan (
-    P_ADAPTER_T         prAdapter,
-    P_BSS_INFO_T        prBssInfo
-    );
+VOID rlmObssTriggerScan(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -161,4 +148,3 @@ rlmObssTriggerScan (
 */
 
 #endif /* _RLM_OBSS_H */
-

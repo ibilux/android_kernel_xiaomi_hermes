@@ -3,7 +3,7 @@
 
 #define MFV_IOC_MAGIC    'M'
 
-//below is control message
+/* below is control message */
 #define MFV_TEST_CMD                            _IO(MFV_IOC_MAGIC,  0x00)
 #define MFV_INIT_CMD                            _IO(MFV_IOC_MAGIC, 0x01)
 #define MFV_DEINIT_CMD                          _IO(MFV_IOC_MAGIC, 0x02)
@@ -43,6 +43,6 @@
 #define VCODEC_E3TCM_POWER_ON                   _IOW(MFV_IOC_MAGIC, 0x35, unsigned int)
 #define VCODEC_E3TCM_POWER_OFF                  _IOW(MFV_IOC_MAGIC, 0x36, unsigned int)
 
-//#define MFV_GET_CACHECTRLADDR_CMD  _IOR(MFV_IOC_MAGIC, 0x06, int)
+/* #define MFV_GET_CACHECTRLADDR_CMD  _IOR(MFV_IOC_MAGIC, 0x06, int) */
 
-#endif //__MT6589_MFLEXVIDEO_H__
+#endif				/* __MT6589_MFLEXVIDEO_H__ */

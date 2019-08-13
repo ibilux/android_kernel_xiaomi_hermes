@@ -56,143 +56,165 @@ static int is_targeted(struct usb_device *dev)
 	struct usb_device_id	*id = whitelist_table;
 
 	/* possible in developer configs only! */
-#ifndef CONFIG_USBIF_COMPLIANCE		
+#ifndef CONFIG_USBIF_COMPLIANCE
 	if (!dev->bus->otg_port)
 		return 1;
-#endif	
+#endif
 
 	/* HNP test device is _never_ targeted (see OTG spec 6.6.6) */
 	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x1a0a &&
 	     le16_to_cpu(dev->descriptor.idProduct) == 0xbadd))
 		return 0;
 
-#ifdef CONFIG_USBIF_COMPLIANCE		
-    /*
-    ***** PET test devices
-    */
+#ifdef CONFIG_USBIF_COMPLIANCE
+	/* PET test devices */
 
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x1a0a &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0200))
-            return 1;
+	/* OTG PET device is always targeted (see OTG 2.0 ECN 6.4.2) */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x1a0a &&
+             le16_to_cpu(dev->descriptor.idProduct) == 0x0200))
+		return 1;
 
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x1a0a &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0201))
-            return 0;
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x1a0a &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0201))
+		return 0;
 
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x1a0a &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0202))
-            return 0;	
-    /*
-    ***** HID
-    */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x1a0a &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0202))
+		return 0;
 
-    /*Mouse*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x17EF &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x6019))
-            return 1;
+	/* HID */
 
-    /*Basic Optical Mouse*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x045E &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0084))
-            return 1;
+	/*Mouse*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x17EF &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x6019))
+		return 1;
 
-    /* Mouse */
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x046D &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0xC05A))
-            return 1;
+	/*Basic Optical Mouse*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x045E &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0084))
+		return 1;
 
-    /*USB Keyboard Hub*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x05A4 &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x9862))
-            return 1;
+	/* Mouse */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x045E &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0737))
+		return 1;
 
+	/* Mouse */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x046D &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0xC05A))
+		return 1;
 
-    /*
-    ***** Mass Storage 
-    */
-    /*USB Mass Storage*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0951 &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x1643))
-            return 1;
-    
-    /*USB G2 Storage*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0951 &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x1665))
-            return 1;
+	/* Mouse */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x046D &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0xC064))
+		return 1;
 
-    /*USB reader Storage*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0781 &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x5571))
-            return 1;
+	/* Mouse */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x046D &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0xC001))
+		return 1;
 
-    /*USB Storage*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x13FE &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x3100))
-            return 1;
+	/* Mouse */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x413C &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x3200))
+		return 1;
 
-    /*USB Storage*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x090C &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x1000))
-            return 1;
+	/* Mouse */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x04B3 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x310B))
+		return 1;
 
-    /*USB Storage*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0D7D &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0100))
-            return 1;
+	/*USB Keyboard Hub*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x05A4 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x9862))
+		return 1;
 
-    /*Generic Storage - MaxPower = 500mA */
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x1908 &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0225))
-            return 1;
+	/* Mass Storage */
+	/*USB Mass Storage*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0951 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x1643))
+		return 1;
 
-    /*Storage, MaxPower = 500mA */
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0bb4 &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0001))
-            return 1;
+	/*USB G2 Storage*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0951 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x1665))
+		return 1;
 
-    /*USBIF lab Storage */
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x08EC &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0008))
-            return 1;
+	/*USB reader Storage*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0781 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x5571))
+		return 1;
 
-    /*USBIF lab Storage */
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0781 &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x5406))
-            return 1;            
+	/*USB Storage*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x13FE &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x3100))
+		return 1;
 
-    /*
-    ***** HUB 
-    */    
-    /*Full Speed Hub*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x03EB &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0902))
-            return 1;
+	/*USB Storage*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x090C &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x1000))
+		return 1;
 
-    /*Full Speed Hub*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x058F &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x9254))
-            return 1;
+	/*USB Storage*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0D7D &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0100))
+		return 1;
 
-    /*High Speed Hub*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0409 &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0059))
-            return 1;
+	/*Generic Storage - MaxPower = 500mA */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x1908 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0225))
+		return 1;
 
-    /*High Speed Hub*/
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x050d &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x0233))
-            return 1;
+	/*Storage, MaxPower = 500mA */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0bb4 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0001))
+		return 1;
 
-    /*High Speed Hub - Bus powered */
-    if ((le16_to_cpu(dev->descriptor.idVendor) == 0x05A4 &&
-        le16_to_cpu(dev->descriptor.idProduct) == 0x9837))
-            return 1;
+	/*USBIF lab Storage */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x08EC &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0008))
+		return 1;
+
+	/*USBIF lab Storage */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0781 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x5406))
+		return 1;
+
+	/*USBIF lab full-speed Storage */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0C45 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x1060))
+		return 1;
+
+	/* HUB */
+	/*Full Speed Hub*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x03EB &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0902))
+		return 1;
+
+	/*Full Speed Hub*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x058F &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x9254))
+		return 1;
+
+	/*High Speed Hub*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x0409 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0059))
+		return 1;
+
+	/*High Speed Hub*/
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x050d &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x0233))
+		return 1;
+
+	/*High Speed Hub - Bus powered */
+	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x05A4 &&
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x9837))
+		return 1;
 
 	/*High Speed Hub */
 	if ((le16_to_cpu(dev->descriptor.idVendor) == 0x14CD &&
-		le16_to_cpu(dev->descriptor.idProduct) == 0x8601))
-			return 1;
-
+	     le16_to_cpu(dev->descriptor.idProduct) == 0x8601))
+		return 1;
 
 #else
 	/* NOTE: can't use usb_match_id() since interface caches
@@ -200,11 +222,11 @@ static int is_targeted(struct usb_device *dev)
 	 */
 	for (id = whitelist_table; id->match_flags; id++) {
 		if ((id->match_flags & USB_DEVICE_ID_MATCH_VENDOR) &&
-		    id->idVendor != le16_to_cpu(dev->descriptor.idVendor))
+		    (id->idVendor != le16_to_cpu(dev->descriptor.idVendor)))
 			continue;
 
 		if ((id->match_flags & USB_DEVICE_ID_MATCH_PRODUCT) &&
-		    id->idProduct != le16_to_cpu(dev->descriptor.idProduct))
+		    (id->idProduct != le16_to_cpu(dev->descriptor.idProduct)))
 			continue;
 
 		/* No need to test id->bcdDevice_lo != 0, since 0 is never

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 TRUSTONIC LIMITED
+ * Copyright (c) 2013-2015 TRUSTONIC LIMITED
  * All Rights Reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -54,7 +54,7 @@ size_t connection_read_datablock(struct connection *conn, void *buffer,
 					uint32_t len);
 size_t connection_read_data(struct connection *conn, void *buffer,
 				   uint32_t len, int32_t timeout);
-size_t connection_write_data(struct connection *conn, void *buffer,
+int connection_write_data(struct connection *conn, void *buffer,
 				    uint32_t len);
 int connection_process(struct connection *conn, struct sk_buff *skb);
 

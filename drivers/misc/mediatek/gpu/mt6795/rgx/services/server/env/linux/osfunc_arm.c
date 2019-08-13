@@ -42,7 +42,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */ /**************************************************************************/
 #include <linux/version.h>
 #include <linux/dma-mapping.h>
-#include <asm/system.h>
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
+ #include <asm/system.h>
+#endif
 #include <asm/cacheflush.h>
 
 #include "pvrsrv_error.h"

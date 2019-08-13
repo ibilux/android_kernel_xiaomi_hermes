@@ -89,8 +89,8 @@ struct batch_data_path
 
 struct batch_dev_list
 {
-	struct batch_control_path 	ctl_dev[MAX_ANDROID_SENSOR_NUM+1];//ctl_dev[max] is used for sensor HUB driver to control sensor HUB , ctl_dev[1]... are for single sensor batch mode control
-	struct batch_data_path 		data_dev[MAX_ANDROID_SENSOR_NUM+1];//data_dev[max] is used for sensor HUB driver to access single fifo sensor data, data_dev[1]... are for single sensor fifo sensor data
+	struct batch_control_path 	ctl_dev[ID_SENSOR_MAX_HANDLE+1];//ctl_dev[max] is used for sensor HUB driver to control sensor HUB , ctl_dev[1]... are for single sensor batch mode control
+	struct batch_data_path 		data_dev[ID_SENSOR_MAX_HANDLE+1];//data_dev[max] is used for sensor HUB driver to access single fifo sensor data, data_dev[1]... are for single sensor fifo sensor data
 };
 
 
@@ -120,7 +120,7 @@ struct batch_context {
 	int				numOfDataLeft;
 	int                 force_wake_upon_fifo_full;
 
-    struct batch_timestamp_info timestamp_info[MAX_ANDROID_SENSOR_NUM+1];
+    struct batch_timestamp_info timestamp_info[ID_SENSOR_MAX_HANDLE+1];
 };
 
 typedef enum {
@@ -138,7 +138,7 @@ extern int  batch_notify(BATCH_NOTIFY_TYPE type);
 extern int  batch_driver_add(struct batch_init_info* obj);
 extern void report_batch_data(struct input_dev *dev, hwm_sensor_data *data);
 extern void report_batch_finish(struct input_dev *dev, int handle);
-extern int batch_register_control_path(int handle, struct batch_control_path *ctl);//when you register control path of sensor hub driver, use handle = [MAX_ANDROID_SENSOR_NUM+1]
-extern int batch_register_data_path(int handle, struct batch_data_path *data);//when you register control path of sensor hub driver, use handle = [MAX_ANDROID_SENSOR_NUM+1]
+extern int batch_register_control_path(int handle, struct batch_control_path *ctl);//when you register control path of sensor hub driver, use handle = [ID_SENSOR_MAX_HANDLE+1]
+extern int batch_register_data_path(int handle, struct batch_data_path *data);//when you register control path of sensor hub driver, use handle = [ID_SENSOR_MAX_HANDLE+1]
 extern int batch_register_support_info(int handle, int support, int div, int timestamp_supported);
 #endif

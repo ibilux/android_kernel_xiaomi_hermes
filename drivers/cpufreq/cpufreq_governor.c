@@ -347,7 +347,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
             
 			hp_ops = dbs_data->cdata->gov_ops;
 			input_unregister_handler(hp_ops->input_handler);
-			pr_debug("@%s(CPUFREQ_GOV_POLICY_EXIT), rc = %d\n", __func__, rc);
+			pr_debug("@%s(CPUFREQ_GOV_POLICY_EXIT)\n", __func__);
             		
 			mutex_lock(&dbs_data->mutex);
 			mutex_destroy(&cdbs->timer_mutex);

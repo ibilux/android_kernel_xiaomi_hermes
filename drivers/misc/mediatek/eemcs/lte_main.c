@@ -22,7 +22,10 @@
 
 #ifdef MT_LTE_AUTO_CALIBRATION
 #include "mach/mt_boot.h"
-extern int wait_sdio_autok_ready(void *);
+//extern int wait_sdio_autok_ready(void *);
+extern int force_autok;
+extern int wait_sdio_autok_ready(void *data, int force_autok);
+
 #endif
 
 
@@ -708,7 +711,8 @@ static int lte_autok_writeproc(struct file *file,const char *buffer,
 #ifndef NATIVE_AUTOK
         mtlte_sys_trigger_auto_calibration(NULL);
 #else        
-        wait_sdio_autok_ready((void*)lte_dev.sdio_func->card->host);
+        //wait_sdio_autok_ready((void*)lte_dev.sdio_func->card->host);
+        wait_sdio_autok_ready((void*)lte_dev.sdio_func->card->host, 0);
 #endif        
     }
 
@@ -829,7 +833,10 @@ int mtlte_sys_sdio_probe( struct sdio_func *func, const struct sdio_device_id *i
             KAL_SLEEP_MSEC(50);
         }
 #else
-      wait_sdio_autok_ready((void*)lte_dev.sdio_func->card->host);
+      //wait_sdio_autok_ready((void*)lte_dev.sdio_func->card->host);
+      wait_sdio_autok_ready((void*)lte_dev.sdio_func->card->host, force_autok);
+      force_autok = 0;
+
 #endif
       
     //	KAL_RAWPRINT(("lte_autok_finish = %d\n", lte_autok_finish));

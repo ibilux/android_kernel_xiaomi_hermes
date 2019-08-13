@@ -109,7 +109,6 @@ PVRSRV_ERROR RGXPostPowerState(IMG_HANDLE				hDevHandle,
 
 ******************************************************************************/
 PVRSRV_ERROR RGXPreClockSpeedChange(IMG_HANDLE				hDevHandle,
-									IMG_BOOL				bIdleDevice,
 									PVRSRV_DEV_POWER_STATE	eCurrentPowerState);
 
 /*!
@@ -129,7 +128,6 @@ PVRSRV_ERROR RGXPreClockSpeedChange(IMG_HANDLE				hDevHandle,
 
 ******************************************************************************/
 PVRSRV_ERROR RGXPostClockSpeedChange(IMG_HANDLE				hDevHandle,
-									 IMG_BOOL				bIdleDevice,
 									 PVRSRV_DEV_POWER_STATE	eCurrentPowerState);
 
 
@@ -148,6 +146,7 @@ PVRSRV_ERROR RGXPostClockSpeedChange(IMG_HANDLE				hDevHandle,
 ******************************************************************************/
 PVRSRV_ERROR RGXDustCountChange(IMG_HANDLE				hDevHandle,
 								IMG_UINT32				ui32NumberOfDusts);
+
 /*!
 ******************************************************************************
 
@@ -185,5 +184,33 @@ PVRSRV_ERROR RGXAPMLatencyChange(IMG_HANDLE				hDevHandle,
 
 ******************************************************************************/
 PVRSRV_ERROR RGXActivePowerRequest(IMG_HANDLE hDevHandle);
+
+/*!
+******************************************************************************
+
+ @Function	RGXForcedIdleRequest
+
+ @Description Initiate a handshake with the FW to idle the GPU
+
+ @Input	   hDevHandle : RGX Device Node
+
+ @Return   PVRSRV_ERROR :
+
+******************************************************************************/
+PVRSRV_ERROR RGXForcedIdleRequest(IMG_HANDLE hDevHandle, IMG_BOOL bDeviceOffPermitted);
+
+/*!
+******************************************************************************
+
+ @Function	RGXCancelForcedIdleRequest
+
+ @Description Send a request to cancel idle to the firmware.
+
+ @Input	   hDevHandle : RGX Device Node
+
+ @Return   PVRSRV_ERROR :
+
+******************************************************************************/
+PVRSRV_ERROR RGXCancelForcedIdleRequest(IMG_HANDLE hDevHandle);
 
 #endif /* __RGXPOWER_H__ */

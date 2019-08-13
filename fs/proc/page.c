@@ -90,12 +90,15 @@ static ssize_t kpageswapn_read(struct file *file, char __user *buf,
 			     size_t count, loff_t *ppos)
 {
 	u64 __user *out = (u64 __user *)buf;
-	unsigned long src = *ppos;
+	unsigned long src = *ppos, dst;
 	swp_entry_t swap_entry;
 	ssize_t ret = 0;
 	struct swap_info_struct *p;
 
-	swap_entry.val = src / KPMSIZE;
+	dst = src / KPMSIZE;
+	/* Format the swap entry from the corresponding pagemap value */
+	swap_entry = swp_entry(dst >> (SWP_TYPE_SHIFT(swap_entry) + RADIX_TREE_EXCEPTIONAL_SHIFT), dst & SWP_OFFSET_MASK(swap_entry));
+	
 	//printk(KERN_INFO "kpageswapn_read src: %lx\n", src);
 	//printk(KERN_INFO "kpageswapn_read swap entry: %lx\n", swap_entry.val);
 	

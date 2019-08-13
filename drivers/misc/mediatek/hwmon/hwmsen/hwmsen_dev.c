@@ -35,7 +35,12 @@
 #include <linux/hwmsen_dev.h>
 //add for fix resume issue
 #include <linux/earlysuspend.h> 
+#ifdef CONFIG_PM_WAKELOCKS
+#include <linux/pm_wakeup.h>
+#else
 #include <linux/wakelock.h>
+#endif
+
 //add for fix resume issue end
 
 #include <cust_alsps.h>
@@ -111,14 +116,20 @@ struct hwmdev_object {
 	struct work_struct  report;
 	atomic_t            delay; /*polling period for reporting input event*/
 	atomic_t            wake;  /*user-space request to wake-up, used with stop*/
-	struct timer_list   timer;  /* polling timer */
+	struct hrtimer      hrTimer;
+	ktime_t             target_ktime;
 	atomic_t            trace;
+	struct workqueue_struct *hwmsen_workqueue;
 	uint32_t			active_sensor;			// Active, but hwmsen don't need data sensor. Maybe other need it's data.
 	uint32_t			active_data_sensor;		// Active and hwmsen need data sensor.
 #if defined(CONFIG_HAS_EARLYSUSPEND)
 	//add for fix resume issue
 	struct early_suspend    early_drv;
-	struct wake_lock        read_data_wake_lock;
+	#ifdef CONFIG_PM_WAKELOCKS
+	struct wakeup_source read_data_wake_lock;
+	#else
+	struct wake_lock read_data_wake_lock;
+	#endif
 	atomic_t                early_suspend;
 	//add for fix resume end
 #endif //#if defined(CONFIG_HAS_EARLYSUSPEND)
@@ -138,7 +149,33 @@ static struct dev_context dev_cxt = {
 };
 /*----------------------------------------------------------------------------*/
 
+static void initTimer(struct hrtimer *timer, enum hrtimer_restart (*callback)(struct hrtimer *))
+{
+	hrtimer_init(timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
+	timer->function = callback;
+}
 
+static void startTimer(struct hrtimer *timer, int delay_ms, bool first)
+{
+	struct hwmdev_object *obj = (struct hwmdev_object *)container_of(timer, struct hwmdev_object, hrTimer);
+
+	if (obj == NULL) {
+		HWM_ERR("NULL pointer\n");
+		return;
+	}
+
+	if (first)
+		obj->target_ktime = ktime_add_ns(ktime_get(), (int64_t)delay_ms*1000000);
+	else
+		obj->target_ktime = ktime_add_ns(obj->target_ktime, (int64_t)delay_ms*1000000);
+
+	hrtimer_start(timer, obj->target_ktime, HRTIMER_MODE_ABS);
+}
+
+static void stopTimer(struct hrtimer *timer)
+{
+	hrtimer_cancel(timer);
+}
 //AAL functions**********************************************************************
 int hwmsen_aal_enable(int en)
 {
@@ -242,7 +279,7 @@ static void hwmsen_work_func(struct work_struct *work)
 	struct hwmsen_context *cxt = NULL;
 	int out_size;
 	hwm_sensor_data sensor_data;
-	uint32_t event_type = 0;
+	uint64_t event_type = 0;
 	int64_t  nt;
 	struct timespec time; 
 	int err, idx;	
@@ -264,7 +301,7 @@ static void hwmsen_work_func(struct work_struct *work)
 	
 	memset(&sensor_data, 0, sizeof(sensor_data));	
 	time.tv_sec = time.tv_nsec = 0;    
-	time = get_monotonic_coarse(); 
+	get_monotonic_boottime(&time);
 	nt = time.tv_sec*1000000000LL+time.tv_nsec;
 	//mutex_lock(&obj_data.lock);
 	for(idx = 0; idx < MAX_ANDROID_SENSOR_NUM; idx++)
@@ -286,7 +323,11 @@ static void hwmsen_work_func(struct work_struct *work)
 				obj_data.data_updata[idx] = 0;
 				mutex_unlock(&obj_data.lock);
 			}
-			continue;
+			//Evne if interrupt mode, try to take the initiative in querying a valid sensor data.
+			else if (obj_data.sensors_data[idx].values[0] != SENSOR_INVALID_VALUE)
+			{
+				continue;
+			}
 		}
 		
 		
@@ -339,12 +380,11 @@ static void hwmsen_work_func(struct work_struct *work)
 				if((sensor_data.values[0] != obj_data.sensors_data[idx].values[0]) 
 					|| (sensor_data.values[1] != obj_data.sensors_data[idx].values[1])
 					|| (sensor_data.values[2] != obj_data.sensors_data[idx].values[2])
-					|| (idx == ID_MAGNETIC))
+					|| (idx == ID_MAGNETIC)|| (idx == ID_ACCELEROMETER)|| (idx == ID_GYROSCOPE))
 				{	
-				    if( 0 == sensor_data.values[0] && 0==sensor_data.values[1] 
-						&& 0 == sensor_data.values[2])
+				    if((0 == sensor_data.values[0] && 0==sensor_data.values[1] 
+						&& 0 == sensor_data.values[2]) && (idx != ID_GYROSCOPE))
 				    {
-				    	
 				       continue;
 				    }
 					mutex_lock(&obj_data.lock);
@@ -408,6 +448,7 @@ static void hwmsen_work_func(struct work_struct *work)
 	if(event_type != 0)
 	{		
 		input_report_rel(obj->idev, EVENT_TYPE_SENSOR, event_type);
+		input_report_rel(obj->idev, EVENT_TYPE_SENSOR_EXT, event_type >> 32);
 		input_sync(obj->idev);//modified
 		//HWM_LOG("event type: %d\n", event_type);
 	}
@@ -417,9 +458,7 @@ static void hwmsen_work_func(struct work_struct *work)
 	}
 
 	if(obj->dc->polling_running == 1)
-	{
-		mod_timer(&obj->timer, jiffies + atomic_read(&obj->delay)/(1000/HZ)); 
-	}
+		startTimer(&obj->hrTimer, atomic_read(&obj->delay), false);
 }
 
 /******************************************************************************
@@ -442,7 +481,7 @@ int hwmsen_get_interrupt_data(int sensor, hwm_sensor_data *data)
 	else
 	{		
 		time.tv_sec = time.tv_nsec = 0;    
-		time = get_monotonic_coarse(); 
+		get_monotonic_boottime(&time);
 		nt = time.tv_sec*1000000000LL+time.tv_nsec;  
 		if((sensor == ID_LIGHT) ||(sensor == ID_PRESSURE) 
 			||(sensor == ID_PROXIMITY) || (sensor == ID_TEMPRERATURE))
@@ -488,14 +527,15 @@ int hwmsen_get_interrupt_data(int sensor, hwm_sensor_data *data)
 EXPORT_SYMBOL_GPL(hwmsen_get_interrupt_data);
 
 /*----------------------------------------------------------------------------*/
-static void hwmsen_poll(unsigned long data)
+enum hrtimer_restart hwmsen_poll(struct hrtimer *timer)
 {
-	struct hwmdev_object *obj = (struct hwmdev_object *)data;
-	if(obj != NULL)
-	{
-		queue_work(sensor_workqueue, &obj->report);
-	}
+	struct hwmdev_object *obj = (struct hwmdev_object *)container_of(timer, struct hwmdev_object, hrTimer);
+
+	queue_work(obj->hwmsen_workqueue, &obj->report);
+
+	return HRTIMER_NORESTART;
 }
+
 /*----------------------------------------------------------------------------*/
 static struct hwmdev_object *hwmsen_alloc_object(void)
 {
@@ -521,10 +561,13 @@ static struct hwmdev_object *hwmsen_alloc_object(void)
         return NULL;
     }
 	INIT_WORK(&obj->report, hwmsen_work_func);
-	init_timer(&obj->timer);
-	obj->timer.expires	= jiffies + atomic_read(&obj->delay)/(1000/HZ);
-	obj->timer.function	= hwmsen_poll;
-	obj->timer.data		= (unsigned long)obj;
+	obj->hwmsen_workqueue = NULL;
+	obj->hwmsen_workqueue = create_workqueue("hwmsen_polling");
+	if (!obj->hwmsen_workqueue) {
+		kfree(obj);
+		return NULL;
+	}
+	initTimer(&obj->hrTimer, hwmsen_poll);
 	return obj;
 }
 
@@ -653,7 +696,7 @@ static int hwmsen_enable(struct hwmdev_object *obj, int sensor, int enable)
 			obj->dc->polling_running = 1;
 			//obj->timer.expires = jiffies + atomic_read(&obj->delay)/(1000/HZ);
 			//add_timer(&obj->timer);
-			mod_timer(&obj->timer, jiffies + atomic_read(&obj->delay)/(1000/HZ)); 
+			startTimer(&obj->hrTimer, atomic_read(&obj->delay), true);
 			
 		}
 		
@@ -695,7 +738,7 @@ static int hwmsen_enable(struct hwmdev_object *obj, int sensor, int enable)
 		if((1 == obj->dc->polling_running) && (obj->active_data_sensor == 0))
 		{
 			obj->dc->polling_running = 0;
-			del_timer_sync(&obj->timer);
+			stopTimer(&obj->hrTimer);
 			cancel_work_sync(&obj->report);
 			
 		}
@@ -1053,7 +1096,7 @@ static int init_static_data(void)
 //	obj_data.lock = __MUTEX_INITIALIZER(obj_data.lock);	
 	for(i=0; i < MAX_ANDROID_SENSOR_NUM; i++)
 	{
-		dev_cxt.cxt[i] = NULL;		
+		//dev_cxt.cxt[i] = NULL;		
 		memset(&obj_data.sensors_data[i], SENSOR_INVALID_VALUE, sizeof(hwm_sensor_data));
 		obj_data.sensors_data[i].sensor = i;
 		
@@ -1300,6 +1343,7 @@ static int hwmsen_probe(struct platform_device *pdev)
 	set_bit(EV_SYN, hwm_obj->idev->evbit);
 
 	input_set_capability(hwm_obj->idev, EV_REL, EVENT_TYPE_SENSOR);
+	input_set_capability(hwm_obj->idev, EV_REL, EVENT_TYPE_SENSOR_EXT);
 	hwm_obj->idev->name = HWM_INPUTDEV_NAME;
 	if((err = input_register_device(hwm_obj->idev)))
 	{
@@ -1323,14 +1367,18 @@ static int hwmsen_probe(struct platform_device *pdev)
 		HWM_ERR("unable to create attributes!!\n");
 		goto exit_hwmsen_create_attr_failed;
 	}
-#if defined(CONFIG_HAS_EARLYSUSPEND)
+#if defined(CONFIG_HAS_EARLYSUSPEND) && defined(CONFIG_EARLYSUSPEND)
 	// add for fix resume bug
     atomic_set(&(hwm_obj->early_suspend), 0);
 	hwm_obj->early_drv.level    = EARLY_SUSPEND_LEVEL_STOP_DRAWING - 1,
 	hwm_obj->early_drv.suspend  = hwmsen_early_suspend,
 	hwm_obj->early_drv.resume   = hwmsen_late_resume,    
 	register_early_suspend(&hwm_obj->early_drv);
+	#ifdef CONFIG_PM_WAKELOCKS
+	wakeup_source_init(&(hwm_obj->read_data_wake_lock),"read_data_wake_lock");
+	#else
 	wake_lock_init(&(hwm_obj->read_data_wake_lock),WAKE_LOCK_SUSPEND,"read_data_wake_lock");
+	#endif
 	// add for fix resume bug end
 #endif //#if defined(CONFIG_HAS_EARLYSUSPEND)
 	return 0;
@@ -1724,8 +1772,9 @@ static void __exit hwmsen_exit(void)
 	platform_driver_unregister(&hwmsen_driver);    
 }
 /*----------------------------------------------------------------------------*/
-module_init(hwmsen_init);
-module_exit(hwmsen_exit);
+late_initcall(hwmsen_init);
+//module_init(hwmsen_init);
+//module_exit(hwmsen_exit);
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("sensor device driver");
 MODULE_AUTHOR("Chunlei Wang<chunlei.wang@mediatek.com");

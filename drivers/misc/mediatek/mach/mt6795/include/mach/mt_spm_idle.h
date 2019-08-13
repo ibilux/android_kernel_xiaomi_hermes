@@ -9,16 +9,12 @@
 
 #define TAG     "SPM-Idle"
 
-#define spm_idle_err(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_ERROR, TAG, fmt, ##args)
-#define spm_idle_warn(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_WARN, TAG, fmt, ##args)
-#define spm_idle_info(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_INFO, TAG, fmt, ##args)
-#define spm_idle_dbg(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_DEBUG, TAG, fmt, ##args)
-#define spm_idle_ver(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_VERBOSE, TAG, fmt, ##args)
+#define spm_idle_err(fmt, args...)		pr_emerg(TAG fmt, ##args)
+#define spm_idle_warn(fmt, args...)		pr_warn(TAG fmt, ##args)
+#define spm_idle_dbg(fmt, args...)		pr_notice(TAG fmt, ##args)
+#define spm_idle_info(fmt, args...)		pr_info(TAG fmt, ##args)
+#define spm_idle_ver(fmt, args...)		pr_info(TAG fmt, ##args)	/* pr_debug show nothing */
+
 
 /*
  * for Deep Idle

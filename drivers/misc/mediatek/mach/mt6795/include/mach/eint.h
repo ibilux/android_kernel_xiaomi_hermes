@@ -63,8 +63,8 @@
  * Define constants.
  */
 //#define EINT_IRQ_BASE            NR_MT_IRQ_LINE
-#define EINT_AP_MAXNUMBER 197 
-#define EINT_MAX_CHANNEL 197
+#define EINT_AP_MAXNUMBER 192 
+#define EINT_MAX_CHANNEL 192
 #define DEINT_MAX_CHANNEL 4
 #define MT_EINT_POL_NEG (0)
 #define MT_EINT_POL_POS (1)

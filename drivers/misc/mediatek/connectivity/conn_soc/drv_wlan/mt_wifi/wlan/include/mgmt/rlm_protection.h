@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm_protection.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm_protection.h#1
 */
 
 /*! \file   "rlm_protection.h"
     \brief
 */
 
-
-
 /*
-** $Log: rlm_protection.h $
+** Log: rlm_protection.h
  *
  * 08 20 2010 cm.chang
  * NULL
@@ -63,38 +61,37 @@
 ********************************************************************************
 */
 typedef enum _ENUM_SYS_PROTECT_MODE_T {
-    SYS_PROTECT_MODE_NONE = 0,      /* Mode 0 */
-    SYS_PROTECT_MODE_ERP,           /* Mode 1 */
-    SYS_PROTECT_MODE_NON_HT,        /* Mode 2 */
-    SYS_PROTECT_MODE_20M,           /* Mode 3 */
+	SYS_PROTECT_MODE_NONE = 0,	/* Mode 0 */
+	SYS_PROTECT_MODE_ERP,	/* Mode 1 */
+	SYS_PROTECT_MODE_NON_HT,	/* Mode 2 */
+	SYS_PROTECT_MODE_20M,	/* Mode 3 */
 
-    SYS_PROTECT_MODE_NUM
+	SYS_PROTECT_MODE_NUM
 } ENUM_SYS_PROTECT_MODE_T, *P_ENUM_SYS_PROTECT_MODE_T;
 
 /* This definition follows HT Protection field of HT Operation IE */
 typedef enum _ENUM_HT_PROTECT_MODE_T {
-    HT_PROTECT_MODE_NONE = 0,
-    HT_PROTECT_MODE_NON_MEMBER,
-    HT_PROTECT_MODE_20M,
-    HT_PROTECT_MODE_NON_HT,
+	HT_PROTECT_MODE_NONE = 0,
+	HT_PROTECT_MODE_NON_MEMBER,
+	HT_PROTECT_MODE_20M,
+	HT_PROTECT_MODE_NON_HT,
 
-    HT_PROTECT_MODE_NUM
+	HT_PROTECT_MODE_NUM
 } ENUM_HT_PROTECT_MODE_T, *P_ENUM_HT_PROTECT_MODE_T;
 
-
 typedef enum _ENUM_GF_MODE_T {
-    GF_MODE_NORMAL = 0,
-    GF_MODE_PROTECT,
-    GF_MODE_DISALLOWED,
+	GF_MODE_NORMAL = 0,
+	GF_MODE_PROTECT,
+	GF_MODE_DISALLOWED,
 
-    GF_MODE_NUM
+	GF_MODE_NUM
 } ENUM_GF_MODE_T, *P_ENUM_GF_MODE_T;
 
 typedef enum _ENUM_RIFS_MODE_T {
-    RIFS_MODE_NORMAL = 0,
-    RIFS_MODE_DISALLOWED,
+	RIFS_MODE_NORMAL = 0,
+	RIFS_MODE_DISALLOWED,
 
-    RIFS_MODE_NUM
+	RIFS_MODE_NUM
 } ENUM_RIFS_MODE_T, *P_ENUM_RIFS_MODE_T;
 
 /*******************************************************************************
@@ -123,4 +120,3 @@ typedef enum _ENUM_RIFS_MODE_T {
 */
 
 #endif /* _RLM_PROTECTION_H */
-

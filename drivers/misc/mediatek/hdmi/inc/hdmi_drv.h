@@ -50,11 +50,21 @@ typedef enum {
 typedef enum {
 	HDMI_VIDEO_720x480p_60Hz = 0,
 	HDMI_VIDEO_1280x720p_60Hz = 2,
+	HDMI_VIDEO_1920x1080i_60Hz = 5,
 	HDMI_VIDEO_1920x1080p_30Hz = 6,
+	HDMI_VIDEO_720x480i_60Hz = 0xD,
 	HDMI_VIDEO_1920x1080p_60Hz = 0x0b,
 	HDMI_VIDEO_RESOLUTION_NUM
 } HDMI_VIDEO_RESOLUTION;
 #endif
+
+typedef enum
+{
+     Test_RGB888    = 0
+    ,Test_YUV422    = 1
+    ,Test_YUV444    = 2
+    ,Test_Reserved  = 3
+}TEST_CASE_TYPE;
 
 typedef enum {
 	HDMI_VIN_FORMAT_RGB565,
@@ -66,6 +76,10 @@ typedef enum {
 	HDMI_VOUT_FORMAT_RGB888,
 	HDMI_VOUT_FORMAT_YUV422,
 	HDMI_VOUT_FORMAT_YUV444,
+
+	HDMI_VOUT_FORMAT_2D     = 1<<16,
+	HDMI_VOUT_FORMAT_3D_SBS = 1<<17,
+	HDMI_VOUT_FORMAT_3D_TAB = 1<<18,
 } HDMI_VIDEO_OUTPUT_FORMAT;
 
 //Must align to MHL Tx chip driver define
@@ -101,8 +115,16 @@ typedef enum {
 	HDMI_CABLE,
 	MHL_CABLE,
 	MHL_SMB_CABLE,
-	MHL_2_CABLE		/* /MHL 2.0 */
+	MHL_2_CABLE,		/* /MHL 2.0 */
+	MHL_3D_GLASSES
 } HDMI_CABLE_TYPE;
+
+typedef enum {
+	HDMI_2D,
+	HDMI_3D_SBS,
+	HDMI_3D_TAB,
+	HDMI_3D_FP		
+} HDMI_3D_FORMAT_ENUM;
 
 typedef struct {
 	unsigned int width;
@@ -140,7 +162,11 @@ typedef struct {
 	unsigned int scaling_factor;	/* determine the scaling of output screen size, valid value 0~10 */
 	/* 0 means no scaling, 5 means scaling to 95%, 10 means 90% */
 	HDMI_CABLE_TYPE cabletype;
-	bool HDCPSupported;
+	unsigned int HDCPSupported;
+#ifdef CONFIG_MTK_HDMI_3D_SUPPORT	
+	int is_3d_support;
+#endif	
+	unsigned int input_clock;
 } HDMI_PARAMS;
 
 typedef enum {
@@ -187,7 +213,7 @@ typedef struct {
 #define SINK_1080P23976   (1 << 21)
 #define SINK_1080P2997   (1 << 22)
 
-
+#if !defined(CONFIG_MTK_MT8193_HDMI_SUPPORT)
 typedef struct _HDMI_EDID_INFO_T {
 	unsigned int ui4_ntsc_resolution;	/* use EDID_VIDEO_RES_T, there are many resolution */
 	unsigned int ui4_pal_resolution;	/* use EDID_VIDEO_RES_T */
@@ -232,7 +258,9 @@ typedef struct _HDMI_EDID_INFO_T {
 	unsigned char ui1_sink_week_of_manufacture;	/* (10H) */
 	unsigned char ui1_sink_year_of_manufacture;	/* (11H)  base on year 1990 */
 } HDMI_EDID_INFO_T;
+#endif
 
+typedef void (*CABLE_INSERT_CALLBACK)(HDMI_STATE state);
 
 typedef struct {
 	void (*set_util_funcs) (const HDMI_UTIL_FUNCS *util);
@@ -244,7 +272,11 @@ typedef struct {
 	void (*suspend) (void);
 	void (*resume) (void);
 	int  (*audio_config)(HDMI_AUDIO_FORMAT aformat, int bitWidth);
+#ifdef CONFIG_MTK_HDMI_3D_SUPPORT	
+	int  (*video_config)(HDMI_VIDEO_RESOLUTION vformat, HDMI_VIDEO_INPUT_FORMAT vin, int vou);
+#else
 	int  (*video_config)(HDMI_VIDEO_RESOLUTION vformat, HDMI_VIDEO_INPUT_FORMAT vin, HDMI_VIDEO_OUTPUT_FORMAT vou);
+#endif
 	int (*video_enable) (bool enable);
 	int (*audio_enable) (bool enable);
 	int (*irq_enable) (bool enable);
@@ -255,6 +287,8 @@ typedef struct {
 	void (*dump) (void);
 	int (*get_external_device_capablity)(void);
     void (*force_on)(int from_uart_drv);
+	void (*register_callback)(CABLE_INSERT_CALLBACK cb);
+	void (*unregister_callback)(CABLE_INSERT_CALLBACK cb);
 #if !defined(CONFIG_MTK_MT8193_HDMI_SUPPORT)
 	void (*read) (unsigned char u8Reg);
 	void (*write) (unsigned char u8Reg, unsigned char u8Data);
@@ -271,7 +305,11 @@ typedef struct {
 	void (*setcecrxmode) (u8 u1cecrxmode);
 	void (*hdmistatus) (void);
 	void (*hdcpkey) (u8 *pbhdcpkey);
+#if defined(HDMI_MT8193_SUPPORT)
+              void (*getedid) (HDMI_EDID_INFO_T *pv_get_info);
+#else
 	void (*getedid) (void *pv_get_info);
+#endif
 	void (*setcecla) (CEC_DRV_ADDR_CFG_T *prAddr);
 	void (*sendsltdata) (u8 *pu1Data);
 	void (*getceccmd) (CEC_FRAME_DESCRIPTION *frame);

@@ -1,7 +1,7 @@
 menu "Drivers Configurations"
 menuconfig MTK_LDVT
 	bool "LDVT"
-	depends on ARCH_MT6589 || ARCH_MT6582 || ARCH_MT6595 || ARCH_MT6795 || ARCH_MT6735 || ARCH_MT6735M || ARCH_MT6753
+	depends on ARCH_MT6589 || ARCH_MT6582 || ARCH_MT6595 || ARCH_MT6795 || ARCH_MT6735 || ARCH_MT6735M || ARCH_MT6753 || ARCH_MT8163
 	default n
 	---help---
 	  Say Y here for supporting LDVT
@@ -90,6 +90,12 @@ config CUSTOM_KERNEL_CHARGEPUMP
 	bool "backlight driver"
 	default n
 
+config MTK_CONSUMERIR_SUPPORT
+	bool "MediaTek consumer IR transmitter"
+	default n
+	---help---
+	  Consumerir driver support for MediaTek SoC
+
 # CCCI TODO refine
 menuconfig MTK_CCCI_DEVICES
 	bool "CCCI Devices"
@@ -150,6 +156,25 @@ config MTK_NET_CCMNI
 	default n
 	select WIRELESS_EXT
 	select WEXT_PRIV
+
+config MTK_C2K_DATA_PPP_SUPPORT
+	bool "MTK_C2K_DATA_PPP_SUPPORT"
+	default n
+
+config MTK_IRAT_SUPPORT
+	bool "MTK_IRAT_SUPPORT"
+	depends on MTK_NET_CCMNI
+	default n
+
+config MTK_MD_IRAT_SUPPORT
+	bool "MTK_MD_IRAT_SUPPORT"
+	depends on MTK_IRAT_SUPPORT
+	default n
+
+config MTK_C2KWP_P2_SUPPORT
+	bool "MTK_C2KWP_P2_SUPPORT"
+	depends on MTK_NET_CCMNI
+	default n
 
 config MTK_ENABLE_MD1
 	bool "MTK_ENABLE_MD1"
@@ -341,7 +366,7 @@ config CUSTOM_LCM_X
 	string "LCM_X"
 	default "0"
 	help
-	  To set CUSTOM_LCM_X size 
+	  To set CUSTOM_LCM_X size
 
 config CUSTOM_LCM_Y
 	string "LCM_Y"
@@ -450,8 +475,14 @@ config MTK_COMBO_CHIP_CONSYS_6752
 config MTK_COMBO_CHIP_CONSYS_6592
 	bool "CONSYS_6592"
 
+config MTK_COMBO_CHIP_CONSYS_8163
+	bool "CONSYS_8163"
+
 config MTK_COMBO_CHIP_CONSYS_6735
 	bool "CONSYS_6735"
+
+config MTK_COMBO_CHIP_CONSYS_6580
+	bool "CONSYS_6580"
 
 endchoice
 
@@ -465,7 +496,9 @@ config MTK_COMBO_CHIP
 	default "CONSYS_8127" if MTK_COMBO_CHIP_CONSYS_8127
 	default "CONSYS_6752" if MTK_COMBO_CHIP_CONSYS_6752
 	default "CONSYS_6592" if MTK_COMBO_CHIP_CONSYS_6592
+	default "CONSYS_8163" if MTK_COMBO_CHIP_CONSYS_8163
 	default "CONSYS_6735" if MTK_COMBO_CHIP_CONSYS_6735
+	default "CONSYS_6580" if MTK_COMBO_CHIP_CONSYS_6580
 	help
 	  this feature is used to identify combo chip version or SOC chip
 	  consys version.
@@ -784,6 +817,30 @@ config MTK_MTD_NAND_INTERRUPT_SCHEME
 	---help---
 	  Enable interrupt scheme in Nand Read/Write.
 
+config MTK_MLC_NAND_SUPPORT
+  tristate "Mediatek MLC NAND Support"
+  depends on MTK_MTD_NAND
+  ---help---
+	  Enables support for MLC NAND.
+
+config MTK_COMBO_NAND_SUPPORT
+  tristate "Mediatek COMBO NAND Support"
+  depends on MTK_MTD_NAND
+  ---help---
+	  Enables support for COMBO NAND.
+
+config MTK_FAT_ON_NAND
+  tristate "Mediatek FAT on NAND Support"
+  depends on MTK_MTD_NAND
+  ---help---
+	  Enables support for FAT on NAND.
+
+config MTK_FACTORY_RESET_PROTECTION_SUPPORT
+  bool "Mediatek FRP Support"
+  depends on MTK_MTD_NAND
+  ---help---
+          Enables support for FRP on NAND.
+
 # Power Related
 if POWER_SUPPLY
 config MT6326_PMIC
@@ -794,14 +851,28 @@ config MT6326_PMIC
 config MTK_HAFG_20
 	bool "MediaTek Fuel Gauge 2.0"
 	default n
+	help
+	  MediaTek Fuel Gague 2.0 use new fuel gague algorithm to
+	  reduce some limitation for old fuel gague algorithm. With
+	  this algorithm, some customized parameters can be set and
+	  it will help to resolve some issues for old FG algorithm
 
 config MTK_MULTI_BAT_PROFILE_SUPPORT
 	bool "MediaTek Fuel Gauge 2.0 support multiple battery profile"
 	default n
+	help
+	  MediaTek Feul Gauge 2.0 can support multiple battery profile.
+	  It support up to 4 battery profiles. When system on, it can
+	  auto identify battery and select correct battery profile to
+	  use it.
 
 config MTK_SMART_BATTERY
 	tristate "MediaTek Smart Battery Driver"
 	default y
+
+config MTK_CW2015_BATTERY
+	tristate "MTK CW2015 Battery Driver"
+	default n
 
 config MTK_DUMMY_BATTERY
 	tristate "MediaTek Dummy Battery Driver"
@@ -904,7 +975,7 @@ config MTK_BQ24296_SUPPORT
 	help
 	  BQ24296 charger IC support Yes to support bq24296 No to not
 	  support bq24296
-	  
+
 config 3RD_FG_MAX17058_SUPPORT
 	bool "3RD_FG_MAX17058_SUPPORT"
 	help
@@ -1394,6 +1465,10 @@ config MTK_S3320_47
          bool "S3320 4.7inch for Mediatek package"
         default n
 
+config MTK_S3320_50
+         bool "S3320 5.0inch for Mediatek package"
+        default n
+
 config LEDS_LM3632
          bool "LM3632 LED"
         default n
@@ -1552,6 +1627,10 @@ config MUSBFSH_PIO_ONLY
 	bool "Transfer mode of MediaTek USB fullspeed Host driver"
 	default n
 
+config MTK_MUSB_QMU_SUPPORT
+	bool "QMU Transfer mode of MediaTek MUSB"
+	default n
+
 config AMPC_CDEV_NUM
 	int "AMPC chard device number(never change this value)"
 	default 151
@@ -1561,6 +1640,8 @@ endmenu
 
 config ION_MTK
 	bool "Mediatek ION Memory Manager"
+config ION_MTK_FB_HEAP_SUPPORT
+	bool "Mediatek ION FB Heap Support"
 
 config MMPROFILE
 	bool "MMProfile Support"
@@ -1578,7 +1659,7 @@ config MTK_STAGING
 
 config MTKPASR
 	bool "MTK proprietary PASR mechanism"
-	depends on SYSFS && ZSMALLOC
+	depends on SYSFS && ZSMALLOC && ARM && HIGHMEM
 	select MTKPASR_RDIRECT
 	select MTKPASR_MAFL
 	select MTKPASR_DEBUG
@@ -1744,12 +1825,6 @@ config MTK_THERMAL_PA_VIA_ATCMD
 	  Internal switch for thermal management to query modem RF
 	  temperature via AT command.
 
-config MTK_COMBO_NAND_SUPPORT
-	bool "MTK_COMBO_NAND_SUPPORT"
-	depends on !MTK_EMMC_SUPPORT
-	help
-	  To support different NAND page size on the same load
-
 config MTK_UMTS_TDD128_MODE
 	bool "MTK_UMTS_TDD128_MODE"
 	help
@@ -1786,6 +1861,21 @@ config MTK_MT6333_SUPPORT
 	help
 	  If PCB support MT6333, please set yes. otherwise set no.
 
+config IS_VCORE_USE_6333VCORE
+	bool "IS_VCORE_USE_6333VCORE"
+	depends on MTK_MT6333_SUPPORT
+	default n
+
+config IS_VM_USE_6333VM
+	bool "IS_VM_USE_6333VM"
+	depends on MTK_MT6333_SUPPORT
+	default n
+
+config IS_VRF18_USE_6333VRF18
+	bool "IS_VRF18_USE_6333VRF18"
+	depends on MTK_MT6333_SUPPORT
+	default n
+
 config MTK_CTP_RESET_CONFIG
 	bool "MTK_CTP_RESET_CONFIG"
 	help
@@ -1820,6 +1910,16 @@ config NAND_OTP_SUPPORT
 config MTK_OD_SUPPORT
 	bool "MTK_OD_SUPPORT"
 	default n
+
+config MTK_DISPLAY_120HZ_SUPPORT
+	bool "MTK_DISPLAY_120HZ_SUPPORT"
+	default n
+	help
+	  This option enable 120Hz display feature.
+	  This feature also require panel support 120Hz refresh rate.
+	  If you want to use MediaTek 120Hz display feature, say Y here.
+	  If unsure, say N.
+
 
 config MTK_WQHD_VCORE10_SUPPORT
 	bool "MTK_WQHD_VCORE10_SUPPORT"
@@ -1968,3 +2068,17 @@ config CPU_LOW_POWER
 config CM861_MAINBOARD_CHARGER_CURRENT_1A
 		bool "CM861 CHARGER CURRENT 1A"
        	default n
+
+config MTK_INHOUSE_GPU
+	bool "MTK_INHOUSE_GPU"
+	help
+	  Select Y here to enable inhouse gpu support
+
+config SW_SYNC64
+	bool "Software synchronization 64bits objects"
+	default n
+	depends on SW_SYNC
+	help
+	  A sync object driver that uses a 64bit counter to coordinate
+	  syncrhronization.  Useful when there is no hardware primitive backing
+	  the synchronization.

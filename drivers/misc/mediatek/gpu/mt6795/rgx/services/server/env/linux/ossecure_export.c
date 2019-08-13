@@ -49,7 +49,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "img_types.h"
 #include "ossecure_export.h"
-#include "env_connection.h"
 #include "private_data.h"
 #include "pvr_debug.h"
 #include "driverlock.h"
@@ -63,7 +62,6 @@ PVRSRV_ERROR OSSecureExport(CONNECTION_DATA *psConnection,
 							IMG_SECURE_TYPE *phSecure,
 							CONNECTION_DATA **ppsSecureConnection)
 {
-	ENV_CONNECTION_DATA *psEnvConnection;
 	CONNECTION_DATA *psSecureConnection;
 	struct file *connection_file;
 	struct file *secure_file;
@@ -74,8 +72,7 @@ PVRSRV_ERROR OSSecureExport(CONNECTION_DATA *psConnection,
 	PVRSRV_ERROR eError;
 
 	/* Obtain the current connections struct file */
-	psEnvConnection = PVRSRVConnectionPrivateData(psConnection);
-	connection_file = LinuxFileFromEnvConnection(psEnvConnection);
+	connection_file = LinuxFileFromConnection(psConnection);
 
 	/* Allocate a fd number */
 	secure_fd = get_unused_fd();
@@ -98,16 +95,16 @@ PVRSRV_ERROR OSSecureExport(CONNECTION_DATA *psConnection,
 #endif
 
 	/* PMR lock needs to be released before bridge lock to keep lock hierarchy
-	* and avoid deadlock situation.
-	* OSSecureExport() can be called from functions that are not acquiring
-	* PMR lock (e.g. by PVRSRVSyncPrimServerSecureExportKM()) so we have to
-	* check if PMR lock is locked. */
+	 * and avoid deadlock situation.
+	 * OSSecureExport() can be called from functions that are not acquiring
+	 * PMR lock (e.g. by PVRSRVSyncPrimServerSecureExportKM()) so we have to
+	 * check if PMR lock is locked. */
 	if (PMRIsLockedByMe())
 	{
 		PMRUnlock();
 		bPmrUnlocked = IMG_TRUE;
 	}
-	mutex_unlock(&gPVRSRVLock);
+	OSReleaseBridgeLock();
 
 	/* Open our device (using the file information from our current connection) */
 	secure_file = dentry_open(
@@ -120,7 +117,7 @@ PVRSRV_ERROR OSSecureExport(CONNECTION_DATA *psConnection,
 					  connection_file->f_flags,
 					  current_cred());
 
-	mutex_lock(&gPVRSRVLock);
+	OSAcquireBridgeLock();
 	if (bPmrUnlocked)
 		PMRLock();
 
@@ -132,15 +129,18 @@ PVRSRV_ERROR OSSecureExport(CONNECTION_DATA *psConnection,
 		goto e0;
 	}
 
+	/* Return the new services connection our secure data created */
+	psSecureConnection = LinuxConnectionFromFile(secure_file);
+
+	if(psSecureConnection == IMG_NULL)
+	{
+		PVR_DPF((PVR_DBG_ERROR, "Invalid connection data"));
+		eError = PVRSRV_ERROR_INVALID_PARAMS;
+		goto e0;
+	}
+
 	/* Bind our struct file with it's fd number */
 	fd_install(secure_fd, secure_file);
-
-	/* Return the new services connection our secure data created */
-#if defined(SUPPORT_DRM)
-	psSecureConnection = LinuxConnectionFromFile(PVR_DRM_FILE_FROM_FILE(secure_file));
-#else
-	psSecureConnection = LinuxConnectionFromFile(secure_file);
-#endif
 
 	/* Save the private data */
 	PVR_ASSERT(psSecureConnection->hSecureData == IMG_NULL);
@@ -179,13 +179,10 @@ PVRSRV_ERROR OSSecureImport(IMG_SECURE_TYPE hSecure, IMG_PVOID *ppvData)
 	}
 #endif
 
-#if defined(SUPPORT_DRM)
-	psSecureConnection = LinuxConnectionFromFile(PVR_DRM_FILE_FROM_FILE(secure_file));
-#else
 	psSecureConnection = LinuxConnectionFromFile(secure_file);
-#endif
-	if (psSecureConnection->hSecureData == IMG_NULL)
+	if ((psSecureConnection == IMG_NULL) || (psSecureConnection->hSecureData == IMG_NULL))
 	{
+		PVR_DPF((PVR_DBG_ERROR, "Invalid connection data"));
 		eError = PVRSRV_ERROR_INVALID_PARAMS;
 		goto err_fput;
 	}

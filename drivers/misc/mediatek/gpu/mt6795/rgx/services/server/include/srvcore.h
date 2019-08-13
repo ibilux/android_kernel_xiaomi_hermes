@@ -44,6 +44,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef __BRIDGED_PVR_BRIDGE_H__
 #define __BRIDGED_PVR_BRIDGE_H__
 
+#include "lock_types.h"
 #include "connection_server.h"
 #include "pvr_debug.h"
 
@@ -51,16 +52,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #if defined(SUPPORT_RGX)
 #include "rgx_bridge.h"
 #endif
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
-#if defined(__linux__)
-#define PVRSRV_GET_BRIDGE_ID(X)	_IOC_NR(X)
-#else
-#define PVRSRV_GET_BRIDGE_ID(X)	((X) - PVRSRV_IOWR(PVRSRV_BRIDGE_CORE_CMD_FIRST))
-#endif
+#include "pvr_bridge_io.h"
 
 #ifndef ENOMEM
 #define ENOMEM	12
@@ -72,33 +64,26 @@ extern "C" {
 #define ENOTTY	25
 #endif
 
-#if defined(DEBUG_BRIDGE_KM)
 PVRSRV_ERROR
 CopyFromUserWrapper(CONNECTION_DATA *psConnection,
-					IMG_UINT32 ui32BridgeID,
+					IMG_UINT32 ui32DispatchTableEntry,
 					IMG_VOID *pvDest,
 					IMG_VOID *pvSrc,
 					IMG_UINT32 ui32Size);
 PVRSRV_ERROR
 CopyToUserWrapper(CONNECTION_DATA *psConnection, 
-				  IMG_UINT32 ui32BridgeID,
+				  IMG_UINT32 ui32DispatchTableEntry,
 				  IMG_VOID *pvDest,
 				  IMG_VOID *pvSrc,
 				  IMG_UINT32 ui32Size);
-#else
-#define CopyFromUserWrapper(psConnection, ui32BridgeID, pvDest, pvSrc, ui32Size) \
-	OSCopyFromUser(psConnection, pvDest, pvSrc, ui32Size)
-#define CopyToUserWrapper(psConnection, ui32BridgeID, pvDest, pvSrc, ui32Size) \
-	OSCopyToUser(psConnection, pvDest, pvSrc, ui32Size)
-#endif
 
 IMG_INT
-DummyBW(IMG_UINT32 ui32BridgeID,
+DummyBW(IMG_UINT32 ui32DispatchTableEntry,
 		IMG_VOID *psBridgeIn,
 		IMG_VOID *psBridgeOut,
 		CONNECTION_DATA *psConnection);
 
-typedef IMG_INT (*BridgeWrapperFunction)(IMG_UINT32 ui32BridgeID,
+typedef IMG_INT (*BridgeWrapperFunction)(IMG_UINT32 ui32DispatchTableEntry,
 									 IMG_VOID *psBridgeIn,
 									 IMG_VOID *psBridgeOut,
 									 CONNECTION_DATA *psConnection);
@@ -107,9 +92,15 @@ typedef struct _PVRSRV_BRIDGE_DISPATCH_TABLE_ENTRY
 {
 	BridgeWrapperFunction pfFunction; /*!< The wrapper function that validates the ioctl
 										arguments before calling into srvkm proper */
+	POS_LOCK	hBridgeLock;	/*!< The bridge lock which needs to be acquired 
+						before calling the above wrapper */
+	IMG_PVOID	pvBridgeBuffer;	/*!< The buffer that will be used for bridgeIn and bridgeOut structs during this bridge call */
+	IMG_UINT32	ui32BridgeInBufferSize;	/*!< Available bridge input buffer size */
+	IMG_UINT32	ui32BridgeOutBufferSize;	/*!< Available bridge output buffer size */
 #if defined(DEBUG_BRIDGE_KM)
 	const IMG_CHAR *pszIOCName; /*!< Name of the ioctl: e.g. "PVRSRV_BRIDGE_CONNECT_SERVICES" */
 	const IMG_CHAR *pszFunctionName; /*!< Name of the wrapper function: e.g. "PVRSRVConnectBW" */
+	const IMG_CHAR *pszBridgeLockName;	/*!< Name of bridge lock which will be acquired */
 	IMG_UINT32 ui32CallCount; /*!< The total number of times the ioctl has been called */
 	IMG_UINT32 ui32CopyFromUserTotalBytes; /*!< The total number of bytes copied from
 											 userspace within this ioctl */
@@ -118,44 +109,38 @@ typedef struct _PVRSRV_BRIDGE_DISPATCH_TABLE_ENTRY
 #endif
 }PVRSRV_BRIDGE_DISPATCH_TABLE_ENTRY;
 
-#if defined(SUPPORT_VGX) || defined(SUPPORT_MSVDX)
-	#if defined(SUPPORT_VGX)
-		#define BRIDGE_DISPATCH_TABLE_ENTRY_COUNT (PVRSRV_BRIDGE_LAST_VGX_CMD+1)
-		#define PVRSRV_BRIDGE_LAST_DEVICE_CMD	   PVRSRV_BRIDGE_LAST_VGX_CMD
-	#else
-		#define BRIDGE_DISPATCH_TABLE_ENTRY_COUNT (PVRSRV_BRIDGE_LAST_MSVDX_CMD+1)
-		#define PVRSRV_BRIDGE_LAST_DEVICE_CMD	   PVRSRV_BRIDGE_LAST_MSVDX_CMD
-	#endif
+#if defined(SUPPORT_RGX)
+	#define BRIDGE_DISPATCH_TABLE_ENTRY_COUNT  (PVRSRV_BRIDGE_RGX_DISPATCH_LAST+1)
+	#define BRIDGE_DISPATCH_TABLE_START_ENTRY_COUNT  (PVRSRV_BRIDGE_RGX_LAST+1)
 #else
-	#if defined(SUPPORT_RGX)
-		#define BRIDGE_DISPATCH_TABLE_ENTRY_COUNT (PVRSRV_BRIDGE_LAST_RGX_CMD+1)
-		#define PVRSRV_BRIDGE_LAST_DEVICE_CMD	   PVRSRV_BRIDGE_LAST_RGX_CMD
-	#else
-		#define BRIDGE_DISPATCH_TABLE_ENTRY_COUNT (PVRSRV_BRIDGE_LAST_NON_DEVICE_CMD+1)
-		#define PVRSRV_BRIDGE_LAST_DEVICE_CMD	   PVRSRV_BRIDGE_LAST_NON_DEVICE_CMD
-	#endif
+	#define BRIDGE_DISPATCH_TABLE_ENTRY_COUNT  (PVRSRV_BRIDGE_DISPATCH_LAST+1)
+	#define BRIDGE_DISPATCH_TABLE_START_ENTRY_COUNT  (PVRSRV_BRIDGE_LAST+1)
 #endif
 
 extern PVRSRV_BRIDGE_DISPATCH_TABLE_ENTRY g_BridgeDispatchTable[BRIDGE_DISPATCH_TABLE_ENTRY_COUNT];
 
 IMG_VOID
-_SetDispatchTableEntry(IMG_UINT32 ui32Index,
+_SetDispatchTableEntry(IMG_UINT32 ui32BridgeGroup,
+					   IMG_UINT32 ui32Index,
 					   const IMG_CHAR *pszIOCName,
 					   BridgeWrapperFunction pfFunction,
-					   const IMG_CHAR *pszFunctionName);
+					   const IMG_CHAR *pszFunctionName,
+					   POS_LOCK hBridgeLock,
+					   const IMG_CHAR* pszBridgeLockName,
+					   IMG_BYTE* pbyBridgeBuffer,
+					   IMG_UINT32 ui32BridgeInBufferSize,
+					   IMG_UINT32 ui32BridgeOutBufferSize );
 
 
 /* PRQA S 0884,3410 2*/ /* macro relies on the lack of brackets */
-#define SetDispatchTableEntry(ui32Index, pfFunction) \
-	_SetDispatchTableEntry(PVRSRV_GET_BRIDGE_ID(ui32Index), #ui32Index, (BridgeWrapperFunction)pfFunction, #pfFunction)
+#define SetDispatchTableEntry(ui32BridgeGroup, ui32Index, pfFunction,\
+					hBridgeLock, pbyBridgeBuffer,\
+					ui32BridgeInBufferSize, ui32BridgeOutBufferSize) \
+	_SetDispatchTableEntry(PVRSRV_GET_BRIDGE_ID(ui32BridgeGroup), ui32Index, #ui32Index, (BridgeWrapperFunction)pfFunction, #pfFunction,\
+							(POS_LOCK)hBridgeLock, #hBridgeLock,\
+							pbyBridgeBuffer, ui32BridgeInBufferSize, ui32BridgeOutBufferSize )
 
 #define DISPATCH_TABLE_GAP_THRESHOLD 5
-
-#if defined(DEBUG)
-#define PVRSRV_BRIDGE_ASSERT_CMD(X, Y) PVR_ASSERT(X == PVRSRV_GET_BRIDGE_ID(Y))
-#else
-#define PVRSRV_BRIDGE_ASSERT_CMD(X, Y) PVR_UNREFERENCED_PARAMETER(X)
-#endif
 
 
 #if defined(DEBUG_BRIDGE_KM)
@@ -206,11 +191,10 @@ PVRSRVHWOpTimeoutKM(IMG_VOID);
 
 /* performs a SOFT_RESET on the given device node */
 PVRSRV_ERROR
-PVRSRVSoftResetKM(PVRSRV_DEVICE_NODE *psDeviceNode, IMG_UINT64 ui64ResetValue);
+PVRSRVSoftResetKM(PVRSRV_DEVICE_NODE *psDeviceNode,
+                  IMG_UINT64 ui64ResetValue1,
+                  IMG_UINT64 ui64ResetValue2);
 
-#if defined (__cplusplus)
-}
-#endif
 
 #endif /* __BRIDGED_PVR_BRIDGE_H__ */
 

@@ -50,6 +50,15 @@
 #define SPM_AEE_RR_REC 0
 #endif
 
+#define DPIDLE_TAG     "[DP] "
+#define dpidle_dbg(fmt, args...)	pr_debug(DPIDLE_TAG fmt, ##args)
+
+#define	DPIDLE_LOG_PRINT_TIMEOUT_CRITERIA	20
+#define	DPIDLE_LOG_DISCARD_CRITERIA			5000	/* ms */
+
+static unsigned int dpidle_log_discard_cnt;
+static unsigned int dpidle_log_print_prev_time;
+
 #if SPM_AEE_RR_REC
 enum spm_deepidle_step
 {
@@ -283,6 +292,14 @@ extern void aee_rr_rec_deepidle_val(u32 val);
 extern u32 aee_rr_curr_deepidle_val(void);
 #endif
 
+static long int idle_get_current_time_ms(void)
+{
+	struct timeval t;
+
+	do_gettimeofday(&t);
+	return ((t.tv_sec & 0xFFF) * 1000000 + t.tv_usec) / 1000;
+}
+
 static void spm_trigger_wfi_for_dpidle(struct pwr_ctrl *pwrctrl)
 {
     //sync_hw_gating_value();     /* for Vcore DVFS */
@@ -329,6 +346,52 @@ int spm_set_dpidle_wakesrc(u32 wakesrc, bool enable, bool replace)
     spin_unlock_irqrestore(&__spm_lock, flags);
 
     return 0;
+}
+
+static wake_reason_t spm_output_wake_reason(struct wake_status *wakesta, struct pcm_desc *pcmdesc, u32 dump_log)
+{
+	wake_reason_t wr = WR_NONE;
+	unsigned long int dpidle_log_print_curr_time = 0;
+	bool log_print = false;
+	static bool timer_out_too_short;
+
+	if (dump_log == 0) {
+		wr = __spm_output_wake_reason(wakesta, pcmdesc, false);
+	} else if (dump_log == 1) {
+		/* Determine print SPM log or not */
+		dpidle_log_print_curr_time = idle_get_current_time_ms();
+
+		if (wakesta->assert_pc != 0)
+			log_print = true;
+		else if ((wakesta->r12 & (0x1 << 4)) == 0) /* Not wakeup by GPT */
+			log_print = true;
+		else if (wakesta->timer_out <= DPIDLE_LOG_PRINT_TIMEOUT_CRITERIA)
+			log_print = true;
+		else if ((dpidle_log_print_curr_time - dpidle_log_print_prev_time) >
+			 DPIDLE_LOG_DISCARD_CRITERIA)
+			log_print = true;
+
+		if (wakesta->timer_out <= DPIDLE_LOG_PRINT_TIMEOUT_CRITERIA)
+			timer_out_too_short = true;
+
+		/* Print SPM log */
+		if (log_print == true) {
+			dpidle_dbg("dpidle_log_discard_cnt = %d, timer_out_too_short = %d\n",
+						dpidle_log_discard_cnt,
+						timer_out_too_short);
+			wr = __spm_output_wake_reason(wakesta, pcmdesc, false);
+
+			dpidle_log_print_prev_time = dpidle_log_print_curr_time;
+			dpidle_log_discard_cnt = 0;
+			timer_out_too_short = false;
+		} else {
+			dpidle_log_discard_cnt++;
+
+			wr = WR_NONE;
+		}
+	}
+
+	return wr;
 }
 
 wake_reason_t spm_go_to_dpidle(u32 spm_flags, u32 spm_data)
@@ -408,7 +471,7 @@ wake_reason_t spm_go_to_dpidle(u32 spm_flags, u32 spm_data)
 #endif 
     request_uart_to_wakeup();
 
-    wr = __spm_output_wake_reason(&wakesta, pcmdesc, false);
+	wr = spm_output_wake_reason(&wakesta, pcmdesc, spm_data);
 
 RESTORE_IRQ:
     mt_cirq_flush();

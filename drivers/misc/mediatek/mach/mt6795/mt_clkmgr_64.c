@@ -21,7 +21,7 @@
 #include <mach/mt_spm.h>
 #include <mach/mt_spm_mtcmos.h>
 #include <mach/mt_spm_sleep.h>
-#include <mach/mt_freqhopping.h>
+#include "mt_freqhopping.h"
 #include <mach/mt_gpufreq.h>
 #include <mach/irqs.h>
 #include <mach/mt_vcore_dvfs.h>
@@ -58,7 +58,7 @@ void __iomem  *clk_rgu_base;
 //#define DISP_CLK_LOG
 //#define SYS_LOG
 //#define MUX_LOG_TOP
-#define MUX_LOG
+/* #define MUX_LOG */
 //#define PLL_LOG_TOP
 //#define PLL_LOG
 
@@ -69,46 +69,16 @@ void __iomem  *clk_rgu_base;
  **********         log debug          **********
  ************************************************/
 
-#define USING_XLOG
-
-#ifdef USING_XLOG 
-#include <linux/xlog.h>
-
-#define TAG     "Power/clkmgr"
-
-#define clk_err(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_ERROR, TAG, fmt, ##args)
-#define clk_warn(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_WARN, TAG, fmt, ##args)
-#define clk_info(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_INFO, TAG, fmt, ##args)
-#define clk_dbg(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_DEBUG, TAG, fmt, ##args)
-#define clk_ver(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_VERBOSE, TAG, fmt, ##args)
-
-#else
-
 #define TAG     "[Power/clkmgr] "
 
 #define clk_err(fmt, args...)       \
-    printk(KERN_ERR TAG);           \
-    printk(KERN_CONT fmt, ##args) 
+	pr_err(TAG fmt, ##args)
 #define clk_warn(fmt, args...)      \
-    printk(KERN_WARNING TAG);       \
-    printk(KERN_CONT fmt, ##args)
+	pr_warn(TAG fmt, ##args)
 #define clk_info(fmt, args...)      \
-    printk(KERN_NOTICE TAG);        \
-    printk(KERN_CONT fmt, ##args)
+	pr_info(TAG fmt, ##args)
 #define clk_dbg(fmt, args...)       \
-    printk(KERN_INFO TAG);          \
-    printk(KERN_CONT fmt, ##args)
-#define clk_ver(fmt, args...)       \
-    printk(KERN_DEBUG TAG);         \
-    printk(KERN_CONT fmt, ##args)
-
-#endif
-
+	pr_debug(TAG fmt, ##args)
 
 
 /************************************************
@@ -285,6 +255,7 @@ struct stat_node {
 
 static int initialized = 0;
 static int es_flag = 0;
+static int slp_chk_mtcmos_pll_stat = 0;
 
 static struct pll plls[NR_PLLS];
 static struct subsys syss[NR_SYSS];
@@ -440,10 +411,6 @@ static inline void mux_disable_internal(struct clkmux *mux, char *name)
 static inline int clk_enable_internal(struct cg_clk *clk, char *name)
 {
     int err;
-    if(strstr(name, "spi"))
-    {
-        printk("MTK wfq:spi on mask=%x cnt=%d state=%d\r\n", clk->mask, clk->cnt, clk->state);
-    }
     err = clk_enable_locked(clk);
 #ifdef CONFIG_CLKMGR_STAT
     update_stat_locked(&clk->head, name, 1);
@@ -454,10 +421,6 @@ static inline int clk_enable_internal(struct cg_clk *clk, char *name)
 static inline int clk_disable_internal(struct cg_clk *clk, char *name)
 {
     int err;
-    if(strstr(name, "spi"))
-    {
-        printk("MTK wfq:spi on mask=%x cnt=%d state=%d\r\n", clk->mask, clk->cnt, clk->state);
-    }
     err = clk_disable_locked(clk);
 #ifdef CONFIG_CLKMGR_STAT
     update_stat_locked(&clk->head, name, 0);
@@ -626,11 +589,6 @@ static void sdm_pll_enable_op(struct pll *pll)
     //clk_info("[%s]: pll->name=%s\n", __func__, pll->name);
     clk_dbg("[%s]: pll->name=%s\n", __func__, pll->name);
 #endif	
-//    if( /*pll->base_addr == UNIVPLL_CON0 ||*/ pll->base_addr == VENCPLL_CON0)
-//    {
-//        printk("vencpll return \n");
-//        return;//for debug
-//    }
 
     clk_setl(pll->pwr_addr, PLL_PWR_ON);
     udelay(2);
@@ -650,11 +608,6 @@ static void sdm_pll_disable_op(struct pll *pll)
     //clk_info("[%s]: pll->name=%s\n", __func__, pll->name);
     clk_dbg("[%s]: pll->name=%s\n", __func__, pll->name);
 #endif
-//    if( /*pll->base_addr == UNIVPLL_CON0 ||*/ pll->base_addr == VENCPLL_CON0)
-//    {	
-//        printk("vencpll return \n");
-//        return;//for debug
-//    }
 
     if (pll->feat & HAVE_RST_BAR) {
         clk_clrl(pll->base_addr, RST_BAR_MASK);
@@ -1831,7 +1784,8 @@ static void larb_backup(int larb_idx)
     struct larb_monitor *pos;
 
     //clk_info("[%s]: start to backup larb%d\n", __func__, larb_idx);
-    clk_dbg("[%s]: backup larb%d\n", __func__, larb_idx);
+	if (larb_idx == MT_LARB_DISP)
+		clk_dbg("[%s]: backup larb%d\n", __func__, larb_idx);
     
     larb_clk_prepare(larb_idx);
 
@@ -1851,7 +1805,8 @@ static void larb_restore(int larb_idx)
     struct larb_monitor *pos;
 
     //clk_info("[%s]: start to restore larb%d\n", __func__, larb_idx);
-    clk_dbg("[%s]: restore larb%d\n", __func__, larb_idx);
+	if (larb_idx == MT_LARB_DISP)
+		clk_dbg("[%s]: restore larb%d\n", __func__, larb_idx);
 
     larb_clk_prepare(larb_idx);
 
@@ -2181,11 +2136,6 @@ static void clkmux_enable_op(struct clkmux *mux)
     clk_dbg("[%s]: mux->name=%s\n", __func__, mux->name);
 #endif    
 
-//    if( !strcmp(mux->name, "MUX_MM") /*|| !strcmp(mux->name, "MUX_PWM")*/)
-//    {
-//        printk("return mux->name=%s\n", mux->name);
-//        return ;//for debug
-//    }
     clk_clrl(mux->base_addr, mux->pdn_mask); 
 }
 
@@ -2196,11 +2146,6 @@ static void clkmux_disable_op(struct clkmux *mux)
     clk_dbg("[%s]: mux->name=%s\n", __func__, mux->name); 
 #endif    
 
-//    if( !strcmp(mux->name, "MUX_MM") /*|| !strcmp(mux->name, "MUX_PWM")*/)
-//    {	
-//        printk("return mux->name=%s\n", mux->name);
-//        return ;//for debug
-//    }
     clk_setl(mux->base_addr, mux->pdn_mask); 
 }
 
@@ -3023,9 +2968,10 @@ return 0;
 #ifdef CLK_LOG_TOP
     clk_info("[%s]: id=%d, names=%s\n", __func__, id, name);
 #else
-    if ((id == MT_CG_DISP0_SMI_COMMON))
-        clk_dbg("[%s]: id=%d, names=%s\n", __func__, id, name);
-        
+/*
+	if ((id == MT_CG_DISP0_SMI_COMMON))
+		clk_dbg("[%s]: id=%d, names=%s\n", __func__, id, name);
+*/
 #endif
 
     clkmgr_lock(flags);
@@ -3056,8 +3002,10 @@ return 0;
 #ifdef CLK_LOG_TOP
     clk_info("[%s]: id=%d, names=%s\n", __func__, id, name);
 #else
+/*
     if (id == MT_CG_DISP0_SMI_COMMON)
         clk_dbg("[%s]: id=%d, names=%s\n", __func__, id, name);
+*/
 #endif
 
     clkmgr_lock(flags);
@@ -4124,16 +4072,16 @@ void clk_stat_check(int id)
             if (skip)
                 continue;
                 
-            printk(" [%02d]state=%u, cnt=%u", offset, clk->state, clk->cnt);
+			pr_err(" [%02d]state=%u, cnt=%u", offset, clk->state, clk->cnt);
             
             j = 0;
             list_for_each(pos, &clk->head) {
                 node = list_entry(pos, struct stat_node, link);
-                printk(" (%s,%u,%u)", node->name, node->cnt_on, node->cnt_off);
+				pr_err(" (%s,%u,%u)", node->name, node->cnt_on, node->cnt_off);
                 if(++j % 3 == 0)
-                	printk("\n \t\t\t\t ");
+					pr_err("\n \t\t\t\t ");
             }
-            printk("\n");
+			pr_err("\n");
         }
     }
 }
@@ -4151,7 +4099,7 @@ static void clk_stat_bug(void)
         	grp = i / 32;
             offset = i % 32;
             if (offset == 0) {
-                printk("\n*****[%02d][%-8s]*****\n", grp, grp_get_name(grp));
+				pr_err("\n*****[%02d][%-8s]*****\n", grp, grp_get_name(grp));
             }
             
             clk = id_to_clk(i);
@@ -4163,16 +4111,16 @@ static void clk_stat_bug(void)
             if (skip)
                 continue;
                 
-            printk(" [%02d]state=%u, cnt=%u", offset, clk->state, clk->cnt);
+			pr_err(" [%02d]state=%u, cnt=%u", offset, clk->state, clk->cnt);
             
             j = 0;
             list_for_each(pos, &clk->head) {
                 node = list_entry(pos, struct stat_node, link);
-                printk(" (%s,%u,%u)", node->name, node->cnt_on, node->cnt_off);
+				pr_err(" (%s,%u,%u)", node->name, node->cnt_on, node->cnt_off);
                 if(++j % 3 == 0)
-                	printk("\n \t\t\t\t ");
+					pr_err("\n \t\t\t\t ");
             }
-            printk("\n");
+			pr_err("\n");
         }
 }
 #endif
@@ -4180,11 +4128,13 @@ static void clk_stat_bug(void)
 void slp_check_pm_mtcmos_pll(void)
 {
     int i;
+    slp_chk_mtcmos_pll_stat = 1;
     clk_info("[%s]\n", __func__);	
     for (i = 3; i < NR_PLLS; i++) {
         if(i == 8)
             continue;
         if (pll_is_on(i)) {
+            slp_chk_mtcmos_pll_stat = -1;
             clk_info("%s: on\n", plls[i].name);
             clk_info("suspend warning: %s is on!!!\n", plls[i].name);
             clk_info("warning! warning! warning! it may cause resume fail\n");
@@ -4193,15 +4143,16 @@ void slp_check_pm_mtcmos_pll(void)
     for (i = 0; i < NR_SYSS; i++) {
         if (subsys_is_on(i)) {
             clk_info("%s: on\n", syss[i].name);
-			if (i > SYS_MD1) {
+            if (i > SYS_MD1) {
                 //aee_kernel_warning("Suspend Warning","%s is on", subsyss[i].name);
+                slp_chk_mtcmos_pll_stat = -1;
                 clk_info("suspend warning: %s is on!!!\n", syss[i].name);
                 clk_info("warning! warning! warning! it may cause resume fail\n");
 #ifdef CONFIG_CLKMGR_STAT
                 clk_stat_bug();
 #endif
-            }	
-        }	
+            }
+        }
     }
 }
 EXPORT_SYMBOL(slp_check_pm_mtcmos_pll);
@@ -4251,6 +4202,12 @@ static int clk_force_on_write(struct file *file, const char __user *buffer,
     }
 
     return count;
+}
+
+static int slp_chk_mtcmos_pll_stat_read(struct seq_file *m, void *v)
+{
+    seq_printf(m, "%d\n", slp_chk_mtcmos_pll_stat);
+    return 0;
 }
 
 //for pll_test
@@ -4376,6 +4333,16 @@ static const struct file_operations clk_force_on_proc_fops = {
     .write = clk_force_on_write,
 };
 
+//for slp_check_pm_mtcmos_pll
+static int proc_slp_chk_mtcmos_pll_stat_open(struct inode *inode, struct file *file)
+{
+    return single_open(file, slp_chk_mtcmos_pll_stat_read, NULL);
+}
+static const struct file_operations slp_chk_mtcmos_pll_stat_proc_fops = { 
+    .owner = THIS_MODULE,
+    .open  = proc_slp_chk_mtcmos_pll_stat_open,
+    .read  = seq_read,
+};
 
 void mt_clkmgr_debug_init(void)
 {
@@ -4416,6 +4383,8 @@ void mt_clkmgr_debug_init(void)
 #endif
 
     entry = proc_create("clk_force_on", S_IRUGO | S_IWUSR, clkmgr_dir, &clk_force_on_proc_fops);
+
+    entry = proc_create("slp_chk_mtcmos_pll_stat", S_IRUGO, clkmgr_dir, &slp_chk_mtcmos_pll_stat_proc_fops);
 }
 
 /***********************************
@@ -4563,11 +4532,11 @@ void iomap_infra(void)
 //infracfg_ao        
     node = of_find_compatible_node(NULL, NULL, "mediatek,INFRACFG_AO");
     if (!node) {
-        printk("[CLK_INFRACFG_AO] find node failed\n");
+		pr_err("[CLK_INFRACFG_AO] find node failed\n");
     }
     clk_infracfg_ao_base = of_iomap(node, 0);
     if (!clk_infracfg_ao_base)
-        printk("[CLK_INFRACFG_AO] base failed\n");
+		pr_err("[CLK_INFRACFG_AO] base failed\n");
 }
 
 void iomap(void)
@@ -4577,123 +4546,107 @@ void iomap(void)
 //apmixed
     node = of_find_compatible_node(NULL, NULL, "mediatek,APMIXED");
     if (!node) {
-        printk("[CLK_APMIXED] find node failed\n");
+		pr_err("[CLK_APMIXED] find node failed\n");
     }
     clk_apmixed_base = of_iomap(node, 0);
     if (!clk_apmixed_base)
-        printk("[CLK_APMIXED] base failed\n");
+		pr_err("[CLK_APMIXED] base failed\n");
 //cksys_base
     node = of_find_compatible_node(NULL, NULL, "mediatek,CKSYS");
     if (!node) {
-        printk("[CLK_CKSYS] find node failed\n");
+		pr_err("[CLK_CKSYS] find node failed\n");
     }
     clk_cksys_base = of_iomap(node, 0);
     if (!clk_cksys_base)
-        printk("[CLK_CKSYS] base failed\n");
-//infracfg_ao        
-//    node = of_find_compatible_node(NULL, NULL, "mediatek,INFRACFG_AO");
-//    if (!node) {
-//        printk("[CLK_INFRACFG_AO] find node failed\n");
-//    }
-//    clk_infracfg_ao_base = of_iomap(node, 0);
-//    if (!clk_infracfg_ao_base)
-//        printk("[CLK_INFRACFG_AO] base failed\n");
+		pr_err("[CLK_CKSYS] base failed\n");
 //pericfg        
     node = of_find_compatible_node(NULL, NULL, "mediatek,PERICFG");
     if (!node) {
-        printk("[CLK_PERICFG] find node failed\n");
+		pr_err("[CLK_PERICFG] find node failed\n");
     }
     clk_pericfg_base = of_iomap(node, 0);
     if (!clk_pericfg_base)
-        printk("[CLK_PERICFG] base failed\n");        
+		pr_err("[CLK_PERICFG] base failed\n");        
 //audio        
     node = of_find_compatible_node(NULL, NULL, "mediatek,AUDIO");
     if (!node) {
-        printk("[CLK_AUDIO] find node failed\n");
+		pr_err("[CLK_AUDIO] find node failed\n");
     }
     clk_audio_base = of_iomap(node, 0);
     if (!clk_audio_base)
-        printk("[CLK_AUDIO] base failed\n");
+		pr_err("[CLK_AUDIO] base failed\n");
 //mfgcfg        
     node = of_find_compatible_node(NULL, NULL, "mediatek,MFGCFG");
     if (!node) {
-        printk("[CLK_G3D_CONFIG] find node failed\n");
+		pr_err("[CLK_G3D_CONFIG] find node failed\n");
     }
     clk_mfgcfg_base = of_iomap(node, 0);
     if (!clk_mfgcfg_base)
-        printk("[CLK_G3D_CONFIG] base failed\n");
+		pr_err("[CLK_G3D_CONFIG] base failed\n");
 //mmsys_config
     node = of_find_compatible_node(NULL, NULL, "mediatek,MMSYS_CONFIG");
     if (!node) {
-        printk("[CLK_MMSYS_CONFIG] find node failed\n");
+		pr_err("[CLK_MMSYS_CONFIG] find node failed\n");
     }
     clk_mmsys_config_base = of_iomap(node, 0);
     if (!clk_mmsys_config_base)
-        printk("[CLK_MMSYS_CONFIG] base failed\n");
+		pr_err("[CLK_MMSYS_CONFIG] base failed\n");
 //imgsys        
     node = of_find_compatible_node(NULL, NULL, "mediatek,IMGSYS");
     if (!node) {
-        printk("[CLK_IMGSYS_CONFIG] find node failed\n");
+		pr_err("[CLK_IMGSYS_CONFIG] find node failed\n");
     }
     clk_imgsys_base = of_iomap(node, 0);
     if (!clk_imgsys_base)
-        printk("[CLK_IMGSYS_CONFIG] base failed\n");
+		pr_err("[CLK_IMGSYS_CONFIG] base failed\n");
 //vdec_gcon
     node = of_find_compatible_node(NULL, NULL, "mediatek,VDEC_GCON");
     if (!node) {
-        printk("[CLK_VDEC_GCON] find node failed\n");
+		pr_err("[CLK_VDEC_GCON] find node failed\n");
     }
     clk_vdec_gcon_base = of_iomap(node, 0);
     if (!clk_vdec_gcon_base)
-        printk("[CLK_VDEC_GCON] base failed\n");
+		pr_err("[CLK_VDEC_GCON] base failed\n");
 //mjc_config        
     node = of_find_compatible_node(NULL, NULL, "mediatek,MJC_CONFIG");
     if (!node) {
-        printk("[CLK_MJC_CONFIG] find node failed\n");
+		pr_err("[CLK_MJC_CONFIG] find node failed\n");
     }
     clk_mjc_config_base = of_iomap(node, 0);
     if (!clk_mjc_config_base)
-        printk("[CLK_MJC_CONFIG] base failed\n");
+		pr_err("[CLK_MJC_CONFIG] base failed\n");
 //venc_gcon
     node = of_find_compatible_node(NULL, NULL, "mediatek,VENC_GCON");
     if (!node) {
-        printk("[CLK_VENC_GCON] find node failed\n");
+		pr_err("[CLK_VENC_GCON] find node failed\n");
     }
     clk_venc_gcon_base = of_iomap(node, 0);
     if (!clk_venc_gcon_base)
-        printk("[CLK_VENC_GCON] base failed\n");
+		pr_err("[CLK_VENC_GCON] base failed\n");
 //mcucfg
     node = of_find_compatible_node(NULL, NULL, "mediatek,MCUCFG");
     if (!node) {
-        printk("[CLK_MCUCFG] find node failed\n");
+		pr_err("[CLK_MCUCFG] find node failed\n");
     }
     clk_mcucfg_base = of_iomap(node, 0);
     if (!clk_mcucfg_base)
-        printk("[CLK_MCUCFG] base failed\n");
+		pr_err("[CLK_MCUCFG] base failed\n");
 //E3TCM
     node = of_find_compatible_node(NULL, NULL, "mediatek,E3TCM");
     if (!node) {
-        printk("[SMI_COMMON] find node failed\n");
+		pr_err("[SMI_COMMON] find node failed\n");
     }
     clk_e3tcm_base = of_iomap(node, 0);
     if (!clk_e3tcm_base)
-        printk("[E3TCM] base failed\n");    
-//MCU_CFG
-//    node = of_find_compatible_node(NULL, NULL, "mediatek,MCUCFG");
-//    if (!node) {
-//        printk("[SMI_COMMON] find node failed\n");
-//    }
-//    clk_mcu_cfg_base = of_iomap(node, 0);
-//    if (!clk_mcu_cfg_base)
-//        printk("[SMI_COMMON] base failed\n");     
-//TOPRGU    
+		pr_err("[E3TCM] base failed\n");    
+//TOPRGU
     node = of_find_compatible_node(NULL, NULL, "mediatek,TOPRGU");
     if (!node) {
-        printk("[clk_rgu_base] find node failed\n");
+		pr_err("[clk_rgu_base] find node failed\n");
     }
     clk_rgu_base = of_iomap(node, 0);
     if (!clk_rgu_base)
-        printk("[clk_rgu_base] base failed\n");           
+		pr_err("[clk_rgu_base] base failed\n");           
 }
 #endif
 
@@ -4978,88 +4931,3 @@ void e3tcm_pwr_ctrl(int state)
 }
 EXPORT_SYMBOL(e3tcm_pwr_ctrl);
 
-/****************************************************************
- * For MET
- *****************************************************************/
-/*
-static int met_mtcmos_start = 0;
-#define MJC_PWR_STA_MASK    (0x1 << 21) 
-#define VDE_PWR_STA_MASK    (0x1 << 7)
-#define IFR_PWR_STA_MASK    (0x1 << 6)
-#define ISP_PWR_STA_MASK    (0x1 << 5)
-#define MFG_PWR_STA_MASK    (0x1 << 4)
-#define DIS_PWR_STA_MASK    (0x1 << 3)
-#define DPY_PWR_STA_MASK    (0x1 << 2)
-#define CONN_PWR_STA_MASK   (0x1 << 1)
-#define MD1_PWR_STA_MASK    (0x1 << 0)
-
-void ms_mtcmos(unsigned long long timestamp, unsigned char cnt, unsigned int *value)
-{
-	unsigned long nano_rem = do_div(timestamp, 1000000000);
-	printk(KERN_EMERG "%5lu.%06lu,%d,%d,%d,%d,%d,%d,%d\n",
-        (unsigned long)(timestamp), nano_rem/1000,
-        value[0],value[1],value[2],value[3],value[4],value[5],value[6]);
-	trace_printk("%5lu.%06lu,%d,%d,%d,%d,%d,%d,%d\n",
-        (unsigned long)(timestamp), nano_rem/1000,
-        value[0],value[1],value[2],value[3],value[4],value[5],value[6]);
-}
-
-static void print_mtcmos_trace_info_for_met(void)
-{
-    unsigned int mtcmos[7];
-    unsigned int reg_val;
-
-    if (likely(met_mtcmos_start == 0))
-        return;
-
-    reg_val = spm_read(SPM_PWR_STATUS);
-    mtcmos[0] = (reg_val & MD1_PWR_STA_MASK) ? 1 : 0; // md
-    mtcmos[1] = (reg_val & CONN_PWR_STA_MASK) ? 1 : 0; // conn
-    mtcmos[2] = (reg_val & DIS_PWR_STA_MASK) ? 1 : 0; // disp
-    mtcmos[3] = (reg_val & MFG_PWR_STA_MASK) ? 1 : 0; // mfg
-    mtcmos[4] = (reg_val & ISP_PWR_STA_MASK) ? 1 : 0; // isp
-    mtcmos[5] = (reg_val & VDE_PWR_STA_MASK) ? 1 : 0; // vdec
-    mtcmos[6] = (reg_val & MJC_PWR_STA_MASK) ? 1 : 0; // mjc
-
-    ms_mtcmos(cpu_clock(0), 7, mtcmos);
-}
-
-//It will be called back when run "met-cmd --start"
-static void sample_start(void)
-{
-    met_mtcmos_start = 1;
-    return;
-}
-
-//It will be called back when run "met-cmd --stop"
-static void sample_stop(void)
-{
-    met_mtcmos_start = 0;
-    return;
-}
-
-static char header[] = "met-info [000] 0.0: ms_ud_sys_header: ms_mtcmos,timestamp,md,conn,disp,mfg,isp,vdec,mjc,d,d,d,d,d,d,d\n";
-static char help[] = "  --mtcmos                              monitor mtcmos\n";
-
-//It will be called back when run "met-cmd -h"
-static int sample_print_help(char *buf, int len)
-{
-    return snprintf(buf, PAGE_SIZE, help);
-}
-
-//It will be called back when run "met-cmd --extract" and mode is 1
-static int sample_print_header(char *buf, int len)
-{
-    return snprintf(buf, PAGE_SIZE, header);
-}
-
-struct metdevice met_mtcmos = {
-    .name = "mtcmos",
-    .owner = THIS_MODULE,
-    .type = MET_TYPE_BUS,
-    .start = sample_start,
-    .stop = sample_stop,
-    .print_help = sample_print_help,
-    .print_header = sample_print_header,
-};
-*/

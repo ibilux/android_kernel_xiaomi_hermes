@@ -148,14 +148,15 @@ typedef struct _mtag_cmd_t {
 
 #define TYPE_START		1
 #define TYPE_END		2
-#define TYPE_ONESHOT	3
+#define TYPE_ONESHOT		3
 #define TYPE_ENABLE		4
-#define TYPE_DISABLE	5
-#define TYPE_REC_SET	6
+#define TYPE_DISABLE		5
+#define TYPE_REC_SET		6
 #define TYPE_DUMP		7
-#define TYPE_DUMP_SIZE	8
-#define TYPE_DUMP_SAVE	9
-#define TYPE_USRDATA	10
+#define TYPE_DUMP_SIZE		8
+#define TYPE_DUMP_SAVE		9
+#define TYPE_USRDATA		10
+#define TYPE_DUMP_AGAIN		11
 
 /* Use 'm' as magic number */
 #define MTAG_IOC_MAGIC  'm'
@@ -169,7 +170,8 @@ typedef struct _mtag_cmd_t {
 #define MTAG_CMD_DUMP		_IOW(MTAG_IOC_MAGIC, TYPE_DUMP, mtag_cmd_t)
 #define MTAG_CMD_DUMP_SIZE	_IOWR(MTAG_IOC_MAGIC, TYPE_DUMP_SIZE, int)
 #define MTAG_CMD_DUMP_SAVE	_IOW(MTAG_IOC_MAGIC, TYPE_DUMP_SAVE, mtag_cmd_t)
-#define MTAG_CMD_USRDATA         _IOW(MTAG_IOC_MAGIC, TYPE_USRDATA, mtag_cmd_t)
+#define MTAG_CMD_USRDATA	_IOW(MTAG_IOC_MAGIC, TYPE_USRDATA, mtag_cmd_t)
+#define MTAG_CMD_DUMP_AGAIN	_IOW(MTAG_IOC_MAGIC, TYPE_DUMP_AGAIN, void *)
 
 /* include file */
 #ifndef MET_USER_EVENT_SUPPORT

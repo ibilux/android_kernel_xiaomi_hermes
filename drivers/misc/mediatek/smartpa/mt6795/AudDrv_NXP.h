@@ -76,32 +76,32 @@ typedef struct
 
 
 //Log define
-#define NXP_INFO(fmt,arg...)           printk("<<-NXP-INFO->> "fmt"\n",##arg)
-#define NXP_ERROR(fmt,arg...)          printk("<<-NXP-ERROR->> "fmt"\n",##arg)
+#define NXP_INFO(fmt,arg...)           pr_debug("<<-NXP-INFO->> "fmt"\n",##arg)
+#define NXP_ERROR(fmt,arg...)          pr_debug("<<-NXP-ERROR->> "fmt"\n",##arg)
 #define NXP_DEBUG(fmt,arg...)          do{\
                                          if(NXP_DEBUG_ON)\
-                                         printk("<<-NXP-DEBUG->> [%d]"fmt"\n",__LINE__, ##arg);\
+                                         pr_debug("<<-NXP-DEBUG->> [%d]"fmt"\n",__LINE__, ##arg);\
                                        }while(0)
 #define NXP_DEBUG_ARRAY(array, num)    do{\
                                          s32 i;\
                                          u8* a = array;\
                                          if(NXP_DEBUG_ARRAY_ON)\
                                          {\
-                                            printk("<<-NXP-DEBUG-ARRAY->>\n");\
+                                            pr_debug("<<-NXP-DEBUG-ARRAY->>\n");\
                                             for (i = 0; i < (num); i++)\
                                             {\
-                                                printk("%02x   ", (a)[i]);\
+                                                pr_debug("%02x   ", (a)[i]);\
                                                 if ((i + 1 ) %10 == 0)\
                                                 {\
-                                                    printk("\n");\
+                                                    pr_debug("\n");\
                                                 }\
                                             }\
-                                            printk("\n");\
+                                            pr_debug("\n");\
                                         }\
                                        }while(0)
 #define NXP_DEBUG_FUNC()               do{\
                                          if(NXP_DEBUG_FUNC_ON)\
-                                         printk("<<-NXP-FUNC->> Func:%s@Line:%d\n",__func__,__LINE__);\
+                                         pr_debug("<<-NXP-FUNC->> Func:%s@Line:%d\n",__func__,__LINE__);\
                                        }while(0)
 #define NXP_SWAP(x, y)                 do{\
                                          typeof(x) z = x;\

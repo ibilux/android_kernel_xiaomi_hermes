@@ -13,7 +13,7 @@
 #include "mt6620_fm_cmd.h"
 #include "mt6620_fm_cust_cfg.h"
 
-static fm_s32 fm_bop_write(fm_u8 addr, fm_u16 value, fm_u8 * buf, fm_s32 size)
+static fm_s32 fm_bop_write(fm_u8 addr, fm_u16 value, fm_u8 *buf, fm_s32 size)
 {
 	if (size < (FM_WRITE_BASIC_OP_SIZE + 2)) {
 		return (-1);
@@ -29,8 +29,7 @@ static fm_s32 fm_bop_write(fm_u8 addr, fm_u16 value, fm_u8 * buf, fm_s32 size)
 	buf[3] = (fm_u8) ((value) & 0x00FF);
 	buf[4] = (fm_u8) ((value >> 8) & 0x00FF);
 
-	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3],
-		buf[4]);
+	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 
 	return (FM_WRITE_BASIC_OP_SIZE + 2);
 }
@@ -52,8 +51,7 @@ static fm_s32 fm_bop_udelay(fm_u32 value, fm_u8 *buf, fm_s32 size)
 	buf[4] = (fm_u8) ((value >> 16) & 0x000000FF);
 	buf[5] = (fm_u8) ((value >> 24) & 0x000000FF);
 
-	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3],
-		buf[4], buf[5]);
+	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
 
 	return (FM_UDELAY_BASIC_OP_SIZE + 2);
 }
@@ -105,7 +103,6 @@ static fm_s32 fm_bop_modify(fm_u8 addr, fm_u16 mask_and, fm_u16 mask_or, fm_u8 *
 
 	return (FM_MODIFY_BASIC_OP_SIZE + 2);
 }
-
 
 /*
  * mt6620_pwrup_clock_on - Wholechip FM Power Up: step 1, FM Digital Clock enable
@@ -417,7 +414,6 @@ fm_s32 mt6620_pwrup_digital_init_1(fm_u8 *buf, fm_s32 buf_size)
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_ENABLE_OPCODE;
 	pkt_size = 4;
-
 
 	/* fm_rgf_maincon */
 	/* rd 62 */
@@ -1030,8 +1026,7 @@ fm_s32 mt6620_tune_txscan(fm_u8 *tx_buf, fm_s32 tx_buf_size, fm_u16 freq)
  * @min_freq - lower bound
  * return package size
  */
-fm_s32 mt6620_seek_1(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq,
-		     fm_u16 min_freq)
+fm_s32 mt6620_seek_1(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq)
 {
 	fm_s32 pkt_size = 0;
 
@@ -1075,8 +1070,7 @@ fm_s32 mt6620_seek_1(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, 
 	return pkt_size;
 }
 
-fm_s32 mt6620_seek_2(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq,
-		     fm_u16 min_freq)
+fm_s32 mt6620_seek_2(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq)
 {
 	fm_s32 pkt_size = 0;
 
@@ -1111,8 +1105,7 @@ fm_s32 mt6620_seek_2(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, 
  * @min_freq - lower bound
  * return package size
  */
-fm_s32 mt6620_scan_1(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq,
-		     fm_u16 min_freq)
+fm_s32 mt6620_scan_1(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq)
 {
 	fm_s32 pkt_size = 0;
 
@@ -1156,8 +1149,7 @@ fm_s32 mt6620_scan_1(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, 
 	return pkt_size;
 }
 
-fm_s32 mt6620_scan_2(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq,
-		     fm_u16 min_freq)
+fm_s32 mt6620_scan_2(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq)
 {
 	fm_s32 pkt_size = 0;
 
@@ -1194,8 +1186,7 @@ fm_s32 mt6620_get_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr)
 	buf[3] = 0x00;
 	buf[4] = addr;
 
-	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3],
-		buf[4]);
+	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 	return 5;
 }
 
@@ -1218,7 +1209,7 @@ fm_s32 mt6620_set_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr, fm_u16 value)
 	return 7;
 }
 
-fm_s32 mt6620_rds_rx_enable(fm_u8 *tx_buf, fm_s32 tx_buf_size)	/* IC version */
+fm_s32 mt6620_rds_rx_enable(fm_u8 *tx_buf, fm_s32 tx_buf_size)
 {
 	fm_s32 pkt_size = 0;
 
@@ -1242,7 +1233,7 @@ fm_s32 mt6620_rds_rx_enable(fm_u8 *tx_buf, fm_s32 tx_buf_size)	/* IC version */
 	return pkt_size;
 }
 
-fm_s32 mt6620_rds_rx_disable(fm_u8 *tx_buf, fm_s32 tx_buf_size)	/* IC version */
+fm_s32 mt6620_rds_rx_disable(fm_u8 *tx_buf, fm_s32 tx_buf_size)
 {
 	fm_s32 pkt_size = 0;
 
@@ -1256,7 +1247,6 @@ fm_s32 mt6620_rds_rx_disable(fm_u8 *tx_buf, fm_s32 tx_buf_size)	/* IC version */
 
 	pkt_size += fm_bop_modify(0x6B, 0xDFFF, 0x0000, &tx_buf[pkt_size], TX_BUF_SIZE - pkt_size);	/* Wr 0x6b [13] = 0 */
 	pkt_size += fm_bop_write(0x63, 0x0481, &tx_buf[pkt_size], tx_buf_size - pkt_size);	/* Wr 0x63 481 */
-
 
 	tx_buf[2] = (fm_u8) ((pkt_size - 4) & 0x00FF);
 	tx_buf[3] = (fm_u8) (((pkt_size - 4) >> 8) & 0x00FF);

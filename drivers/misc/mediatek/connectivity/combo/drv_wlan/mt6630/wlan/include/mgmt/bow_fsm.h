@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/bow_fsm.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/bow_fsm.h#1
 */
 
 /*! \file   bow_fsm.h
@@ -9,7 +9,7 @@
 */
 
 /*
-** $Log: bow_fsm.h $
+** Log: bow_fsm.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -136,10 +136,7 @@ typedef struct _BOW_FSM_INFO_T {
 	/* can be deleted? */
 	TIMER_T rIndicationOfDisconnectTimer;
 
-
-
 } BOW_FSM_INFO_T, *P_BOW_FSM_INFO_T;
-
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -169,7 +166,5 @@ typedef struct _BOW_FSM_INFO_T {
 *                              F U N C T I O N S
 ********************************************************************************
 */
-
-
 
 #endif

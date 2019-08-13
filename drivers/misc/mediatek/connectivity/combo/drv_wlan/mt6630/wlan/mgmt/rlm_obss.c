@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/rlm_obss.c#2 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/rlm_obss.c#2
 */
 
 /*! \file   "rlm_obss.c"
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: rlm_obss.c $
+** Log: rlm_obss.c
 **
 ** 08 13 2013 terry.wu
 ** [BORA00002207] [MT6630 Wi-Fi] TXM & MQM Implementation
@@ -54,7 +52,8 @@
  * As CR title
  *
  * 01 24 2011 cm.chang
- * [WCXRP00000384] [MT6620 Wi-Fi][Driver][FW] Handle 20/40 action frame in AP mode and stop ampdu timer when sta_rec is freed
+ * [WCXRP00000384] [MT6620 Wi-Fi][Driver][FW] Handle 20/40 action frame
+ * in AP mode and stop ampdu timer when sta_rec is freed
  * Process received 20/40 coexistence action frame for AP mode
  *
  * 01 13 2011 cm.chang
@@ -256,16 +255,15 @@ VOID rlmObssScanDone(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr)
 	prBssInfo = prAdapter->aprBssInfo[prScanDoneMsg->ucBssIndex];
 	ASSERT(prBssInfo);
 
-	DBGLOG(RLM, INFO, ("OBSS Scan Done (NetIdx=%d, Mode=%d)\n",
-			   prScanDoneMsg->ucBssIndex, prBssInfo->eCurrentOPMode));
+	DBGLOG(RLM, INFO, "OBSS Scan Done (NetIdx=%d, Mode=%d)\n",
+			   prScanDoneMsg->ucBssIndex, prBssInfo->eCurrentOPMode);
 
 	cnmMemFree(prAdapter, prMsgHdr);
 
 #if CFG_ENABLE_WIFI_DIRECT
 	/* AP mode */
 	if ((prAdapter->fgIsP2PRegistered) &&
-	    (IS_NET_ACTIVE(prAdapter, prBssInfo->ucBssIndex)) &&
-	    (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)) {
+	    (IS_NET_ACTIVE(prAdapter, prBssInfo->ucBssIndex)) && (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)) {
 		return;
 	}
 #endif
@@ -273,8 +271,7 @@ VOID rlmObssScanDone(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr)
 	/* STA mode */
 	if (prBssInfo->eCurrentOPMode != OP_MODE_INFRASTRUCTURE ||
 	    !RLM_NET_PARAM_VALID(prBssInfo) || prBssInfo->u2ObssScanInterval == 0) {
-		DBGLOG(RLM, WARN, ("OBSS Scan Done (NetIdx=%d) -- Aborted!!\n",
-				   prBssInfo->ucBssIndex));
+		DBGLOG(RLM, WARN, "OBSS Scan Done (NetIdx=%d) -- Aborted!!\n", prBssInfo->ucBssIndex);
 		return;
 	}
 
@@ -283,76 +280,70 @@ VOID rlmObssScanDone(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr)
 	 * To do: invoke rlmObssChnlLevel() to decide if 20/40 BSS coexistence
 	 *        management frame is needed.
 	 */
-	if ((prBssInfo->auc2G_20mReqChnlList[0] > 0 ||
-	     prBssInfo->auc2G_NonHtChnlList[0] > 0)) {
+	if (prBssInfo->auc2G_20mReqChnlList[0] > 0 || prBssInfo->auc2G_NonHtChnlList[0] > 0) {
 
-    	prMsduInfo = (P_MSDU_INFO_T) cnmMgtPktAlloc(prAdapter,
-    							 MAC_TX_RESERVED_FIELD + PUBLIC_ACTION_MAX_LEN);
-        if(prMsduInfo) {
-    		DBGLOG(RLM, INFO, ("Send 20/40 coexistence mgmt(20mReq=%d, NonHt=%d)\n",
-    				   prBssInfo->auc2G_20mReqChnlList[0],
-    				   prBssInfo->auc2G_NonHtChnlList[0]));
+		DBGLOG(RLM, INFO, "Send 20/40 coexistence mgmt(20mReq=%d, NonHt=%d)\n",
+				   prBssInfo->auc2G_20mReqChnlList[0], prBssInfo->auc2G_NonHtChnlList[0]);
 
-    		prTxFrame = (P_ACTION_20_40_COEXIST_FRAME)
-    		    ((ULONG) (prMsduInfo->prPacket) + MAC_TX_RESERVED_FIELD);
+		prMsduInfo = (P_MSDU_INFO_T) cnmMgtPktAlloc(prAdapter, MAC_TX_RESERVED_FIELD + PUBLIC_ACTION_MAX_LEN);
 
-    		prTxFrame->u2FrameCtrl = MAC_FRAME_ACTION;
-    		COPY_MAC_ADDR(prTxFrame->aucDestAddr, prBssInfo->aucBSSID);
-    		COPY_MAC_ADDR(prTxFrame->aucSrcAddr, prBssInfo->aucOwnMacAddr);
-    		COPY_MAC_ADDR(prTxFrame->aucBSSID, prBssInfo->aucBSSID);
+		if (prMsduInfo) {
+			prTxFrame = (P_ACTION_20_40_COEXIST_FRAME)
+			    ((ULONG) (prMsduInfo->prPacket) + MAC_TX_RESERVED_FIELD);
 
-    		prTxFrame->ucCategory = CATEGORY_PUBLIC_ACTION;
-    		prTxFrame->ucAction = ACTION_PUBLIC_20_40_COEXIST;
+			prTxFrame->u2FrameCtrl = MAC_FRAME_ACTION;
+			COPY_MAC_ADDR(prTxFrame->aucDestAddr, prBssInfo->aucBSSID);
+			COPY_MAC_ADDR(prTxFrame->aucSrcAddr, prBssInfo->aucOwnMacAddr);
+			COPY_MAC_ADDR(prTxFrame->aucBSSID, prBssInfo->aucBSSID);
 
-    		/* To do: find correct algorithm */
-    		prTxFrame->rBssCoexist.ucId = ELEM_ID_20_40_BSS_COEXISTENCE;
-    		prTxFrame->rBssCoexist.ucLength = 1;
-    		prTxFrame->rBssCoexist.ucData =
-    		    (prBssInfo->auc2G_20mReqChnlList[0] > 0) ? BSS_COEXIST_20M_REQ : 0;
+			prTxFrame->ucCategory = CATEGORY_PUBLIC_ACTION;
+			prTxFrame->ucAction = ACTION_PUBLIC_20_40_COEXIST;
 
-    		u2PayloadLen = 2 + 3;
+			/* To do: find correct algorithm */
+			prTxFrame->rBssCoexist.ucId = ELEM_ID_20_40_BSS_COEXISTENCE;
+			prTxFrame->rBssCoexist.ucLength = 1;
+			prTxFrame->rBssCoexist.ucData =
+				(prBssInfo->auc2G_20mReqChnlList[0] > 0) ? BSS_COEXIST_20M_REQ : 0;
 
-    		if (prBssInfo->auc2G_NonHtChnlList[0] > 0) {
-    			ASSERT(prBssInfo->auc2G_NonHtChnlList[0] <= CHNL_LIST_SZ_2G);
+			u2PayloadLen = 2 + 3;
 
-    			prTxFrame->rChnlReport.ucId = ELEM_ID_20_40_INTOLERANT_CHNL_REPORT;
-    			prTxFrame->rChnlReport.ucLength = prBssInfo->auc2G_NonHtChnlList[0] + 1;
-    			prTxFrame->rChnlReport.ucRegulatoryClass = 81;	/* 2.4GHz, ch1~13 */
-    			for (i = 0; i < prBssInfo->auc2G_NonHtChnlList[0] &&
-    			     i < CHNL_LIST_SZ_2G; i++) {
-    				prTxFrame->rChnlReport.aucChannelList[i] =
-    				    prBssInfo->auc2G_NonHtChnlList[i + 1];
-    			}
+			if (prBssInfo->auc2G_NonHtChnlList[0] > 0) {
+				ASSERT(prBssInfo->auc2G_NonHtChnlList[0] <= CHNL_LIST_SZ_2G);
 
-    			u2PayloadLen += IE_SIZE(&prTxFrame->rChnlReport);
-    		}
-    		ASSERT((WLAN_MAC_HEADER_LEN + u2PayloadLen) <= PUBLIC_ACTION_MAX_LEN);
+				prTxFrame->rChnlReport.ucId = ELEM_ID_20_40_INTOLERANT_CHNL_REPORT;
+				prTxFrame->rChnlReport.ucLength = prBssInfo->auc2G_NonHtChnlList[0] + 1;
+				prTxFrame->rChnlReport.ucRegulatoryClass = 81;	/* 2.4GHz, ch1~13 */
+				for (i = 0; i < prBssInfo->auc2G_NonHtChnlList[0] && i < CHNL_LIST_SZ_2G; i++)
+					prTxFrame->rChnlReport.aucChannelList[i] =
+										prBssInfo->auc2G_NonHtChnlList[i + 1];
 
-    		/* Clear up channel lists in 2.4G band */
-    		prBssInfo->auc2G_20mReqChnlList[0] = 0;
-    		prBssInfo->auc2G_NonHtChnlList[0] = 0;
+				u2PayloadLen += IE_SIZE(&prTxFrame->rChnlReport);
+			}
+			ASSERT((WLAN_MAC_HEADER_LEN + u2PayloadLen) <= PUBLIC_ACTION_MAX_LEN);
 
+			/* Clear up channel lists in 2.4G band */
+			prBssInfo->auc2G_20mReqChnlList[0] = 0;
+			prBssInfo->auc2G_NonHtChnlList[0] = 0;
 
-    		/* 4 Update information of MSDU_INFO_T */
+			/* 4 Update information of MSDU_INFO_T */
 
-    		TX_SET_MMPDU(prAdapter,
-    			     prMsduInfo,
-    			     prBssInfo->ucBssIndex,
-    			     prBssInfo->prStaRecOfAP->ucIndex,
-    			     WLAN_MAC_MGMT_HEADER_LEN,
-    			     WLAN_MAC_MGMT_HEADER_LEN + u2PayloadLen, NULL, MSDU_RATE_MODE_AUTO);
+			TX_SET_MMPDU(prAdapter,
+				     prMsduInfo,
+				     prBssInfo->ucBssIndex,
+				     prBssInfo->prStaRecOfAP->ucIndex,
+				     WLAN_MAC_MGMT_HEADER_LEN,
+				     WLAN_MAC_MGMT_HEADER_LEN + u2PayloadLen, NULL, MSDU_RATE_MODE_AUTO);
 
-    		/* 4 Enqueue the frame to send this action frame. */
-    		nicTxEnqueueMsdu(prAdapter, prMsduInfo);
-        }
+			/* 4 Enqueue the frame to send this action frame. */
+			nicTxEnqueueMsdu(prAdapter, prMsduInfo);
+		}
 	}
 	/* end of prMsduInfo != NULL */
 	if (prBssInfo->u2ObssScanInterval > 0) {
-		DBGLOG(RLM, INFO, ("Set OBSS timer (NetIdx=%d, %d sec)\n",
-				   prBssInfo->ucBssIndex, prBssInfo->u2ObssScanInterval));
+		DBGLOG(RLM, INFO, "Set OBSS timer (NetIdx=%d, %d sec)\n",
+				   prBssInfo->ucBssIndex, prBssInfo->u2ObssScanInterval);
 
-		cnmTimerStartTimer(prAdapter, &prBssInfo->rObssScanTimer,
-				   prBssInfo->u2ObssScanInterval * MSEC_PER_SEC);
+		cnmTimerStartTimer(prAdapter, &prBssInfo->rObssScanTimer, prBssInfo->u2ObssScanInterval * MSEC_PER_SEC);
 	}
 }
 
@@ -375,8 +366,7 @@ static VOID rlmObssScanTimeout(P_ADAPTER_T prAdapter, ULONG ulParamPtr)
 #if CFG_ENABLE_WIFI_DIRECT
 	/* AP mode */
 	if (prAdapter->fgIsP2PRegistered &&
-	    (IS_NET_ACTIVE(prAdapter, prBssInfo->ucBssIndex)) &&
-	    (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)) {
+	    (IS_NET_ACTIVE(prAdapter, prBssInfo->ucBssIndex)) && (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)) {
 
 		prBssInfo->fgObssActionForcedTo20M = FALSE;
 
@@ -395,19 +385,17 @@ static VOID rlmObssScanTimeout(P_ADAPTER_T prAdapter, ULONG ulParamPtr)
 
 			/* Skip OBSS scan */
 			prBssInfo->u2ObssScanInterval = 0;
-			DBGLOG(RLM, INFO, ("WFD is running. Stop OBSS scan.\n"));
+			DBGLOG(RLM, INFO, "WFD is running. Stop OBSS scan.\n");
 			return;
 		}		/* WFD is enabled */
 	}
 #endif
-#endif				/* end of CFG_ENABLE_WIFI_DIRECT */
-
+#endif /* end of CFG_ENABLE_WIFI_DIRECT */
 
 	/* STA mode */
 	if (prBssInfo->eCurrentOPMode != OP_MODE_INFRASTRUCTURE ||
 	    !RLM_NET_PARAM_VALID(prBssInfo) || prBssInfo->u2ObssScanInterval == 0) {
-		DBGLOG(RLM, WARN, ("OBSS Scan timeout (NetIdx=%d) -- Aborted!!\n",
-				   prBssInfo->ucBssIndex));
+		DBGLOG(RLM, WARN, "OBSS Scan timeout (NetIdx=%d) -- Aborted!!\n", prBssInfo->ucBssIndex);
 		return;
 	}
 
@@ -434,10 +422,9 @@ VOID rlmObssTriggerScan(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo)
 	ASSERT(prScanReqMsg);
 
 	if (!prScanReqMsg) {
-		DBGLOG(RLM, WARN, ("No buf for OBSS scan (NetIdx=%d)!!\n", prBssInfo->ucBssIndex));
+		DBGLOG(RLM, WARN, "No buf for OBSS scan (NetIdx=%d)!!\n", prBssInfo->ucBssIndex);
 
-		cnmTimerStartTimer(prAdapter, &prBssInfo->rObssScanTimer,
-				   prBssInfo->u2ObssScanInterval * MSEC_PER_SEC);
+		cnmTimerStartTimer(prAdapter, &prBssInfo->rObssScanTimer, prBssInfo->u2ObssScanInterval * MSEC_PER_SEC);
 		return;
 	}
 
@@ -456,5 +443,5 @@ VOID rlmObssTriggerScan(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo)
 
 	mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prScanReqMsg, MSG_SEND_METHOD_BUF);
 
-	DBGLOG(RLM, INFO, ("Timeout to trigger OBSS scan (NetIdx=%d)!!\n", prBssInfo->ucBssIndex));
+	DBGLOG(RLM, INFO, "Timeout to trigger OBSS scan (NetIdx=%d)!!\n", prBssInfo->ucBssIndex);
 }

@@ -89,6 +89,9 @@ struct msdc_ioctl {
 #define MSDC_GET_BOOTPART                   (11)
 #define MSDC_SET_BOOTPART                   (12)
 #define MSDC_GET_PARTSIZE                   (13)
+
+#define MSDC_CD_PIN_EN_SDCARD            _IOW('r', 14, int)
+
 #define MSDC_ERASE_SELECTED_AREA            (0x20)
 #define MSDC_CARD_DUNM_FUNC                 (0xff)
 
@@ -145,7 +148,6 @@ typedef enum {
 } STORAGE_TPYE;
 
 #define EXT_CSD_BOOT_SIZE_MULT           (226) /* R */
-#define EXT_CSD_HC_ERASE_GRP_SIZE        (224) /* RO */
 #define EXT_CSD_HC_WP_GPR_SIZE           (221) /* RO */
 #define EXT_CSD_RPMB_SIZE_MULT           (168) /* R */
 #define EXT_CSD_GP1_SIZE_MULT            (143) /* R/W 3 bytes */
@@ -154,7 +156,6 @@ typedef enum {
 #define EXT_CSD_GP4_SIZE_MULT            (152) /* R/W 3 bytes */
 #define EXT_CSD_PART_CFG                 (179) /* R/W/E & R/W/E_P */
 #define EXT_CSD_CACHE_FLUSH              (32)
-#define EXT_CSD_CACHE_CTRL               (33)
 #define CAPACITY_2G                      (2 * 1024 * 1024 * 1024ULL)
 
 typedef enum {

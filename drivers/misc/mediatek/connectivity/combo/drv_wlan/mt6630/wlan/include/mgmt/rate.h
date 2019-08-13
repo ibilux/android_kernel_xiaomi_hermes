@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rate.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rate.h#1
 */
 
 /*! \file  rate.h
@@ -7,10 +7,8 @@
  *         IEEE 802.11 family for MediaTek 802.11 Wireless LAN Adapters.
  */
 
-
-
 /*
-** $Log: rate.h $
+** Log: rate.h
 **
 ** 07 25 2014 eason.tsai
 ** AOSP
@@ -99,4 +97,4 @@ BOOLEAN rateGetLowestRateIndexFromRateSet(IN UINT_16 u2RateSet, OUT PUINT_8 pucL
  ********************************************************************************
  */
 
-#endif				/* _RATE_H */
+#endif /* _RATE_H */

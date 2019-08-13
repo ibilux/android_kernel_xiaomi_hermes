@@ -13,6 +13,7 @@
 /*
  * Tracepoint for met_event_fuse
  */
+#if 0
 TRACE_EVENT(met_fuse,
 	TP_PROTO(int t_pid, char *t_name, unsigned int op, unsigned int size, struct timespec s_time, struct timespec e_time),
 
@@ -46,6 +47,46 @@ TRACE_EVENT(met_fuse,
 		__entry->start_time_s, __entry->start_time_ns,
 		__entry->end_time_s, __entry->end_time_ns)
 );
+#endif
+
+DECLARE_EVENT_CLASS(met_mmc_fuse_template,
+	TP_PROTO(int t_pid, char *t_name, unsigned int op, unsigned int size),
+
+	TP_ARGS(t_pid, t_name, op, size),
+
+	TP_STRUCT__entry(
+		__field(int, task_pid)
+		__field(unsigned int, op_code)
+		__field(unsigned int, op_size)
+		__array(char, task_name, TASK_COMM_LEN)
+	),
+
+	TP_fast_assign(
+		__entry->task_pid = t_pid;
+		__entry->op_code = op;
+		__entry->op_size = size;
+		memcpy(__entry->task_name, t_name, TASK_COMM_LEN);
+	),
+
+	TP_printk("%d,%s,%u,%u",
+		__entry->task_pid, __entry->task_name,
+		__entry->op_code, __entry->op_size)
+);
+
+/*
+ * Tracepoint for met_fuse_start
+ */
+DEFINE_EVENT(met_mmc_fuse_template, met_fuse_start,
+	TP_PROTO(int t_pid, char *t_name, unsigned int op, unsigned int size),
+	TP_ARGS(t_pid, t_name, op, size));
+
+/*
+ * Tracepoint for met_fuse_stop
+ */
+DEFINE_EVENT(met_mmc_fuse_template, met_fuse_stop,
+	TP_PROTO(int t_pid, char *t_name, unsigned int op, unsigned int size),
+	TP_ARGS(t_pid, t_name, op, size));
+
 #endif /* __TRACE_MET_FTRACE_FUSE_H__ */
 
 /* This part must be outside protection */

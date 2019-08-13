@@ -3601,7 +3601,7 @@ restart:
 				{
 					printk(KERN_INFO "[mtk_net][tcp]skip ALPS01866438 Google Issue!\n");			 
 				}
-			    tcp_done(sk);
+			tcp_done(sk);
 			bh_unlock_sock(sk);
 			local_bh_enable();
 			sock_put(sk);

@@ -91,6 +91,9 @@ unsigned int mtlte_df_UL_deswq_buf(MTLTE_DF_TX_QUEUE_TYPE qno , void *buf_ptr)
 	if (skb){
 		len = skb->len ;
 		memcpy(buf_ptr, skb->data, len) ;				
+#ifdef DEBUG_SDIO
+		PutInKthreadDumpBuffer(qno, skb, IN_SDIO_BUFFER);
+#endif	
 		dev_kfree_skb(skb); 
 	}
 
@@ -261,7 +264,7 @@ void  mtlte_df_DL_prepare_skb_for_swq_short(unsigned int target_num, MTLTE_DF_TX
 	unsigned cnt=0 ;
 	
 	while(lte_df_core.dl_buffer_pool_queue[qno].qlen < target_num){
-		skb_tmp = dev_alloc_skb(lte_df_core.df_skb_alloc_size[qno]) ;
+		skb_tmp = __dev_alloc_skb(lte_df_core.df_skb_alloc_size[qno], GFP_KERNEL) ;
 		if (skb_tmp){
 			cnt++ ;
 			skb_queue_tail(&lte_df_core.dl_buffer_pool_queue[qno], skb_tmp) ;
@@ -278,7 +281,7 @@ void  mtlte_df_DL_prepare_skb_for_swq_short(unsigned int target_num)
 	unsigned cnt=0 ;
 	
 	while(lte_df_core.dl_buffer_pool_queue.qlen < target_num){
-		skb_tmp = dev_alloc_skb(DEV_MAX_PKT_SIZE) ;
+		skb_tmp = __dev_alloc_skb(DEV_MAX_PKT_SIZE, GFP_KERNEL) ;
 		if (skb_tmp){
 			cnt++ ;
 			skb_queue_tail(&lte_df_core.dl_buffer_pool_queue, skb_tmp) ;
@@ -521,13 +524,22 @@ int mtlte_df_unregister_swint_callback(void)
 int mtlte_df_swint_handle(unsigned int swint_status)
 {
     mtlte_check_excetion_int(swint_status);
-    
-    if(swint_status & 0xFF030000){
-        if(lte_df_core.cb_sw_int == NULL){
+
+    if (swint_status & D2H_INT_except_seq_err) {
+        KAL_DBGPRINT(KAL, DBG_ERROR,("[EEMCS/HIF]UL pkt sequence number mis-match interrupt\n")) ;
+        if (lte_df_core.cb_seq_err == NULL) {
+            KAL_DBGPRINT(KAL, DBG_ERROR,("seq_error_cb func is NULL\n")) ;
+        } else {
+            lte_df_core.cb_seq_err(swint_status);
+        }
+    }
+   
+
+    if(swint_status & 0xFD030000/*0xFF030000*/){
+        if(lte_df_core.cb_sw_int == NULL) {
             KAL_DBGPRINT(KAL, DBG_ERROR,("the sw interrupt callback func has no be registed!! \n")) ;
             return KAL_FAIL ; 
-        }
-        else{
+        } else {
             lte_df_core.cb_sw_int(swint_status);
         }
     }
@@ -554,7 +566,6 @@ int mtlte_df_unregister_WDT_callback(void)
     return KAL_SUCCESS;
 }
 
-
 int mtlte_df_WDT_handle(int wd_handle_data)
 {
     if(lte_df_core.cb_wd_timeout == NULL){
@@ -566,6 +577,22 @@ int mtlte_df_WDT_handle(int wd_handle_data)
         lte_df_core.cb_wd_timeout(wd_handle_data);
     }
     return KAL_SUCCESS ; 
+}
+
+int mtlte_df_register_seq_err_callback(MTLTE_DF_TO_DEV_CALLBACK func_ptr)
+{   
+    KAL_DBGPRINT(KAL, DBG_ERROR,("mtlte_df_register_seq_err_callback\n")) ;
+    lte_df_core.cb_seq_err = func_ptr;
+
+    return KAL_SUCCESS;
+}
+
+int mtlte_df_unregister_seq_err_callback(void)
+{   
+    KAL_DBGPRINT(KAL, DBG_ERROR,("mtlte_df_unregister_seq_err_callback\n")) ;
+    lte_df_core.cb_seq_err = NULL;
+
+    return KAL_SUCCESS;
 }
 
 

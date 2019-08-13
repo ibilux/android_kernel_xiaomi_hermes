@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/sdio/include/hif.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/sdio/include/hif.h#1
 */
 
 /*! \file   "hif_gdma.h"
@@ -8,10 +8,8 @@
     MARCO, definition, structure for GDMA.
 */
 
-
-
 /*
-** $Log: hif_gdma.h $
+** Log: hif_gdma.h
  *
  * 01 16 2013 vend_samp.lin
  * Add AHB GDMA support
@@ -24,24 +22,20 @@
 
 #include "mtk_porting.h"
 
-
 /*******************************************************************************
 *                         C O M P I L E R   F L A G S
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
 
-
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -56,28 +50,27 @@ typedef enum _MTK_WCN_HIF_GDMA_BURST_LEN {
 	HIF_GDMA_BURST_5_8,
 	HIF_GDMA_BURST_6_8,
 	HIF_GDMA_BURST_7_8,
-	HIF_GDMA_BURST_8_8 /* same as HIF_GDMA_BURST_7_8 */
+	HIF_GDMA_BURST_8_8	/* same as HIF_GDMA_BURST_7_8 */
 } MTK_WCN_HIF_GDMA_BURST_LEN;
 
 typedef enum _MTK_WCN_HIF_GDMA_WRITE_LEN {
-	HIF_GDMA_WRITE_0 = 0, /* transaction size is 1 byte */
-	HIF_GDMA_WRITE_1, /* transaction size is 2 byte */
-	HIF_GDMA_WRITE_2, /* transaction size is 4 byte */
-	HIF_GDMA_WRITE_3 /* transaction size is 1 byte */
+	HIF_GDMA_WRITE_0 = 0,	/* transaction size is 1 byte */
+	HIF_GDMA_WRITE_1,	/* transaction size is 2 byte */
+	HIF_GDMA_WRITE_2,	/* transaction size is 4 byte */
+	HIF_GDMA_WRITE_3	/* transaction size is 1 byte */
 } MTK_WCN_HIF_GDMA_WRITE_LEN;
 
 typedef enum _MTK_WCN_HIF_GDMA_RATIO {
-	HIF_GDMA_RATIO_0 = 0, /* 1/2 */
-	HIF_GDMA_RATIO_1 /* 1/1 */
+	HIF_GDMA_RATIO_0 = 0,	/* 1/2 */
+	HIF_GDMA_RATIO_1	/* 1/1 */
 } MTK_WCN_HIF_GDMA_RATIO;
 
 typedef enum _MTK_WCN_HIF_GDMA_CONNECT {
-	HIF_GDMA_CONNECT_NO = 0, /* no connect */
-	HIF_GDMA_CONNECT_SET1, /* connect set1 (req/ack) */
-    HIF_GDMA_CONNECT_SET2, /* connect set2 (req/ack) */
-    HIF_GDMA_CONNECT_SET3 /* connect set3 (req/ack) */
+	HIF_GDMA_CONNECT_NO = 0,	/* no connect */
+	HIF_GDMA_CONNECT_SET1,	/* connect set1 (req/ack) */
+	HIF_GDMA_CONNECT_SET2,	/* connect set2 (req/ack) */
+	HIF_GDMA_CONNECT_SET3	/* connect set3 (req/ack) */
 } MTK_WCN_HIF_GDMA_CONNECT;
-
 
 /* reference to MT6572_AP_P_DMA_Spec.doc */
 #define AP_DMA_HIF_BASE             0x11000100
@@ -111,11 +104,11 @@ typedef enum _MTK_WCN_HIF_GDMA_CONNECT {
 
 /* AP_P_DMA_G_DMA_2_CON */
 #define ADH_CR_FLAG_FINISH          BIT(30)
-#define ADH_CR_RSIZE                BITS(28,29)
+#define ADH_CR_RSIZE                BITS(28, 29)
 #define ADH_CR_RSIZE_OFFSET         28
-#define ADH_CR_WSIZE                BITS(24,25)
+#define ADH_CR_WSIZE                BITS(24, 25)
 #define ADH_CR_WSIZE_OFFSET         24
-#define ADH_CR_BURST_LEN            BITS(16,18)
+#define ADH_CR_BURST_LEN            BITS(16, 18)
 #define ADH_CR_BURST_LEN_OFFSET     16
 #define ADH_CR_WADDR_FIX_EN         BIT(3)
 #define ADH_CR_WADDR_FIX_EN_OFFSET  3
@@ -127,13 +120,10 @@ typedef enum _MTK_WCN_HIF_GDMA_CONNECT {
 #define ADH_CR_RATIO_OFFSET         3
 #define ADH_CR_DIR                  BIT(2)
 #define ADH_CR_DIR_OFFSET           2
-#define ADH_CR_CONNECT              BITS(0,1)
+#define ADH_CR_CONNECT              BITS(0, 1)
 
 /* AP_DMA_HIF_0_LEN */
-#define ADH_CR_LEN                  BITS(0,19)
-
-
-
+#define ADH_CR_LEN                  BITS(0, 19)
 
 /*******************************************************************************
 *                            P U B L I C   D A T A

@@ -49,7 +49,7 @@
 #include <asm/timex.h>
 #include <asm/io.h>
 
-#include <linux/mt_sched_mon.h>
+#include "mt_sched_mon.h"
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/timer.h>

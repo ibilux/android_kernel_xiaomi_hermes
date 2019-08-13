@@ -27,28 +27,27 @@
 /**************************************
  * only for internal debug
  **************************************/
-#ifdef CONFIG_MTK_LDVT
-#define SPM_PWAKE_EN            0
-#define SPM_PCMWDT_EN           0
-#define SPM_BYPASS_SYSPWREQ     1
+#ifdef	CONFIG_MTK_LDVT
+#define	SPM_PWAKE_EN		0
+#define	SPM_PCMWDT_EN		0
+#define	SPM_BYPASS_SYSPWREQ	1
 #else
-#define SPM_PWAKE_EN            1
-#define SPM_PCMWDT_EN           1
-#define SPM_BYPASS_SYSPWREQ     0
+#define	SPM_PWAKE_EN		1
+#define	SPM_PCMWDT_EN		1
+#define	SPM_BYPASS_SYSPWREQ	0
 #endif
 
-#ifdef CONFIG_OF
-#define SPM_MCUCFG_BASE		spm_mcucfg
-#define SPM_MD32_BASE_ADDR	spm_md32_base
-#define SPM_EINT_BASE	spm_eint_base
+#ifdef	CONFIG_OF
+#define	SPM_MCUCFG_BASE		spm_mcucfg
+#define	SPM_MD32_BASE_ADDR	spm_md32_base
 #else
-#define SPM_MCUCFG_BASE		(0xF0200000)      //0x1020_0000
-#define SPM_MD32_BASE_ADDR	(0xF0050000)
+#define	SPM_MCUCFG_BASE		(0xF0200000)		//0x1020_0000
+#define	SPM_MD32_BASE_ADDR	(0xF0050000)
 #endif
-#define MP0_AXI_CONFIG          (SPM_MCUCFG_BASE + 0x2C) 
-#define MP1_AXI_CONFIG          (SPM_MCUCFG_BASE + 0x22C) 
-#define I2C_CHANNEL 1
-#define MD32_SEMAPHORE_BASE	(SPM_MD32_BASE_ADDR + 0x90)
+#define	MP0_AXI_CONFIG		(SPM_MCUCFG_BASE + 0x2C) 
+#define	MP1_AXI_CONFIG		(SPM_MCUCFG_BASE + 0x22C) 
+#define	I2C_CHANNEL	1
+#define	MD32_SEMAPHORE_BASE	(SPM_MD32_BASE_ADDR + 0x90)
 
 int spm_dormant_sta = MT_CPU_DORMANT_RESET;
 
@@ -58,8 +57,6 @@ struct wake_status suspend_info[20];
 u32 log_wakesta_cnt = 0;
 u32 log_wakesta_index = 0;
 u8 spm_snapshot_golden_setting = 0;
-bool wake_eint_status[EINT_AP_MAXNUMBER];
-bool eint_wake =0;
 
 /**********************************************************
  * PCM code for suspend
@@ -240,6 +237,25 @@ static struct pcm_desc suspend_pcm = {
 
 #define spm_is_wakesrc_invalid(wakesrc)     (!!((u32)(wakesrc) & 0xc0003803))
 
+#ifdef CONFIG_MTK_RAM_CONSOLE
+#define SPM_AEE_RR_REC 1
+#else
+#define SPM_AEE_RR_REC 0
+#endif
+
+#if SPM_AEE_RR_REC
+enum spm_suspend_step
+{
+	SPM_SUSPEND_ENTER=0,
+	SPM_SUSPEND_ENTER_WFI,
+	SPM_SUSPEND_LEAVE_WFI,
+	SPM_SUSPEND_LEAVE
+};
+
+extern void aee_rr_rec_spm_suspend_val(u32 val);
+extern u32 aee_rr_curr_spm_suspend_val(void);
+#endif
+
 extern int get_dynamic_period(int first_use, int first_wakeup_time, int battery_capacity_level);
 
 extern int mt_irq_mask_all(struct mtk_irq_mask *mask);
@@ -347,13 +363,14 @@ static void spm_i2c_control(u32 channel, bool onoff)
 #endif
             i2c_clk = MT_CG_PERI_I2C3;
 	          break;
-//FIXME: I2C4 is defined in 6595 dts but not in 6795 dts. 
-#if 0 
         case 4:
+#ifdef CONFIG_OF
+            base = SPM_I2C4_BASE;
+#else
             base = I2C4_BASE;
+#endif
             i2c_clk = MT_CG_PERI_I2C4;
 	          break;
-#endif
         default:
             break;
     }
@@ -483,28 +500,11 @@ static void spm_clean_after_wakeup(void)
 #if SPM_PCMWDT_EN
     spm_write(SPM_PCM_CON1, CON1_CFG_KEY | (spm_read(SPM_PCM_CON1) & ~CON1_PCM_WDT_EN));
 #endif
+
     __spm_clean_after_wakeup();
 
     /* restore clock mux: fscp_ck = SYSPLL1_D2 */
     clkmux_sel(MT_MUX_SCP, 1, "SPM-Sleep");
-}
-
-static void spm_get_wake_eint_status(void)
-{
-	unsigned int status, index;
-	unsigned int offset, reg_base;
-
-	for (reg_base = 0; reg_base < EINT_AP_MAXNUMBER; reg_base += 32) {
-		status = spm_read((reg_base / 32) * 4 + SPM_EINT_BASE);
-		for (offset = 0; offset < 32; offset++) {
-			index = reg_base + offset;
-			if (index >= EINT_AP_MAXNUMBER)
-				break;
-			wake_eint_status[index] = (status >> offset) & 0x1;
-			if (wake_eint_status[index])
-				spm_crit2("wake up by EINT:%d \n", index);
-		}
-	}
 }
 
 static wake_reason_t spm_output_wake_reason(struct wake_status *wakesta, struct pcm_desc *pcmdesc)
@@ -546,13 +546,8 @@ static wake_reason_t spm_output_wake_reason(struct wake_status *wakesta, struct 
         spm_crit2("warning: spm_ap_mdsrc_req_cnt = %d, r7[ap_mdsrc_req] = 0x%x\n", spm_ap_mdsrc_req_cnt, spm_read(SPM_POWER_ON_VAL1) & (1<<17));
 
     if (wakesta->r12 & WAKE_SRC_EINT)
-	{
-		eint_wake = 1;
-		mt_eint_print_status();
-		spm_get_wake_eint_status();
-	}
-	else
-		eint_wake = 0;
+        mt_eint_print_status();
+
     if (wakesta->r12 & WAKE_SRC_CLDMA_MD)
         exec_ccci_kern_func_by_md_id(0, ID_GET_MD_WAKEUP_SRC, NULL, 0);
 
@@ -633,7 +628,9 @@ wake_reason_t spm_go_to_sleep(u32 spm_flags, u32 spm_data)
     struct pcm_desc *pcmdesc = __spm_suspend.pcmdesc;
     struct pwr_ctrl *pwrctrl = __spm_suspend.pwrctrl;
     struct spm_lp_scen *lpscen;
-
+#if SPM_AEE_RR_REC
+    aee_rr_rec_spm_suspend_val(1<<SPM_SUSPEND_ENTER);
+#endif    
     lpscen = spm_check_talking_get_lpscen(&__spm_suspend, &spm_flags);
     pcmdesc = lpscen->pcmdesc;
     pwrctrl = lpscen->pwrctrl;
@@ -691,7 +688,15 @@ wake_reason_t spm_go_to_sleep(u32 spm_flags, u32 spm_data)
     }
 #endif
 
+#if SPM_AEE_RR_REC
+    aee_rr_rec_spm_suspend_val(aee_rr_curr_spm_suspend_val()|(1<<SPM_SUSPEND_ENTER_WFI));
+#endif
+
     spm_trigger_wfi_for_sleep(pwrctrl);
+
+#if SPM_AEE_RR_REC
+    aee_rr_rec_spm_suspend_val(aee_rr_curr_spm_suspend_val()|(1<<SPM_SUSPEND_LEAVE_WFI));
+#endif
 
     __spm_get_wakeup_status(&wakesta);
 
@@ -713,18 +718,20 @@ RESTORE_IRQ:
         wd_api->wd_resume_notify();
     if (wd_api->wd_spmwdt_mode_config)
         wd_api->wd_spmwdt_mode_config(WD_REQ_DIS, WD_REQ_RST_MODE);
-
+#if SPM_AEE_RR_REC
+    aee_rr_rec_spm_suspend_val(aee_rr_curr_spm_suspend_val()|(1<<SPM_SUSPEND_LEAVE));
+#endif
     return last_wr;
 }
 
 bool spm_is_md_sleep(void)
 {
-    return !((spm_read(SPM_PCM_REG13_DATA) & R13_MD1_SRCLKENA) | (spm_read(SPM_PCM_REG13_DATA) & R13_MD2_SRCLKENA) | (spm_read(SPM_PCM_REG13_DATA) & R13_MD1_APSRC_REQ));
+    return !( (spm_read(SPM_PCM_REG13_DATA) & R13_MD1_SRCLKENA) | (spm_read(SPM_PCM_REG13_DATA) & R13_MD2_SRCLKENA));
 }
 
 bool spm_is_md1_sleep(void)
 {
-    return !((spm_read(SPM_PCM_REG13_DATA) & R13_MD1_SRCLKENA) | (spm_read(SPM_PCM_REG13_DATA) & R13_MD2_SRCLKENA) | (spm_read(SPM_PCM_REG13_DATA) & R13_MD1_APSRC_REQ));
+    return !( (spm_read(SPM_PCM_REG13_DATA) & R13_MD1_SRCLKENA) | (spm_read(SPM_PCM_REG13_DATA) & R13_MD2_SRCLKENA));
 }
 
 #if 0 // No connsys
@@ -879,10 +886,20 @@ void spm_output_sleep_option(void)
                SPM_PWAKE_EN, SPM_PCMWDT_EN, SPM_BYPASS_SYSPWREQ, I2C_CHANNEL);
 }
 
+#if SPM_AEE_RR_REC
+static void spm_suspend_aee_init(void)
+{
+    aee_rr_rec_spm_suspend_val(0);
+}
+#endif
+
 void spm_suspend_init(void)
 {
     spm_set_suspend_pcm_ver();
     spm_write(SPM_SLEEP_MD32_WAKEUP_EVENT_MASK, 0xffffdff7);
+#if SPM_AEE_RR_REC
+    spm_suspend_aee_init();
+#endif
 }
 
 /**************************************
@@ -915,14 +932,6 @@ void read_pcm_data(int *sram_data, int length)
 	else	{	
 		spm_crit2("over size: %d\n", last_pc_size);
 	}
-}
-
-/* eint wake up status API */
-bool spm_read_eint_status (unsigned int eint_num)
-{
-	if(eint_wake)
-		return wake_eint_status[eint_num];
-	return 0;
 }
 
 MODULE_DESCRIPTION("SPM-Sleep Driver v0.1");

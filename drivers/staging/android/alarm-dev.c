@@ -28,7 +28,6 @@
 #include <linux/uaccess.h>
 #include <linux/alarmtimer.h>
 #include "android_alarm.h"
-#include <linux/xlog.h>
 #include <linux/ioctl.h>
 #define LOG_MYTAG	"Power/Alarm"
 
@@ -42,7 +41,7 @@ module_param_named(debug_mask, debug_mask, int, S_IRUGO | S_IWUSR | S_IWGRP);
 #define alarm_dbg(debug_level_mask, fmt, args...)				\
 do {									\
 	if (debug_mask & ANDROID_ALARM_PRINT_##debug_level_mask)	\
-			xlog_printk(ANDROID_LOG_INFO, LOG_MYTAG, fmt, ##args); \
+			pr_debug(LOG_MYTAG fmt, ##args); \
 } while (0)
 
 #define ANDROID_ALARM_WAKEUP_MASK ( \
@@ -404,6 +403,7 @@ static int alarm_release(struct inode *inode, struct file *file)
 	if (file->private_data) {
 		for (i = 0; i < ANDROID_ALARM_TYPE_COUNT; i++) {
 			uint32_t alarm_type_mask = 1U << i;
+
 			if (alarm_enabled & alarm_type_mask) {
 				alarm_dbg(INFO,
 					  "%s: clear alarm, pending %d\n",

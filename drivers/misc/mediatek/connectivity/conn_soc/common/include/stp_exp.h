@@ -1,10 +1,10 @@
 /*
 * Copyright (C) 2011-2014 MediaTek Inc.
-* 
-* This program is free software: you can redistribute it and/or modify it under the terms of the 
+*
+* This program is free software: you can redistribute it and/or modify it under the terms of the
 * GNU General Public License version 2 as published by the Free Software Foundation.
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU General Public License for more details.
 *
@@ -17,8 +17,6 @@
 
     Any definitions in this file will be shared among GLUE Layer and internal Driver Stack.
 */
-
-
 
 #ifndef _STP_EXP_H_
 #define _STP_EXP_H_
@@ -53,7 +51,7 @@
 #define MTKSTP_MAX_TASK_NUM	(8)
 #endif
 
-#define MTKSTP_BUFFER_SIZE  (16384) //Size of RX Queue
+#define MTKSTP_BUFFER_SIZE  (16384)	/* Size of RX Queue */
 
 #define STP_EXP_HID_API_EXPORT 0
 
@@ -63,37 +61,32 @@
 
 #endif
 
-
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
-
-
 
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
 */
 
-
-
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
 */
 #ifndef MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT
-typedef void (*MTK_WCN_STP_EVENT_CB)(void);
-typedef INT32 (*MTK_WCN_STP_IF_TX)(const UINT8 *data, const UINT32 size, UINT32 *written_size);
+typedef void (*MTK_WCN_STP_EVENT_CB) (void);
+typedef INT32(*MTK_WCN_STP_IF_TX) (const UINT8 * data, const UINT32 size, UINT32 * written_size);
 /* export for HIF driver */
-typedef void (*MTK_WCN_STP_IF_RX)(const UINT8 *data, INT32 size);
+typedef void (*MTK_WCN_STP_IF_RX) (const UINT8 *data, INT32 size);
 
 typedef enum {
-    STP_UART_IF_TX = 0,
-    STP_SDIO_IF_TX = 1,
-    STP_BTIF_IF_TX = 2,
-    STP_MAX_IF_TX
-}ENUM_STP_TX_IF_TYPE;
+	STP_UART_IF_TX = 0,
+	STP_SDIO_IF_TX = 1,
+	STP_BTIF_IF_TX = 2,
+	STP_MAX_IF_TX
+} ENUM_STP_TX_IF_TYPE;
 #endif
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -104,7 +97,6 @@ typedef enum {
 *                           P R I V A T E   D A T A
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
@@ -137,7 +129,7 @@ extern INT32 mtk_wcn_stp_receive_data(UINT8 *buffer, UINT32 length, UINT8 type);
 * RETURNS
 *  INT32    >= 0: length transmitted; < 0: error
 *****************************************************************************/
-extern INT32 mtk_wcn_stp_send_data(const UINT8 *buffer, const UINT32 length, const UINT8 type);
+extern INT32 mtk_wcn_stp_send_data(const PUINT8 buffer, const UINT32 length, const UINT8 type);
 
 /*****************************************************************************
 * FUNCTION
@@ -212,7 +204,6 @@ extern int mtk_wcn_stp_register_tx_event_cb(int type, MTK_WCN_STP_EVENT_CB func)
 *****************************************************************************/
 extern int mtk_wcn_stp_register_event_cb(int type, MTK_WCN_STP_EVENT_CB func);
 
-
 /*****************************************************************************
 * FUNCTION
 *  mtk_wcn_stp_register_if_tx
@@ -224,7 +215,6 @@ extern int mtk_wcn_stp_register_event_cb(int type, MTK_WCN_STP_EVENT_CB func);
 *  int: 0:successful , -1: fail
 *****************************************************************************/
 extern int mtk_wcn_stp_register_if_tx(ENUM_STP_TX_IF_TYPE stp_if, MTK_WCN_STP_IF_TX func);
-
 
 /*****************************************************************************
 * FUNCTION
@@ -244,9 +234,9 @@ extern int mtk_wcn_stp_register_if_rx(MTK_WCN_STP_IF_RX func);
 */
 
 #else
-extern INT32 _mtk_wcn_stp_receive_data(UINT8 *buffer, UINT32 length, UINT8 type);
-extern INT32 _mtk_wcn_stp_send_data_raw(const UINT8 *buffer, const UINT32 length, const UINT8 type);
-extern INT32 _mtk_wcn_stp_send_data(const UINT8 *buffer, const UINT32 length, const UINT8 type);
+extern INT32 _mtk_wcn_stp_receive_data(PUINT8 buffer, UINT32 length, UINT8 type);
+extern INT32 _mtk_wcn_stp_send_data_raw(const PUINT8 buffer, const UINT32 length, const UINT8 type);
+extern INT32 _mtk_wcn_stp_send_data(const PUINT8 buffer, const UINT32 length, const UINT8 type);
 extern MTK_WCN_BOOL _mtk_wcn_stp_is_rxqueue_empty(UINT8 type);
 extern MTK_WCN_BOOL _mtk_wcn_stp_is_ready(void);
 extern INT32 _mtk_wcn_stp_parser_data(UINT8 *buffer, UINT32 length);
@@ -259,18 +249,4 @@ extern INT32 _mtk_wcn_stp_coredump_start_get(VOID);
 
 #endif
 
-
 #endif /* _WMT_EXP_H_ */
-
-
-
-
-
-
-
-
-
-
-
-
-

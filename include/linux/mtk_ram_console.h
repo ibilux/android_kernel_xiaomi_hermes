@@ -64,6 +64,15 @@ static inline void aee_rr_rec_fiq_step(u8 i)
 {
 }
 
+static inline unsigned int aee_rr_curr_exp_type(void)
+{
+	return 0;
+}
+
+static inline void aee_rr_rec_exp_type(unsigned int type)
+{
+}
+
 static inline void aee_rr_rec_reboot_mode(u8 mode)
 {
 }

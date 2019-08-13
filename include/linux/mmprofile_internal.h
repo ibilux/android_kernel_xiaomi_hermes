@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-#define MMProfileMaxEventCount 4096
+#define MMProfileMaxEventCount 1000
 
 #define MMP_EVENT_STATE_ENABLED (1 << 0)
 #define MMP_EVENT_STATE_FTRACE  (1 << 1)

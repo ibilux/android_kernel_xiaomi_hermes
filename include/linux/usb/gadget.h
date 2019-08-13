@@ -537,6 +537,10 @@ struct usb_gadget {
 	unsigned			b_hnp_enable:1;
 	unsigned			a_hnp_support:1;
 	unsigned			a_alt_hnp_support:1;
+#if defined(CONFIG_USBIF_COMPLIANCE)
+	unsigned			otg_srp_reqd:1;
+	unsigned			host_request:1;
+#endif
 	const char			*name;
 	struct device			dev;
 	unsigned			out_epnum;

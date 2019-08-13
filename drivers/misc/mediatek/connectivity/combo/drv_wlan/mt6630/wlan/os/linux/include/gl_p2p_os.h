@@ -1,6 +1,6 @@
 /*
-** $Id:
-//Department/DaVinci/TRUNK/MT6620_5931_WiFi_Driver/os/linux/include/gl_p2p_os.h#28 $
+** Id:
+//Department/DaVinci/TRUNK/MT6620_5931_WiFi_Driver/os/linux/include/gl_p2p_os.h#28
 */
 
 /*! \file   gl_p2p_os.h
@@ -12,13 +12,8 @@
     also list down here.
 */
 
-
-
-
-
 #ifndef _GL_P2P_OS_H
 #define _GL_P2P_OS_H
-
 
 /*******************************************************************************
 *                         C O M P I L E R   F L A G S
@@ -35,11 +30,7 @@
 ********************************************************************************
 */
 #if CFG_ENABLE_WIFI_DIRECT && CFG_ENABLE_WIFI_DIRECT_CFG_80211
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 32)
-#if  LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 31)
 extern const struct net_device_ops p2p_netdev_ops;
-#endif
-#endif
 #endif
 
 /*******************************************************************************
@@ -72,7 +63,6 @@ extern const struct net_device_ops p2p_netdev_ops;
 ********************************************************************************
 */
 
-
 struct _GL_P2P_INFO_T {
 
 	/* P2P Device interface handle */
@@ -84,7 +74,7 @@ struct _GL_P2P_INFO_T {
 
 #if CFG_ENABLE_WIFI_DIRECT_CFG_80211
 	/* cfg80211 */
-	struct wireless_dev wdev;
+	struct wireless_dev *prWdev;
 
 	struct cfg80211_scan_request *prScanRequest;
 
@@ -130,7 +120,7 @@ struct _GL_P2P_INFO_T {
 #if CFG_SUPPORT_WFD
 	UINT_8 aucWFDIE[400];	/* 0 for beacon, 1 for probe req, 2 for probe response */
 	UINT_16 u2WFDIELen;
-/* UINT_8                      aucVenderIE[1024]; */ /* Save the other IE for prove resp */
+	/* UINT_8                      aucVenderIE[1024]; *//* Save the other IE for prove resp */
 /* UINT_16                     u2VenderIELen; */
 #endif
 
@@ -149,7 +139,9 @@ struct _GL_P2P_INFO_T {
 
 #if CFG_SUPPORT_HOTSPOT_WPS_MANAGER
 	/* Hotspot Client Management */
-	PARAM_MAC_ADDRESS aucblackMACList[10]; // dependent with  #define P2P_MAXIMUM_CLIENT_COUNT 10, fix me to PARAM_MAC_ADDRESS aucblackMACList[P2P_MAXIMUM_CLIENT_COUNT];
+	/* dependent with  #define P2P_MAXIMUM_CLIENT_COUNT 10,
+	 * fix me to PARAM_MAC_ADDRESS aucblackMACList[P2P_MAXIMUM_CLIENT_COUNT]; */
+	PARAM_MAC_ADDRESS aucblackMACList[10];
 	UINT_8 ucMaxClients;
 #endif
 
@@ -159,7 +151,6 @@ struct _GL_P2P_INFO_T {
 #endif
 };
 
-
 #if CONFIG_NL80211_TESTMODE
 typedef struct _NL80211_DRIVER_TEST_PRE_PARAMS {
 	UINT_16 idx_mode;
@@ -167,12 +158,10 @@ typedef struct _NL80211_DRIVER_TEST_PRE_PARAMS {
 	UINT_32 value;
 } NL80211_DRIVER_TEST_PRE_PARAMS, *P_NL80211_DRIVER_TEST_PRE_PARAMS;
 
-
 typedef struct _NL80211_DRIVER_TEST_PARAMS {
 	UINT_32 index;
 	UINT_32 buflen;
 } NL80211_DRIVER_TEST_PARAMS, *P_NL80211_DRIVER_TEST_PARAMS;
-
 
 /* P2P Sigma*/
 typedef struct _NL80211_DRIVER_P2P_SIGMA_PARAMS {
@@ -180,7 +169,6 @@ typedef struct _NL80211_DRIVER_P2P_SIGMA_PARAMS {
 	UINT_32 idx;
 	UINT_32 value;
 } NL80211_DRIVER_P2P_SIGMA_PARAMS, *P_NL80211_DRIVER_P2P_SIGMA_PARAMS;
-
 
 /* Hotspot Client Management */
 typedef struct _NL80211_DRIVER_hotspot_block_PARAMS {
@@ -250,7 +238,6 @@ BOOLEAN p2pRemove(P_GLUE_INFO_T prGlueInfo);
 
 VOID p2pSetMode(IN BOOLEAN fgIsAPMOde);
 
-
 BOOLEAN glRegisterP2P(P_GLUE_INFO_T prGlueInfo, const char *prDevName, BOOLEAN fgIsApMode);
 
 BOOLEAN glUnregisterP2P(P_GLUE_INFO_T prGlueInfo);
@@ -262,5 +249,7 @@ BOOLEAN p2pNetUnregister(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgIsRtnlLockAcquired)
 BOOLEAN p2PFreeInfo(P_GLUE_INFO_T prGlueInfo);
 
 VOID p2pSetSuspendMode(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgEnable);
-
+BOOLEAN glP2pCreateWirelessDevice(P_GLUE_INFO_T prGlueInfo);
+VOID glP2pDestroyWirelessDevice(VOID);
+VOID p2pUpdateChannelTableByDomain(P_GLUE_INFO_T prGlueInfo);
 #endif

@@ -80,4 +80,4 @@ enum {
 	ANTENNA_TYPE = 0x0010,
 };
 
-#endif				/* __MT6626_FM_REG_H__ */
+#endif /* __MT6626_FM_REG_H__ */

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/include/p2p_precomp.h#1 $
+** Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/include/p2p_precomp.h#1
 */
 
 /*! \file   p2p_precomp.h
@@ -8,8 +8,6 @@
     In this file we collect all compiler flags and detail the p2p driver behavior if
     enable/disable such switch or adjust numeric parameters.
 */
-
-
 
 #ifndef _P2P_PRECOMP_H
 #define _P2P_PRECOMP_H
@@ -23,7 +21,7 @@
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
-#include "gl_os.h" // Include "config.h"
+#include "gl_os.h"		/* Include "config.h" */
 
 #include "gl_p2p_os.h"
 
@@ -32,13 +30,11 @@
 #include "link.h"
 #include "queue.h"
 
-
 /*------------------------------------------------------------------------------
  * .\include\mgmt
  *------------------------------------------------------------------------------
  */
 #include "wlan_typedef.h"
-
 
 #include "mac.h"
 
@@ -47,7 +43,6 @@
 
 #include "roaming_fsm.h"
 
-
 /*------------------------------------------------------------------------------
  * .\include\nic
  *------------------------------------------------------------------------------
@@ -55,10 +50,8 @@
 /* Dependency:  wlan_def.h (ENUM_NETWORK_TYPE_T) */
 #include "cmd_buf.h"
 
-
 /* Dependency:  mac.h (MAC_ADDR_LEN) */
 #include "nic_cmd_event.h"
-
 
 /* Dependency:  nic_cmd_event.h (P_EVENT_CONNECTION_STATUS) */
 #include "nic.h"
@@ -73,7 +66,7 @@
 /* Dependency:  hif_rx.h (P_HIF_RX_HEADER_T) */
 #include "nic_rx.h"
 
-
+#include "que_mgt.h"
 
 #if CFG_ENABLE_WIFI_DIRECT
 #include "p2p_typedef.h"
@@ -82,7 +75,6 @@
 #include "p2p_mac.h"
 #include "p2p_nic.h"
 #endif
-
 
 /*------------------------------------------------------------------------------
  * .\include\mgmt
@@ -100,15 +92,10 @@
 
 #include "wlan_p2p.h"
 
-
-
-
 #include "hal.h"
 
 #if defined(MT6620)
-    #include "mt6620_reg.h"
-#elif defined(MT5931)
-    #include "mt5931_reg.h"
+#include "mt6620_reg.h"
 #endif
 
 #include "rlm.h"
@@ -117,11 +104,9 @@
 #include "rlm_obss.h"
 #include "rate.h"
 
-
 #include "aa_fsm.h"
 
 #include "cnm_timer.h"
-#include "que_mgt.h"
 
 #if CFG_ENABLE_BT_OVER_WIFI
 #include "bow.h"
@@ -129,7 +114,6 @@
 #endif
 
 #include "pwr_mgt.h"
-
 
 #include "cnm.h"
 /* Dependency:  aa_fsm.h (ENUM_AA_STATE_T), p2p_fsm.h (WPS_ATTRI_MAX_LEN_DEVICE_NAME) */
@@ -148,7 +132,6 @@
 #include "p2p_assoc.h"
 #include "p2p_ie.h"
 
-
 #include "privacy.h"
 
 #include "mib.h"
@@ -156,16 +139,12 @@
 #include "auth.h"
 #include "assoc.h"
 
-
 #include "ais_fsm.h"
-
 
 #include "adapter.h"
 
-
 #include "que_mgt.h"
 #include "rftest.h"
-
 
 #if CFG_RSN_MIGRATION
 #include "rsn.h"
@@ -183,7 +162,6 @@
 #include "CFG_Wifi_File.h"
 
 #include "gl_p2p_kal.h"
-
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -221,6 +199,3 @@
 */
 
 #endif /*_P2P_PRECOMP_H */
-
-
-

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/hem_mbox.c#7 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/hem_mbox.c#7
 */
 
 /*! \file   "hem_mbox.c"
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: hem_mbox.c $
+** Log: hem_mbox.c
 **
 ** 08 22 2013 yuche.tsai
 ** [BORA00002761] [MT6630][Wi-Fi Direct][Driver] Group Interface formation
@@ -102,11 +100,14 @@
  * adding the code for XLOG.
  *
  * 07 18 2011 cp.wu
- * [WCXRP00000858] [MT5931][Driver][Firmware] Add support for scan to search for more than one SSID in a single scanning request
- * add framework in driver domain for supporting new SCAN_REQ_V2 for more than 1 SSID support as well as uProbeDelay in NDIS 6.x driver model
+ * [WCXRP00000858] [MT5931][Driver][Firmware] Add support for scan to search for more than one SSID
+ * in a single scanning request
+ * add framework in driver domain for supporting new SCAN_REQ_V2 for more than 1 SSID support
+ * as well as uProbeDelay in NDIS 6.x driver model
  *
  * 06 07 2011 yuche.tsai
- * [WCXRP00000696] [Volunteer Patch][MT6620][Driver] Infinite loop issue when RX invitation response.[WCXRP00000763] [Volunteer Patch][MT6620][Driver] RX Service Discovery Frame under AP mode Issue
+ * [WCXRP00000696] [Volunteer Patch][MT6620][Driver] Infinite loop issue when RX invitation response.
+ * [WCXRP00000763] [Volunteer Patch][MT6620][Driver] RX Service Discovery Frame under AP mode Issue
  * Add invitation support.
  *
  * 04 18 2011 terry.wu
@@ -118,7 +119,8 @@
  * As CR title
  *
  * 02 24 2011 cp.wu
- * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation because NdisMSleep() won't sleep long enough for specified interval such as 500ms
+ * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation because
+ * NdisMSleep() won't sleep long enough for specified interval such as 500ms
  * modify cnm_timer and hem_mbox APIs to be thread safe to ease invoking restrictions
  *
  * 02 15 2011 chinghwa.yu
@@ -152,7 +154,8 @@
  * Remove CNM channel reover message ID
  *
  * 11 01 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150]
+ * [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
  * 1) Query link speed (TX rate) from firmware directly with buffering mechanism to reduce overhead
  * 2) Remove CNM CH-RECOVER event handling
  * 3) cfg read/write API renamed with kal prefix for unified naming rules.
@@ -476,7 +479,7 @@ static PUINT_8 apucDebugMsg[] = {
 	/* (PUINT_8)DISP_STRING("MID_AIS_CNM_MERGE_IBSS_REQ"), */
 	/* (PUINT_8)DISP_STRING("MID_CNM_AIS_MERGE_IBSS_GRANT"), */
 	(PUINT_8) DISP_STRING("MID_SCN_AIS_FOUND_IBSS"),
-#endif				/* CFG_SUPPORT_ADHOC */
+#endif /* CFG_SUPPORT_ADHOC */
 
 	(PUINT_8) DISP_STRING("MID_SAA_AIS_FSM_ABORT"),
 	(PUINT_8) DISP_STRING("MID_MNY_AIS_REMAIN_ON_CHANNEL"),
@@ -486,7 +489,7 @@ static PUINT_8 apucDebugMsg[] = {
 };
 
 /*lint -restore */
-#endif				/* DBG */
+#endif /* DBG */
 
 /* This message entry will be re-ordered based on the message ID order
  * by invoking mboxInitMsgMap()
@@ -581,13 +584,12 @@ static MSG_HNDL_ENTRY_T arMsgMapTable[] = {
 
 #if CFG_SUPPORT_ADHOC
 	{MID_SCN_AIS_FOUND_IBSS, aisFsmRunEventFoundIBSSPeer},
-#endif				/* CFG_SUPPORT_ADHOC */
+#endif /* CFG_SUPPORT_ADHOC */
 
 	{MID_SAA_AIS_FSM_ABORT, aisFsmRunEventAbort},
 	{MID_MNY_AIS_REMAIN_ON_CHANNEL, aisFsmRunEventRemainOnChannel},
 	{MID_MNY_AIS_CANCEL_REMAIN_ON_CHANNEL, aisFsmRunEventCancelRemainOnChannel},
 	{MID_MNY_AIS_MGMT_TX, aisFsmRunEventMgmtFrameTx}
-
 
 };
 
@@ -600,11 +602,11 @@ static MSG_HNDL_ENTRY_T arMsgMapTable[] = {
 #define MBOX_HNDL_MSG(prAdapter, prMsg) do { \
 	ASSERT(arMsgMapTable[prMsg->eMsgId].pfMsgHndl); \
 	if (arMsgMapTable[prMsg->eMsgId].pfMsgHndl) { \
-	    DBGLOG(CNM, LOUD, ("DO MSG [%d: %s]\n", prMsg->eMsgId, apucDebugMsg[prMsg->eMsgId])); \
-	    arMsgMapTable[prMsg->eMsgId].pfMsgHndl(prAdapter, prMsg); \
+		DBGLOG(CNM, LOUD, "DO MSG [%d: %s]\n", prMsg->eMsgId, apucDebugMsg[prMsg->eMsgId]); \
+		arMsgMapTable[prMsg->eMsgId].pfMsgHndl(prAdapter, prMsg); \
 	} \
 	else { \
-	    DBGLOG(CNM, ERROR, ("NULL fptr for MSG [%d]\n", prMsg->eMsgId)); \
+	    DBGLOG(CNM, ERROR, "NULL fptr for MSG [%d]\n", prMsg->eMsgId); \
 	    cnmMemFree(prAdapter, prMsg); \
 	} \
 } while (0)
@@ -612,11 +614,11 @@ static MSG_HNDL_ENTRY_T arMsgMapTable[] = {
 #define MBOX_HNDL_MSG(prAdapter, prMsg) do { \
 	ASSERT(arMsgMapTable[prMsg->eMsgId].pfMsgHndl); \
 	if (arMsgMapTable[prMsg->eMsgId].pfMsgHndl) { \
-	    DBGLOG(CNM, LOUD, ("DO MSG [%d]\n", prMsg->eMsgId)); \
-	    arMsgMapTable[prMsg->eMsgId].pfMsgHndl(prAdapter, prMsg); \
+		DBGLOG(CNM, LOUD, "DO MSG [%d]\n", prMsg->eMsgId); \
+		arMsgMapTable[prMsg->eMsgId].pfMsgHndl(prAdapter, prMsg); \
 	} \
 	else { \
-	    DBGLOG(CNM, ERROR, ("NULL fptr for MSG [%d]\n", prMsg->eMsgId)); \
+	    DBGLOG(CNM, ERROR, "NULL fptr for MSG [%d]\n", prMsg->eMsgId); \
 	    cnmMemFree(prAdapter, prMsg); \
 	} \
 } while (0)
@@ -630,7 +632,6 @@ static MSG_HNDL_ENTRY_T arMsgMapTable[] = {
 *                              F U N C T I O N S
 ********************************************************************************
 */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -649,18 +650,15 @@ VOID mboxInitMsgMap(VOID)
 	ASSERT((sizeof(arMsgMapTable) / sizeof(MSG_HNDL_ENTRY_T)) == MID_TOTAL_NUM);
 
 	for (i = 0; i < MID_TOTAL_NUM; i++) {
-		if (arMsgMapTable[i].eMsgId == (ENUM_MSG_ID_T) i) {
+		if (arMsgMapTable[i].eMsgId == (ENUM_MSG_ID_T) i)
 			continue;
-		}
 		for (idx = i + 1; idx < MID_TOTAL_NUM; idx++) {
-			if (arMsgMapTable[idx].eMsgId == (ENUM_MSG_ID_T) i) {
+			if (arMsgMapTable[idx].eMsgId == (ENUM_MSG_ID_T) i)
 				break;
-			}
 		}
 		ASSERT(idx < MID_TOTAL_NUM);
-		if (idx >= MID_TOTAL_NUM) {
+		if (idx >= MID_TOTAL_NUM)
 			continue;
-		}
 
 		/* Swap target entry and current entry */
 		rTempEntry.eMsgId = arMsgMapTable[idx].eMsgId;
@@ -676,9 +674,8 @@ VOID mboxInitMsgMap(VOID)
 	/* Verify the correctness of final message map */
 	for (i = 0; i < MID_TOTAL_NUM; i++) {
 		ASSERT(arMsgMapTable[i].eMsgId == (ENUM_MSG_ID_T) i);
-		while (arMsgMapTable[i].eMsgId != (ENUM_MSG_ID_T) i) {
+		while (arMsgMapTable[i].eMsgId != (ENUM_MSG_ID_T) i)
 			;
-		}
 	}
 
 }
@@ -800,9 +797,8 @@ VOID mboxInitialize(IN P_ADAPTER_T prAdapter)
 	mboxInitMsgMap();
 
 	/* Setup/initialize each mailbox */
-	for (i = 0; i < MBOX_ID_TOTAL_NUM; i++) {
+	for (i = 0; i < MBOX_ID_TOTAL_NUM; i++)
 		mboxSetup(prAdapter, i);
-	}
 
 }
 

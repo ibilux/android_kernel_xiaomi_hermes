@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/wapi.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/wapi.h#1
 */
 
 /*! \file  wapi.h
     \brief  The wapi related define, macro and structure are described here.
 */
 
-
-
 /*
-** $Log: wapi.h $
+** Log: wapi.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -86,7 +84,6 @@
 
 #define WAPI_IE(fp)                     ((P_WAPI_INFO_ELEM_T) fp)
 
-
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
@@ -109,4 +106,4 @@ BOOLEAN wapiPerformPolicySelection(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prB
 ********************************************************************************
 */
 #endif
-#endif				/* _WAPI_H */
+#endif /* _WAPI_H */

@@ -64,7 +64,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "pvrsrv_error.h"
 #include "allocmem.h"
 #include "mm.h"
-#include "mmap.h"
 #include "env_data.h"
 #include "driverlock.h"
 #include "event.h"
@@ -72,6 +71,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "pvrsrv.h"
 
 #include "osfunc.h"
+
+/* Returns pointer to task_struct that belongs to thread which acquired
+ * bridge lock. */
+extern struct task_struct *OSGetBridgeLockOwner(void);
 
 typedef struct PVRSRV_LINUX_EVENT_OBJECT_LIST_TAG
 {
@@ -298,7 +301,7 @@ PVRSRV_ERROR LinuxEventObjectSignal(IMG_HANDLE hOSEventObjectList)
  @Return   PVRSRV_ERROR  :  Error code
 
 ******************************************************************************/
-PVRSRV_ERROR LinuxEventObjectWait(IMG_HANDLE hOSEventObject, IMG_UINT32 ui32MSTimeout)
+PVRSRV_ERROR LinuxEventObjectWait(IMG_HANDLE hOSEventObject, IMG_UINT32 ui32MSTimeout, IMG_BOOL bHoldBridgeLock)
 {
 	IMG_UINT32 ui32TimeStamp;
 	IMG_BOOL bReleasePVRLock;
@@ -329,17 +332,17 @@ PVRSRV_ERROR LinuxEventObjectWait(IMG_HANDLE hOSEventObject, IMG_UINT32 ui32MSTi
 		 * 'release before deschedule' behaviour. Some threads choose not to
 		 * hold the bridge lock in their implementation.
 		 */
-		bReleasePVRLock = (OSGetReleasePVRLock() && mutex_is_locked(&gPVRSRVLock) && current == gPVRSRVLock.owner);
+		bReleasePVRLock = (!bHoldBridgeLock && mutex_is_locked(&gPVRSRVLock) && current == OSGetBridgeLockOwner());
 		if (bReleasePVRLock == IMG_TRUE)
 		{
-			mutex_unlock(&gPVRSRVLock);
+			OSReleaseBridgeLock();
 		}
 
 		ui32TimeOutJiffies = (IMG_UINT32)schedule_timeout((IMG_INT32)ui32TimeOutJiffies);
 
 		if (bReleasePVRLock == IMG_TRUE)
 		{
-			mutex_lock(&gPVRSRVLock);
+			OSAcquireBridgeLock();
 		}
 
 #if defined(DEBUG)

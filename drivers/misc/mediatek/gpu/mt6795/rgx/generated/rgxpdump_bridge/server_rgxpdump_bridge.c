@@ -65,9 +65,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <linux/slab.h>
 
-/* ***************************************************************************
- * Bridge proxy functions
- */
 
 
 
@@ -76,14 +73,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
  
 static IMG_INT
-PVRSRVBridgePDumpTraceBuffer(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_PDUMPTRACEBUFFER *psPDumpTraceBufferIN,
-					 PVRSRV_BRIDGE_OUT_PDUMPTRACEBUFFER *psPDumpTraceBufferOUT,
+PVRSRVBridgePDumpTraceBuffer(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_PDUMPTRACEBUFFER *psPDumpTraceBufferIN,
+					  PVRSRV_BRIDGE_OUT_PDUMPTRACEBUFFER *psPDumpTraceBufferOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_HANDLE hDeviceNodeInt = IMG_NULL;
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RGXPDUMP_PDUMPTRACEBUFFER);
+
 
 
 
@@ -93,20 +90,21 @@ PVRSRVBridgePDumpTraceBuffer(IMG_UINT32 ui32BridgeID,
 					/* Look up the address from the handle */
 					psPDumpTraceBufferOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hDeviceNodeInt,
+											(IMG_VOID **) &hDeviceNodeInt,
 											psPDumpTraceBufferIN->hDeviceNode,
 											PVRSRV_HANDLE_TYPE_DEV_NODE);
 					if(psPDumpTraceBufferOUT->eError != PVRSRV_OK)
 					{
 						goto PDumpTraceBuffer_exit;
 					}
-
 				}
+
 
 	psPDumpTraceBufferOUT->eError =
 		PVRSRVPDumpTraceBufferKM(
 					hDeviceNodeInt,
 					psPDumpTraceBufferIN->ui32PDumpFlags);
+
 
 
 
@@ -116,14 +114,14 @@ PDumpTraceBuffer_exit:
 }
 
 static IMG_INT
-PVRSRVBridgePDumpSignatureBuffer(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_PDUMPSIGNATUREBUFFER *psPDumpSignatureBufferIN,
-					 PVRSRV_BRIDGE_OUT_PDUMPSIGNATUREBUFFER *psPDumpSignatureBufferOUT,
+PVRSRVBridgePDumpSignatureBuffer(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_PDUMPSIGNATUREBUFFER *psPDumpSignatureBufferIN,
+					  PVRSRV_BRIDGE_OUT_PDUMPSIGNATUREBUFFER *psPDumpSignatureBufferOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_HANDLE hDeviceNodeInt = IMG_NULL;
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RGXPDUMP_PDUMPSIGNATUREBUFFER);
+
 
 
 
@@ -133,20 +131,21 @@ PVRSRVBridgePDumpSignatureBuffer(IMG_UINT32 ui32BridgeID,
 					/* Look up the address from the handle */
 					psPDumpSignatureBufferOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hDeviceNodeInt,
+											(IMG_VOID **) &hDeviceNodeInt,
 											psPDumpSignatureBufferIN->hDeviceNode,
 											PVRSRV_HANDLE_TYPE_DEV_NODE);
 					if(psPDumpSignatureBufferOUT->eError != PVRSRV_OK)
 					{
 						goto PDumpSignatureBuffer_exit;
 					}
-
 				}
+
 
 	psPDumpSignatureBufferOUT->eError =
 		PVRSRVPDumpSignatureBufferKM(
 					hDeviceNodeInt,
 					psPDumpSignatureBufferIN->ui32PDumpFlags);
+
 
 
 
@@ -160,17 +159,25 @@ PDumpSignatureBuffer_exit:
 /* *************************************************************************** 
  * Server bridge dispatch related glue 
  */
- 
-PVRSRV_ERROR RegisterRGXPDUMPFunctions(IMG_VOID);
-IMG_VOID UnregisterRGXPDUMPFunctions(IMG_VOID);
+
+
+PVRSRV_ERROR InitRGXPDUMPBridge(IMG_VOID);
+PVRSRV_ERROR DeinitRGXPDUMPBridge(IMG_VOID);
 
 /*
  * Register all RGXPDUMP functions with services
  */
-PVRSRV_ERROR RegisterRGXPDUMPFunctions(IMG_VOID)
+PVRSRV_ERROR InitRGXPDUMPBridge(IMG_VOID)
 {
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXPDUMP_PDUMPTRACEBUFFER, PVRSRVBridgePDumpTraceBuffer);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXPDUMP_PDUMPSIGNATUREBUFFER, PVRSRVBridgePDumpSignatureBuffer);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXPDUMP, PVRSRV_BRIDGE_RGXPDUMP_PDUMPTRACEBUFFER, PVRSRVBridgePDumpTraceBuffer,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXPDUMP, PVRSRV_BRIDGE_RGXPDUMP_PDUMPSIGNATUREBUFFER, PVRSRVBridgePDumpSignatureBuffer,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
 
 	return PVRSRV_OK;
 }
@@ -178,6 +185,8 @@ PVRSRV_ERROR RegisterRGXPDUMPFunctions(IMG_VOID)
 /*
  * Unregister all rgxpdump functions with services
  */
-IMG_VOID UnregisterRGXPDUMPFunctions(IMG_VOID)
+PVRSRV_ERROR DeinitRGXPDUMPBridge(IMG_VOID)
 {
+	return PVRSRV_OK;
 }
+

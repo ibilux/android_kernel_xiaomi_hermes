@@ -25,25 +25,19 @@
 /* RTC registers */
 #define	RTC_BASE					(0x4000)
 
-extern u16 hal_rtc_get_register_status(const char * cmd);
-extern void hal_rtc_set_register_status(const char * cmd, u16 val);
+extern void hal_rtc_set_register_status(const char *cmd, u16 val);
+extern u16 hal_rtc_get_gpio_32k_status(void);
 extern void hal_rtc_set_gpio_32k_status(u16 user, bool enable);
-extern void hal_rtc_set_writeif(bool enable);
-extern void hal_rtc_mark_mode(const char *cmd);
-extern u16 hal_rtc_rdwr_uart(u16 *val);
+extern void hal_rtc_set_abb_32k(u16 enable);
 extern void hal_rtc_bbpu_pwdn(void);
 extern void hal_rtc_get_pwron_alarm(struct rtc_time *tm, struct rtc_wkalrm *alm);
-extern void hal_rtc_set_pwron_alarm(void);
 extern bool hal_rtc_is_lp_irq(void);
-extern void hal_rtc_reload_power(void);
-extern void hal_rtc_get_tick_time(struct rtc_time *tm);
-extern void hal_rtc_set_tick_time(struct rtc_time *tm);
-extern bool hal_rtc_check_pwron_alarm_rg(struct rtc_time *nowtm, struct rtc_time *tm);
-extern void hal_rtc_get_alarm_time(struct rtc_time *tm, struct rtc_wkalrm *alm);
-extern void hal_rtc_set_alarm_time(struct rtc_time *tm);
+extern bool hal_rtc_is_pwron_alarm(struct rtc_time *nowtm, struct rtc_time *tm);
+extern void hal_rtc_get_alarm(struct rtc_time *tm, struct rtc_wkalrm *alm);
+extern void hal_rtc_set_alarm(struct rtc_time *tm);
 extern void hal_rtc_clear_alarm(struct rtc_time *tm);
 extern void hal_rtc_set_lp_irq(void);
-extern void hal_rtc_read_rg(void);
 extern void hal_rtc_save_pwron_time(bool enable, struct rtc_time *tm, bool logo);
+extern kal_bool pmic_chrdet_status(void);
 
 #endif

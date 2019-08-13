@@ -225,19 +225,17 @@ long xlog_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		if (copy_to_user((void __user *)arg, (void *)&xLog_parcel, sizeof(xLog_parcel)))
 			return -EFAULT;
 		return 0;
-		break;
 
 	case XLOGF_GET_LEVEL:
-		if (copy_to_user((void __user *)arg, (void *)&xlog_global_tag_level, sizeof(u32)));
+		ret = copy_to_user((void __user *)arg, (void *)&xlog_global_tag_level, sizeof(u32));
 		break;
 
 	case XLOGF_SET_LEVEL:{
 			int i;
 			xlog_global_tag_level = arg;
 
-			for (i = 0; i < XLOG_MODULE_MAX; i++) {
+			for (i = 0; i < XLOG_MODULE_MAX; i++)
 				xLogMem[i] = xlog_global_tag_level;
-			}
 			break;
 		}
 
@@ -251,11 +249,11 @@ long xlog_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 				return -EFAULT;
 			offset = xLog_insert(ent.name);
 
-			if ((offset > 0) && (offset < XLOG_MODULE_MAX)) {
+			if ((offset > 0) && (offset < XLOG_MODULE_MAX))
 				xLogMem[offset] = ent.level;
-			} else {
+			else
 				ret = -EINVAL;
-			}
+
 			break;
 		}
 
@@ -266,7 +264,7 @@ long xlog_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	return ret;
 }
 
-static struct file_operations xlog_fops = {
+static const struct file_operations xlog_fops = {
 	.owner = THIS_MODULE,
 	.unlocked_ioctl = xlog_ioctl,
 	.compat_ioctl = xlog_ioctl,
@@ -289,9 +287,9 @@ static int proc_xlog_filters_show(struct seq_file *p, void *v)
 {
 	int i;
 	seq_printf(p, "count %d, level %x\n", empty, xlog_global_tag_level);
-	for (i = 0; i < empty; i++) {
+	for (i = 0; i < empty; i++)
 		seq_printf(p, " TAG:\"%s\" level:%08x\n", modulemap[i].name, xLogMem[i]);
-	}
+
 	return 0;
 }
 
@@ -326,49 +324,49 @@ static int __init xlog_init(void)
 
 	xlog_proc_dir = proc_mkdir("xlog", NULL);
 	if (xlog_proc_dir == NULL) {
-		printk("xlog proc_mkdir failed\n");
+		pr_err("xlog proc_mkdir failed\n");
 		return -ENOMEM;
 	}
 
 	xlog_filter_file = proc_create(XLOG_FILTER_FILE, 0400, xlog_proc_dir,
 				       &proc_xlog_filter_operations);
 	if (xlog_filter_file == NULL) {
-		printk(KERN_ERR "xlog proc_create failed at %s\n", XLOG_FILTER_FILE);
+		pr_err("xlog proc_create failed at %s\n", XLOG_FILTER_FILE);
 		return -ENOMEM;
 	}
 
 	xlog_setfil_file = proc_create(XLOG_SETFIL_FILE, 0444, xlog_proc_dir,
 				       &proc_xlog_setfil_operations);
 	if (xlog_setfil_file == NULL) {
-		printk(KERN_ERR "xlog proc_create failed at %s\n", XLOG_SETFIL_FILE);
+		pr_err("xlog proc_create failed at %s\n", XLOG_SETFIL_FILE);
 		return -ENOMEM;
 	}
 	/* TODO check if it is correct */
 	xLogMem = (u32 *) __get_free_pages(GFP_KERNEL, 1);
-	for (i = 0; i < XLOG_MODULE_MAX; i++) {
+	for (i = 0; i < XLOG_MODULE_MAX; i++)
 		xLogMem[i] = XLOGF_DEFAULT_LEVEL;
-	}
+
 
 	err = misc_register(&xlog_dev);
 	if (unlikely(err)) {
-		printk(KERN_ERR "xLog: failed to unregister device\n");
+		pr_err("xLog: failed to unregister device\n");
 		return -1;
-	} else {
-		printk(KERN_INFO "xLog: inited.\n");
-		return 0;
 	}
+
+	pr_debug("xLog: inited.\n");
+	return 0;
 }
 
 static void __exit xlog_exit(void)
 {
 	int err;
 
-	free_pages((long unsigned)xLogMem, 4);
+	free_pages((unsigned long)xLogMem, 4);
 
 	err = misc_deregister(&xlog_dev);
 	if (unlikely(err))
-		printk(KERN_ERR "xLog: failed to unregister device!\n");
-	printk("xLog: exited.\n");
+		pr_err("xLog: failed to unregister device!\n");
+	pr_debug("xLog: exited.\n");
 }
 module_init(xlog_init);
 module_exit(xlog_exit);

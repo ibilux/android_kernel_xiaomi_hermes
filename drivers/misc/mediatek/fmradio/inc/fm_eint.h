@@ -14,4 +14,4 @@ extern fm_s32 fm_disable_eint(void);
 extern fm_s32 fm_request_eint(void (*parser) (void));
 extern fm_s32 fm_eint_pin_cfg(fm_s32 mode);
 
-#endif				/* __FM_EINT_H__ */
+#endif /* __FM_EINT_H__ */

@@ -116,6 +116,7 @@ static inline struct logger_log *file_get_log(struct file *file)
 {
 	if (file->f_mode & FMODE_READ) {
 		struct logger_reader *reader = file->private_data;
+
 		return reader->log;
 	} else
 		return file->private_data;
@@ -132,6 +133,7 @@ static struct logger_entry *get_entry_header(struct logger_log *log,
 		size_t off, struct logger_entry *scratch)
 {
 	size_t len = min(sizeof(struct logger_entry), log->size - off);
+
 	if (len != sizeof(struct logger_entry)) {
 		memcpy(((void *) scratch), log->buffer + off, len);
 		memcpy(((void *) scratch) + len, log->buffer,
@@ -284,10 +286,21 @@ static ssize_t do_read_log_to_user_interval(struct logger_log *log,
             break;
     }
     if (offset > reader->r_off) {
+		if (sum > reader->wake_up_interval) {
+			pr_err("sum:%zu, reader->wake_up_interval:%zu\n", sum, reader->wake_up_interval);
+			dump_stack();
+			BUG();
+		}
+
 		if (copy_to_user(buf, log->buffer + reader->r_off, sum))
 			return -EFAULT;
     } else {
         size_t right = log->size - reader->r_off;
+		if (sum > reader->wake_up_interval) {
+			pr_err("sum:%zu, right:%zu\n", sum, right);
+			dump_stack();
+			BUG();
+		}
 		if (copy_to_user(buf, log->buffer + reader->r_off, right))
 			return -EFAULT;
 		if (copy_to_user(buf + right, log->buffer, sum - right))
@@ -323,13 +336,15 @@ static size_t get_next_entry_by_uid(struct logger_log *log,
 	return off;
 }
 
-static ssize_t logger_fake_message(struct logger_log *log, struct logger_reader *reader, char __user *buf, const char *fmt, ...) 
+static ssize_t logger_fake_message(struct logger_log *log,
+		struct logger_reader *reader,
+		char __user *buf, const char *fmt, ...)
 {
 	int len, header_size, entry_len;
         char message[256], *tag;
 	va_list ap;
 	struct logger_entry *current_entry, scratch;
-	
+
 	header_size = get_user_hdr_len(reader->r_ver);
 
 	current_entry = get_entry_header(log, reader->r_off, &scratch);
@@ -724,8 +739,8 @@ static int logger_open(struct inode *inode, struct file *file)
 
 		mutex_lock(&log->mutex);
 		reader->r_off = log->head;
-        reader->wake_up_interval = 0; 
-        reader->wake_up_timer = 0;
+		reader->wake_up_interval = 0;
+		reader->wake_up_timer = 0;
 		list_add_tail(&reader->list, &log->readers);
 		mutex_unlock(&log->mutex);
 
@@ -789,12 +804,12 @@ static unsigned int logger_poll(struct file *file, poll_table *wait)
 
 	//if (log->w_off != reader->r_off)
 	//	ret |= POLLIN | POLLRDNORM;
-    if (((log->w_off + log->size - reader->r_off) % log->size > reader->wake_up_interval) || 
-            ((curr_time - last_time > reader->wake_up_timer) && (log->w_off != reader->r_off))) {
-        ret |= POLLIN | POLLRDNORM;
-    }
-    if (reader->wake_up_timer && (curr_time - last_time > reader->wake_up_timer)) 
-        last_time = sched_clock();
+	if (((log->w_off + log->size - reader->r_off) % log->size > reader->wake_up_interval) ||
+		((curr_time - last_time > reader->wake_up_timer) && (log->w_off != reader->r_off))) {
+		ret |= POLLIN | POLLRDNORM;
+	}
+	if (reader->wake_up_timer && (curr_time - last_time > reader->wake_up_timer))
+		last_time = sched_clock();
 	mutex_unlock(&log->mutex);
 
 	return ret;
@@ -803,6 +818,7 @@ static unsigned int logger_poll(struct file *file, poll_table *wait)
 static long logger_set_version(struct logger_reader *reader, void __user *arg)
 {
 	int version;
+
 	if (copy_from_user(&version, arg, sizeof(int)))
 		return -EFAULT;
 
@@ -815,21 +831,24 @@ static long logger_set_version(struct logger_reader *reader, void __user *arg)
 
 static long logger_set_timer(struct logger_reader *reader, void __user *arg)
 {
-    long long timer;
-    if (copy_from_user(&timer, arg, sizeof(long long)))
-        return -EFAULT;
-    reader->wake_up_timer = timer;
-    return 0;
+	long long timer = 0;
+	if (copy_from_user(&timer, arg, sizeof(long long)))
+		return -EFAULT;
+
+	reader->wake_up_timer = timer;
+	pr_info("set timer %lld\n", reader->wake_up_timer);
+	return 0;
 }
 
 static long logger_set_interval(struct logger_reader *reader, void __user *arg)
 {
-    size_t interval;
-    if (copy_from_user(&interval, arg, sizeof(size_t)))
-        return -EFAULT;
-    reader->wake_up_interval = interval;
-    printk("set interval %zd\n", reader->wake_up_interval);
-    return 0;
+	size_t interval = 0;
+	if (copy_from_user(&interval, arg, sizeof(int)))
+		return -EFAULT;
+
+	reader->wake_up_interval = interval;
+	pr_info("set interval %zd\n", reader->wake_up_interval);
+	return 0;
 }
 
 static long logger_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
@@ -910,6 +929,7 @@ static long logger_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
             break;
         }
         reader = file->private_data;
+		pr_err("logger_ioctl LOGGER_SET_INTERVAL\n");
         ret = logger_set_interval(reader, argp);
         reader->r_ver = 2;
         break;
@@ -927,13 +947,28 @@ static long logger_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	return ret;
 }
 
+#ifdef CONFIG_COMPAT
+static long logger_ioctl_compat(struct file *file, unsigned int cmd, unsigned long arg)
+{
+	long ret;
+	struct logger_reader *reader;
+	void __user *arg32 = compat_ptr(arg);
+	if (!file->f_op || !file->f_op->unlocked_ioctl)
+		return -ENOTTY;
+	ret = file->f_op->unlocked_ioctl(file, cmd, (unsigned long)arg32);
+	return ret;
+}
+#endif
+
 static const struct file_operations logger_fops = {
 	.owner = THIS_MODULE,
 	.read = logger_read,
 	.aio_write = logger_aio_write,
 	.poll = logger_poll,
 	.unlocked_ioctl = logger_ioctl,
-	.compat_ioctl = logger_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = logger_ioctl_compat,
+#endif
 	.open = logger_open,
 	.release = logger_release,
 };
@@ -1043,21 +1078,21 @@ static void __exit logger_exit(void)
 }
 
 int panic_dump_main(char *buf, size_t size) {
-		static size_t offset = 0; //offset of log buffer
-		static int isFirst = 0;
-		size_t len = 0;
-		size_t distance = 0;
-		size_t realsize = 0;
-    struct logger_log *log;
-    struct logger_log log_main;
-    log_main.buffer = NULL;
-    log_main.size = 0;
-    log_main.head = 0;
-    log_main.w_off = 0;
+	static size_t offset = 0; /* offset of log buffer */
+	static int isFirst = 0;
+	size_t len = 0;
+	size_t distance = 0;
+	size_t realsize = 0;
+	struct logger_log *log;
+	struct logger_log log_main;
+	log_main.buffer = NULL;
+	log_main.size = 0;
+	log_main.head = 0;
+	log_main.w_off = 0;
 	list_for_each_entry(log, &log_list, logs)
-		if (strncmp(log->misc.name, LOGGER_LOG_MAIN, strlen(LOGGER_LOG_MAIN)) == 0) 
-            log_main = *log;
-	
+	if (strncmp(log->misc.name, LOGGER_LOG_MAIN, strlen(LOGGER_LOG_MAIN)) == 0)
+		log_main = *log;
+
 	if (isFirst == 0){
 		offset = log_main.head;
 		isFirst++;
@@ -1078,20 +1113,20 @@ int panic_dump_main(char *buf, size_t size) {
 }
 
 int panic_dump_events(char *buf, size_t size) {
-		static size_t offset = 0; //offset of log buffer
-		static int isFirst = 0;
-		size_t len = 0;
-		size_t distance = 0;
-		size_t realsize = 0;
-    struct logger_log *log;
-    struct logger_log log_events;
-    log_events.buffer = NULL;
-    log_events.size = 0;
-    log_events.head = 0;
-    log_events.w_off = 0;
+	static size_t offset = 0; /* offset of log buffer */
+	static int isFirst = 0;
+	size_t len = 0;
+	size_t distance = 0;
+	size_t realsize = 0;
+	struct logger_log *log;
+	struct logger_log log_events;
+	log_events.buffer = NULL;
+	log_events.size = 0;
+	log_events.head = 0;
+	log_events.w_off = 0;
 	list_for_each_entry(log, &log_list, logs)
-		if (strncmp(log->misc.name, LOGGER_LOG_EVENTS, strlen(LOGGER_LOG_EVENTS)) == 0) 
-            log_events = *log;
+	if (strncmp(log->misc.name, LOGGER_LOG_EVENTS, strlen(LOGGER_LOG_EVENTS)) == 0)
+		log_events = *log;
 
 	if (isFirst == 0){
 		offset = log_events.head;
@@ -1102,7 +1137,7 @@ int panic_dump_events(char *buf, size_t size) {
 	if(distance > size)
 		realsize = size;
 	else
-		realsize = distance;	
+		realsize = distance;
 	len = min(realsize, log_events.size - offset);
 	memcpy(buf, log_events.buffer + offset, len);
 	if (realsize != len)
@@ -1113,20 +1148,20 @@ int panic_dump_events(char *buf, size_t size) {
 }
 
 int panic_dump_radio(char *buf, size_t size) {
-		static size_t offset = 0; //offset of log buffer
-		static int isFirst = 0;
-		size_t len = 0;
-		size_t distance = 0;
-		size_t realsize = 0;
-    struct logger_log *log;
-    struct logger_log log_radio;
-    log_radio.buffer = NULL;
-    log_radio.size = 0;
-    log_radio.head = 0;
-    log_radio.w_off = 0;
+	static size_t offset = 0; /* offset of log buffer */
+	static int isFirst = 0;
+	size_t len = 0;
+	size_t distance = 0;
+	size_t realsize = 0;
+	struct logger_log *log;
+	struct logger_log log_radio;
+	log_radio.buffer = NULL;
+	log_radio.size = 0;
+	log_radio.head = 0;
+	log_radio.w_off = 0;
 	list_for_each_entry(log, &log_list, logs)
-		if (strncmp(log->misc.name, LOGGER_LOG_RADIO, strlen(LOGGER_LOG_RADIO)) == 0) 
-            log_radio = *log;
+	if (strncmp(log->misc.name, LOGGER_LOG_RADIO, strlen(LOGGER_LOG_RADIO)) == 0)
+		log_radio = *log;
 
 	if (isFirst == 0){
 		offset = log_radio.head;
@@ -1148,21 +1183,21 @@ int panic_dump_radio(char *buf, size_t size) {
 }
 
 int panic_dump_system(char *buf, size_t size) {
-		static size_t offset = 0; //offset of log buffer
-		static int isFirst = 0;
-		size_t len = 0;
-		size_t distance = 0;
-		size_t realsize = 0;
-    struct logger_log *log;
-    struct logger_log log_system;
-    log_system.buffer = NULL;
-    log_system.size = 0;
-    log_system.head = 0;
-    log_system.w_off = 0;
+	static size_t offset = 0; /* offset of log buffer */
+	static int isFirst = 0;
+	size_t len = 0;
+	size_t distance = 0;
+	size_t realsize = 0;
+	struct logger_log *log;
+	struct logger_log log_system;
+	log_system.buffer = NULL;
+	log_system.size = 0;
+	log_system.head = 0;
+	log_system.w_off = 0;
 	list_for_each_entry(log, &log_list, logs)
-		if (strncmp(log->misc.name, LOGGER_LOG_SYSTEM, strlen(LOGGER_LOG_SYSTEM)) == 0) 
-            log_system = *log;
-	
+	if (strncmp(log->misc.name, LOGGER_LOG_SYSTEM, strlen(LOGGER_LOG_SYSTEM)) == 0)
+		log_system = *log;
+
 	if (isFirst == 0){
 		offset = log_system.head;
 		isFirst++;
@@ -1208,7 +1243,7 @@ int panic_dump_android_log(char *buf, size_t size, int type)
     }
     if (ret!=0)
 	    ret = size;
-	
+
     return ret;
 }
 
@@ -1232,7 +1267,7 @@ void get_android_log_buffer(unsigned long *addr, unsigned long *size, unsigned l
 	default:
 		return;
 	}
-	
+
 	list_for_each_entry(log, &log_list, logs)
 		if (strncmp(log->misc.name, name, strlen(name)) == 0) {
 			*addr = (unsigned long)log->buffer;

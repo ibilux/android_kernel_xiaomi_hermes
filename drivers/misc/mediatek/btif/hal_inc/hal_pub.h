@@ -10,12 +10,9 @@
 #include <linux/kfifo.h>
 #include <linux/vmalloc.h>
 #include <linux/slab.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
 #include <linux/sched.h>
 #include <linux/sched/rt.h>
-#else
-#include <linux/sched.h>
-#endif
+
 #ifdef CONFIG_OF
 #include <linux/of_irq.h>
 #include <linux/of_address.h>
@@ -24,7 +21,11 @@
 #include <mach/mt_reg_base.h>
 #include <mach/mt_irq.h>
 #endif
+#if defined(CONFIG_MTK_LEGACY)
 #include <mach/mt_clkmgr.h>
+#else
+#include <linux/clk.h>
+#endif /* defined(CONFIG_MTK_LEGACY) */
 #include <mach/sync_write.h>
 
 extern int mtk_btif_hal_get_log_lvl(void);
@@ -48,7 +49,7 @@ static int hal_log_print(const char *str, ...)
 	vsnprintf(temp_sring, DBG_LOG_STR_SIZE, str, args);
 	va_end(args);
 
-	printk(KERN_ERR "%s", temp_sring);
+	pr_err("%s", temp_sring);
 
 /* printk(KERN_INFO "%s",temp_sring); */
 
@@ -279,12 +280,12 @@ typedef struct _MTK_BTIF_INFO_STR_ {
 
 #define BTIF_SET_BIT(REG, BITVAL)    do { \
 *((volatile unsigned int *)(REG)) |= ((unsigned int)(BITVAL)); \
-mb(); \
+mb(); /**/ \
 } \
 while (0)
 #define BTIF_CLR_BIT(REG, BITVAL)    do { \
 (*(volatile unsigned int *)(REG)) &= ~((unsigned int)(BITVAL)); \
-mb(); \
+mb(); /**/\
 } \
 while (0)
 

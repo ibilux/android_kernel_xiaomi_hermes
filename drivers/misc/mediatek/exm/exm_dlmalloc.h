@@ -2,13 +2,13 @@
 #define _EXM_DLMALLOC_H_
 
 /* Configure dlmalloc. */
-#define DLMALLOC_EXPORT static
+/* #define DLMALLOC_EXPORT static*/
 #define ONLY_MSPACES 1
 #define USE_LOCKS 2
 #define ABORT  dump_stack()
 #define HAVE_MMAP 0
 #define HAVE_MREMAP 0
-#define MALLOC_FAILURE_ACTION  ENOMEM;
+#define MALLOC_FAILURE_ACTION  ENOMEM
 #define NO_MALLINFO 1
 #define NO_MALLOC_STATS 1
 #define MORECORE_CANNOT_TRIM 1
@@ -29,5 +29,9 @@
 
 extern void dump_stack(void) __cold;
 
+#ifndef CONFIG_OF
+extern phys_addr_t get_lca_reserved_mem_start(void);
+extern size_t get_lca_reserved_mem_size(void);
+#endif
 #endif /* _EXM_DLMALLOC_H_ */
 

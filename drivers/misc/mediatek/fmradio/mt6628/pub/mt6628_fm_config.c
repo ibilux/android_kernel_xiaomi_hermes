@@ -49,8 +49,7 @@ static fm_s32 MT6628fm_cust_config_print(fm_cust_cfg *cfg)
 	WCN_DBG(FM_NTC | MAIN, "osc_freq:\t%d\n", cfg->rx_cfg.osc_freq);
 
 	WCN_DBG(FM_NTC | MAIN, "aud path[%d]I2S state[%d]mode[%d]rate[%d]\n", cfg->aud_cfg.aud_path,
-		cfg->aud_cfg.i2s_info.status, cfg->aud_cfg.i2s_info.mode,
-		cfg->aud_cfg.i2s_info.rate);
+		cfg->aud_cfg.i2s_info.status, cfg->aud_cfg.i2s_info.mode, cfg->aud_cfg.i2s_info.rate);
 	return 0;
 }
 
@@ -61,15 +60,9 @@ static fm_s32 MT6628cfg_item_handler(fm_s8 *grp, fm_s8 *key, fm_s8 *val, fm_cust
 
 	if (0 <= (ret = cfg_item_match(key, val, "FM_RX_RSSI_TH_LONG_MT6628", &rx_cfg->long_ana_rssi_th))) {	/* FMR_RSSI_TH_L = 0x0301 */
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FM_RX_RSSI_TH_SHORT_MT6628",
-				   &rx_cfg->short_ana_rssi_th))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_RSSI_TH_SHORT_MT6628", &rx_cfg->short_ana_rssi_th))) {
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FM_RX_DESENSE_RSSI_MT6628",
-				   &rx_cfg->desene_rssi_th))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_DESENSE_RSSI_MT6628", &rx_cfg->desene_rssi_th))) {
 		return ret;
 	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_PAMD_TH_MT6628", &rx_cfg->pamd_th))) {
 		return ret;
@@ -86,12 +79,9 @@ static fm_s32 MT6628cfg_item_handler(fm_s8 *grp, fm_s8 *key, fm_s8 *val, fm_cust
 	   } */
 	else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_SMG_TH_MT6628", &rx_cfg->smg_th))) {
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FM_RX_DEEMPHASIS_MT6628", &rx_cfg->deemphasis))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_DEEMPHASIS_MT6628", &rx_cfg->deemphasis))) {
 		return ret;
-	} else if (0 <=
-		   (ret = cfg_item_match(key, val, "FM_RX_OSC_FREQ_MT6628", &rx_cfg->osc_freq))) {
+	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_OSC_FREQ_MT6628", &rx_cfg->osc_freq))) {
 		return ret;
 	} else {
 		WCN_DBG(FM_WAR | MAIN, "MT6628 invalid key\n");
@@ -163,7 +153,7 @@ static fm_s32 MT6628fm_cust_config_file(const fm_s8 *filename, fm_cust_cfg *cfg)
 
 	ret = cfg_parser(buf, MT6628cfg_item_handler, cfg);
 
- out:
+out:
 
 	if (buf) {
 		fm_free(buf);

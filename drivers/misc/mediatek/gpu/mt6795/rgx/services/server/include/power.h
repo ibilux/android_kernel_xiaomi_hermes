@@ -43,9 +43,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef POWER_H
 #define POWER_H
 
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
 #include "pvrsrv_device.h"
 
@@ -62,6 +59,9 @@ typedef struct _PVRSRV_POWER_DEV_TAG_
 	PFN_SYS_DEV_POST_POWER			pfnSystemPostPower;
 	PFN_PRE_CLOCKSPEED_CHANGE		pfnPreClockSpeedChange;
 	PFN_POST_CLOCKSPEED_CHANGE		pfnPostClockSpeedChange;
+	PFN_FORCED_IDLE_REQUEST			pfnForcedIdleRequest;
+	PFN_FORCED_IDLE_CANCEL_REQUEST		pfnForcedIdleCancelRequest;
+	PFN_DUST_COUNT_REQUEST			pfnDustCountRequest;
 	IMG_HANDLE						hDevCookie;
 	IMG_UINT32						ui32DeviceIndex;
 	PVRSRV_DEV_POWER_STATE 			eDefaultPowerState;
@@ -82,6 +82,8 @@ typedef enum _PVRSRV_INIT_SERVER_STATE_
 
 } PVRSRV_INIT_SERVER_STATE, *PPVRSRV_INIT_SERVER_STATE;
 
+typedef IMG_BOOL (*PFN_SYS_DEV_IS_DEFAULT_STATE_OFF)(PVRSRV_POWER_DEV *psPowerDevice);
+
 IMG_IMPORT
 IMG_BOOL PVRSRVGetInitServerState(PVRSRV_INIT_SERVER_STATE	eInitServerState);
 
@@ -93,6 +95,8 @@ PVRSRV_ERROR PVRSRVSetInitServerState(PVRSRV_INIT_SERVER_STATE	eInitServerState,
 IMG_IMPORT PVRSRV_ERROR PVRSRVPowerLock(IMG_VOID);
 IMG_IMPORT IMG_VOID PVRSRVForcedPowerLock(IMG_VOID);
 IMG_IMPORT IMG_VOID PVRSRVPowerUnlock(IMG_VOID);
+
+IMG_BOOL PVRSRVDeviceIsDefaultStateOFF(PVRSRV_POWER_DEV *psPowerDevice);
 
 IMG_IMPORT
 PVRSRV_ERROR PVRSRVSetDevicePowerStateKM(IMG_UINT32				ui32DeviceIndex,
@@ -111,6 +115,9 @@ PVRSRV_ERROR PVRSRVRegisterPowerDevice(IMG_UINT32					ui32DeviceIndex,
 									   PFN_SYS_DEV_POST_POWER		pfnSystemPostPower,
 									   PFN_PRE_CLOCKSPEED_CHANGE	pfnPreClockSpeedChange,
 									   PFN_POST_CLOCKSPEED_CHANGE	pfnPostClockSpeedChange,
+									   PFN_FORCED_IDLE_REQUEST		pfnForcedIdleRequest,
+									   PFN_FORCED_IDLE_CANCEL_REQUEST	pfnForcedIdleCancelRequest,
+									   PFN_DUST_COUNT_REQUEST	pfnDustCountRequest,
 									   IMG_HANDLE					hDevCookie,
 									   PVRSRV_DEV_POWER_STATE		eCurrentPowerState,
 									   PVRSRV_DEV_POWER_STATE		eDefaultPowerState);
@@ -134,9 +141,18 @@ IMG_VOID PVRSRVDevicePostClockSpeedChange(IMG_UINT32	ui32DeviceIndex,
 										  IMG_BOOL		bIdleDevice,
 										  IMG_VOID		*pvInfo);
 
-#if defined (__cplusplus)
-}
-#endif
+PVRSRV_ERROR PVRSRVDeviceIdleRequestKM(IMG_BOOL					bAllDevices,
+					IMG_UINT32				ui32DeviceIndex,
+					PFN_SYS_DEV_IS_DEFAULT_STATE_OFF	pfnCheckIdleReq,
+					IMG_BOOL				bDeviceOffPermitted);
+
+PVRSRV_ERROR PVRSRVDeviceIdleCancelRequestKM(IMG_BOOL			bAllDevices,
+						IMG_UINT32		ui32DeviceIndex);
+
+PVRSRV_ERROR PVRSRVDeviceDustCountChange(IMG_UINT32	ui32DeviceIndex,
+						IMG_UINT32	ui32DustCount);
+
+
 #endif /* POWER_H */
 
 /******************************************************************************

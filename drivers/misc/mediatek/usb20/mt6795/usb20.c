@@ -46,7 +46,7 @@
 extern struct musb *mtk_musb;
 static DEFINE_SEMAPHORE(power_clock_lock);
 static bool platform_init_first = true;
-extern bool mtk_usb_power;
+
 static u32 cable_mode = CABLE_MODE_NORMAL;
 //add for linux kernel 3.10
 #ifdef CONFIG_OF
@@ -206,7 +206,7 @@ static void mt_usb_enable(struct musb *musb)
 
     if (!mtk_usb_power) {
         if (down_interruptible(&power_clock_lock))
-            xlog_printk(ANDROID_LOG_ERROR, "USB20", "%s: busy, Couldn't get power_clock_lock\n" \
+            pr_debug("%s: busy, Couldn't get power_clock_lock\n" \
                         , __func__);
 
 #ifndef FPGA_PLATFORM
@@ -242,7 +242,7 @@ static void mt_usb_disable(struct musb *musb)
 
     if (mtk_usb_power) {
         if (down_interruptible(&power_clock_lock))
-            xlog_printk(ANDROID_LOG_ERROR, "USB20", "%s: busy, Couldn't get power_clock_lock\n" \
+            pr_debug("%s: busy, Couldn't get power_clock_lock\n" \
                         , __func__);
 
         usb_phy_savecurrent();
@@ -478,7 +478,7 @@ static ssize_t mt_usb_store_cmode(struct device* dev, struct device_attribute *a
 		if (cable_mode != cmode) {
 			if(mtk_musb) {
 				if(down_interruptible(&mtk_musb->musb_lock))
-					xlog_printk(ANDROID_LOG_ERROR, "USB20", "%s: busy, Couldn't get musb_lock\n", __func__);
+					pr_debug("%s: busy, Couldn't get musb_lock\n", __func__);
 			}
 			if(cmode == CABLE_MODE_CHRG_ONLY) { // IPO shutdown, disable USB
 				if(mtk_musb) {

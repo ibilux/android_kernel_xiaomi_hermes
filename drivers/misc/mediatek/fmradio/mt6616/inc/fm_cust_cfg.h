@@ -42,7 +42,8 @@ enum {
 #define FM_RX_MR_TH           0x01BD	/* FM radio MR threshold */
 #define FM_RX_SEEK_SPACE      1	/* FM radio seek space,1:100KHZ; 2:200KHZ */
 #define FM_RX_SCAN_CH_SIZE    40	/* FM radio scan max channel size */
-#define FM_RX_BAND            1	/* FM radio band, 1:87.5MHz~108.0MHz; 2:76.0MHz~90.0MHz; 3:76.0MHz~108.0MHz; 4:special */
+/* FM radio band, 1:87.5MHz~108.0MHz; 2:76.0MHz~90.0MHz; 3:76.0MHz~108.0MHz; 4:special */
+#define FM_RX_BAND            1
 #define FM_RX_BAND_FREQ_L     875	/* FM radio special band low freq(Default 87.5MHz) */
 #define FM_RX_BAND_FREQ_H     1080	/* FM radio special band high freq(Default 108.0MHz) */
 #define FM_RX_SCAN_SORT_SELECT FM_SCAN_SORT_NON
@@ -59,4 +60,4 @@ enum {
 #define FM_TX_SCAN_HOLE_LOW  923	/* 92.3MHz~95.4MHz should not show to user */
 #define FM_TX_SCAN_HOLE_HIGH 954	/* 92.3MHz~95.4MHz should not show to user */
 
-#endif				/* __FM_CUST_CFG_H__ */
+#endif /* __FM_CUST_CFG_H__ */

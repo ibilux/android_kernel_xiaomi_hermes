@@ -50,7 +50,7 @@
 #include "mach/mt_spm_idle.h"
 #include "mach/mt_pmic_wrap.h"
 #include "mach/mt_clkmgr.h"
-#include "mach/mt_freqhopping.h"
+#include "mt_freqhopping.h"
 #include "mach/mt_spm.h"
 #include "mach/mt_ptp.h"
 #include "mach/mt_ptp2.h"
@@ -166,43 +166,22 @@ extern void hp_limited_cpu_num(int num); // TODO: ask Marc to provide the head f
 /*
  * LOG
  */
-// #define USING_XLOG
-
-#define HEX_FMT "0x%08x"
 #undef TAG
-
-#ifdef USING_XLOG
-#include <linux/xlog.h>
-
-#define TAG     "Power/cpufreq"
-
-#define cpufreq_err(fmt, args...)       \
-	xlog_printk(ANDROID_LOG_ERROR, TAG, fmt, ##args)
-#define cpufreq_warn(fmt, args...)      \
-	xlog_printk(ANDROID_LOG_WARN, TAG, fmt, ##args)
-#define cpufreq_info(fmt, args...)      \
-	xlog_printk(ANDROID_LOG_INFO, TAG, fmt, ##args)
-#define cpufreq_dbg(fmt, args...)       \
-	xlog_printk(ANDROID_LOG_DEBUG, TAG, fmt, ##args)
-#define cpufreq_ver(fmt, args...)       \
-	xlog_printk(ANDROID_LOG_VERBOSE, TAG, fmt, ##args)
-
-#else   /* USING_XLOG */
-
 #define TAG     "[Power/cpufreq] "
 
 #define cpufreq_err(fmt, args...)       \
-	printk(KERN_ERR TAG KERN_CONT fmt, ##args)
+    pr_err(TAG KERN_CONT "[ERROR]"fmt, ##args)
 #define cpufreq_warn(fmt, args...)      \
-	printk(KERN_WARNING TAG KERN_CONT fmt, ##args)
+    pr_warn(TAG KERN_CONT "[WARNING]"fmt, ##args)
 #define cpufreq_info(fmt, args...)      \
-	printk(KERN_NOTICE TAG KERN_CONT fmt, ##args)
+	pr_warn(TAG KERN_CONT fmt, ##args)
 #define cpufreq_dbg(fmt, args...)       \
-	printk(KERN_INFO TAG KERN_CONT fmt, ##args)
+	pr_debug(TAG KERN_CONT fmt, ##args)
 #define cpufreq_ver(fmt, args...)       \
-	printk(KERN_DEBUG TAG KERN_CONT fmt, ##args)
-
-#endif  /* USING_XLOG */
+	do {                                \
+		if (func_lv_mask)           \
+			cpufreq_info(TAG""fmt, ##args);    \
+	} while (0)
 
 #define FUNC_LV_MODULE          BIT(0)  /* module, platform driver interface */
 #define FUNC_LV_CPUFREQ         BIT(1)  /* cpufreq driver interface          */
@@ -4691,7 +4670,7 @@ static ssize_t cpufreq_limited_max_freq_by_user_proc_write(struct file *file, co
 
 		p->limited_max_freq_by_user = limited_max_freq;
 
-		if (cpu_dvfs_is_availiable(p) && (p->limited_max_freq_by_user < cpu_dvfs_get_cur_freq(p))) {
+		if (cpu_dvfs_is_availiable(p) && (p->limited_max_freq_by_user != 0) && (p->limited_max_freq_by_user < cpu_dvfs_get_cur_freq(p))) {
 			struct cpufreq_policy *policy = cpufreq_cpu_get(p->cpu_id);
 
 			if (policy) {

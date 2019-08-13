@@ -58,6 +58,7 @@
 #include "mt_soc_afe_control.h"
 #include "mt_soc_codec_63xx.h"
 #include "mt_soc_pcm_common.h"
+#include <auddrv_underflow_mach.h>
 
 #include <mach/upmu_common.h>
 #include <mach/upmu_sw.h>
@@ -324,9 +325,14 @@ static int AudioDebug_Setting_Set(struct snd_kcontrol *kcontrol, struct snd_ctl_
     EnableSideGenHw(Soc_Aud_InterConnectionOutput_O03, Soc_Aud_MemIF_Direction_DIRECTION_OUTPUT, true);
     msleep(5 * 1000);
     EnableSideGenHw(Soc_Aud_InterConnectionOutput_O03, Soc_Aud_MemIF_Direction_DIRECTION_OUTPUT, false);
+    EnableSideGenHw(Soc_Aud_InterConnectionInput_I03, Soc_Aud_MemIF_Direction_DIRECTION_INPUT, true);
+    msleep(5 * 1000);
+    EnableSideGenHw(Soc_Aud_InterConnectionInput_I03, Soc_Aud_MemIF_Direction_DIRECTION_INPUT, false);
 
     Ana_Log_Print();
     Afe_Log_Print();
+
+    Auddrv_Enable_dump(true);
 
     return 0;
 }
@@ -502,7 +508,8 @@ static int Audio_Irqcnt2_Set(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_
     uint32 irq1_cnt =  ucontrol->value.integer.value[0];
     printk("%s()\n", __func__);
     AudDrv_Clk_On();
-    Afe_Set_Reg(AFE_IRQ_MCU_CNT2, irq1_cnt, 0xffffffff);
+	/* Afe_Set_Reg(AFE_IRQ_MCU_CNT2, irq1_cnt, 0xffffffff); */
+	SetIrqMcuCounter(Soc_Aud_IRQ_MCU_MODE_IRQ2_MCU_MODE, irq1_cnt);
     AudDrv_Clk_Off();
     return 0;
 }
@@ -530,7 +537,6 @@ static void GetAudioTrimOffset(int channels)
             break;
     }
 
-
     // init one time
     setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_HPL);
     EnableTrimbuffer(true);
@@ -539,14 +545,13 @@ static void GetAudioTrimOffset(int channels)
     msleep(100);
     setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_GROUND);
     msleep(2000);
-
     SetSdmLevel(AUDIO_SDM_LEVEL_MUTE);
     setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_HPL);
     setOffsetTrimBufferGain(3);
     EnableTrimbuffer(true);
     msleep(100);
 #ifndef CONFIG_MTK_FPGA
-    Buffer_offl_value = PMIC_IMM_GetOneChannelValue(ADC_HP_AP, off_counter, 0);
+    Buffer_offl_value = PMIC_IMM_GetOneChannelValue(AUX_HP_AP, off_counter, 0);
 #else
     Buffer_offl_value = 0;
 #endif
@@ -560,7 +565,7 @@ static void GetAudioTrimOffset(int channels)
     EnableTrimbuffer(true);
     msleep(100);
 #ifndef CONFIG_MTK_FPGA
-    Buffer_offr_value = PMIC_IMM_GetOneChannelValue(ADC_HP_AP, off_counter, 0);
+    Buffer_offr_value = PMIC_IMM_GetOneChannelValue(AUX_HP_AP, off_counter, 0);
 #else
     Buffer_offr_value = 0;
 #endif
@@ -612,7 +617,7 @@ static void GetAudioTrimOffset(int channels)
     EnableTrimbuffer(true);
     msleep(100);
 #ifndef CONFIG_MTK_FPGA
-    Buffer_on_value = PMIC_IMM_GetOneChannelValue(ADC_HP_AP, on_counter, 0);
+    Buffer_on_value = PMIC_IMM_GetOneChannelValue(AUX_HP_AP, on_counter, 0);
 #else
     Buffer_on_value = 0;
 #endif
@@ -625,9 +630,9 @@ static void GetAudioTrimOffset(int channels)
     setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_HPR);
     setOffsetTrimBufferGain(3);
     EnableTrimbuffer(true);
-    msleep(100);
+    msleep(10);
 #ifndef CONFIG_MTK_FPGA
-    Buffer_on_value = PMIC_IMM_GetOneChannelValue(ADC_HP_AP, on_counter, 0);
+    Buffer_on_value = PMIC_IMM_GetOneChannelValue(AUX_HP_AP, on_counter, 0);
 #else
     Buffer_on_value = 0;
 #endif

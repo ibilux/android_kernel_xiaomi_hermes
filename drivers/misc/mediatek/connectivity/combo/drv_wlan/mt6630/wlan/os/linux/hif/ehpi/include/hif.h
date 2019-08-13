@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/ehpi/include/hif.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/ehpi/include/hif.h#1
 */
 
 /*! \file   "hif.h"
@@ -8,10 +8,8 @@
     Functions for the driver to register bus and setup the IRQ
 */
 
-
-
 /*
-** $Log: hif.h $
+** Log: hif.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -37,7 +35,6 @@
 *                         C O M P I L E R   F L A G S
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
@@ -106,4 +103,4 @@ VOID glSetPowerState(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 ePowerMode);
 *                              F U N C T I O N S
 ********************************************************************************
 */
-#endif				/* _HIF_H */
+#endif /* _HIF_H */

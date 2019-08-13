@@ -150,7 +150,8 @@ typedef void (*emi_mpu_notifier)(u32 addr, int wr_vio);
 
 #define SET_ACCESS_PERMISSON(d3, d2, d1, d0) (((d3) << 9) | ((d2) << 6) | ((d1) << 3) | (d0))
 
-extern int emi_mpu_set_region_protection(unsigned int start_addr, unsigned int end_addr, int region, unsigned int access_permission);
+extern int emi_mpu_set_region_protection(phys_addr_t start_addr, phys_addr_t end_addr,
+	int region, unsigned int access_permission);
 extern int emi_mpu_notifier_register(int master, emi_mpu_notifier notifider);
 extern void acquire_dram_setting(struct basic_dram_setting *pasrdpd);
 extern void emi_wp_get_status(void);

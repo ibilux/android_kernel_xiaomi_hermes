@@ -46,15 +46,13 @@ struct fm_eint_interface {
 	 fm_s32(*init) (void);
 };
 
-
 #if 0				/* def MT6516 */
 extern void MT6516_EINTIRQUnmask(fm_u32 line);
 extern void MT6516_EINTIRQMask(fm_u32 line);
 extern void MT6516_EINT_Set_HW_Debounce(fm_u8 eintno, fm_u32 ms);
 extern fm_u32 MT6516_EINT_Set_Sensitivity(fm_u8 eintno, kal_bool sens);
 extern void MT6516_EINT_Registration(fm_u8 eintno, kal_bool Dbounce_En,
-				     kal_bool ACT_Polarity, void (EINT_FUNC_PTR) (void),
-				     kal_bool auto_umask);
+				     kal_bool ACT_Polarity, void (EINT_FUNC_PTR) (void), kal_bool auto_umask);
 #endif
 
 static struct fm_eint_interface fm_eint_ops = {
@@ -97,8 +95,7 @@ fm_s32 fm_request_eint(void (*parser) (void))
 	fm_eint_ops.set_sens(CUST_EINT_FM_RDS_NUM, CUST_EINT_FM_RDS_SENSITIVE);
 	fm_eint_ops.set_hw_debounce(CUST_EINT_FM_RDS_NUM, CUST_EINT_FM_RDS_DEBOUNCE_CN);
 	fm_eint_ops.registration(CUST_EINT_FM_RDS_NUM,
-				 CUST_EINT_FM_RDS_DEBOUNCE_EN,
-				 CUST_EINT_FM_RDS_POLARITY, parser, 0);
+				 CUST_EINT_FM_RDS_DEBOUNCE_EN, CUST_EINT_FM_RDS_POLARITY, parser, 0);
 	fm_eint_ops.mask(CUST_EINT_FM_RDS_NUM);
 	return 0;
 }

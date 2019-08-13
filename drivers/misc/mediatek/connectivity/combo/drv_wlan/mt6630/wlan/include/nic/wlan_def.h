@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/wlan_def.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/wlan_def.h#1
 */
 
 /*! \file   "wlan_def.h"
@@ -7,10 +7,8 @@
  *
  */
 
-
-
 /*
-** $Log: wlan_def.h $
+** Log: wlan_def.h
 **
 ** 07 25 2014 eason.tsai
 ** AOSP
@@ -283,6 +281,7 @@
 #define DISCONNECT_REASON_CODE_DISASSOCIATED    3
 #define DISCONNECT_REASON_CODE_NEW_CONNECTION   4
 #define DISCONNECT_REASON_CODE_REASSOCIATION    5
+#define DISCONNECT_REASON_CODE_ROAMING          6
 
 /* The rate definitions */
 #define TX_MODE_CCK             0x00
@@ -374,7 +373,6 @@
 #define RATE_PHY_RATE_SHORT_PREAMBLE                BIT(2)
 #define RATE_CODE_IS_SHORT_PREAMBLE(_ucRateCode)    ((_ucRateCode & RATE_PHY_RATE_SHORT_PREAMBLE) ? TRUE : FALSE)
 
-
 #define CHNL_LIST_SZ_2G         14
 #define CHNL_LIST_SZ_5G         14
 
@@ -383,10 +381,10 @@
 
 /* PHY TYPE bit definitions */
 #define PHY_TYPE_BIT_HR_DSSS    BIT(PHY_TYPE_HR_DSSS_INDEX)	/* HR/DSSS PHY (clause 18) */
-#define PHY_TYPE_BIT_ERP        BIT(PHY_TYPE_ERP_INDEX)		/* ERP PHY (clause 19) */
+#define PHY_TYPE_BIT_ERP        BIT(PHY_TYPE_ERP_INDEX)	/* ERP PHY (clause 19) */
 #define PHY_TYPE_BIT_OFDM       BIT(PHY_TYPE_OFDM_INDEX)	/* OFDM 5 GHz PHY (clause 17) */
-#define PHY_TYPE_BIT_HT         BIT(PHY_TYPE_HT_INDEX)		/* HT PHY (clause 20) */
-#define PHY_TYPE_BIT_VHT        BIT(PHY_TYPE_VHT_INDEX)		/* HT PHY (clause 22) */
+#define PHY_TYPE_BIT_HT         BIT(PHY_TYPE_HT_INDEX)	/* HT PHY (clause 20) */
+#define PHY_TYPE_BIT_VHT        BIT(PHY_TYPE_VHT_INDEX)	/* HT PHY (clause 22) */
 
 /* PHY TYPE set definitions */
 #define PHY_TYPE_SET_802_11ABGN (PHY_TYPE_BIT_OFDM | \
@@ -432,22 +430,21 @@
 				   PHY_TYPE_BIT_VHT)
 
 /* Rate set bit definitions */
-#define RATE_SET_BIT_1M         BIT(RATE_1M_SW_INDEX)		/* Bit 0: 1M */
-#define RATE_SET_BIT_2M         BIT(RATE_2M_SW_INDEX)		/* Bit 1: 2M */
-#define RATE_SET_BIT_5_5M       BIT(RATE_5_5M_SW_INDEX)		/* Bit 2: 5.5M */
-#define RATE_SET_BIT_11M        BIT(RATE_11M_SW_INDEX)		/* Bit 3: 11M */
-#define RATE_SET_BIT_22M        BIT(RATE_22M_SW_INDEX)		/* Bit 4: 22M */
-#define RATE_SET_BIT_33M        BIT(RATE_33M_SW_INDEX)		/* Bit 5: 33M */
-#define RATE_SET_BIT_6M         BIT(RATE_6M_SW_INDEX)		/* Bit 6: 6M */
-#define RATE_SET_BIT_9M         BIT(RATE_9M_SW_INDEX)		/* Bit 7: 9M */
-#define RATE_SET_BIT_12M        BIT(RATE_12M_SW_INDEX)		/* Bit 8: 12M */
-#define RATE_SET_BIT_18M        BIT(RATE_18M_SW_INDEX)		/* Bit 9: 18M */
-#define RATE_SET_BIT_24M        BIT(RATE_24M_SW_INDEX)		/* Bit 10: 24M */
-#define RATE_SET_BIT_36M        BIT(RATE_36M_SW_INDEX)		/* Bit 11: 36M */
-#define RATE_SET_BIT_48M        BIT(RATE_48M_SW_INDEX)		/* Bit 12: 48M */
-#define RATE_SET_BIT_54M        BIT(RATE_54M_SW_INDEX)		/* Bit 13: 54M */
+#define RATE_SET_BIT_1M         BIT(RATE_1M_SW_INDEX)	/* Bit 0: 1M */
+#define RATE_SET_BIT_2M         BIT(RATE_2M_SW_INDEX)	/* Bit 1: 2M */
+#define RATE_SET_BIT_5_5M       BIT(RATE_5_5M_SW_INDEX)	/* Bit 2: 5.5M */
+#define RATE_SET_BIT_11M        BIT(RATE_11M_SW_INDEX)	/* Bit 3: 11M */
+#define RATE_SET_BIT_22M        BIT(RATE_22M_SW_INDEX)	/* Bit 4: 22M */
+#define RATE_SET_BIT_33M        BIT(RATE_33M_SW_INDEX)	/* Bit 5: 33M */
+#define RATE_SET_BIT_6M         BIT(RATE_6M_SW_INDEX)	/* Bit 6: 6M */
+#define RATE_SET_BIT_9M         BIT(RATE_9M_SW_INDEX)	/* Bit 7: 9M */
+#define RATE_SET_BIT_12M        BIT(RATE_12M_SW_INDEX)	/* Bit 8: 12M */
+#define RATE_SET_BIT_18M        BIT(RATE_18M_SW_INDEX)	/* Bit 9: 18M */
+#define RATE_SET_BIT_24M        BIT(RATE_24M_SW_INDEX)	/* Bit 10: 24M */
+#define RATE_SET_BIT_36M        BIT(RATE_36M_SW_INDEX)	/* Bit 11: 36M */
+#define RATE_SET_BIT_48M        BIT(RATE_48M_SW_INDEX)	/* Bit 12: 48M */
+#define RATE_SET_BIT_54M        BIT(RATE_54M_SW_INDEX)	/* Bit 13: 54M */
 #define RATE_SET_BIT_HT_PHY     BIT(RATE_HT_PHY_SW_INDEX)	/* Bit 14: BSS Selector */
-
 
 /* Rate set definitions */
 #define RATE_SET_HR_DSSS            (RATE_SET_BIT_1M | \
@@ -487,8 +484,7 @@
 				     RATE_SET_BIT_54M)
 
 #define RATE_SET_HT                 (RATE_SET_ERP)
-/* #define RATE_SET_HT                 (RATE_SET_ERP | RATE_SET_BIT_HT_PHY) */ /* NOTE(Kevin): TBD */
-
+/* #define RATE_SET_HT                 (RATE_SET_ERP | RATE_SET_BIT_HT_PHY) *//* NOTE(Kevin): TBD */
 
 #define RATE_SET_ALL_ABG             RATE_SET_ERP
 
@@ -539,7 +535,6 @@
 #define RCPI_80                     80	/* -70 dBm */
 #define RCPI_60                     60	/* -80 dBm */
 
-
 /* The number of RCPI records used to calculate their average value */
 #define MAX_NUM_RCPI_RECORDS        10
 
@@ -549,7 +544,6 @@
 #define MIN_RCPI_DBM                -100
 
 #define MAX_ASSOC_ID                (CFG_STA_REC_NUM)	/* Available AID: 1 ~ 20(STA_REC_NUM) */
-
 
 #define MAX_DEAUTH_INFO_COUNT       4	/* NOTE(Kevin): Used in auth.c */
 #define MIN_DEAUTH_INTERVAL_MSEC    500	/* The minimum interval if continuously send Deauth Frame */
@@ -608,7 +602,6 @@ typedef enum _HAL_TS_HW_UPDATE_MODE {
 	HAL_TSF_HW_UPDATE_BY_TICK_AND_RECEIVED_FRAME_AD_HOC
 } HAL_TSF_HW_UPDATE_MODE;
 
-
 typedef enum _ENUM_AC_T {
 	AC0 = 0,
 	AC1,
@@ -617,7 +610,6 @@ typedef enum _ENUM_AC_T {
 	AC_NUM
 } ENUM_AC_T, *P_ENUM_AC_T;
 
-
 typedef enum _ENUM_NETWORK_TYPE_T {
 	NETWORK_TYPE_AIS,
 	NETWORK_TYPE_P2P,
@@ -625,7 +617,6 @@ typedef enum _ENUM_NETWORK_TYPE_T {
 	NETWORK_TYPE_MBSS,
 	NETWORK_TYPE_NUM
 } ENUM_NETWORK_TYPE_T;
-
 
 /* The Type of STA Type. */
 typedef enum _ENUM_STA_TYPE_INDEX_T {
@@ -656,14 +647,14 @@ typedef enum _ENUM_PWR_STATE_T {
 } ENUM_PWR_STATE_T;
 
 typedef enum _ENUM_PHY_TYPE_INDEX_T {
-	/* PHY_TYPE_DSSS_INDEX, */ /* DSSS PHY (clause 15) -- Not used anymore */
+	/* PHY_TYPE_DSSS_INDEX, *//* DSSS PHY (clause 15) -- Not used anymore */
 	PHY_TYPE_HR_DSSS_INDEX = 0,	/* HR/DSSS PHY (clause 18) */
-	PHY_TYPE_ERP_INDEX,		/* ERP PHY (clause 19) */
-	PHY_TYPE_ERP_P2P_INDEX,		/* ERP PHY (clause 19) w/o HR/DSSS */
-	PHY_TYPE_OFDM_INDEX,		/* OFDM 5 GHz PHY (clause 17) */
-	PHY_TYPE_HT_INDEX,		/* HT PHY (clause 20) */
-	PHY_TYPE_VHT_INDEX,		/* HT PHY (clause 22) */
-	PHY_TYPE_INDEX_NUM		/* 6 */
+	PHY_TYPE_ERP_INDEX,	/* ERP PHY (clause 19) */
+	PHY_TYPE_ERP_P2P_INDEX,	/* ERP PHY (clause 19) w/o HR/DSSS */
+	PHY_TYPE_OFDM_INDEX,	/* OFDM 5 GHz PHY (clause 17) */
+	PHY_TYPE_HT_INDEX,	/* HT PHY (clause 20) */
+	PHY_TYPE_VHT_INDEX,	/* HT PHY (clause 22) */
+	PHY_TYPE_INDEX_NUM	/* 6 */
 } ENUM_PHY_TYPE_INDEX_T, *P_ENUM_PHY_TYPE_INDEX_T;
 
 typedef enum _ENUM_SW_RATE_INDEX_T {
@@ -734,7 +725,7 @@ typedef enum _ENUM_VHT_RATE_INDEX_T {
 
 typedef enum _ENUM_PREMABLE_OPTION_T {
 	PREAMBLE_DEFAULT_LONG_NONE = 0,	/* LONG for PHY_TYPE_HR_DSSS, NONE for PHY_TYPE_OFDM */
-	PREAMBLE_OPTION_SHORT,		/* SHORT mandatory for PHY_TYPE_ERP, SHORT option for PHY_TYPE_HR_DSSS */
+	PREAMBLE_OPTION_SHORT,	/* SHORT mandatory for PHY_TYPE_ERP, SHORT option for PHY_TYPE_HR_DSSS */
 	PREAMBLE_OFDM_MODE,
 	PREAMBLE_HT_MIXED_MODE,
 	PREAMBLE_HT_GREEN_FIELD,
@@ -768,9 +759,9 @@ typedef enum _ENUM_ACPI_STATE_T {
 /* The operation mode of a specific Network */
 typedef enum _ENUM_OP_MODE_T {
 	OP_MODE_INFRASTRUCTURE = 0,	/* Infrastructure/GC */
-	OP_MODE_IBSS,			/* AdHoc */
-	OP_MODE_ACCESS_POINT,		/* For GO */
-	OP_MODE_P2P_DEVICE,		/* P2P Device */
+	OP_MODE_IBSS,		/* AdHoc */
+	OP_MODE_ACCESS_POINT,	/* For GO */
+	OP_MODE_P2P_DEVICE,	/* P2P Device */
 	OP_MODE_BOW,
 	OP_MODE_NUM
 } ENUM_OP_MODE_T, *P_ENUM_OP_MODE_T;
@@ -799,8 +790,8 @@ typedef enum _ENUM_BAND_T {
 
 /* Provide supported channel list to other components in array format */
 typedef struct _RF_CHANNEL_INFO_T {
-	ENUM_BAND_T	eBand;
-	UINT_8		ucChannelNum;
+	ENUM_BAND_T eBand;
+	UINT_8 ucChannelNum;
 } RF_CHANNEL_INFO_T, *P_RF_CHANNEL_INFO_T;
 
 typedef enum _ENUM_PS_FORWARDING_TYPE_T {
@@ -812,37 +803,37 @@ typedef enum _ENUM_PS_FORWARDING_TYPE_T {
 } ENUM_PS_FORWARDING_TYPE_T, *P_ENUM_PS_FORWARDING_TYPE_T;
 
 typedef struct _DEAUTH_INFO_T {
-	UINT_8		aucRxAddr[MAC_ADDR_LEN];
-	OS_SYSTIME	rLastSendTime;
+	UINT_8 aucRxAddr[MAC_ADDR_LEN];
+	OS_SYSTIME rLastSendTime;
 } DEAUTH_INFO_T, *P_DEAUTH_INFO_T;
 
 /*----------------------------------------------------------------------------*/
 /* Information Element (IE) handlers                                          */
 /*----------------------------------------------------------------------------*/
-typedef VOID (*PFN_APPEND_IE_FUNC) (P_ADAPTER_T, P_MSDU_INFO_T);
-typedef VOID (*PFN_HANDLE_IE_FUNC) (P_ADAPTER_T, P_SW_RFB_T, P_IE_HDR_T);
-typedef VOID (*PFN_VERIFY_IE_FUNC) (P_ADAPTER_T, P_SW_RFB_T, P_IE_HDR_T, PUINT_16);
-typedef UINT_32 (*PFN_CALCULATE_VAR_IE_LEN_FUNC)(P_ADAPTER_T, UINT_8, P_STA_RECORD_T);
+typedef VOID(*PFN_APPEND_IE_FUNC) (P_ADAPTER_T, P_MSDU_INFO_T);
+typedef VOID(*PFN_HANDLE_IE_FUNC) (P_ADAPTER_T, P_SW_RFB_T, P_IE_HDR_T);
+typedef VOID(*PFN_VERIFY_IE_FUNC) (P_ADAPTER_T, P_SW_RFB_T, P_IE_HDR_T, PUINT_16);
+typedef UINT_32(*PFN_CALCULATE_VAR_IE_LEN_FUNC) (P_ADAPTER_T, UINT_8, P_STA_RECORD_T);
 
 typedef struct _APPEND_IE_ENTRY_T {
-	UINT_16			u2EstimatedIELen;
-	PFN_APPEND_IE_FUNC	pfnAppendIE;
+	UINT_16 u2EstimatedIELen;
+	PFN_APPEND_IE_FUNC pfnAppendIE;
 } APPEND_IE_ENTRY_T, *P_APPEND_IE_ENTRY_T;
 
 typedef struct _APPEND_VAR_IE_ENTRY_T {
-	UINT_16				u2EstimatedFixedIELen;	/* For Fixed Length */
-	PFN_CALCULATE_VAR_IE_LEN_FUNC	pfnCalculateVariableIELen;
-	PFN_APPEND_IE_FUNC		pfnAppendIE;
+	UINT_16 u2EstimatedFixedIELen;	/* For Fixed Length */
+	PFN_CALCULATE_VAR_IE_LEN_FUNC pfnCalculateVariableIELen;
+	PFN_APPEND_IE_FUNC pfnAppendIE;
 } APPEND_VAR_IE_ENTRY_T, *P_APPEND_VAR_IE_ENTRY_T;
 
 typedef struct _HANDLE_IE_ENTRY_T {
-	UINT_8			ucElemID;
-	PFN_HANDLE_IE_FUNC	pfnHandleIE;
+	UINT_8 ucElemID;
+	PFN_HANDLE_IE_FUNC pfnHandleIE;
 } HANDLE_IE_ENTRY_T, *P_HANDLE_IE_ENTRY_T;
 
 typedef struct _VERIFY_IE_ENTRY_T {
-	UINT_8			ucElemID;
-	PFN_VERIFY_IE_FUNC	pfnVarifyIE;
+	UINT_8 ucElemID;
+	PFN_VERIFY_IE_FUNC pfnVarifyIE;
 } VERIFY_IE_ENTRY_T, *P_VERIFY_IE_ENTRY_T;
 
 /*----------------------------------------------------------------------------*/
@@ -851,7 +842,7 @@ typedef struct _VERIFY_IE_ENTRY_T {
 typedef enum _ENUM_PARAM_CONNECTION_POLICY_T {
 	CONNECT_BY_SSID_BEST_RSSI = 0,
 	CONNECT_BY_SSID_GOOD_RSSI_MIN_CH_LOAD,
-	CONNECT_BY_SSID_ANY,		/* NOTE(Kevin): Needed by WHQL */
+	CONNECT_BY_SSID_ANY,	/* NOTE(Kevin): Needed by WHQL */
 	CONNECT_BY_BSSID,
 	CONNECT_BY_CUSTOMIZED_RULE	/* NOTE(Kevin): TBD */
 } ENUM_PARAM_CONNECTION_POLICY_T, *P_ENUM_PARAM_CONNECTION_POLICY_T;
@@ -866,21 +857,21 @@ typedef enum _ENUM_PARAM_PREAMBLE_TYPE_T {
 typedef enum _ENUM_PARAM_PHY_CONFIG_T {
 	PHY_CONFIG_802_11ABG = 0,	/*!< Can associated with 802.11abg AP but without n capability, Scan dual band.
 					 **/
-	PHY_CONFIG_802_11BG,		/*!< Can associated with 802_11bg AP, Scan single band and not report 5G BSSs.
-					 **/
-	PHY_CONFIG_802_11G,		/*!< Can associated with 802_11g only AP, Scan single band and not report 5G
-					 *BSSs. */
-	PHY_CONFIG_802_11A,		/*!< Can associated with 802_11a only AP, Scan single band and not report 2.4G
-					 *BSSs. */
-	PHY_CONFIG_802_11B,		/*!< Can associated with 802_11b only AP, Scan single band and not report 5G
-					 *BSSs. */
-	PHY_CONFIG_802_11ABGN,		/*!< Can associated with 802.11abgn AP, Scan dual band. */
-	PHY_CONFIG_802_11BGN,		/*!< Can associated with 802_11bgn AP, Scan single band and not report 5G BSSs.
-					 **/
-	PHY_CONFIG_802_11AN,		/*!< Can associated with 802_11an AP, Scan single band and not report 2.4G BSSs.
-					 **/
-	PHY_CONFIG_802_11GN,		/*!< Can associated with 802_11gn AP, Scan single band and not report 5G BSSs.
-					 **/
+	PHY_CONFIG_802_11BG,	/*!< Can associated with 802_11bg AP, Scan single band and not report 5G BSSs.
+				 **/
+	PHY_CONFIG_802_11G,	/*!< Can associated with 802_11g only AP, Scan single band and not report 5G
+				 *BSSs. */
+	PHY_CONFIG_802_11A,	/*!< Can associated with 802_11a only AP, Scan single band and not report 2.4G
+				 *BSSs. */
+	PHY_CONFIG_802_11B,	/*!< Can associated with 802_11b only AP, Scan single band and not report 5G
+				 *BSSs. */
+	PHY_CONFIG_802_11ABGN,	/*!< Can associated with 802.11abgn AP, Scan dual band. */
+	PHY_CONFIG_802_11BGN,	/*!< Can associated with 802_11bgn AP, Scan single band and not report 5G BSSs.
+				 **/
+	PHY_CONFIG_802_11AN,	/*!< Can associated with 802_11an AP, Scan single band and not report 2.4G BSSs.
+				 **/
+	PHY_CONFIG_802_11GN,	/*!< Can associated with 802_11gn AP, Scan single band and not report 5G BSSs.
+				 **/
 	PHY_CONFIG_802_11AC,
 	PHY_CONFIG_802_11ANAC,
 	PHY_CONFIG_802_11ABGNAC,
@@ -897,7 +888,6 @@ typedef enum _ENUM_PARAM_AP_MODE_T {
 	AP_MODE_NUM		/* 4 */
 } ENUM_PARAM_AP_MODE_T, *P_ENUM_PARAM_AP_MODE_T;
 
-
 /* Masks for determining the Network Type or the Station Role, given the ENUM_STA_TYPE_T */
 #define STA_TYPE_LEGACY_MASK                BIT(STA_TYPE_LEGACY_INDEX)
 #define STA_TYPE_P2P_MASK                   BIT(STA_TYPE_P2P_INDEX)
@@ -906,7 +896,6 @@ typedef enum _ENUM_PARAM_AP_MODE_T {
 #define STA_TYPE_CLIENT_MASK                BIT(STA_ROLE_CLIENT_INDEX)
 #define STA_TYPE_AP_MASK                    BIT(STA_ROLE_AP_INDEX)
 #define STA_TYPE_DLS_MASK                   BIT(STA_ROLE_DLS_INDEX)
-
 
 /* Macros for obtaining the Network Type or the Station Role, given the ENUM_STA_TYPE_T */
 #define IS_STA_IN_AIS(_prStaRec)        ((_prStaRec)->ucBssIndex == prAdapter->prAisBssInfo->ucBssIndex)
@@ -919,7 +908,6 @@ typedef enum _ENUM_PARAM_AP_MODE_T {
 #define IS_CLIENT_STA(_prStaRec)        ((_prStaRec->eStaType) & STA_TYPE_CLIENT_MASK)
 #define IS_AP_STA(_prStaRec)            ((_prStaRec->eStaType) & STA_TYPE_AP_MASK)
 #define IS_DLS_STA(_prStaRec)           ((_prStaRec->eStaType) & STA_TYPE_DLS_MASK)
-
 
 /* The ENUM_STA_TYPE_T accounts for ENUM_NETWORK_TYPE_T and ENUM_STA_ROLE_INDEX_T.
  * *   It is a merged version of Network Type and STA Role.
@@ -964,7 +952,7 @@ typedef enum _ENUM_BSS_TYPE_T {
 
 /* Structure of RSN Information */
 typedef struct _RSN_INFO_T {
-	UINT_8	ucElemId;
+	UINT_8 ucElemId;
 	UINT_16 u2Version;
 	UINT_32 u4GroupKeyCipherSuite;
 	UINT_32 u4PairwiseKeyCipherSuiteCount;
@@ -980,8 +968,8 @@ typedef struct _RSN_INFO_T {
 
 /* Structure of WAPI Information */
 typedef struct _WAPI_INFO_T {
-	UINT_8	ucElemId;
-	UCHAR	ucLength;
+	UINT_8 ucElemId;
+	UCHAR ucLength;
 	UINT_16 u2Version;
 	UINT_32 u4AuthKeyMgtSuiteCount;
 	UINT_32 au4AuthKeyMgtSuite[MAX_NUM_SUPPORTED_WAPI_AKM_SUITES];
@@ -990,13 +978,12 @@ typedef struct _WAPI_INFO_T {
 	UINT_32 u4GroupKeyCipherSuite;
 	UINT_16 u2WapiCap;
 	UINT_16 u2Bkid;
-	UINT_8	aucBkid[1][16];
+	UINT_8 aucBkid[1][16];
 } /* __KAL_ATTRIB_PACKED__ */ WAPI_INFO_T, *P_WAPI_INFO_T;
 
 /* #if defined(WINDOWS_DDK) || defined(WINDOWS_CE) */
 /* #pragma pack() */
 /* #endif */
-
 
 #if CFG_ENABLE_WIFI_DIRECT
 
@@ -1006,23 +993,22 @@ typedef struct _P2P_DEVICE_TYPE_T {
 } P2P_DEVICE_TYPE_T, *P_P2P_DEVICE_TYPE_T;
 
 typedef struct _P2P_DEVICE_DESC_T {
-	LINK_ENTRY_T		rLinkEntry;
-	BOOLEAN			fgDevInfoValid;
-	UINT_8			aucDeviceAddr[MAC_ADDR_LEN];	/* Device Address. */
-	UINT_8			aucInterfaceAddr[MAC_ADDR_LEN];	/* Interface Address. */
-	UINT_8			ucDeviceCapabilityBitmap;
-	UINT_8			ucGroupCapabilityBitmap;
-	UINT_16			u2ConfigMethod;	/* Configure Method support. */
-	P2P_DEVICE_TYPE_T	rPriDevType;
-	UINT_8			ucSecDevTypeNum;
-	P2P_DEVICE_TYPE_T	arSecDevType[8];	/* Reference to P2P_GC_MAX_CACHED_SEC_DEV_TYPE_COUNT */
-	UINT_16			u2NameLength;
-	UINT_8			aucName[32];		/* Reference to WPS_ATTRI_MAX_LEN_DEVICE_NAME */
+	LINK_ENTRY_T rLinkEntry;
+	BOOLEAN fgDevInfoValid;
+	UINT_8 aucDeviceAddr[MAC_ADDR_LEN];	/* Device Address. */
+	UINT_8 aucInterfaceAddr[MAC_ADDR_LEN];	/* Interface Address. */
+	UINT_8 ucDeviceCapabilityBitmap;
+	UINT_8 ucGroupCapabilityBitmap;
+	UINT_16 u2ConfigMethod;	/* Configure Method support. */
+	P2P_DEVICE_TYPE_T rPriDevType;
+	UINT_8 ucSecDevTypeNum;
+	P2P_DEVICE_TYPE_T arSecDevType[8];	/* Reference to P2P_GC_MAX_CACHED_SEC_DEV_TYPE_COUNT */
+	UINT_16 u2NameLength;
+	UINT_8 aucName[32];	/* Reference to WPS_ATTRI_MAX_LEN_DEVICE_NAME */
 	/* TODO: Service Information or PasswordID valid? */
 } P2P_DEVICE_DESC_T, *P_P2P_DEVICE_DESC_T;
 
 #endif
-
 
 /*******************************************************************************
  *                            P U B L I C   D A T A
@@ -1058,6 +1044,7 @@ typedef struct _P2P_DEVICE_DESC_T {
 		*(PUINT_32)(_value_p) = ((UINT_32)__cp[0]) | ((UINT_32)__cp[1] << 8) | \
 					((UINT_32)__cp[2] << 16) | ((UINT_32)__cp[3] << 24); \
 	}
+
 #define WLAN_GET_FIELD_BE32(_memAddr_p, _value_p) \
 	{ \
 		PUINT_8 __cp = (PUINT_8)(_memAddr_p); \
@@ -1116,16 +1103,14 @@ typedef struct _P2P_DEVICE_DESC_T {
 		__cp[3] = (UINT_8)(_value); \
 	}
 
-
 /*******************************************************************************
  *                   F U N C T I O N   D E C L A R A T I O N S
  ********************************************************************************
  */
-
 
 /*******************************************************************************
  *                              F U N C T I O N S
  ********************************************************************************
  */
 
-#endif				/* _WLAN_DEF_H */
+#endif /* _WLAN_DEF_H */

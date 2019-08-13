@@ -3,7 +3,7 @@
  *
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
-
+#define DEBUG
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/interrupt.h>
@@ -53,15 +53,14 @@
 #include <linux/oom.h>
 #include <linux/writeback.h>
 #include <linux/shm.h>
-
+#ifdef CONFIG_MTPROF
+#include "mt_sched_mon.h"
+#include "mt_cputime.h"
+#endif
 #include <asm/uaccess.h>
 #include <asm/unistd.h>
 #include <asm/pgtable.h>
 #include <asm/mmu_context.h>
-
-#ifdef CONFIG_MT_PRIO_TRACER
-# include <linux/prio_tracer.h>
-#endif
 
 static void exit_mm(struct task_struct * tsk);
 
@@ -726,16 +725,14 @@ void do_exit(long code)
 	int group_dead;
 
 	profile_task_exit(tsk);
-#ifdef CONFIG_SCHEDSTATS
+#ifdef CONFIG_MTPROF
+#ifdef CONFIG_MTPROF_CPUTIME
 	/* mt shceduler profiling*/
-	printk(KERN_DEBUG "[%d:%s] exit\n", tsk->pid, tsk->comm);
 	end_mtproc_info(tsk);
 #endif
-
-#ifdef CONFIG_MT_PRIO_TRACER
-	delete_prio_tracer(tsk->pid);
+	/* mt throttle monitor */
+	end_mt_rt_mon_info(tsk);
 #endif
-
 	WARN_ON(blk_needs_flush_plug(tsk));
 
 	if (unlikely(in_interrupt()))

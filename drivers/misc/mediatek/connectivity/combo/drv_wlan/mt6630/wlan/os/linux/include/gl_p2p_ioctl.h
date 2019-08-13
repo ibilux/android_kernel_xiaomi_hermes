@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/os/linux/include/gl_p2p_ioctl.h#9 $
+** Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/os/linux/include/gl_p2p_ioctl.h#9
 */
 
 /*! \file   gl_p2p_ioctl.h
     \brief  This file is for custom ioctls for Wi-Fi Direct only
 */
 
-
-
 /*
-** $Log: gl_p2p_ioctl.h $
+** Log: gl_p2p_ioctl.h
 **
 ** 07 17 2013 yuche.tsai
 ** [BORA00002398] [MT6630][Volunteer Patch] P2P Driver Re-Design for Multiple BSS support
@@ -65,7 +63,8 @@
  * Fix work thread cancel issue.
  *
  * 11 08 2011 yuche.tsai
- * [WCXRP00001094] [Volunteer Patch][Driver] Driver version & supplicant version query & set support for service discovery version check.
+ * [WCXRP00001094] [Volunteer Patch][Driver] Driver version & supplicant version query & set support
+ * for service discovery version check.
  * Add support for driver version query & p2p supplicant verseion set.
  * For new service discovery mechanism sync.
  *
@@ -123,11 +122,13 @@
  * adjust the set wsc ie structure.
  *
  * 01 05 2011 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface
+ * for supporting Wi-Fi Direct Service Discovery
  * ioctl implementations for P2P Service Discovery
  *
  * 12 22 2010 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface
+ * for supporting Wi-Fi Direct Service Discovery
  * 1. header file restructure for more clear module isolation
  * 2. add function interface definition for implementing Service Discovery callbacks
  *
@@ -483,50 +484,42 @@ typedef struct iw_p2p_version {
 */
 /* Macros used for cfg80211 */
 #define RATETAB_ENT(_rate, _rateid, _flags) \
-    {                                       \
+{                                       \
 	.bitrate    = (_rate),              \
 	.hw_value   = (_rateid),            \
 	.flags      = (_flags),             \
-    }
+}
 
 #define CHAN2G(_channel, _freq, _flags)             \
-    {                                               \
+{                                               \
 	.band               = IEEE80211_BAND_2GHZ,  \
 	.center_freq        = (_freq),              \
 	.hw_value           = (_channel),           \
 	.flags              = (_flags),             \
 	.max_antenna_gain   = 0,                    \
 	.max_power          = 30,                   \
-    }
+}
 
 #define CHAN5G(_channel, _flags)                        \
-    {                                                   \
+{                                                   \
 	.band               = IEEE80211_BAND_5GHZ,      \
 	.center_freq        = 5000 + (5 * (_channel)),  \
 	.hw_value           = (_channel),               \
 	.flags              = (_flags),                 \
 	.max_antenna_gain   = 0,                        \
 	.max_power          = 30,                       \
-    }
+}
 
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 32) && (CFG_ENABLE_WIFI_DIRECT_CFG_80211 != 0)
+#if (CFG_ENABLE_WIFI_DIRECT_CFG_80211 != 0)
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 struct wireless_dev *
-#else
-struct net_device *
-#endif
- mtk_p2p_cfg80211_add_iface(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
+mtk_p2p_cfg80211_add_iface(struct wiphy *wiphy,
 			    const char *name,
-#else
-			    char *name,
-#endif
 			    enum nl80211_iftype type, u32 *flags, struct vif_params *params);
 
 int
@@ -535,27 +528,19 @@ mtk_p2p_cfg80211_change_iface(struct wiphy *wiphy,
 			      enum nl80211_iftype type, u32 *flags, struct vif_params *params);
 
 int mtk_p2p_cfg80211_del_iface(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
-			       struct wireless_dev *wdev
-#else
-			       struct net_device *dev
-#endif
-    );
+			       struct wireless_dev *wdev);
 
 int
 mtk_p2p_cfg80211_add_key(struct wiphy *wiphy,
 			 struct net_device *ndev,
-			 u8 key_index,
-			 bool pairwise, const u8 *mac_addr, struct key_params *params);
+			 u8 key_index, bool pairwise, const u8 *mac_addr, struct key_params *params);
 
 int
 mtk_p2p_cfg80211_get_key(struct wiphy *wiphy,
 			 struct net_device *ndev,
 			 u8 key_index,
 			 bool pairwise,
-			 const u8 *mac_addr,
-			 void *cookie, void (*callback) (void *cookie, struct key_params *)
-    );
+			 const u8 *mac_addr, void *cookie, void (*callback) (void *cookie, struct key_params *));
 
 int
 mtk_p2p_cfg80211_del_key(struct wiphy *wiphy,
@@ -563,163 +548,72 @@ mtk_p2p_cfg80211_del_key(struct wiphy *wiphy,
 
 int
 mtk_p2p_cfg80211_set_default_key(struct wiphy *wiphy,
-				 struct net_device *netdev,
-				 u8 key_index, bool unicast, bool multicast);
+				 struct net_device *netdev, u8 key_index, bool unicast, bool multicast);
 
-
-int
-mtk_p2p_cfg80211_get_station(struct wiphy *wiphy,
-			     struct net_device *ndev, u8 *mac, struct station_info *sinfo);
+int mtk_p2p_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, u8 *mac, struct station_info *sinfo);
 
 int mtk_p2p_cfg80211_scan(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-			  struct net_device *ndev,
-#endif
 			  struct cfg80211_scan_request *request);
 
 int mtk_p2p_cfg80211_set_wiphy_params(struct wiphy *wiphy, u32 changed);
 
-int
-mtk_p2p_cfg80211_connect(struct wiphy *wiphy,
-			 struct net_device *dev, struct cfg80211_connect_params *sme);
+int mtk_p2p_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_connect_params *sme);
 
 int mtk_p2p_cfg80211_disconnect(struct wiphy *wiphy, struct net_device *dev, u16 reason_code);
 
-int
-mtk_p2p_cfg80211_join_ibss(struct wiphy *wiphy,
-			   struct net_device *dev, struct cfg80211_ibss_params *params);
+int mtk_p2p_cfg80211_join_ibss(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_ibss_params *params);
 
 int mtk_p2p_cfg80211_leave_ibss(struct wiphy *wiphy, struct net_device *dev);
 
 int mtk_p2p_cfg80211_set_txpower(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 				 struct wireless_dev *wdev,
-#endif
 				 enum nl80211_tx_power_setting type, int mbm);
 
 int mtk_p2p_cfg80211_get_txpower(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 				 struct wireless_dev *wdev,
-#endif
 				 int *dbm);
 
 int mtk_p2p_cfg80211_remain_on_channel(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 				       struct wireless_dev *wdev,
-#else
-				       struct net_device *dev,
-#endif
 				       struct ieee80211_channel *chan,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-				       enum nl80211_channel_type channel_type,
-#endif
 				       unsigned int duration, u64 *cookie);
 
 int mtk_p2p_cfg80211_cancel_remain_on_channel(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 					      struct wireless_dev *wdev,
-#else
-					      struct net_device *dev,
-#endif
 					      u64 cookie);
 
-int
-mtk_p2p_cfg80211_set_power_mgmt(struct wiphy *wiphy,
-				struct net_device *dev, bool enabled, int timeout);
+int mtk_p2p_cfg80211_set_power_mgmt(struct wiphy *wiphy, struct net_device *dev, bool enabled, int timeout);
 
-int
-mtk_p2p_cfg80211_change_bss(struct wiphy *wiphy,
-			    struct net_device *dev, struct bss_parameters *params);
+int mtk_p2p_cfg80211_change_bss(struct wiphy *wiphy, struct net_device *dev, struct bss_parameters *params);
 
-int
-mtk_p2p_cfg80211_deauth(struct wiphy *wiphy,
-			struct net_device *dev, struct cfg80211_deauth_request *req
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 2, 0)
-			, void *cookie
-#endif
-    );
+int mtk_p2p_cfg80211_deauth(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_deauth_request *req);
 
-int
-mtk_p2p_cfg80211_disassoc(struct wiphy *wiphy,
-			  struct net_device *dev, struct cfg80211_disassoc_request *req
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 2, 0)
-			  , void *cookie
-#endif
-    );
+int mtk_p2p_cfg80211_disassoc(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_disassoc_request *req);
 
+int mtk_p2p_cfg80211_start_ap(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_ap_settings *settings);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
-int
-mtk_p2p_cfg80211_start_ap(struct wiphy *wiphy,
-			  struct net_device *dev, struct cfg80211_ap_settings *settings);
-
-
-int
-mtk_p2p_cfg80211_change_beacon(struct wiphy *wiphy,
-			       struct net_device *dev, struct cfg80211_beacon_data *info);
+int mtk_p2p_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_beacon_data *info);
 
 int mtk_p2p_cfg80211_mgmt_tx(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 			     struct wireless_dev *wdev,
-#else
-			     struct net_device *dev,
-#endif
 			     struct ieee80211_channel *chan, bool offchan,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-			     enum nl80211_channel_type channel_type, bool channel_type_valid,
-#endif
 			     unsigned int wait, const u8 *buf, size_t len,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
 			     bool no_cck, bool dont_wait_for_ack,
-#endif
 			     u64 *cookie);
 
 int mtk_p2p_cfg80211_mgmt_tx_cancel_wait(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 					 struct wireless_dev *wdev,
-#else
-					 struct net_device *dev,
-#endif
 					 u64 cookie);
-
-#else
-
-int
-mtk_p2p_cfg80211_add_set_beacon(struct wiphy *wiphy,
-				struct net_device *dev, struct beacon_parameters *info);
-
-int
-mtk_p2p_cfg80211_mgmt_tx(struct wiphy *wiphy,
-			 struct net_device *dev,
-			 struct ieee80211_channel *chan,
-			 bool offchan,
-			 enum nl80211_channel_type channel_type,
-			 bool channel_type_valid,
-			 unsigned int wait, const u8 *buf, size_t len, u64 *cookie);
-
-#endif
-
 
 int mtk_p2p_cfg80211_stop_ap(struct wiphy *wiphy, struct net_device *dev);
 
 int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, u8 *mac);
 
 int mtk_p2p_cfg80211_set_channel(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
-				 struct cfg80211_chan_def *chandef
-#else
-				 IN struct net_device *dev,
-				 IN struct ieee80211_channel *chan,
-				 IN enum nl80211_channel_type channel_type
-#endif
-    );
+				 struct cfg80211_chan_def *chandef);
 
 void mtk_p2p_cfg80211_mgmt_frame_register(IN struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 					  struct wireless_dev *wdev,
-#else
-					  IN struct net_device *dev,
-#endif
 					  IN u16 frame_type, IN bool reg);
 
 int
@@ -736,8 +630,7 @@ int mtk_p2p_cfg80211_testmode_p2p_sigma_cmd(IN struct wiphy *wiphy, IN void *dat
 int mtk_p2p_cfg80211_testmode_wfd_update_cmd(IN struct wiphy *wiphy, IN void *data, IN int len);
 #endif
 
-int
-mtk_p2p_cfg80211_testmode_hotspot_block_list_cmd(IN struct wiphy *wiphy, IN void *data, IN int len);
+int mtk_p2p_cfg80211_testmode_hotspot_block_list_cmd(IN struct wiphy *wiphy, IN void *data, IN int len);
 #else
 #error "Please ENABLE kernel config (CONFIG_NL80211_TESTMODE) to support Wi-Fi Direct"
 #endif
@@ -748,120 +641,97 @@ mtk_p2p_cfg80211_testmode_hotspot_block_list_cmd(IN struct wiphy *wiphy, IN void
 
 int
 mtk_p2p_wext_get_priv(IN struct net_device *prDev,
-		      IN struct iw_request_info *info,
-		      IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+		      IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_reconnect(IN struct net_device *prDev,
-		       IN struct iw_request_info *info,
-		       IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+		       IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_set_auth(IN struct net_device *prDev,
-		      IN struct iw_request_info *info,
-		      IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+		      IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_set_key(IN struct net_device *prDev,
-		     IN struct iw_request_info *info,
-		     IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+		     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_mlme_handler(IN struct net_device *prDev,
-			  IN struct iw_request_info *info,
-			  IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			  IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_set_powermode(IN struct net_device *prDev,
-			   IN struct iw_request_info *info,
-			   IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			   IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_get_powermode(IN struct net_device *prDev,
-			   IN struct iw_request_info *info,
-			   IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			   IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 /* Private Wireless I/O Controls takes use of iw_handler */
 int
 mtk_p2p_wext_set_local_dev_info(IN struct net_device *prDev,
-				IN struct iw_request_info *info,
-				IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+				IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_set_provision_complete(IN struct net_device *prDev,
-				    IN struct iw_request_info *info,
-				    IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+				    IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_start_stop_discovery(IN struct net_device *prDev,
-				  IN struct iw_request_info *info,
-				  IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+				  IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
-			       IN struct iw_request_info *info,
-			       IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			       IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_wsc_ie(IN struct net_device *prDev,
-		    IN struct iw_request_info *info,
-		    IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+		    IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_connect_disconnect(IN struct net_device *prDev,
-				IN struct iw_request_info *info,
-				IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+				IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_password_ready(IN struct net_device *prDev,
-			    IN struct iw_request_info *info,
-			    IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			    IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_request_dev_info(IN struct net_device *prDev,
-			      IN struct iw_request_info *info,
-			      IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			      IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_invitation_indicate(IN struct net_device *prDev,
-				 IN struct iw_request_info *info,
-				 IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+				 IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_invitation_status(IN struct net_device *prDev,
-			       IN struct iw_request_info *info,
-			       IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			       IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_set_pm_param(IN struct net_device *prDev,
-			  IN struct iw_request_info *info,
-			  IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			  IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_set_ps_profile(IN struct net_device *prDev,
-			    IN struct iw_request_info *info,
-			    IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			    IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_set_network_address(IN struct net_device *prDev,
-				 IN struct iw_request_info *info,
-				 IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+				 IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_set_int(IN struct net_device *prDev,
-		     IN struct iw_request_info *info,
-		     IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+		     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 /* Private Wireless I/O Controls for IOC_SET_STRUCT/IOC_GET_STRUCT */
 int
 mtk_p2p_wext_set_struct(IN struct net_device *prDev,
-			IN struct iw_request_info *info,
-			IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_get_struct(IN struct net_device *prDev,
-			IN struct iw_request_info *info,
-			IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 /* IOC_SET_STRUCT/IOC_GET_STRUCT: Service Discovery */
 int
@@ -892,43 +762,35 @@ mtk_p2p_wext_terminate_service_discovery_phase(IN struct net_device *prDev,
 #if CFG_SUPPORT_ANTI_PIRACY
 int
 mtk_p2p_wext_set_sec_check_request(IN struct net_device *prDev,
-				   IN struct iw_request_info *info,
-				   IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+				   IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_get_sec_check_response(IN struct net_device *prDev,
-				    IN struct iw_request_info *info,
-				    IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+				    IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 #endif
 
 int
 mtk_p2p_wext_set_noa_param(IN struct net_device *prDev,
-			   IN struct iw_request_info *info,
-			   IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			   IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_set_oppps_param(IN struct net_device *prDev,
-			     IN struct iw_request_info *info,
-			     IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_set_p2p_version(IN struct net_device *prDev,
-			     IN struct iw_request_info *info,
-			     IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+			     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 int
 mtk_p2p_wext_get_p2p_version(IN struct net_device *prDev,
-			     IN struct iw_request_info *info,
-			     IN OUT union iwreq_data *wrqu, IN OUT char *extra);
-
+			     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 void mtk_p2p_wext_set_Multicastlist(IN P_GLUE_INFO_T prGlueInfo);
 
 #if CFG_SUPPORT_P2P_RSSI_QUERY
 int
 mtk_p2p_wext_get_rssi(IN struct net_device *prDev,
-		      IN struct iw_request_info *info,
-		      IN OUT union iwreq_data *wrqu, IN OUT char *extra);
+		      IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra);
 
 struct iw_statistics *mtk_p2p_wext_get_wireless_stats(struct net_device *prDev);
 
@@ -936,13 +798,11 @@ struct iw_statistics *mtk_p2p_wext_get_wireless_stats(struct net_device *prDev);
 
 int
 mtk_p2p_wext_set_txpow(IN struct net_device *prDev,
-		       IN struct iw_request_info *prIwrInfo,
-		       IN OUT union iwreq_data *prTxPow, IN char *pcExtra);
-
+		       IN struct iw_request_info *prIwrInfo, IN OUT union iwreq_data *prTxPow, IN char *pcExtra);
 
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
 */
 
-#endif				/* _GL_P2P_IOCTL_H */
+#endif /* _GL_P2P_IOCTL_H */

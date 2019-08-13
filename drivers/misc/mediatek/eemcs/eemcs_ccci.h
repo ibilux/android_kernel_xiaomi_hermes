@@ -3,6 +3,7 @@
 #include <linux/version.h>
 #include "eemcs_kal.h"
 #include "lte_df_main.h"
+#include "lte_hif_sdio.h"
 
 #define BLK_16K			(16384)
 #define BLK_8K		    (8192)
@@ -97,6 +98,18 @@ typedef enum{
     TR_Q_INVALID,
 }SDIO_QUEUE_IDX;
 
+enum DATA_DIR{
+    TX = 0,
+    RX = 1,
+};
+
+#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+typedef struct{
+    KAL_INT16 seqno[2];
+    spinlock_t tx_seqno_lock;
+}CCCI_SEQNO_RECORD;
+#endif
+
 #define SDIO_TX_Q_NUM (TX_Q_MAX - TX_Q_MIN) //TX_Q_NUM
 #define SDIO_RX_Q_NUM (RX_Q_MAX - RX_Q_MIN) //RX_Q_NUM
 #define SDIO_TXQ(x)   (x - TX_Q_0)          //CCCI_TXQ_TO_DF
@@ -158,9 +171,17 @@ typedef enum { /* sync with MD */
     CH_IMSA_DL = 57,
     CH_IMSDC_UL = 58,
     CH_IMSDC_DL = 59,
+#if defined (DBG_FEATURE_CCCI_LB_IT)
+    CH_LB_IT_RX = 62,
+    CH_LB_IT_TX = 63,
+#endif
     CH_NET1_DL_ACK = 64, /* ch for CCMNI0 ACK packet of DL data packet*/
     CH_NET2_DL_ACK = 65, /* ch for CCMNI1 ACK packet of DL data packet */
     CH_NET3_DL_ACK = 66, /* ch for CCMNI2 ACK packet of DL data packet */
+#if defined (DBG_FEATURE_POLL_MD_STA)
+    CH_STATUS_RX = 67,
+    CH_STATUS_TX = 68,
+#endif
     CH_NUM_MAX,
     CH_DUMMY = 0xFF,   /* ch which drops Tx pkts */
     CCCI_FORCE_RESET_MODEM_CHANNEL  = 20090215,
@@ -192,14 +213,20 @@ enum CCCI_PORT{
     CCCI_PORT_IOCTL,      /*PORT=17, ioctl only no CCCI ch needed */
     CCCI_PORT_RILD,       /*PORT=18, ioctl only no CCCI ch needed */
     CCCI_PORT_IT,         /*PORT=19, ioctl only no CCCI ch needed */
+#if defined (DBG_FEATURE_POLL_MD_STA)
+    CCCI_PORT_POLL,       /*PORT=20, ioctl only no CCCI ch needed */
+#endif
+#if defined (DBG_FEATURE_CCCI_LB_IT)
+    CCCI_PORT_LB_IT, 	  /*PORT=21, ioctl only no CCCI ch needed */
+#endif
     END_OF_NORMAL_PORT,
     END_OF_CCCI_CDEV = END_OF_NORMAL_PORT,
     
     /* CCCI Network Interface */
     START_OF_CCMNI = END_OF_CCCI_CDEV,
-    CCCI_PORT_NET1 = START_OF_CCMNI, /*PORT=20*/
-    CCCI_PORT_NET2,  /*PORT=21*/
-    CCCI_PORT_NET3,  /*PORT=22*/
+    CCCI_PORT_NET1 = START_OF_CCMNI, /*PORT=21*/
+    CCCI_PORT_NET2,  /*PORT=22*/
+    CCCI_PORT_NET3,  /*PORT=23*/
     END_OF_CCMNI,
 
     CCCI_PORT_NUM_MAX = END_OF_CCMNI,										
@@ -219,7 +246,13 @@ typedef struct
             KAL_UINT32 id;
         };
     };
+#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    KAL_UINT16 channel:16;
+    KAL_UINT16 seq_num:15;
+    KAL_UINT16 assert_bit:1;
+#else
     KAL_UINT32 channel;
+#endif
     KAL_UINT32 reserved;
 } CCCI_BUFF_T;
 
@@ -419,6 +452,20 @@ KAL_UINT32 ccci_ch_to_port(KAL_UINT32 ccci_ch_num);
 KAL_INT32 eemcs_ccci_mod_init(void);
 void eemcs_ccci_exit(void);
 int eemcs_cdev_msg(int port_id, unsigned int message, unsigned int reserved);
+int ccci_df_to_ccci_send_msg(CCCI_CHANNEL_T ch, unsigned int msg, unsigned int reserv);
+
+#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+void eemcs_ccci_reset_seq_no(void);
+#endif
+
+#if defined (DBG_FEATURE_POLL_MD_STA)
+void eemcs_md_status_poll_init(void);
+void eemcs_md_status_poll_exit(void);
+void eemcs_start_md_status_poll_timer(unsigned int timeout);
+void eemcs_start_md_status_timeout_timer(unsigned int timeout);
+#endif
+
+
 #ifdef _EEMCS_CCCI_LB_UT
 /* UL APIs */
 int ccci_ut_UL_write_skb_to_swq(MTLTE_DF_TX_QUEUE_TYPE qno , struct sk_buff *skb);
@@ -461,6 +508,10 @@ void ccci_ut_turnon_DL_port(MTLTE_DF_RX_QUEUE_TYPE qno);
 #define hif_reg_expt_cb               ccci_ut_register_expt_callback
 #define hif_turn_off_dl_q             ccci_ut_turnoff_DL_port
 #define hif_turn_on_dl_q              ccci_ut_turnon_DL_port
+#define hif_reg_seq_err_cb
+#define hif_force_md_assert_swint
+
+
 #else
 void eemcs_ccci_exit(void);
 
@@ -482,6 +533,9 @@ void eemcs_ccci_exit(void);
 #define hif_reg_expt_cb               mtlte_expt_register_callback
 #define hif_turn_off_dl_q             mtlte_manual_turnoff_DL_port
 #define hif_turn_on_dl_q              mtlte_manual_turnon_DL_port
+#define hif_reg_seq_err_cb	      mtlte_df_register_seq_err_callback
+#define hif_force_md_assert_swint     mtlte_hif_force_md_assert_by_swint
+
 #endif
 
 #endif // __EEMCS_CCCI_H__

@@ -62,15 +62,15 @@ static void hw_bc12_dump_register(void)
     kal_uint32 i = MT6332_CORE_CON0;
 
     reg_val = upmu_get_reg_value(i);
-    battery_xlog_printk(BAT_LOG_FULL, "Reg[0x%x]=0x%x \n", i, reg_val);
+    battery_log(BAT_LOG_FULL, "Reg[0x%x]=0x%x \n", i, reg_val);
 }
 
 static void hw_bc12_init(void)
 {
     msleep(300);
     Charger_Detect_Init();
-        
-    //RG_bc12_BIAS_EN=1    
+
+    //RG_bc12_BIAS_EN=1
     mt6332_upmu_set_rg_bc12_bias_en(0x1);
     //RG_bc12_VSRC_EN[1:0]=00
     mt6332_upmu_set_rg_bc12_vsrc_en(0x0);
@@ -89,16 +89,16 @@ static void hw_bc12_init(void)
 
     //msleep(10);
     msleep(50);
-    
+
     if(Enable_BATDRV_LOG == BAT_LOG_FULL)
     {
-        battery_xlog_printk(BAT_LOG_FULL, "hw_bc12_init() \r\n");
+        battery_log(BAT_LOG_FULL, "hw_bc12_init() \r\n");
         hw_bc12_dump_register();
-    }    
+    }
 
 }
- 
- 
+
+
 static U32 hw_bc12_DCD(void)
 {
     U32 wChargerAvail = 0;
@@ -106,29 +106,29 @@ static U32 hw_bc12_DCD(void)
     //RG_bc12_IPU_EN[1.0] = 10
     if(get_pmic_mt6332_cid()==PMIC6332_E1_CID_CODE) mt6332_upmu_set_rg_bc12_ipu_en(0x1);
     else                                            mt6332_upmu_set_rg_bc12_ipu_en(0x2);
-    
+
     //RG_bc12_IPD_EN[1.0] = 01
     if(get_pmic_mt6332_cid()==PMIC6332_E1_CID_CODE) mt6332_upmu_set_rg_bc12_ipd_en(0x2);
-    else                                            mt6332_upmu_set_rg_bc12_ipd_en(0x1); 
-    
+    else                                            mt6332_upmu_set_rg_bc12_ipd_en(0x1);
+
     //RG_bc12_VREF_VTH = [1:0]=01
     mt6332_upmu_set_rg_bc12_vref_vth(0x1);
-    
+
     //RG_bc12_CMP_EN[1.0] = 10
     if(get_pmic_mt6332_cid()==PMIC6332_E1_CID_CODE) mt6332_upmu_set_rg_bc12_cmp_en(0x1);
     else                                            mt6332_upmu_set_rg_bc12_cmp_en(0x2);
 
     //msleep(20);
-    msleep(200);  //80 modify longcheer_liml_2015_10_22
+    msleep(80);
 
     wChargerAvail = mt6332_upmu_get_rgs_bc12_cmp_out();
-    
+
     if(Enable_BATDRV_LOG == BAT_LOG_FULL)
     {
-        battery_xlog_printk(BAT_LOG_FULL, "hw_bc12_DCD() \r\n");
+        battery_log(BAT_LOG_FULL, "hw_bc12_DCD() \r\n");
         hw_bc12_dump_register();
     }
-    
+
     //RG_bc12_IPU_EN[1.0] = 00
     mt6332_upmu_set_rg_bc12_ipu_en(0x0);
     //RG_bc12_IPD_EN[1.0] = 00
@@ -140,19 +140,19 @@ static U32 hw_bc12_DCD(void)
 
     return wChargerAvail;
 }
- 
- 
+
+
 static U32 hw_bc12_stepA1(void)
 {
    U32 wChargerAvail = 0;
-     
+
    //RG_bc12_IPD_EN[1.0] = 01
    if(get_pmic_mt6332_cid()==PMIC6332_E1_CID_CODE) mt6332_upmu_set_rg_bc12_ipd_en(0x2);
    else                                            mt6332_upmu_set_rg_bc12_ipd_en(0x1);
-   
+
    //RG_bc12_VREF_VTH = [1:0]=00
    mt6332_upmu_set_rg_bc12_vref_vth(0x0);
-   
+
    //RG_bc12_CMP_EN[1.0] = 01
    if(get_pmic_mt6332_cid()==PMIC6332_E1_CID_CODE) mt6332_upmu_set_rg_bc12_cmp_en(0x2);
    else                                            mt6332_upmu_set_rg_bc12_cmp_en(0x1);
@@ -164,7 +164,7 @@ static U32 hw_bc12_stepA1(void)
 
    if(Enable_BATDRV_LOG == BAT_LOG_FULL)
    {
-       battery_xlog_printk(BAT_LOG_FULL, "hw_bc12_stepA1() \r\n");
+       battery_log(BAT_LOG_FULL, "hw_bc12_stepA1() \r\n");
        hw_bc12_dump_register();
    }
 
@@ -175,23 +175,23 @@ static U32 hw_bc12_stepA1(void)
 
    return  wChargerAvail;
 }
- 
- 
+
+
 static U32 hw_bc12_stepA2(void)
 {
    U32 wChargerAvail = 0;
-     
-   //RG_bc12_VSRC_EN[1.0] = 10 
+
+   //RG_bc12_VSRC_EN[1.0] = 10
    if(get_pmic_mt6332_cid()==PMIC6332_E1_CID_CODE) mt6332_upmu_set_rg_bc12_vsrc_en(0x1);
    else                                            mt6332_upmu_set_rg_bc12_vsrc_en(0x2);
-   
+
    //RG_bc12_IPD_EN[1:0] = 01
    if(get_pmic_mt6332_cid()==PMIC6332_E1_CID_CODE) mt6332_upmu_set_rg_bc12_ipd_en(0x2);
    else                                            mt6332_upmu_set_rg_bc12_ipd_en(0x1);
-   
+
    //RG_bc12_VREF_VTH = [1:0]=00
    mt6332_upmu_set_rg_bc12_vref_vth(0x0);
-   
+
    //RG_bc12_CMP_EN[1.0] = 01
    if(get_pmic_mt6332_cid()==PMIC6332_E1_CID_CODE) mt6332_upmu_set_rg_bc12_cmp_en(0x2);
    else                                            mt6332_upmu_set_rg_bc12_cmp_en(0x1);
@@ -203,7 +203,7 @@ static U32 hw_bc12_stepA2(void)
 
    if(Enable_BATDRV_LOG == BAT_LOG_FULL)
    {
-       battery_xlog_printk(BAT_LOG_FULL, "hw_bc12_stepA2() \r\n");
+       battery_log(BAT_LOG_FULL, "hw_bc12_stepA2() \r\n");
        hw_bc12_dump_register();
    }
 
@@ -216,8 +216,8 @@ static U32 hw_bc12_stepA2(void)
 
    return  wChargerAvail;
 }
- 
- 
+
+
 static U32 hw_bc12_stepB2(void)
 {
    U32 wChargerAvail = 0;
@@ -225,10 +225,10 @@ static U32 hw_bc12_stepB2(void)
    //RG_bc12_IPU_EN[1:0]=10
    if(get_pmic_mt6332_cid()==PMIC6332_E1_CID_CODE) mt6332_upmu_set_rg_bc12_ipu_en(0x1);
    else                                            mt6332_upmu_set_rg_bc12_ipu_en(0x2);
-   
+
    //RG_bc12_VREF_VTH = [1:0]=01
    mt6332_upmu_set_rg_bc12_vref_vth(0x1);
-   
+
    //RG_bc12_CMP_EN[1.0] = 01
    if(get_pmic_mt6332_cid()==PMIC6332_E1_CID_CODE) mt6332_upmu_set_rg_bc12_cmp_en(0x2);
    else                                            mt6332_upmu_set_rg_bc12_cmp_en(0x1);
@@ -240,7 +240,7 @@ static U32 hw_bc12_stepB2(void)
 
    if(Enable_BATDRV_LOG == BAT_LOG_FULL)
    {
-       battery_xlog_printk(BAT_LOG_FULL, "hw_bc12_stepB2() \r\n");
+       battery_log(BAT_LOG_FULL, "hw_bc12_stepB2() \r\n");
        hw_bc12_dump_register();
    }
 
@@ -253,8 +253,8 @@ static U32 hw_bc12_stepB2(void)
 
    return  wChargerAvail;
 }
- 
- 
+
+
 static void hw_bc12_done(void)
 {
    //RG_bc12_VSRC_EN[1:0]=00
@@ -268,18 +268,19 @@ static void hw_bc12_done(void)
    //RG_bc12_IPD_EN[1.0] = 00
    mt6332_upmu_set_rg_bc12_ipd_en(0x0);
    //RG_bc12_BIAS_EN=0
-   mt6332_upmu_set_rg_bc12_bias_en(0x0); 
+   mt6332_upmu_set_rg_bc12_bias_en(0x0);
 
    Charger_Detect_Release();
 
    if(Enable_BATDRV_LOG == BAT_LOG_FULL)
    {
-       battery_xlog_printk(BAT_LOG_FULL, "hw_bc12_done() \r\n");
+       battery_log(BAT_LOG_FULL, "hw_bc12_done() \r\n");
        hw_bc12_dump_register();
    }
-   
+
 }
-int FG_charging_type=CHARGER_UNKNOWN;
+
+int FG_charging_type = CHARGER_UNKNOWN;
 int hw_charging_get_charger_type(void)
 {
 #if 0
@@ -287,23 +288,23 @@ int hw_charging_get_charger_type(void)
     //return STANDARD_CHARGER; //adaptor
 #else
     CHARGER_TYPE CHR_Type_num = CHARGER_UNKNOWN;
-    
-    /********* Step initial  ***************/         
+
+    /********* Step initial  ***************/
     hw_bc12_init();
- 
-    /********* Step DCD ***************/  
+
+    /********* Step DCD ***************/
     if(1 == hw_bc12_DCD())
     {
          /********* Step A1 ***************/
          if(1 == hw_bc12_stepA1())
-         {             
+         {
              CHR_Type_num = APPLE_2_1A_CHARGER;
-             battery_xlog_printk(BAT_LOG_CRTI, "step A1 : Apple 2.1A CHARGER!\r\n");
+             battery_log(BAT_LOG_CRTI, "step A1 : Apple 2.1A CHARGER!\r\n");
          }
          else
          {
              CHR_Type_num = NONSTANDARD_CHARGER;
-             battery_xlog_printk(BAT_LOG_CRTI, "step A1 : Non STANDARD CHARGER!\r\n");
+             battery_log(BAT_LOG_CRTI, "step A1 : Non STANDARD CHARGER!\r\n");
          }
     }
     else
@@ -315,26 +316,27 @@ int hw_charging_get_charger_type(void)
              if(1 == hw_bc12_stepB2())
              {
                  CHR_Type_num = STANDARD_CHARGER;
-                 battery_xlog_printk(BAT_LOG_CRTI, "step B2 : STANDARD CHARGER!\r\n");
+                 battery_log(BAT_LOG_CRTI, "step B2 : STANDARD CHARGER!\r\n");
              }
              else
              {
                  CHR_Type_num = CHARGING_HOST;
-                 battery_xlog_printk(BAT_LOG_CRTI, "step B2 :  Charging Host!\r\n");
+                 battery_log(BAT_LOG_CRTI, "step B2 :  Charging Host!\r\n");
              }
          }
          else
          {
              CHR_Type_num = STANDARD_HOST;
-             battery_xlog_printk(BAT_LOG_CRTI, "step A2 : Standard USB Host!\r\n");
+             battery_log(BAT_LOG_CRTI, "step A2 : Standard USB Host!\r\n");
          }
- 
+
     }
- 
+
     /********* Finally setting *******************************/
     hw_bc12_done();
-    FG_charging_type=CHR_Type_num;
+    FG_charging_type = CHR_Type_num;
+
     return CHR_Type_num;
-#endif    
+#endif
 }
 #endif

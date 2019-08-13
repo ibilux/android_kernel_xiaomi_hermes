@@ -107,7 +107,8 @@ HeapCfgHeapDetails(
     IMG_CHAR *pszHeapNameOut,
     IMG_DEV_VIRTADDR *psDevVAddrBaseOut,
     IMG_DEVMEM_SIZE_T *puiHeapLengthOut,
-    IMG_UINT32 *puiLog2DataPageSizeOut
+    IMG_UINT32 *puiLog2DataPageSizeOut,
+    IMG_UINT32 *puiLog2ImportAlignmentOut
 )
 {
     DEVMEM_HEAP_BLUEPRINT *psHeapBlueprint;
@@ -128,6 +129,7 @@ HeapCfgHeapDetails(
     *psDevVAddrBaseOut = psHeapBlueprint->sHeapBaseAddr;
     *puiHeapLengthOut = psHeapBlueprint->uiHeapLength;
     *puiLog2DataPageSizeOut = psHeapBlueprint->uiLog2DataPageSize;
+    *puiLog2ImportAlignmentOut = psHeapBlueprint->uiLog2ImportAlignment;
 
     return PVRSRV_OK;    
 }

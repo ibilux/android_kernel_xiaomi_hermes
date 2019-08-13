@@ -604,10 +604,10 @@ void insert_node_to_list(void **list,unsigned int *node)
 	*list = node;
 }
 
-void *find_node_in_list(pid_t pid, unsigned long client_address,unsigned long data,unsigned long **previous_node, unsigned long *list,unsigned long search_type,unsigned int node_type)
+void *find_node_in_list(pid_t pid, unsigned int client_address,unsigned int data,unsigned int **previous_node, unsigned int *list,unsigned int search_type,unsigned int node_type)
 {
-	unsigned long *prev_node = NULL;
-	unsigned long *current_node = list;
+	unsigned int *prev_node = NULL;
+	unsigned int *current_node = list;
 	ion_record_basic_info_t *record_ID_tmp;
 	struct ion_process_record *process_tmp = NULL;
 	struct ion_buffer_record *buffer_tmp = NULL;
@@ -635,8 +635,8 @@ void *find_node_in_list(pid_t pid, unsigned long client_address,unsigned long da
 		else if((search_type == SEARCH_BUFFER) && (node_type == LIST_BUFFER)&& (client_address == 0))
 		{
 			buffer_tmp = (struct ion_buffer_record *)(current_node);
-                        printk(ION_DEBUG_INFO "            [find_node_in_list]curent_node is %lu buffer_tmp->buffer_address is 0x%p data 0x%lu\n",(unsigned long)current_node,buffer_tmp->buffer_address,data);
-			if(buffer_tmp->buffer_address == (void *)data)
+                        printk(ION_DEBUG_INFO "            [find_node_in_list]curent_node is %lu buffer_tmp->buffer_address is 0x%p data 0x%d\n",(unsigned long)current_node,buffer_tmp->buffer_address,data);
+			if(buffer_tmp->buffer_address == (void *)(unsigned long)data)
                         {
 				*previous_node = prev_node;
                                 return current_node;
@@ -680,9 +680,9 @@ void *find_node_in_list(pid_t pid, unsigned long client_address,unsigned long da
 			printk(ION_DEBUG_ERROR "            [find_node_in_list]Error!!!\n");
 		}
 		prev_node = current_node;
-		current_node = (unsigned long *)*(current_node);
+		current_node = (unsigned long *)(long)*(current_node);
 	}
-	printk(ION_DEBUG_INFO "              [find_node_in_list]can't find node in list. search_type %lu node_type %d pid %d client_address %lu\n",search_type,node_type,pid,client_address);
+	printk(ION_DEBUG_INFO "              [find_node_in_list]can't find node in list. search_type %d node_type %d pid %d client_address %d\n",search_type,node_type,pid,client_address);
 	return NULL;
 }
 void *move_node_to_freelist(pid_t pid,unsigned int client_address,unsigned int data,unsigned int **from, unsigned int **to,unsigned int search_type,unsigned int node_type)
@@ -696,7 +696,7 @@ void *move_node_to_freelist(pid_t pid,unsigned int client_address,unsigned int d
 	{
 		if(previous_node == NULL)
 		{
-			*from = *found_node;
+			*from = found_node;
 		}
 		else
 		{
@@ -1759,7 +1759,7 @@ int record_ion_info(int from_kernel,ion_sys_record_t *record_param)
 				
 					//move buffer node from allocate list into free list
                                 	mutex_lock(&buffer_record->ion_address_usage_mutex);
-                                	found_node = move_node_to_freelist(record_param->pid,(unsigned long )record_param->client,record_param->address,(unsigned long **)&(buffer_record->address_using_list),(unsigned long **)&(buffer_record->address_freed_list),SEARCH_PID,NODE_MMAP);
+                                	found_node = move_node_to_freelist(record_param->pid,(unsigned long )record_param->client,record_param->address,(unsigned int **)&(buffer_record->address_using_list),(unsigned int **)&(buffer_record->address_freed_list),SEARCH_PID,NODE_MMAP);
                                 	mutex_unlock(&buffer_record->ion_address_usage_mutex);
                                 	if(found_node != NULL)
                                 	{

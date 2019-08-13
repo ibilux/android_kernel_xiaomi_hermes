@@ -332,7 +332,7 @@ long osal_is_err(int fp_id)
 		return err;
 	}
 
-	osal_assert(0);
+	/*osal_assert(0);*/
 	return 1;
 }
 EXPORT_SYMBOL(osal_kfree);

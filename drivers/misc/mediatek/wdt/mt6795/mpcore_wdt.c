@@ -40,7 +40,7 @@
 #include <mach/irqs.h>
 #include <linux/aee.h>
 
-#include <linux/mt_sched_mon.h>
+#include "mt_sched_mon.h"
 
 #if defined(CONFIG_FIQ_GLUE)
 #else

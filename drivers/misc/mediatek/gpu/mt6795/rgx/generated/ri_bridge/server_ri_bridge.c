@@ -65,22 +65,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <linux/slab.h>
 
-/* ***************************************************************************
- * Bridge proxy functions
- */
-
-static PVRSRV_ERROR
-RIDeleteMEMDESCEntryResManProxy(IMG_HANDLE hResmanItem)
-{
-	PVRSRV_ERROR eError;
-
-	eError = ResManFreeResByPtr(hResmanItem);
-
-	/* Freeing a resource should never fail... */
-	PVR_ASSERT((eError == PVRSRV_OK) || (eError == PVRSRV_ERROR_RETRY));
-
-	return eError;
-}
 
 
 
@@ -89,16 +73,13 @@ RIDeleteMEMDESCEntryResManProxy(IMG_HANDLE hResmanItem)
  */
  
 static IMG_INT
-PVRSRVBridgeRIWritePMREntry(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RIWRITEPMRENTRY *psRIWritePMREntryIN,
-					 PVRSRV_BRIDGE_OUT_RIWRITEPMRENTRY *psRIWritePMREntryOUT,
+PVRSRVBridgeRIWritePMREntry(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RIWRITEPMRENTRY *psRIWritePMREntryIN,
+					  PVRSRV_BRIDGE_OUT_RIWRITEPMRENTRY *psRIWritePMREntryOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	PMR * psPMRHandleInt = IMG_NULL;
-	IMG_HANDLE hPMRHandleInt2 = IMG_NULL;
 	IMG_CHAR *uiTextAInt = IMG_NULL;
-
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RI_RIWRITEPMRENTRY);
 
 
 
@@ -124,33 +105,29 @@ PVRSRVBridgeRIWritePMREntry(IMG_UINT32 ui32BridgeID,
 				goto RIWritePMREntry_exit;
 			}
 
+
+
 				{
 					/* Look up the address from the handle */
 					psRIWritePMREntryOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hPMRHandleInt2,
+											(IMG_VOID **) &psPMRHandleInt,
 											psRIWritePMREntryIN->hPMRHandle,
 											PVRSRV_HANDLE_TYPE_PHYSMEM_PMR);
 					if(psRIWritePMREntryOUT->eError != PVRSRV_OK)
 					{
 						goto RIWritePMREntry_exit;
 					}
-
-					/* Look up the data from the resman address */
-					psRIWritePMREntryOUT->eError = ResManFindPrivateDataByPtr(hPMRHandleInt2, (IMG_VOID **) &psPMRHandleInt);
-
-					if(psRIWritePMREntryOUT->eError != PVRSRV_OK)
-					{
-						goto RIWritePMREntry_exit;
-					}
 				}
+
 
 	psRIWritePMREntryOUT->eError =
 		RIWritePMREntryKM(
 					psPMRHandleInt,
 					psRIWritePMREntryIN->ui32TextASize,
 					uiTextAInt,
-					psRIWritePMREntryIN->uiLogicalSize);
+					psRIWritePMREntryIN->ui64LogicalSize);
+
 
 
 
@@ -162,18 +139,14 @@ RIWritePMREntry_exit:
 }
 
 static IMG_INT
-PVRSRVBridgeRIWriteMEMDESCEntry(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RIWRITEMEMDESCENTRY *psRIWriteMEMDESCEntryIN,
-					 PVRSRV_BRIDGE_OUT_RIWRITEMEMDESCENTRY *psRIWriteMEMDESCEntryOUT,
+PVRSRVBridgeRIWriteMEMDESCEntry(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RIWRITEMEMDESCENTRY *psRIWriteMEMDESCEntryIN,
+					  PVRSRV_BRIDGE_OUT_RIWRITEMEMDESCENTRY *psRIWriteMEMDESCEntryOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	PMR * psPMRHandleInt = IMG_NULL;
-	IMG_HANDLE hPMRHandleInt2 = IMG_NULL;
 	IMG_CHAR *uiTextBInt = IMG_NULL;
 	RI_HANDLE psRIHandleInt = IMG_NULL;
-	IMG_HANDLE hRIHandleInt2 = IMG_NULL;
-
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RI_RIWRITEMEMDESCENTRY);
 
 
 
@@ -199,34 +172,29 @@ PVRSRVBridgeRIWriteMEMDESCEntry(IMG_UINT32 ui32BridgeID,
 				goto RIWriteMEMDESCEntry_exit;
 			}
 
+
+
 				{
 					/* Look up the address from the handle */
 					psRIWriteMEMDESCEntryOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hPMRHandleInt2,
+											(IMG_VOID **) &psPMRHandleInt,
 											psRIWriteMEMDESCEntryIN->hPMRHandle,
 											PVRSRV_HANDLE_TYPE_PHYSMEM_PMR);
 					if(psRIWriteMEMDESCEntryOUT->eError != PVRSRV_OK)
 					{
 						goto RIWriteMEMDESCEntry_exit;
 					}
-
-					/* Look up the data from the resman address */
-					psRIWriteMEMDESCEntryOUT->eError = ResManFindPrivateDataByPtr(hPMRHandleInt2, (IMG_VOID **) &psPMRHandleInt);
-
-					if(psRIWriteMEMDESCEntryOUT->eError != PVRSRV_OK)
-					{
-						goto RIWriteMEMDESCEntry_exit;
-					}
 				}
+
 
 	psRIWriteMEMDESCEntryOUT->eError =
 		RIWriteMEMDESCEntryKM(
 					psPMRHandleInt,
 					psRIWriteMEMDESCEntryIN->ui32TextBSize,
 					uiTextBInt,
-					psRIWriteMEMDESCEntryIN->uiOffset,
-					psRIWriteMEMDESCEntryIN->uiSize,
+					psRIWriteMEMDESCEntryIN->ui64Offset,
+					psRIWriteMEMDESCEntryIN->ui64Size,
 					psRIWriteMEMDESCEntryIN->bIsImport,
 					psRIWriteMEMDESCEntryIN->bIsExportable,
 					&psRIHandleInt);
@@ -236,40 +204,25 @@ PVRSRVBridgeRIWriteMEMDESCEntry(IMG_UINT32 ui32BridgeID,
 		goto RIWriteMEMDESCEntry_exit;
 	}
 
-	/* Create a resman item and overwrite the handle with it */
-	hRIHandleInt2 = ResManRegisterRes(psConnection->hResManContext,
-												RESMAN_TYPE_RI_HANDLE,
-												psRIHandleInt,
-												(RESMAN_FREE_FN)&RIDeleteMEMDESCEntryKM);
-	if (hRIHandleInt2 == IMG_NULL)
-	{
-		psRIWriteMEMDESCEntryOUT->eError = PVRSRV_ERROR_UNABLE_TO_REGISTER_RESOURCE;
-		goto RIWriteMEMDESCEntry_exit;
-	}
+
 	psRIWriteMEMDESCEntryOUT->eError = PVRSRVAllocHandle(psConnection->psHandleBase,
 							&psRIWriteMEMDESCEntryOUT->hRIHandle,
-							(IMG_HANDLE) hRIHandleInt2,
+							(IMG_VOID *) psRIHandleInt,
 							PVRSRV_HANDLE_TYPE_RI_HANDLE,
-							PVRSRV_HANDLE_ALLOC_FLAG_NONE
-							);
+							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
+							,(PFN_HANDLE_RELEASE)&RIDeleteMEMDESCEntryKM);
 	if (psRIWriteMEMDESCEntryOUT->eError != PVRSRV_OK)
 	{
 		goto RIWriteMEMDESCEntry_exit;
 	}
+
+
 
 
 RIWriteMEMDESCEntry_exit:
 	if (psRIWriteMEMDESCEntryOUT->eError != PVRSRV_OK)
 	{
-		/* If we have a valid resman item we should undo the bridge function by freeing the resman item */
-		if (hRIHandleInt2)
-		{
-			PVRSRV_ERROR eError = ResManFreeResByPtr(hRIHandleInt2);
-
-			/* Freeing a resource should never fail... */
-			PVR_ASSERT((eError == PVRSRV_OK) || (eError == PVRSRV_ERROR_RETRY));
-		}
-		else if (psRIHandleInt)
+		if (psRIHandleInt)
 		{
 			RIDeleteMEMDESCEntryKM(psRIHandleInt);
 		}
@@ -282,15 +235,14 @@ RIWriteMEMDESCEntry_exit:
 }
 
 static IMG_INT
-PVRSRVBridgeRIUpdateMEMDESCAddr(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RIUPDATEMEMDESCADDR *psRIUpdateMEMDESCAddrIN,
-					 PVRSRV_BRIDGE_OUT_RIUPDATEMEMDESCADDR *psRIUpdateMEMDESCAddrOUT,
+PVRSRVBridgeRIUpdateMEMDESCAddr(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RIUPDATEMEMDESCADDR *psRIUpdateMEMDESCAddrIN,
+					  PVRSRV_BRIDGE_OUT_RIUPDATEMEMDESCADDR *psRIUpdateMEMDESCAddrOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	RI_HANDLE psRIHandleInt = IMG_NULL;
-	IMG_HANDLE hRIHandleInt2 = IMG_NULL;
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RI_RIUPDATEMEMDESCADDR);
+
 
 
 
@@ -300,27 +252,21 @@ PVRSRVBridgeRIUpdateMEMDESCAddr(IMG_UINT32 ui32BridgeID,
 					/* Look up the address from the handle */
 					psRIUpdateMEMDESCAddrOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hRIHandleInt2,
+											(IMG_VOID **) &psRIHandleInt,
 											psRIUpdateMEMDESCAddrIN->hRIHandle,
 											PVRSRV_HANDLE_TYPE_RI_HANDLE);
 					if(psRIUpdateMEMDESCAddrOUT->eError != PVRSRV_OK)
 					{
 						goto RIUpdateMEMDESCAddr_exit;
 					}
-
-					/* Look up the data from the resman address */
-					psRIUpdateMEMDESCAddrOUT->eError = ResManFindPrivateDataByPtr(hRIHandleInt2, (IMG_VOID **) &psRIHandleInt);
-
-					if(psRIUpdateMEMDESCAddrOUT->eError != PVRSRV_OK)
-					{
-						goto RIUpdateMEMDESCAddr_exit;
-					}
 				}
+
 
 	psRIUpdateMEMDESCAddrOUT->eError =
 		RIUpdateMEMDESCAddrKM(
 					psRIHandleInt,
 					psRIUpdateMEMDESCAddrIN->sAddr);
+
 
 
 
@@ -330,44 +276,30 @@ RIUpdateMEMDESCAddr_exit:
 }
 
 static IMG_INT
-PVRSRVBridgeRIDeleteMEMDESCEntry(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RIDELETEMEMDESCENTRY *psRIDeleteMEMDESCEntryIN,
-					 PVRSRV_BRIDGE_OUT_RIDELETEMEMDESCENTRY *psRIDeleteMEMDESCEntryOUT,
+PVRSRVBridgeRIDeleteMEMDESCEntry(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RIDELETEMEMDESCENTRY *psRIDeleteMEMDESCEntryIN,
+					  PVRSRV_BRIDGE_OUT_RIDELETEMEMDESCENTRY *psRIDeleteMEMDESCEntryOUT,
 					 CONNECTION_DATA *psConnection)
 {
-	IMG_HANDLE hRIHandleInt2 = IMG_NULL;
-
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RI_RIDELETEMEMDESCENTRY);
 
 
 
 
 
-				{
-					/* Look up the address from the handle */
-					psRIDeleteMEMDESCEntryOUT->eError =
-						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hRIHandleInt2,
-											psRIDeleteMEMDESCEntryIN->hRIHandle,
-											PVRSRV_HANDLE_TYPE_RI_HANDLE);
-					if(psRIDeleteMEMDESCEntryOUT->eError != PVRSRV_OK)
-					{
-						goto RIDeleteMEMDESCEntry_exit;
-					}
 
-				}
 
-	psRIDeleteMEMDESCEntryOUT->eError = RIDeleteMEMDESCEntryResManProxy(hRIHandleInt2);
-	/* Exit early if bridged call fails */
-	if(psRIDeleteMEMDESCEntryOUT->eError != PVRSRV_OK)
-	{
-		goto RIDeleteMEMDESCEntry_exit;
-	}
+
 
 	psRIDeleteMEMDESCEntryOUT->eError =
 		PVRSRVReleaseHandle(psConnection->psHandleBase,
 					(IMG_HANDLE) psRIDeleteMEMDESCEntryIN->hRIHandle,
 					PVRSRV_HANDLE_TYPE_RI_HANDLE);
+	if ((psRIDeleteMEMDESCEntryOUT->eError != PVRSRV_OK) && (psRIDeleteMEMDESCEntryOUT->eError != PVRSRV_ERROR_RETRY))
+	{
+		PVR_ASSERT(0);
+		goto RIDeleteMEMDESCEntry_exit;
+	}
+
 
 
 RIDeleteMEMDESCEntry_exit:
@@ -376,15 +308,14 @@ RIDeleteMEMDESCEntry_exit:
 }
 
 static IMG_INT
-PVRSRVBridgeRIDumpList(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RIDUMPLIST *psRIDumpListIN,
-					 PVRSRV_BRIDGE_OUT_RIDUMPLIST *psRIDumpListOUT,
+PVRSRVBridgeRIDumpList(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RIDUMPLIST *psRIDumpListIN,
+					  PVRSRV_BRIDGE_OUT_RIDUMPLIST *psRIDumpListOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	PMR * psPMRHandleInt = IMG_NULL;
-	IMG_HANDLE hPMRHandleInt2 = IMG_NULL;
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RI_RIDUMPLIST);
+
 
 
 
@@ -394,26 +325,20 @@ PVRSRVBridgeRIDumpList(IMG_UINT32 ui32BridgeID,
 					/* Look up the address from the handle */
 					psRIDumpListOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hPMRHandleInt2,
+											(IMG_VOID **) &psPMRHandleInt,
 											psRIDumpListIN->hPMRHandle,
 											PVRSRV_HANDLE_TYPE_PHYSMEM_PMR);
 					if(psRIDumpListOUT->eError != PVRSRV_OK)
 					{
 						goto RIDumpList_exit;
 					}
-
-					/* Look up the data from the resman address */
-					psRIDumpListOUT->eError = ResManFindPrivateDataByPtr(hPMRHandleInt2, (IMG_VOID **) &psPMRHandleInt);
-
-					if(psRIDumpListOUT->eError != PVRSRV_OK)
-					{
-						goto RIDumpList_exit;
-					}
 				}
+
 
 	psRIDumpListOUT->eError =
 		RIDumpListKM(
 					psPMRHandleInt);
+
 
 
 
@@ -423,16 +348,16 @@ RIDumpList_exit:
 }
 
 static IMG_INT
-PVRSRVBridgeRIDumpAll(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RIDUMPALL *psRIDumpAllIN,
-					 PVRSRV_BRIDGE_OUT_RIDUMPALL *psRIDumpAllOUT,
+PVRSRVBridgeRIDumpAll(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RIDUMPALL *psRIDumpAllIN,
+					  PVRSRV_BRIDGE_OUT_RIDUMPALL *psRIDumpAllOUT,
 					 CONNECTION_DATA *psConnection)
 {
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RI_RIDUMPALL);
-
 	PVR_UNREFERENCED_PARAMETER(psConnection);
 	PVR_UNREFERENCED_PARAMETER(psRIDumpAllIN);
+
+
 
 
 
@@ -444,19 +369,20 @@ PVRSRVBridgeRIDumpAll(IMG_UINT32 ui32BridgeID,
 
 
 
+
 	return 0;
 }
 
 static IMG_INT
-PVRSRVBridgeRIDumpProcess(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RIDUMPPROCESS *psRIDumpProcessIN,
-					 PVRSRV_BRIDGE_OUT_RIDUMPPROCESS *psRIDumpProcessOUT,
+PVRSRVBridgeRIDumpProcess(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RIDUMPPROCESS *psRIDumpProcessIN,
+					  PVRSRV_BRIDGE_OUT_RIDUMPPROCESS *psRIDumpProcessOUT,
 					 CONNECTION_DATA *psConnection)
 {
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RI_RIDUMPPROCESS);
-
 	PVR_UNREFERENCED_PARAMETER(psConnection);
+
+
 
 
 
@@ -464,6 +390,7 @@ PVRSRVBridgeRIDumpProcess(IMG_UINT32 ui32BridgeID,
 	psRIDumpProcessOUT->eError =
 		RIDumpProcessKM(
 					psRIDumpProcessIN->ui32Pid);
+
 
 
 
@@ -476,22 +403,45 @@ PVRSRVBridgeRIDumpProcess(IMG_UINT32 ui32BridgeID,
 /* *************************************************************************** 
  * Server bridge dispatch related glue 
  */
- 
-PVRSRV_ERROR RegisterRIFunctions(IMG_VOID);
-IMG_VOID UnregisterRIFunctions(IMG_VOID);
+
+
+PVRSRV_ERROR InitRIBridge(IMG_VOID);
+PVRSRV_ERROR DeinitRIBridge(IMG_VOID);
 
 /*
  * Register all RI functions with services
  */
-PVRSRV_ERROR RegisterRIFunctions(IMG_VOID)
+PVRSRV_ERROR InitRIBridge(IMG_VOID)
 {
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RI_RIWRITEPMRENTRY, PVRSRVBridgeRIWritePMREntry);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RI_RIWRITEMEMDESCENTRY, PVRSRVBridgeRIWriteMEMDESCEntry);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RI_RIUPDATEMEMDESCADDR, PVRSRVBridgeRIUpdateMEMDESCAddr);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RI_RIDELETEMEMDESCENTRY, PVRSRVBridgeRIDeleteMEMDESCEntry);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RI_RIDUMPLIST, PVRSRVBridgeRIDumpList);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RI_RIDUMPALL, PVRSRVBridgeRIDumpAll);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RI_RIDUMPPROCESS, PVRSRVBridgeRIDumpProcess);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RI, PVRSRV_BRIDGE_RI_RIWRITEPMRENTRY, PVRSRVBridgeRIWritePMREntry,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RI, PVRSRV_BRIDGE_RI_RIWRITEMEMDESCENTRY, PVRSRVBridgeRIWriteMEMDESCEntry,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RI, PVRSRV_BRIDGE_RI_RIUPDATEMEMDESCADDR, PVRSRVBridgeRIUpdateMEMDESCAddr,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RI, PVRSRV_BRIDGE_RI_RIDELETEMEMDESCENTRY, PVRSRVBridgeRIDeleteMEMDESCEntry,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RI, PVRSRV_BRIDGE_RI_RIDUMPLIST, PVRSRVBridgeRIDumpList,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RI, PVRSRV_BRIDGE_RI_RIDUMPALL, PVRSRVBridgeRIDumpAll,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RI, PVRSRV_BRIDGE_RI_RIDUMPPROCESS, PVRSRVBridgeRIDumpProcess,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
 
 	return PVRSRV_OK;
 }
@@ -499,6 +449,8 @@ PVRSRV_ERROR RegisterRIFunctions(IMG_VOID)
 /*
  * Unregister all ri functions with services
  */
-IMG_VOID UnregisterRIFunctions(IMG_VOID)
+PVRSRV_ERROR DeinitRIBridge(IMG_VOID)
 {
+	return PVRSRV_OK;
 }
+

@@ -45,7 +45,7 @@
 
 static DEFINE_SPINLOCK(imgsensor_drv_lock);
 static imgsensor_info_struct imgsensor_info = { 
-	.sensor_id = S5K3M2_2ND_SENSOR_ID,
+	.sensor_id = S5K3M2_2ND_MIPI_RAW_SENSOR_ID,
 	.checksum_value = 0x752cfcc1,
 	.pre = {
 		.pclk = 440000000,				//record different mode's pclk
@@ -3093,7 +3093,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			write_cmos_sensor(0x602E,0x0000);
 			*sensor_id = read_cmos_sensor(0x6F12);
 			//*sensor_id = imgsensor_info.sensor_id;
-            if (*sensor_id == S5K3M2_SENSOR_ID) {               
+            if (*sensor_id == S5K3M2_MIPI_RAW_SENSOR_ID) {               
                 LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,*sensor_id); 
                 Module_id = S5k3M2_2ND_read_cmos_sensor1(0x0005);
                 if (Module_id == 0x01)
@@ -3194,7 +3194,7 @@ static kal_uint32 open(void)
 			write_cmos_sensor(0x602E,0x0000);
             sensor_id =  read_cmos_sensor(0x6F12);
 			//sensor_id = imgsensor_info.sensor_id;
-            if (sensor_id == S5K3M2_SENSOR_ID) {                
+            if (sensor_id == S5K3M2_MIPI_RAW_SENSOR_ID) {                
                 LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,sensor_id);   
                 break;
             }   
@@ -3202,11 +3202,11 @@ static kal_uint32 open(void)
             retry--;
         } while(retry > 0);
         i++;
-        if (sensor_id == S5K3M2_SENSOR_ID)
+        if (sensor_id == S5K3M2_MIPI_RAW_SENSOR_ID)
             break;
         retry = 2;
     }        
-    if (S5K3M2_SENSOR_ID != sensor_id)
+    if (S5K3M2_MIPI_RAW_SENSOR_ID != sensor_id)
         return ERROR_SENSOR_CONNECT_FAIL;
 	/* initail sequence write in  */
 	sensor_init();

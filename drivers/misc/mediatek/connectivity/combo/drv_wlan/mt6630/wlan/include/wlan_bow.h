@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/wlan_bow.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/wlan_bow.h#1
 */
 
 /*! \file   "wlan_bow.h"
@@ -8,10 +8,8 @@
 	   MediaTek Inc. 802.11 Wireless LAN Adapters.
 */
 
-
-
 /*
-** $Log: wlan_bow.h $
+** Log: wlan_bow.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -243,12 +241,10 @@ wlanoidSendSetQueryBowCmd(IN P_ADAPTER_T prAdapter,
 			  PFN_CMD_TIMEOUT_HANDLER pfCmdTimeoutHandler,
 			  UINT_32 u4SetQueryInfoLen, PUINT_8 pucInfoBuffer, IN UINT_8 ucSeqNumber);
 
-
 /*--------------------------------------------------------------*/
 /* Command Dispatcher                                           */
 /*--------------------------------------------------------------*/
 WLAN_STATUS wlanbowHandleCommand(IN P_ADAPTER_T prAdapter, IN P_AMPC_COMMAND prCmd);
-
 
 /*--------------------------------------------------------------*/
 /* Routines to handle command                                   */
@@ -269,35 +265,22 @@ WLAN_STATUS bowCmdShortRangeMode(IN P_ADAPTER_T prAdapter, IN P_AMPC_COMMAND prC
 
 WLAN_STATUS bowCmdGetChannelList(IN P_ADAPTER_T prAdapter, IN P_AMPC_COMMAND prCmd);
 
-VOID
-wlanbowCmdEventSetStatus(IN P_ADAPTER_T prAdapter, IN P_AMPC_COMMAND prCmd, IN UINT_8 ucEventBuf);
+VOID wlanbowCmdEventSetStatus(IN P_ADAPTER_T prAdapter, IN P_AMPC_COMMAND prCmd, IN UINT_8 ucEventBuf);
 
 /*--------------------------------------------------------------*/
 /* Callbacks for event indication                               */
 /*--------------------------------------------------------------*/
-VOID
-wlanbowCmdEventSetCommon(IN P_ADAPTER_T prAdapter,
-			 IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
+VOID wlanbowCmdEventSetCommon(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
 
-VOID
-wlanbowCmdEventLinkConnected(IN P_ADAPTER_T prAdapter,
-			     IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
+VOID wlanbowCmdEventLinkConnected(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
 
-VOID
-wlanbowCmdEventLinkDisconnected(IN P_ADAPTER_T prAdapter,
-				IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
+VOID wlanbowCmdEventLinkDisconnected(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
 
-VOID
-wlanbowCmdEventSetSetupConnection(IN P_ADAPTER_T prAdapter,
-				  IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
+VOID wlanbowCmdEventSetSetupConnection(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
 
-VOID
-wlanbowCmdEventReadLinkQuality(IN P_ADAPTER_T prAdapter,
-			       IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
+VOID wlanbowCmdEventReadLinkQuality(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
 
-VOID
-wlanbowCmdEventReadRssi(IN P_ADAPTER_T prAdapter,
-			IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
+VOID wlanbowCmdEventReadRssi(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
 
 UINT_8 bowInit(IN P_ADAPTER_T prAdapter);
 
@@ -311,8 +294,7 @@ VOID bowStarting(IN P_ADAPTER_T prAdapter);
 
 VOID bowAssignSsid(IN PUINT_8 pucSsid, IN PUINT_8 pucSsidLen);
 
-BOOLEAN
-bowValidateProbeReq(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT PUINT_32 pu4ControlFlags);
+BOOLEAN bowValidateProbeReq(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT PUINT_32 pu4ControlFlags);
 
 VOID bowSendBeacon(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr);
 
@@ -328,22 +310,17 @@ VOID bowFsmRunEventJoinComplete(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHd
 
 VOID
 bowIndicationOfMediaStateToHost(IN P_ADAPTER_T prAdapter,
-				ENUM_PARAM_MEDIA_STATE_T eConnectionState,
-				BOOLEAN fgDelayIndication);
+				ENUM_PARAM_MEDIA_STATE_T eConnectionState, BOOLEAN fgDelayIndication);
 
 VOID bowRunEventAAATxFail(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec);
 
 WLAN_STATUS bowRunEventAAAComplete(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec);
 
-WLAN_STATUS
-bowRunEventRxDeAuth(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN P_SW_RFB_T prSwRfb);
+WLAN_STATUS bowRunEventRxDeAuth(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN P_SW_RFB_T prSwRfb);
 
-VOID
-bowDisconnectLink(IN P_ADAPTER_T prAdapter,
-		  IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
+VOID bowDisconnectLink(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
 
-BOOLEAN
-bowValidateAssocReq(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT PUINT_16 pu2StatusCode);
+BOOLEAN bowValidateAssocReq(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT PUINT_16 pu2StatusCode);
 
 BOOLEAN
 bowValidateAuth(IN P_ADAPTER_T prAdapter,
@@ -359,30 +336,20 @@ VOID bowChGrantedTimeout(IN P_ADAPTER_T prAdapter, IN ULONG ulParamPtr);
 
 BOOLEAN bowNotifyAllLinkDisconnected(IN P_ADAPTER_T prAdapter);
 
-BOOLEAN bowCheckBowTableIfVaild(IN P_ADAPTER_T prAdapter, IN UINT_8 aucPeerAddress[6]
-    );
+BOOLEAN bowCheckBowTableIfVaild(IN P_ADAPTER_T prAdapter, IN UINT_8 aucPeerAddress[6]);
+
+BOOLEAN bowGetBowTableContent(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBowTableIdx, OUT P_BOW_TABLE_T prBowTable);
 
 BOOLEAN
-bowGetBowTableContent(IN P_ADAPTER_T prAdapter,
-		      IN UINT_8 ucBowTableIdx, OUT P_BOW_TABLE_T prBowTable);
-
-BOOLEAN
-bowGetBowTableEntryByPeerAddress(IN P_ADAPTER_T prAdapter,
-				 IN UINT_8 aucPeerAddress[6], OUT PUINT_8 pucBowTableIdx);
+bowGetBowTableEntryByPeerAddress(IN P_ADAPTER_T prAdapter, IN UINT_8 aucPeerAddress[6], OUT PUINT_8 pucBowTableIdx);
 
 BOOLEAN bowGetBowTableFreeEntry(IN P_ADAPTER_T prAdapter, OUT PUINT_8 pucBowTableIdx);
 
-ENUM_BOW_DEVICE_STATE bowGetBowTableState(IN P_ADAPTER_T prAdapter, IN UINT_8 aucPeerAddress[6]
-    );
+ENUM_BOW_DEVICE_STATE bowGetBowTableState(IN P_ADAPTER_T prAdapter, IN UINT_8 aucPeerAddress[6]);
 
-BOOLEAN
-bowSetBowTableState(IN P_ADAPTER_T prAdapter,
-		    IN UINT_8 aucPeerAddress[6], IN ENUM_BOW_DEVICE_STATE eState);
+BOOLEAN bowSetBowTableState(IN P_ADAPTER_T prAdapter, IN UINT_8 aucPeerAddress[6], IN ENUM_BOW_DEVICE_STATE eState);
 
-
-BOOLEAN
-bowSetBowTableContent(IN P_ADAPTER_T prAdapter,
-		      IN UINT_8 ucBowTableIdx, IN P_BOW_TABLE_T prBowTable);
+BOOLEAN bowSetBowTableContent(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBowTableIdx, IN P_BOW_TABLE_T prBowTable);
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -390,4 +357,4 @@ bowSetBowTableContent(IN P_ADAPTER_T prAdapter,
 */
 
 #endif
-#endif				/* _WLAN_BOW_H */
+#endif /* _WLAN_BOW_H */

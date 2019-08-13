@@ -10,8 +10,6 @@
     the Probe Response Frame for received Probe Request Frame.
 */
 
-
-
 /*
 ** Log: bss.c
 **
@@ -238,14 +236,12 @@
 
 Add per station flow control when STA is in PS
 
-
  * Fix  prBssInfo->aucCWminLog to  prBssInfo->aucCWminLogForBcast
  *
  * 12 29 2010 eddie.chen
  * [WCXRP00000322] Add WMM IE in beacon,
 
 Add per station flow control when STA is in PS
-
 
  * Add WMM parameter for broadcast.
  *
@@ -597,8 +593,8 @@ APPEND_VAR_IE_ENTRY_T txBcnIETable[] = {
 	, {0, p2pFuncCalculateP2p_IELenForBeacon, p2pFuncGenerateP2p_IEForBeacon}	/* 221 */
 	, {0, p2pFuncCalculateWSC_IELenForBeacon, p2pFuncGenerateWSC_IEForBeacon}	/* 221 */
 #endif
-   ,{ 0,                                                    p2pFuncCalculateP2P_IE_NoA,     p2pFuncGenerateP2P_IE_NoA   }   /* 221 */
-#endif				/* CFG_ENABLE_WIFI_DIRECT */
+	, {0, p2pFuncCalculateP2P_IE_NoA, p2pFuncGenerateP2P_IE_NoA}	/* 221 */
+#endif /* CFG_ENABLE_WIFI_DIRECT */
 #if CFG_SUPPORT_802_11AC
 	, {(ELEM_HDR_LEN + ELEM_MAX_LEN_VHT_CAP), NULL, rlmRspGenerateVhtCapIE}	/*191 */
 	, {(ELEM_HDR_LEN + ELEM_MAX_LEN_VHT_OP), NULL, rlmRspGenerateVhtOpIE}	/*192 */
@@ -608,7 +604,6 @@ APPEND_VAR_IE_ENTRY_T txBcnIETable[] = {
 #endif
 
 };
-
 
 APPEND_VAR_IE_ENTRY_T txProbRspIETable[] = {
 	{(ELEM_HDR_LEN + (RATE_NUM_SW - ELEM_MAX_LEN_SUP_RATES)), NULL, bssGenerateExtSuppRate_IE}	/* 50 */
@@ -632,8 +627,7 @@ APPEND_VAR_IE_ENTRY_T txProbRspIETable[] = {
 
 };
 
-#endif				/* CFG_SUPPORT_ADHOC || CFG_SUPPORT_AAA */
-
+#endif /* CFG_SUPPORT_ADHOC || CFG_SUPPORT_AAA */
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A
@@ -644,7 +638,6 @@ APPEND_VAR_IE_ENTRY_T txProbRspIETable[] = {
 *                                 M A C R O S
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
@@ -671,9 +664,7 @@ APPEND_VAR_IE_ENTRY_T txProbRspIETable[] = {
 * @retval   VOID
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssDetermineStaRecPhyTypeSet(IN P_ADAPTER_T prAdapter,
-			     IN P_BSS_DESC_T prBssDesc, OUT P_STA_RECORD_T prStaRec)
+VOID bssDetermineStaRecPhyTypeSet(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBssDesc, OUT P_STA_RECORD_T prStaRec)
 {
 	P_WIFI_VAR_T prWifiVar = &prAdapter->rWifiVar;
 	UINT_8 ucHtOption = FEATURE_ENABLED;
@@ -691,8 +682,7 @@ bssDetermineStaRecPhyTypeSet(IN P_ADAPTER_T prAdapter,
 		      || (prAdapter->prGlueInfo->u2WapiAssocInfoIESz)
 #endif
 		    )) {
-			DBGLOG(BSS, INFO,
-			       ("Ignore the HT Bit for TKIP as pairwise cipher configed!\n"));
+			DBGLOG(BSS, INFO, "Ignore the HT Bit for TKIP as pairwise cipher configed!\n");
 			prStaRec->ucPhyTypeSet &= ~(PHY_TYPE_BIT_HT | PHY_TYPE_BIT_VHT);
 		}
 
@@ -711,18 +701,14 @@ bssDetermineStaRecPhyTypeSet(IN P_ADAPTER_T prAdapter,
 	else if (IS_FEATURE_FORCE_ENABLED(ucHtOption))
 		prStaRec->ucPhyTypeSet |= PHY_TYPE_BIT_HT;
 
-
 	if (IS_FEATURE_DISABLED(ucVhtOption))
 		prStaRec->ucPhyTypeSet &= ~PHY_TYPE_BIT_VHT;
 	else if (IS_FEATURE_FORCE_ENABLED(ucVhtOption))
 		prStaRec->ucPhyTypeSet |= PHY_TYPE_BIT_VHT;
 
-
-	prStaRec->ucDesiredPhyTypeSet =
-	    prStaRec->ucPhyTypeSet & prAdapter->rWifiVar.ucAvailablePhyTypeSet;
+	prStaRec->ucDesiredPhyTypeSet = prStaRec->ucPhyTypeSet & prAdapter->rWifiVar.ucAvailablePhyTypeSet;
 
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -736,9 +722,7 @@ bssDetermineStaRecPhyTypeSet(IN P_ADAPTER_T prAdapter,
 * @retval   VOID
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssDetermineApBssInfoPhyTypeSet(IN P_ADAPTER_T prAdapter,
-				IN BOOLEAN fgIsPureAp, OUT P_BSS_INFO_T prBssInfo)
+VOID bssDetermineApBssInfoPhyTypeSet(IN P_ADAPTER_T prAdapter, IN BOOLEAN fgIsPureAp, OUT P_BSS_INFO_T prBssInfo)
 {
 	P_WIFI_VAR_T prWifiVar = &prAdapter->rWifiVar;
 	UINT_8 ucHtOption = FEATURE_ENABLED;
@@ -761,7 +745,6 @@ bssDetermineApBssInfoPhyTypeSet(IN P_ADAPTER_T prAdapter,
 	else if (IS_FEATURE_ENABLED(ucHtOption))
 		prBssInfo->ucPhyTypeSet |= PHY_TYPE_BIT_HT;
 
-
 	if (IS_FEATURE_DISABLED(ucVhtOption)) {
 		prBssInfo->ucPhyTypeSet &= ~PHY_TYPE_BIT_VHT;
 	} else if (IS_FEATURE_FORCE_ENABLED(ucVhtOption) ||
@@ -774,7 +757,6 @@ bssDetermineApBssInfoPhyTypeSet(IN P_ADAPTER_T prAdapter,
 	prBssInfo->ucPhyTypeSet &= prAdapter->rWifiVar.ucAvailablePhyTypeSet;
 
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -791,8 +773,7 @@ bssDetermineApBssInfoPhyTypeSet(IN P_ADAPTER_T prAdapter,
 /*----------------------------------------------------------------------------*/
 P_STA_RECORD_T
 bssCreateStaRecFromBssDesc(IN P_ADAPTER_T prAdapter,
-			   IN ENUM_STA_TYPE_T eStaType,
-			   IN UINT_8 ucBssIndex, IN P_BSS_DESC_T prBssDesc)
+			   IN ENUM_STA_TYPE_T eStaType, IN UINT_8 ucBssIndex, IN P_BSS_DESC_T prBssDesc)
 {
 	P_STA_RECORD_T prStaRec;
 	UINT_8 ucNonHTPhyTypeSet;
@@ -809,8 +790,8 @@ bssCreateStaRecFromBssDesc(IN P_ADAPTER_T prAdapter,
 
 		if (!prStaRec) {
 			DBGLOG(BSS, WARN,
-			       ("STA_REC entry is full, cannot acquire new entry for [" MACSTR
-				"]!!\n", MAC2STR(prBssDesc->aucSrcAddr)));
+			       "STA_REC entry is full, cannot acquire new entry for [" MACSTR
+				"]!!\n", MAC2STR(prBssDesc->aucSrcAddr));
 			ASSERT(FALSE);
 			return NULL;
 		}
@@ -839,14 +820,12 @@ bssCreateStaRecFromBssDesc(IN P_ADAPTER_T prAdapter,
 		      || (prAdapter->prGlueInfo->u2WapiAssocInfoIESz)
 #endif
 		    )) {
-			DBGLOG(BSS, INFO,
-			       ("Ignore the HT Bit for TKIP as pairwise cipher configed!\n"));
+			DBGLOG(BSS, INFO, "Ignore the HT Bit for TKIP as pairwise cipher configed!\n");
 			prStaRec->ucPhyTypeSet &= ~PHY_TYPE_BIT_HT;
 		}
 	}
 
-	prStaRec->ucDesiredPhyTypeSet =
-	    prStaRec->ucPhyTypeSet & prAdapter->rWifiVar.ucAvailablePhyTypeSet;
+	prStaRec->ucDesiredPhyTypeSet = prStaRec->ucPhyTypeSet & prAdapter->rWifiVar.ucAvailablePhyTypeSet;
 #endif
 
 	ucNonHTPhyTypeSet = prStaRec->ucDesiredPhyTypeSet & PHY_TYPE_SET_802_11ABG;
@@ -877,8 +856,7 @@ bssCreateStaRecFromBssDesc(IN P_ADAPTER_T prAdapter,
 	}
 
 	/* Update non HT Desired Rate Set */
-	prStaRec->u2DesiredNonHTRateSet =
-	    (prStaRec->u2OperationalRateSet & prConnSettings->u2DesiredNonHTRateSet);
+	prStaRec->u2DesiredNonHTRateSet = (prStaRec->u2OperationalRateSet & prConnSettings->u2DesiredNonHTRateSet);
 
 	/* 4 <3> Update information from BSS_DESC_T to current P_STA_RECORD_T */
 	if (IS_AP_STA(prStaRec)) {
@@ -906,7 +884,6 @@ bssCreateStaRecFromBssDesc(IN P_ADAPTER_T prAdapter,
 
 }				/* end of bssCreateStaRecFromBssDesc() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function will compose the Null Data frame.
@@ -931,8 +908,8 @@ VOID bssComposeNullFrame(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuffer, IN P_ST
 	ASSERT(ucBssIndex <= MAX_BSS_INDEX);
 
 	ASSERT(pucBuffer);
-	
-	prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex);	
+
+	prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex);
 	ASSERT(prBssInfo);
 
 	prNullFrame = (P_WLAN_MAC_HEADER_T) pucBuffer;
@@ -977,7 +954,6 @@ VOID bssComposeNullFrame(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuffer, IN P_ST
 
 }				/* end of bssComposeNullFrameHeader() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function will compose the QoS Null Data frame.
@@ -993,8 +969,7 @@ VOID bssComposeNullFrame(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuffer, IN P_ST
 /*----------------------------------------------------------------------------*/
 VOID
 bssComposeQoSNullFrame(IN P_ADAPTER_T prAdapter,
-		       IN PUINT_8 pucBuffer,
-		       IN P_STA_RECORD_T prStaRec, IN UINT_8 ucUP, IN BOOLEAN fgSetEOSP)
+		       IN PUINT_8 pucBuffer, IN P_STA_RECORD_T prStaRec, IN UINT_8 ucUP, IN BOOLEAN fgSetEOSP)
 {
 	P_WLAN_MAC_HEADER_QOS_T prQoSNullFrame;
 	P_BSS_INFO_T prBssInfo;
@@ -1008,8 +983,8 @@ bssComposeQoSNullFrame(IN P_ADAPTER_T prAdapter,
 	ASSERT(ucBssIndex <= MAX_BSS_INDEX);
 
 	ASSERT(pucBuffer);
-	
-	prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex);	
+
+	prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex);
 	ASSERT(prBssInfo);
 
 	prQoSNullFrame = (P_WLAN_MAC_HEADER_QOS_T) pucBuffer;
@@ -1062,7 +1037,6 @@ bssComposeQoSNullFrame(IN P_ADAPTER_T prAdapter,
 
 }				/* end of bssComposeQoSNullFrameHeader() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief Send the Null Frame
@@ -1076,12 +1050,10 @@ bssComposeQoSNullFrame(IN P_ADAPTER_T prAdapter,
 */
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
-bssSendNullFrame(IN P_ADAPTER_T prAdapter,
-		 IN P_STA_RECORD_T prStaRec, IN PFN_TX_DONE_HANDLER pfTxDoneHandler)
+bssSendNullFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN PFN_TX_DONE_HANDLER pfTxDoneHandler)
 {
 	P_MSDU_INFO_T prMsduInfo;
 	UINT_16 u2EstimatedFrameLen;
-
 
 	/* 4 <1> Allocate a PKT_INFO_T for Null Frame */
 	/* Init with MGMT Header Length */
@@ -1090,13 +1062,11 @@ bssSendNullFrame(IN P_ADAPTER_T prAdapter,
 	/* Allocate a MSDU_INFO_T */
 	prMsduInfo = cnmMgtPktAlloc(prAdapter, u2EstimatedFrameLen);
 	if (prMsduInfo == NULL) {
-		DBGLOG(BSS, WARN, ("No PKT_INFO_T for sending Null Frame.\n"));
+		DBGLOG(BSS, WARN, "No PKT_INFO_T for sending Null Frame.\n");
 		return WLAN_STATUS_RESOURCES;
 	}
 	/* 4 <2> Compose Null frame in MSDU_INfO_T. */
-	bssComposeNullFrame(prAdapter,
-			    (PUINT_8) ((ULONG) prMsduInfo->prPacket + MAC_TX_RESERVED_FIELD),
-			    prStaRec);
+	bssComposeNullFrame(prAdapter, (PUINT_8) ((ULONG) prMsduInfo->prPacket + MAC_TX_RESERVED_FIELD), prStaRec);
 #if 0
 	/* 4 <3> Update information of MSDU_INFO_T */
 	TXM_SET_DATA_PACKET(
@@ -1106,8 +1076,7 @@ bssSendNullFrame(IN P_ADAPTER_T prAdapter,
 				   (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD),
 				   /* MAC HDR length */ WLAN_MAC_HEADER_LEN,
 				   /* PAYLOAD ptr */
-				   (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD +
-				    WLAN_MAC_HEADER_LEN),
+				   (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD + WLAN_MAC_HEADER_LEN),
 				   /* PAYLOAD length */ 0,
 				   /* Network Type Index */ (UINT_8) prStaRec->ucNetTypeIndex,
 				   /* TID */ 0 /* BE: AC1 */ ,
@@ -1141,9 +1110,7 @@ bssSendNullFrame(IN P_ADAPTER_T prAdapter,
 	TX_SET_MMPDU(prAdapter,
 		     prMsduInfo,
 		     prStaRec->ucBssIndex,
-		     prStaRec->ucIndex,
-		     WLAN_MAC_HEADER_LEN,
-		     WLAN_MAC_HEADER_LEN, pfTxDoneHandler, MSDU_RATE_MODE_AUTO);
+		     prStaRec->ucIndex, WLAN_MAC_HEADER_LEN, WLAN_MAC_HEADER_LEN, pfTxDoneHandler, MSDU_RATE_MODE_AUTO);
 
 	/* 4 <4> Inform TXM  to send this Null frame. */
 	nicTxEnqueueMsdu(prAdapter, prMsduInfo);
@@ -1151,7 +1118,6 @@ bssSendNullFrame(IN P_ADAPTER_T prAdapter,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of bssSendNullFrame() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1167,12 +1133,10 @@ bssSendNullFrame(IN P_ADAPTER_T prAdapter,
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
 bssSendQoSNullFrame(IN P_ADAPTER_T prAdapter,
-		    IN P_STA_RECORD_T prStaRec,
-		    IN UINT_8 ucUP, IN PFN_TX_DONE_HANDLER pfTxDoneHandler)
+		    IN P_STA_RECORD_T prStaRec, IN UINT_8 ucUP, IN PFN_TX_DONE_HANDLER pfTxDoneHandler)
 {
 	P_MSDU_INFO_T prMsduInfo;
 	UINT_16 u2EstimatedFrameLen;
-
 
 	/* 4 <1> Allocate a PKT_INFO_T for Null Frame */
 	/* Init with MGMT Header Length */
@@ -1181,7 +1145,7 @@ bssSendQoSNullFrame(IN P_ADAPTER_T prAdapter,
 	/* Allocate a MSDU_INFO_T */
 	prMsduInfo = cnmMgtPktAlloc(prAdapter, u2EstimatedFrameLen);
 	if (prMsduInfo == NULL) {
-		DBGLOG(BSS, WARN, ("No PKT_INFO_T for sending Null Frame.\n"));
+		DBGLOG(BSS, WARN, "No PKT_INFO_T for sending Null Frame.\n");
 		return WLAN_STATUS_RESOURCES;
 	}
 	/* 4 <2> Compose Null frame in MSDU_INfO_T. */
@@ -1197,8 +1161,7 @@ bssSendQoSNullFrame(IN P_ADAPTER_T prAdapter,
 				   (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD),
 				   /* MAC HDR length */ WLAN_MAC_HEADER_QOS_LEN,
 				   /* PAYLOAD ptr */
-				   (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD +
-				    WLAN_MAC_HEADER_QOS_LEN),
+				   (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD + WLAN_MAC_HEADER_QOS_LEN),
 				   /* PAYLOAD length */ 0,
 				   /* Network Type Index */ (UINT_8) prStaRec->ucNetTypeIndex,
 				   /* TID */ 0 /* BE: AC1 */ ,
@@ -1232,8 +1195,7 @@ bssSendQoSNullFrame(IN P_ADAPTER_T prAdapter,
 		     prMsduInfo,
 		     prStaRec->ucBssIndex,
 		     prStaRec->ucIndex,
-		     WLAN_MAC_HEADER_QOS_LEN,
-		     WLAN_MAC_HEADER_QOS_LEN, pfTxDoneHandler, MSDU_RATE_MODE_AUTO);
+		     WLAN_MAC_HEADER_QOS_LEN, WLAN_MAC_HEADER_QOS_LEN, pfTxDoneHandler, MSDU_RATE_MODE_AUTO);
 
 	/* 4 <4> Inform TXM  to send this Null frame. */
 	nicTxEnqueueMsdu(prAdapter, prMsduInfo);
@@ -1241,7 +1203,6 @@ bssSendQoSNullFrame(IN P_ADAPTER_T prAdapter,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of bssSendQoSNullFrame() */
-
 
 #if (CFG_SUPPORT_ADHOC) || (CFG_SUPPORT_AAA)
 /*----------------------------------------------------------------------------*/
@@ -1264,14 +1225,12 @@ VOID bssGenerateExtSuppRate_IE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsdu
 	PUINT_8 pucBuffer;
 	UINT_8 ucExtSupRatesLen;
 
-
 	ASSERT(prMsduInfo);
 
 	prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, prMsduInfo->ucBssIndex);
 	ASSERT(prBssInfo);
 
-	pucBuffer = (PUINT_8) ((ULONG) prMsduInfo->prPacket +
-			       (ULONG) prMsduInfo->u2FrameLength);
+	pucBuffer = (PUINT_8) ((ULONG) prMsduInfo->prPacket + (ULONG) prMsduInfo->u2FrameLength);
 	ASSERT(pucBuffer);
 
 	if (prBssInfo->ucAllSupportedRatesLen > ELEM_MAX_LEN_SUP_RATES)
@@ -1280,7 +1239,6 @@ VOID bssGenerateExtSuppRate_IE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsdu
 	else
 		ucExtSupRatesLen = 0;
 
-
 	/* Fill the Extended Supported Rates element. */
 	if (ucExtSupRatesLen) {
 
@@ -1288,15 +1246,13 @@ VOID bssGenerateExtSuppRate_IE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsdu
 		EXT_SUP_RATES_IE(pucBuffer)->ucLength = ucExtSupRatesLen;
 
 		kalMemCopy(EXT_SUP_RATES_IE(pucBuffer)->aucExtSupportedRates,
-			   &prBssInfo->aucAllSupportedRates[ELEM_MAX_LEN_SUP_RATES],
-			   ucExtSupRatesLen);
+			   &prBssInfo->aucAllSupportedRates[ELEM_MAX_LEN_SUP_RATES], ucExtSupRatesLen);
 
 		prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
 	}
 
 	return;
 }				/* end of bssGenerateExtSuppRate_IE() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1311,52 +1267,43 @@ VOID bssGenerateExtSuppRate_IE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsdu
 */
 /*----------------------------------------------------------------------------*/
 VOID
-bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo,
-				      IN P_BSS_INFO_T prBssInfo, IN PUINT_8 pucDestAddr)
+bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo, IN P_BSS_INFO_T prBssInfo, IN PUINT_8 pucDestAddr)
 {
 	PUINT_8 pucBuffer;
 	UINT_8 ucSupRatesLen;
 
-
 	ASSERT(prMsduInfo);
 	ASSERT(prBssInfo);
 
-	pucBuffer = (PUINT_8) ((ULONG) prMsduInfo->prPacket +
-			       (ULONG) prMsduInfo->u2FrameLength);
+	pucBuffer = (PUINT_8) ((ULONG) prMsduInfo->prPacket + (ULONG) prMsduInfo->u2FrameLength);
 	ASSERT(pucBuffer);
 
 	/* Compose the frame body of the Probe Response frame. */
 	/* 4 <1> Fill the SSID element. */
 	SSID_IE(pucBuffer)->ucId = ELEM_ID_SSID;
 #if 0
-    SSID_IE(pucBuffer)->ucLength = prBssInfo->ucSSIDLen;
-    if (prBssInfo->ucSSIDLen) {
-        kalMemCopy(SSID_IE(pucBuffer)->aucSSID, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
-    }
+	SSID_IE(pucBuffer)->ucLength = prBssInfo->ucSSIDLen;
+	if (prBssInfo->ucSSIDLen)
+		kalMemCopy(SSID_IE(pucBuffer)->aucSSID, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
 #else
-    if (prBssInfo->eHiddenSsidType == ENUM_HIDDEN_SSID_LEN) {
-        if ((!pucDestAddr) && // For Beacon only.
-            (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)) {
-            SSID_IE(pucBuffer)->ucLength = 0;
-        } else { // probe response
-            SSID_IE(pucBuffer)->ucLength = prBssInfo->ucSSIDLen;
-            if (prBssInfo->ucSSIDLen) {
-                kalMemCopy(SSID_IE(pucBuffer)->aucSSID, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
-            }
-        }
-    }
-    else {
-        SSID_IE(pucBuffer)->ucLength = prBssInfo->ucSSIDLen;
-        if (prBssInfo->ucSSIDLen) {
-            kalMemCopy(SSID_IE(pucBuffer)->aucSSID, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
-        }
-    }  
+	if (prBssInfo->eHiddenSsidType == ENUM_HIDDEN_SSID_LEN) {
+		if ((!pucDestAddr) &&	/* For Beacon only. */
+		    (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)) {
+			SSID_IE(pucBuffer)->ucLength = 0;
+		} else {	/* probe response */
+			SSID_IE(pucBuffer)->ucLength = prBssInfo->ucSSIDLen;
+			if (prBssInfo->ucSSIDLen)
+				kalMemCopy(SSID_IE(pucBuffer)->aucSSID, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
+		}
+	} else {
+		SSID_IE(pucBuffer)->ucLength = prBssInfo->ucSSIDLen;
+		if (prBssInfo->ucSSIDLen)
+			kalMemCopy(SSID_IE(pucBuffer)->aucSSID, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
+	}
 #endif
-
 
 	prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
 	pucBuffer += IE_SIZE(pucBuffer);
-
 
 	/* 4 <2> Fill the Supported Rates element. */
 	if (prBssInfo->ucAllSupportedRatesLen > ELEM_MAX_LEN_SUP_RATES)
@@ -1365,12 +1312,10 @@ bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo,
 	else
 		ucSupRatesLen = prBssInfo->ucAllSupportedRatesLen;
 
-
 	if (ucSupRatesLen) {
 		SUP_RATES_IE(pucBuffer)->ucId = ELEM_ID_SUP_RATES;
 		SUP_RATES_IE(pucBuffer)->ucLength = ucSupRatesLen;
-		kalMemCopy(SUP_RATES_IE(pucBuffer)->aucSupportedRates,
-			   prBssInfo->aucAllSupportedRates, ucSupRatesLen);
+		kalMemCopy(SUP_RATES_IE(pucBuffer)->aucSupportedRates, prBssInfo->aucAllSupportedRates, ucSupRatesLen);
 
 		prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
 		pucBuffer += IE_SIZE(pucBuffer);
@@ -1390,8 +1335,7 @@ bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo,
 	if (prBssInfo->eCurrentOPMode == OP_MODE_IBSS) {
 		IBSS_PARAM_IE(pucBuffer)->ucId = ELEM_ID_IBSS_PARAM_SET;
 		IBSS_PARAM_IE(pucBuffer)->ucLength = ELEM_MAX_LEN_IBSS_PARAMETER_SET;
-		WLAN_SET_FIELD_16(&(IBSS_PARAM_IE(pucBuffer)->u2ATIMWindow),
-				  prBssInfo->u2ATIMWindow);
+		WLAN_SET_FIELD_16(&(IBSS_PARAM_IE(pucBuffer)->u2ATIMWindow), prBssInfo->u2ATIMWindow);
 
 		prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
 		pucBuffer += IE_SIZE(pucBuffer);
@@ -1409,14 +1353,12 @@ bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo,
 			UINT_8 ucBitmapControl = 0;
 			UINT_32 u4N1, u4N2;
 
-
 			prP2pSpecificBssInfo = &(prAdapter->rWifiVar.rP2pSpecificBssInfo);
 
 			/* Clear existing value. */
 			prP2pSpecificBssInfo->ucBitmapCtrl = 0;
 			kalMemZero(prP2pSpecificBssInfo->aucPartialVirtualBitmap,
 				   sizeof(prP2pSpecificBssInfo->aucPartialVirtualBitmap));
-
 
 			/* IEEE 802.11 2007 - 7.3.2.6 */
 			TIM_IE(pucBuffer)->ucId = ELEM_ID_TIM;
@@ -1427,20 +1369,21 @@ bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo,
 			if (prBssInfo->ucDTIMCount == 0)
 				/* 3 *** pmQueryBufferedBCAST(); */
 
-			/* 3 *** pmQueryBufferedPSNode(); */
-			/* TODO(Kevin): Call PM Module here to loop all STA_RECORD_Ts and it
-			 * will call bssSetTIMBitmap to toggle the Bitmap.
-			 */
+				/* 3 *** pmQueryBufferedPSNode(); */
+				/* TODO(Kevin): Call PM Module here to loop all STA_RECORD_Ts and it
+				 * will call bssSetTIMBitmap to toggle the Bitmap.
+				 */
 
-			/* Set Virtual Bitmap for UCAST */
-			u4N1 = (prP2pSpecificBssInfo->u2SmallestAID >> 4) << 1;	/* Find the largest even number. */
-			u4N2 = prP2pSpecificBssInfo->u2LargestAID >> 3;	/* Find the smallest number. */
+				/* Set Virtual Bitmap for UCAST */
+				/* Find the smallest number. */
+				/* Find the largest even number. */
+				u4N1 = (prP2pSpecificBssInfo->u2SmallestAID >> 4) << 1;
+			u4N2 = prP2pSpecificBssInfo->u2LargestAID >> 3;
 
 			ASSERT(u4N2 >= u4N1);
 
 			kalMemCopy(TIM_IE(pucBuffer)->aucPartialVirtualMap,
-				   &prP2pSpecificBssInfo->aucPartialVirtualBitmap[u4N1],
-				   ((u4N2 - u4N1) + 1));
+				   &prP2pSpecificBssInfo->aucPartialVirtualBitmap[u4N1], ((u4N2 - u4N1) + 1));
 
 			/* Set Virtual Bitmap for BMCAST */
 			/* BMC bit only indicated when DTIM count == 0. */
@@ -1457,7 +1400,7 @@ bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo,
 			/* IEEE 802.11 2007 - 7.3.2.6 */
 			TIM_IE(pucBuffer)->ucId = ELEM_ID_TIM;
 			/* NOTE: fixed PVB length (AID is allocated from 8 ~ 15 only) */
-			TIM_IE(pucBuffer)->ucLength = (3 + MAX_LEN_TIM_PARTIAL_BMP)/*((u4N2 - u4N1) + 4) */;
+			TIM_IE(pucBuffer)->ucLength = (3 + MAX_LEN_TIM_PARTIAL_BMP) /*((u4N2 - u4N1) + 4) */;
 			TIM_IE(pucBuffer)->ucDTIMCount = 0 /*prBssInfo->ucDTIMCount */;	/* will be overwrite by FW */
 			TIM_IE(pucBuffer)->ucDTIMPeriod = prBssInfo->ucDTIMPeriod;
 			/* will be overwrite by FW */
@@ -1468,20 +1411,17 @@ bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo,
 #endif
 
 		} else
-#endif				/* CFG_ENABLE_WIFI_DIRECT */
+#endif /* CFG_ENABLE_WIFI_DIRECT */
 		{
 			/* NOTE(Kevin): 1. AIS - Didn't Support AP Mode.
 			 *              2. BOW - Didn't Support BCAST and PS.
 			 */
 		}
 
-
-
 	}
 
 	return;
 }				/* end of bssBuildBeaconProbeRespFrameCommonIEs() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1502,8 +1442,7 @@ VOID
 bssComposeBeaconProbeRespFrameHeaderAndFF(IN PUINT_8 pucBuffer,
 					  IN PUINT_8 pucDestAddr,
 					  IN PUINT_8 pucOwnMACAddress,
-					  IN PUINT_8 pucBSSID,
-					  IN UINT_16 u2BeaconInterval, IN UINT_16 u2CapInfo)
+					  IN PUINT_8 pucBSSID, IN UINT_16 u2BeaconInterval, IN UINT_16 u2CapInfo)
 {
 	P_WLAN_BEACON_FRAME_T prBcnProbRspFrame;
 	UINT_8 aucBCAddr[] = BC_MAC_ADDR;
@@ -1511,7 +1450,6 @@ bssComposeBeaconProbeRespFrameHeaderAndFF(IN PUINT_8 pucBuffer,
 
 	DEBUGFUNC("bssComposeBeaconProbeRespFrameHeaderAndFF");
 	/* DBGLOG(INIT, LOUD, ("\n")); */
-
 
 	ASSERT(pucBuffer);
 	ASSERT(pucOwnMACAddress);
@@ -1542,7 +1480,6 @@ bssComposeBeaconProbeRespFrameHeaderAndFF(IN PUINT_8 pucBuffer,
 	/* Clear the SEQ/FRAG_NO field(HW won't overide the FRAG_NO, so we need to clear it). */
 	prBcnProbRspFrame->u2SeqCtrl = 0;
 
-
 	/* 4 <2> Compose the frame body's common fixed field part of the Beacon /ProbeResp frame. */
 	/* MAC will update TimeStamp field */
 
@@ -1556,7 +1493,6 @@ bssComposeBeaconProbeRespFrameHeaderAndFF(IN PUINT_8 pucBuffer,
 
 	return;
 }				/* end of bssComposeBeaconProbeRespFrameHeaderAndFF() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1576,7 +1512,7 @@ WLAN_STATUS bssUpdateBeaconContent(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssInde
 	UINT_32 i;
 
 	DEBUGFUNC("bssUpdateBeaconContent");
-	DBGLOG(INIT, LOUD, ("\n"));
+	DBGLOG(INIT, LOUD, "\n");
 
 	ASSERT(ucBssIndex <= MAX_BSS_INDEX);
 
@@ -1596,19 +1532,15 @@ WLAN_STATUS bssUpdateBeaconContent(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssInde
 						  ((ULONG) (prMsduInfo->prPacket) +
 						   MAC_TX_RESERVED_FIELD), NULL,
 						  prBssInfo->aucOwnMacAddr, prBssInfo->aucBSSID,
-						  prBssInfo->u2BeaconInterval,
-						  prBssInfo->u2CapInfo);
-
+						  prBssInfo->u2BeaconInterval, prBssInfo->u2CapInfo);
 
 	prMsduInfo->u2FrameLength = (WLAN_MAC_MGMT_HEADER_LEN +
-				     (TIMESTAMP_FIELD_LEN + BEACON_INTERVAL_FIELD_LEN +
-				      CAP_INFO_FIELD_LEN));
+				     (TIMESTAMP_FIELD_LEN + BEACON_INTERVAL_FIELD_LEN + CAP_INFO_FIELD_LEN));
 
 	prMsduInfo->ucBssIndex = ucBssIndex;
 
 	/* 4 <3> Compose the frame body's Common IEs of the Beacon frame. */
 	bssBuildBeaconProbeRespFrameCommonIEs(prMsduInfo, prBssInfo, NULL);
-
 
 	/* 4 <4> Compose IEs in MSDU_INFO_T */
 
@@ -1626,12 +1558,9 @@ WLAN_STATUS bssUpdateBeaconContent(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssInde
 					 ucBssIndex,
 					 prBssInfo->u2CapInfo,
 					 (PUINT_8) prBcnFrame->aucInfoElem,
-					 prMsduInfo->u2FrameLength - OFFSET_OF(WLAN_BEACON_FRAME_T,
-									       aucInfoElem));
-
+					 prMsduInfo->u2FrameLength - OFFSET_OF(WLAN_BEACON_FRAME_T, aucInfoElem));
 
 }				/* end of bssUpdateBeaconContent() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1672,7 +1601,6 @@ bssSendBeaconProbeResponse(IN P_ADAPTER_T prAdapter,
 		u4IeArraySize = sizeof(txProbRspIETable) / sizeof(APPEND_VAR_IE_ENTRY_T);
 	}
 
-
 	/* 4 <1> Allocate a PKT_INFO_T for Beacon /Probe Response Frame */
 	/* Allocate a MSDU_INFO_T */
 
@@ -1685,8 +1613,7 @@ bssSendBeaconProbeResponse(IN P_ADAPTER_T prAdapter,
 	    (ELEM_HDR_LEN + ELEM_MAX_LEN_SSID) +
 	    (ELEM_HDR_LEN + ELEM_MAX_LEN_SUP_RATES) +
 	    (ELEM_HDR_LEN + ELEM_MAX_LEN_DS_PARAMETER_SET) +
-	    (ELEM_HDR_LEN + ELEM_MAX_LEN_IBSS_PARAMETER_SET) +
-	    (ELEM_HDR_LEN + (3 + MAX_LEN_TIM_PARTIAL_BMP));
+	    (ELEM_HDR_LEN + ELEM_MAX_LEN_IBSS_PARAMETER_SET) + (ELEM_HDR_LEN + (3 + MAX_LEN_TIM_PARTIAL_BMP));
 
 	/* + Extra IE Length */
 	u2EstimatedExtraIELen = 0;
@@ -1707,8 +1634,7 @@ bssSendBeaconProbeResponse(IN P_ADAPTER_T prAdapter,
 	u2EstimatedFrameLen += u2EstimatedExtraIELen;
 	prMsduInfo = cnmMgtPktAlloc(prAdapter, u2EstimatedFrameLen);
 	if (prMsduInfo == NULL) {
-		DBGLOG(BSS, WARN, ("No PKT_INFO_T for sending %s.\n",
-				   ((!pucDestAddr) ? "Beacon" : "Probe Response")));
+		DBGLOG(BSS, WARN, "No PKT_INFO_T for sending %s.\n", ((!pucDestAddr) ? "Beacon" : "Probe Response"));
 		return WLAN_STATUS_RESOURCES;
 	}
 
@@ -1721,27 +1647,22 @@ bssSendBeaconProbeResponse(IN P_ADAPTER_T prAdapter,
 								  ((ULONG) (prMsduInfo->prPacket)
 								   + MAC_TX_RESERVED_FIELD),
 								  pucDestAddr,
-								  prAdapter->rWifiVar.
-								  aucDeviceAddress,
-								  prAdapter->rWifiVar.
-								  aucDeviceAddress,
+								  prAdapter->rWifiVar.aucDeviceAddress,
+								  prAdapter->rWifiVar.aucDeviceAddress,
 								  DOT11_BEACON_PERIOD_DEFAULT,
-								  (prBssInfo->
-								   u2CapInfo & ~(CAP_INFO_ESS |
-										 CAP_INFO_IBSS)));
+								  (prBssInfo->u2CapInfo & ~(CAP_INFO_ESS |
+											    CAP_INFO_IBSS)));
 		}
 	} else
-#endif				/* CFG_ENABLE_WIFI_DIRECT */
+#endif /* CFG_ENABLE_WIFI_DIRECT */
 	{
 		bssComposeBeaconProbeRespFrameHeaderAndFF((PUINT_8)
 							  ((ULONG) (prMsduInfo->prPacket) +
 							   MAC_TX_RESERVED_FIELD), pucDestAddr,
 							  prBssInfo->aucOwnMacAddr,
 							  prBssInfo->aucBSSID,
-							  prBssInfo->u2BeaconInterval,
-							  prBssInfo->u2CapInfo);
+							  prBssInfo->u2BeaconInterval, prBssInfo->u2CapInfo);
 	}
-
 
 	/* 4 <3> Update information of MSDU_INFO_T */
 
@@ -1755,7 +1676,6 @@ bssSendBeaconProbeResponse(IN P_ADAPTER_T prAdapter,
 
 	/* 4 <4> Compose the frame body's Common IEs of the Beacon/ProbeResp  frame. */
 	bssBuildBeaconProbeRespFrameCommonIEs(prMsduInfo, prBssInfo, pucDestAddr);
-
 
 	/* 4 <5> Compose IEs in MSDU_INFO_T */
 
@@ -1774,7 +1694,6 @@ bssSendBeaconProbeResponse(IN P_ADAPTER_T prAdapter,
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of bssSendBeaconProbeResponse() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1800,7 +1719,6 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 	ENUM_BAND_T eBand;
 	UINT_8 ucHwChannelNum;
 
-
 	ASSERT(prSwRfb);
 
 	/* 4 <1> Parse Probe Req and Get BSSID */
@@ -1811,24 +1729,19 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 	else
 		fgIsBcBssid = FALSE;
 
-
-
 	/* 4 <2> Check network conditions before reply Probe Response Frame (Consider Concurrent) */
 	for (ucBssIndex = 0; ucBssIndex <= P2P_DEV_BSS_INDEX; ucBssIndex++) {
 
 		if ((ucBssIndex >= BSS_INFO_NUM) && (ucBssIndex != P2P_DEV_BSS_INDEX))
 			continue;
 
-
 		if (!IS_NET_ACTIVE(prAdapter, ucBssIndex))
 			continue;
-
 
 		prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex);
 
 		if ((!fgIsBcBssid) && UNEQUAL_MAC_ADDR(prBssInfo->aucBSSID, prMgtHdr->aucBSSID))
 			continue;
-
 
 		eBand = HAL_RX_STATUS_GET_RF_BAND(prSwRfb->prRxStatus);
 		ucHwChannelNum = HAL_RX_STATUS_GET_CHNL_NUM(prSwRfb->prRxStatus);
@@ -1836,23 +1749,19 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 		if (prBssInfo->eBand != eBand)
 			continue;
 
-
 		if (prBssInfo->ucPrimaryChannel != ucHwChannelNum)
 			continue;
-
 
 		fgReplyProbeResp = FALSE;
 
 		if (NETWORK_TYPE_AIS == prBssInfo->eNetworkType) {
 
 #if CFG_SUPPORT_ADHOC
-			fgReplyProbeResp =
-			    aisValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp);
+			fgReplyProbeResp = aisValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp);
 #endif
 		}
 #if CFG_ENABLE_WIFI_DIRECT
-		else if ((prAdapter->fgIsP2PRegistered) &&
-			 (NETWORK_TYPE_P2P == prBssInfo->eNetworkType)) {
+		else if ((prAdapter->fgIsP2PRegistered) && (NETWORK_TYPE_P2P == prBssInfo->eNetworkType)) {
 
 			fgReplyProbeResp =
 			    p2pFuncValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp,
@@ -1861,19 +1770,15 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 		}
 #endif
 #if CFG_ENABLE_BT_OVER_WIFI
-		else if (NETWORK_TYPE_BOW == prBssInfo->eNetworkType) {
-
-			fgReplyProbeResp =
-			    bowValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp);
-		}
+		else if (NETWORK_TYPE_BOW == prBssInfo->eNetworkType)
+			fgReplyProbeResp = bowValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp);
 #endif
 
 		if (fgReplyProbeResp) {
 			if (nicTxGetFreeCmdCount(prAdapter) > (CFG_TX_MAX_CMD_PKT_NUM / 2)) {
 				/* Resource margin is enough */
 				bssSendBeaconProbeResponse(prAdapter, ucBssIndex,
-							   prMgtHdr->aucSrcAddr,
-							   u4CtrlFlagsForProbeResp);
+							   prMgtHdr->aucSrcAddr, u4CtrlFlagsForProbeResp);
 			}
 		}
 	}
@@ -1881,7 +1786,6 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 	return WLAN_STATUS_SUCCESS;
 
 }				/* end of bssProcessProbeRequest() */
-
 
 #if 0				/* NOTE(Kevin): condition check should move to P2P_FSM.c */
 /*----------------------------------------------------------------------------*/
@@ -1958,12 +1862,10 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 	}			/* end of IE_FOR_EACH */
 
 	/* 4 <2> Check network conditions before reply Probe Response Frame (Consider Concurrent) */
-	for (eNetTypeIndex = NETWORK_TYPE_AIS_INDEX; eNetTypeIndex < NETWORK_TYPE_INDEX_NUM;
-	     eNetTypeIndex++) {
+	for (eNetTypeIndex = NETWORK_TYPE_AIS_INDEX; eNetTypeIndex < NETWORK_TYPE_INDEX_NUM; eNetTypeIndex++) {
 
 		if (!IS_NET_ACTIVE(prAdapter, eNetTypeIndex))
 			continue;
-
 
 		prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
 
@@ -1981,13 +1883,10 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 
 				/* TODO(Kevin): Check if we are IBSS Master. */
 
-
 				if (prIeSsid) {
 					if ((prIeSsid->ucLength == BC_SSID_LEN) ||	/* WILDCARD SSID */
 					    EQUAL_SSID(prBssInfo->aucSSID,
-						       prBssInfo->ucSSIDLen,
-						       prIeSsid->aucSSID,
-						       prIeSsid->ucLength))
+						       prBssInfo->ucSSIDLen, prIeSsid->aucSSID, prIeSsid->ucLength))
 						fgReplyProbeResp = TRUE;
 
 				}
@@ -2002,8 +1901,7 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 			if ((prIeSsid) &&
 			    ((prIeSsid->ucLength == BC_SSID_LEN) ||
 			     (EQUAL_SSID(aucP2PWildcardSSID,
-					 P2P_WILDCARD_SSID_LEN,
-					 prIeSsid->aucSSID, prIeSsid->ucLength)))) {
+					 P2P_WILDCARD_SSID_LEN, prIeSsid->aucSSID, prIeSsid->ucLength)))) {
 				if (p2pFsmRunEventRxProbeRequestFrame(prAdapter, prSwRfb)) {
 					/* Extand channel request time & cancel scan request. */
 					P_P2P_FSM_INFO_T prP2pFsmInfo = (P_P2P_FSM_INFO_T) NULL;
@@ -2022,8 +1920,7 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 					prScanCancelMsg =
 					    (P_MSG_SCN_SCAN_CANCEL) cnmMemAlloc(prAdapter,
 										RAM_TYPE_MSG,
-										sizeof
-										(MSG_SCN_SCAN_CANCEL));
+										sizeof(MSG_SCN_SCAN_CANCEL));
 					if (!prScanCancelMsg) {
 						ASSERT(0);	/* Can't abort SCN FSM */
 						continue;
@@ -2031,14 +1928,11 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 
 					prScanCancelMsg->rMsgHdr.eMsgId = MID_P2P_SCN_SCAN_CANCEL;
 					prScanCancelMsg->ucSeqNum = prP2pFsmInfo->ucSeqNumOfScnMsg;
-					prScanCancelMsg->ucNetTypeIndex =
-					    (UINT_8) NETWORK_TYPE_P2P_INDEX;
+					prScanCancelMsg->ucNetTypeIndex = (UINT_8) NETWORK_TYPE_P2P_INDEX;
 					prScanCancelMsg->fgIsChannelExt = TRUE;
 
 					mboxSendMsg(prAdapter,
-						    MBOX_ID_0,
-						    (P_MSG_HDR_T) prScanCancelMsg,
-						    MSG_SEND_METHOD_BUF);
+						    MBOX_ID_0, (P_MSG_HDR_T) prScanCancelMsg, MSG_SEND_METHOD_BUF);
 				}
 			} else {
 				/* 1. Probe Request without SSID.
@@ -2055,8 +1949,8 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 					BOOLEAN fgIsUnknownBssBasicRate;
 					/* Ignore any Basic Bit */
 					rateGetRateSetFromIEs(prIeSupportedRate, prIeExtSupportedRate,
-									&u2OperationalRateSet,
-									&u2BSSBasicRateSet, &fgIsUnknownBssBasicRate);
+							      &u2OperationalRateSet,
+							      &u2BSSBasicRateSet, &fgIsUnknownBssBasicRate);
 
 					if (u2OperationalRateSet & ~RATE_SET_HR_DSSS)
 						continue;
@@ -2083,12 +1977,9 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 
 					if ((prIeSsid->ucLength == BC_SSID_LEN) ||	/* WILDCARD SSID */
 					    EQUAL_SSID(prBssInfo->aucSSID,
-						       prBssInfo->ucSSIDLen,
-						       prIeSsid->aucSSID,
-						       prIeSsid->ucLength)
+						       prBssInfo->ucSSIDLen, prIeSsid->aucSSID, prIeSsid->ucLength)
 					    || EQUAL_SSID(aucSSID, P2P_WILDCARD_SSID_LEN,
-							  prIeSsid->aucSSID,
-							  prIeSsid->ucLength)) {
+							  prIeSsid->aucSSID, prIeSsid->ucLength)) {
 						fgReplyProbeResp = TRUE;
 					}
 				}
@@ -2104,10 +1995,8 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 		else
 			ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
 
-
 		if (fgReplyProbeResp)
 			bssSendBeaconProbeResponse(prAdapter, eNetTypeIndex, prMgtHdr->aucSrcAddr);
-
 
 	}
 
@@ -2115,7 +2004,6 @@ WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 
 }				/* end of bssProcessProbeRequest() */
 #endif
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2138,14 +2026,12 @@ VOID bssInitializeClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo
 	if (!LINK_IS_EMPTY(prStaRecOfClientList))
 		LINK_INITIALIZE(prStaRecOfClientList);
 
-    DBGLOG(BSS, INFO, ("Init BSS[%u] Client List\n", prBssInfo->ucBssIndex));
+	DBGLOG(BSS, INFO, "Init BSS[%u] Client List\n", prBssInfo->ucBssIndex);
 
-    bssCheckClientList(prAdapter, prBssInfo);
+	bssCheckClientList(prAdapter, prBssInfo);
 
 	return;
 }				/* end of bssClearClientList() */
-
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2158,48 +2044,38 @@ VOID bssInitializeClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssAddClient(IN P_ADAPTER_T prAdapter,
-    IN P_BSS_INFO_T prBssInfo, IN P_STA_RECORD_T prStaRec)
+VOID bssAddClient(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN P_STA_RECORD_T prStaRec)
 {
 	P_LINK_T prClientList;
-    P_STA_RECORD_T prCurrStaRec;
-    // Fix apanic Exception ALPS02413390 by LCT xuwenda begin
-    KAL_SPIN_LOCK_DECLARATION();
-    // Fix apanic Exception ALPS02413390 by LCT xuwenda end
+	P_STA_RECORD_T prCurrStaRec;
+	KAL_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prBssInfo);
 
-	// Fix apanic Exception ALPS02413390 by LCT xuwenda begin
 	/*
 	 * use spin lock to protect atomic operation
 	 */
-
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-	// Fix apanic Exception ALPS02413390 by LCT xuwenda end
 	prClientList = &prBssInfo->rStaRecOfClientList;
 
 	LINK_FOR_EACH_ENTRY(prCurrStaRec, prClientList, rLinkEntry, STA_RECORD_T) {
 
 		if (prCurrStaRec == prStaRec) {
-			// Fix apanic Exception ALPS02413390 by LCT xuwenda begin
 			KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-			// Fix apanic Exception ALPS02413390 by LCT xuwenda end
-			DBGLOG(BSS, WARN, ("Current Client List already contains that "
-                "STA_RECORD_T["MACSTR"]\n", MAC2STR(prStaRec->aucMacAddr)));
+			DBGLOG(BSS, WARN,
+				"Current Client List already contains that STA_RECORD_T[" MACSTR "]\n",
+				MAC2STR(prStaRec->aucMacAddr));
 			return;
 		}
 	}
 
 	LINK_INSERT_TAIL(prClientList, &prStaRec->rLinkEntry);
-	// Fix apanic Exception ALPS02413390 by LCT xuwenda begin
 	KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-	// Fix apanic Exception ALPS02413390 by LCT xuwenda end
 
-    bssCheckClientList(prAdapter, prBssInfo);
+	bssCheckClientList(prAdapter, prBssInfo);
 
 	return;
 }				/* end of bssAddStaRecToClientList() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2211,26 +2087,18 @@ bssAddClient(IN P_ADAPTER_T prAdapter,
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-BOOLEAN
-bssRemoveClient(IN P_ADAPTER_T prAdapter,
-    IN P_BSS_INFO_T prBssInfo, IN P_STA_RECORD_T prStaRec)
+BOOLEAN bssRemoveClient(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN P_STA_RECORD_T prStaRec)
 {
 	P_LINK_T prClientList;
-    P_STA_RECORD_T prCurrStaRec;
-    // Fix apanic Exception ALPS02413390 by LCT xuwenda begin
-    KAL_SPIN_LOCK_DECLARATION();
-    // Fix apanic Exception ALPS02413390 by LCT xuwenda end
-    
+	P_STA_RECORD_T prCurrStaRec;
+	KAL_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prBssInfo);
 
-	// Fix apanic Exception ALPS02413390 by LCT xuwenda begin
 	/*
 	 * use spin lock to protect atomic operation
 	 */
-
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-	// Fix apanic Exception ALPS02413390 by LCT xuwenda end
-
 	prClientList = &prBssInfo->rStaRecOfClientList;
 
 	LINK_FOR_EACH_ENTRY(prCurrStaRec, prClientList, rLinkEntry, STA_RECORD_T) {
@@ -2238,39 +2106,31 @@ bssRemoveClient(IN P_ADAPTER_T prAdapter,
 		if (prCurrStaRec == prStaRec) {
 
 			LINK_REMOVE_KNOWN_ENTRY(prClientList, &prStaRec->rLinkEntry);
-			// Fix apanic Exception ALPS02413390 by LCT xuwenda begin
 			KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-			// Fix apanic Exception ALPS02413390 by LCT xuwenda end
 
 			return TRUE;
 		}
 	}
-	// Fix apanic Exception ALPS02413390 by LCT xuwenda begin
 	KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-	// Fix apanic Exception ALPS02413390 by LCT xuwenda end
-	DBGLOG(BSS, TRACE, ("Current Client List didn't contain that STA_RECORD_T[" 
-        MACSTR"] before removing.\n", MAC2STR(prStaRec->aucMacAddr)));
+	DBGLOG(BSS, INFO, "Current Client List didn't contain that STA_RECORD_T["
+			   MACSTR "] before removing.\n", MAC2STR(prStaRec->aucMacAddr));
 
-    bssCheckClientList(prAdapter, prBssInfo);
+	bssCheckClientList(prAdapter, prBssInfo);
 
 	return FALSE;
 }				/* end of bssRemoveStaRecFromClientList() */
 
-P_STA_RECORD_T
-bssRemoveClientByMac(IN P_ADAPTER_T prAdapter,
-    IN P_BSS_INFO_T prBssInfo, IN PUINT_8 pucMac)
+P_STA_RECORD_T bssRemoveClientByMac(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN PUINT_8 pucMac)
 {
 	P_LINK_T prClientList;
-    P_STA_RECORD_T prCurrStaRec;
-    // Fix apanic Exception ALPS02494488 by LCT xuwenda begin
-    KAL_SPIN_LOCK_DECLARATION();
+	P_STA_RECORD_T prCurrStaRec;
+	KAL_SPIN_LOCK_DECLARATION();
 
 	ASSERT(prBssInfo);
 	/*
 	 * use spin lock to protect atomic operation
 	 */
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-	// Fix apanic Exception ALPS02494488 by LCT xuwenda end
 
 	prClientList = &prBssInfo->rStaRecOfClientList;
 
@@ -2278,154 +2138,135 @@ bssRemoveClientByMac(IN P_ADAPTER_T prAdapter,
 
 		if (EQUAL_MAC_ADDR(prCurrStaRec->aucMacAddr, pucMac)) {
 
-			LINK_REMOVE_KNOWN_ENTRY(prClientList,
-						&prCurrStaRec->rLinkEntry);
-			// Fix apanic Exception ALPS02494488 by LCT xuwenda begin
+			LINK_REMOVE_KNOWN_ENTRY(prClientList, &prCurrStaRec->rLinkEntry);
 			KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-			// Fix apanic Exception ALPS02494488 by LCT xuwenda end
+
 			return prCurrStaRec;
 		}
 	}
-	// Fix apanic Exception ALPS02494488 by LCT xuwenda begin
 	KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-	// Fix apanic Exception ALPS02494488 by LCT xuwenda end
 
-	DBGLOG(BSS, INFO, ("Current Client List didn't contain that STA_RECORD_T[" 
-        MACSTR"] before removing.\n", MAC2STR(pucMac)));
+	DBGLOG(BSS, INFO, "Current Client List didn't contain that STA_RECORD_T["
+			   MACSTR "] before removing.\n", MAC2STR(pucMac));
 
-    bssCheckClientList(prAdapter, prBssInfo);
+	bssCheckClientList(prAdapter, prBssInfo);
 
 	return NULL;
 }
 
-P_STA_RECORD_T
-bssRemoveHeadClient(IN P_ADAPTER_T prAdapter,
-    IN P_BSS_INFO_T prBssInfo)
+P_STA_RECORD_T bssRemoveHeadClient(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 {
 	P_LINK_T prStaRecOfClientList;
-    P_STA_RECORD_T prStaRec = NULL;
-    // Fix apanic Exception ALPS02494488 by LCT xuwenda begin
-    KAL_SPIN_LOCK_DECLARATION();
-    
+	P_STA_RECORD_T prStaRec = NULL;
+	KAL_SPIN_LOCK_DECLARATION();
+
 	ASSERT(prBssInfo);
+
 	/*
-	 *use spin lock to protect atomic operation
+	 * use spin lock to protect atomic operation
 	 */
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-	// Fix apanic Exception ALPS02494488 by LCT xuwenda end
+
 	prStaRecOfClientList = &prBssInfo->rStaRecOfClientList;
 
-    if(!LINK_IS_EMPTY(prStaRecOfClientList)) {
-		LINK_REMOVE_HEAD(prStaRecOfClientList, prStaRec, P_STA_RECORD_T);        
-    }
-    // Fix apanic Exception ALPS02494488 by LCT xuwenda begin
-    KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
-    // Fix apanic Exception ALPS02494488 by LCT xuwenda end
-    bssCheckClientList(prAdapter, prBssInfo);
+	if (!LINK_IS_EMPTY(prStaRecOfClientList))
+		LINK_REMOVE_HEAD(prStaRecOfClientList, prStaRec, P_STA_RECORD_T);
 
-    return prStaRec;
+	KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_INT);
+	bssCheckClientList(prAdapter, prBssInfo);
+
+	return prStaRec;
 }
 
-UINT_32
-bssGetClientCount(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
+UINT_32 bssGetClientCount(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 {
-    return prBssInfo->rStaRecOfClientList.u4NumElem;
+	return prBssInfo->rStaRecOfClientList.u4NumElem;
 }
 
-VOID
-bssDumpClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
+VOID bssDumpClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 {
 	P_LINK_T prClientList;
-    P_STA_RECORD_T prCurrStaRec;
-    UINT_8 ucCount = 0;
-    
+	P_STA_RECORD_T prCurrStaRec;
+	UINT_8 ucCount = 0;
+
 	ASSERT(prBssInfo);
 
 	prClientList = &prBssInfo->rStaRecOfClientList;
 
-	DBGLOG(SW4, INFO, ("Dump BSS[%u] Client List NUM[%u]\n", 
-        prBssInfo->ucBssIndex, prClientList->u4NumElem));
+	DBGLOG(SW4, INFO, "Dump BSS[%u] Client List NUM[%u]\n", prBssInfo->ucBssIndex, prClientList->u4NumElem);
 
-    LINK_FOR_EACH_ENTRY(prCurrStaRec, prClientList, rLinkEntry, STA_RECORD_T) {
+	LINK_FOR_EACH_ENTRY(prCurrStaRec, prClientList, rLinkEntry, STA_RECORD_T) {
 
-        if(!prCurrStaRec) {
-		    DBGLOG(SW4, INFO, ("[%2u] is NULL STA_REC\n", ucCount));
-            break;
-        }
-        else {
-		    DBGLOG(SW4, INFO, ("[%2u] STA[%u] ["MACSTR"]\n", ucCount,
-		        prCurrStaRec->ucIndex, MAC2STR(prCurrStaRec->aucMacAddr)));
-        }
-        
-        ucCount++;        
-    }
+		if (!prCurrStaRec) {
+			DBGLOG(SW4, INFO, "[%2u] is NULL STA_REC\n", ucCount);
+			break;
+		} else {
+			DBGLOG(SW4, INFO, "[%2u] STA[%u] [" MACSTR "]\n", ucCount,
+					   prCurrStaRec->ucIndex, MAC2STR(prCurrStaRec->aucMacAddr));
+		}
+
+		ucCount++;
+	}
 }
 
-VOID
-bssCheckClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
+VOID bssCheckClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 {
 	P_LINK_T prClientList;
-    P_STA_RECORD_T prCurrStaRec;
-    UINT_8 ucCount = 0;
-    BOOLEAN fgError = FALSE;
-    
+	P_STA_RECORD_T prCurrStaRec;
+	UINT_8 ucCount = 0;
+	BOOLEAN fgError = FALSE;
+
 	ASSERT(prBssInfo);
 
 	prClientList = &prBssInfo->rStaRecOfClientList;
 
-    /* Check MAX number */
-    if(prClientList->u4NumElem > P2P_MAXIMUM_CLIENT_COUNT) {
-    	DBGLOG(SW4, INFO, ("BSS[%u] Client List NUM[%u] ERR\n", 
-            prBssInfo->ucBssIndex, prClientList->u4NumElem));
-        
-        fgError = TRUE;
-    }
+	/* Check MAX number */
+	if (prClientList->u4NumElem > P2P_MAXIMUM_CLIENT_COUNT) {
+		DBGLOG(SW4, INFO, "BSS[%u] Client List NUM[%u] ERR\n",
+				   prBssInfo->ucBssIndex, prClientList->u4NumElem);
 
-    /* Check defualt list status */
-    if(prClientList->u4NumElem == 0) {
-        if((PVOID)prClientList->prNext != (PVOID)prClientList) {
-            fgError = TRUE;
-        }
-        if((PVOID)prClientList->prPrev != (PVOID)prClientList) {
-            fgError = TRUE;
-        }
-        
-        if(fgError) {
-        	DBGLOG(SW4, INFO, ("BSS[%u] Client List PTR next/prev[%p/%p] ERR\n", 
-                prBssInfo->ucBssIndex, prClientList->prNext, 
-                prClientList->prPrev));        
-        }
-    }
+		fgError = TRUE;
+	}
 
-    /* Traverse list */
-    LINK_FOR_EACH_ENTRY(prCurrStaRec, prClientList, rLinkEntry, STA_RECORD_T) {
-        if(!prCurrStaRec) {
-		    fgError = TRUE;
-        	DBGLOG(SW4, INFO, ("BSS[%u] Client List NULL PTR ERR\n", 
-                prBssInfo->ucBssIndex)); 
-            
-            break;
-        }
-        
-        ucCount++;
-    }
+	/* Check defualt list status */
+	if (prClientList->u4NumElem == 0) {
+		if ((PVOID) prClientList->prNext != (PVOID) prClientList)
+			fgError = TRUE;
+		if ((PVOID) prClientList->prPrev != (PVOID) prClientList)
+			fgError = TRUE;
 
-    /* Check real count and list number */
-    if(ucCount != prClientList->u4NumElem) {
-    	DBGLOG(SW4, INFO, ("BSS[%u] Client List NUM[%u] REAL CNT[%u] ERR\n", 
-            prBssInfo->ucBssIndex, prClientList->u4NumElem, ucCount));
-        
-        fgError = TRUE;
-    }
+		if (fgError) {
+			DBGLOG(SW4, INFO, "BSS[%u] Client List PTR next/prev[%p/%p] ERR\n",
+					   prBssInfo->ucBssIndex, prClientList->prNext, prClientList->prPrev);
+		}
+	}
 
-    if(fgError) {
-        bssDumpClientList(prAdapter, prBssInfo);
-    }
-        
+	/* Traverse list */
+	LINK_FOR_EACH_ENTRY(prCurrStaRec, prClientList, rLinkEntry, STA_RECORD_T) {
+		if (!prCurrStaRec) {
+			fgError = TRUE;
+			DBGLOG(SW4, INFO, "BSS[%u] Client List NULL PTR ERR\n", prBssInfo->ucBssIndex);
+
+			break;
+		}
+
+		ucCount++;
+	}
+
+	/* Check real count and list number */
+	if (ucCount != prClientList->u4NumElem) {
+		DBGLOG(SW4, INFO, "BSS[%u] Client List NUM[%u] REAL CNT[%u] ERR\n",
+				   prBssInfo->ucBssIndex, prClientList->u4NumElem, ucCount);
+
+		fgError = TRUE;
+	}
+
+	if (fgError)
+		bssDumpClientList(prAdapter, prBssInfo);
+
 }
 
-#endif				/* CFG_SUPPORT_ADHOC || CFG_SUPPORT_AAA */
-
+#endif /* CFG_SUPPORT_ADHOC || CFG_SUPPORT_AAA */
 
 #if CFG_SUPPORT_ADHOC
 /*----------------------------------------------------------------------------*/
@@ -2455,7 +2296,6 @@ ibssProcessMatchedBeacon(IN P_ADAPTER_T prAdapter,
 	BOOLEAN fgIsGoingMerging = FALSE;
 	BOOLEAN fgIsSameBSSID;
 
-
 	ASSERT(prBssInfo);
 	ASSERT(prBssDesc);
 
@@ -2464,12 +2304,9 @@ ibssProcessMatchedBeacon(IN P_ADAPTER_T prAdapter,
 		return;
 
 	/* 4 <2> Get the STA_RECORD_T of TA. */
-	prStaRec = cnmGetStaRecByAddress(prAdapter,
-					 prAdapter->prAisBssInfo->ucBssIndex,
-					 prBssDesc->aucSrcAddr);
+	prStaRec = cnmGetStaRecByAddress(prAdapter, prAdapter->prAisBssInfo->ucBssIndex, prBssDesc->aucSrcAddr);
 
 	fgIsSameBSSID = UNEQUAL_MAC_ADDR(prBssInfo->aucBSSID, prBssDesc->aucBSSID) ? FALSE : TRUE;
-
 
 	/* 4 <3> IBSS Merge Decision Flow for Processing Beacon. */
 	if (fgIsSameBSSID) {
@@ -2490,8 +2327,7 @@ ibssProcessMatchedBeacon(IN P_ADAPTER_T prAdapter,
 
 		} else {
 
-			ASSERT((prStaRec->ucBssIndex == prAdapter->prAisBssInfo->ucBssIndex) &&
-			       IS_ADHOC_STA(prStaRec));
+			ASSERT((prStaRec->ucBssIndex == prAdapter->prAisBssInfo->ucBssIndex) && IS_ADHOC_STA(prStaRec));
 
 			if (prStaRec->ucStaState != STA_STATE_3) {
 
@@ -2535,37 +2371,31 @@ ibssProcessMatchedBeacon(IN P_ADAPTER_T prAdapter,
 		/* For Case IV & V - We won't update rExpirationTime of Sta Record */
 	}
 
-
 	/* 4 <7> Check this BSS_DESC_T's capability. */
 	if (fgIsCheckCapability) {
 		BOOLEAN fgIsCapabilityMatched = FALSE;
 
 		do {
-			if (!
-			    (prBssDesc->
-			     ucPhyTypeSet & (prAdapter->rWifiVar.ucAvailablePhyTypeSet))) {
+			if (!(prBssDesc->ucPhyTypeSet & (prAdapter->rWifiVar.ucAvailablePhyTypeSet))) {
 				DBGLOG(BSS, LOUD,
-				       ("IBSS MERGE: Ignore Peer MAC: " MACSTR
-					" - Unsupported Phy.\n", MAC2STR(prBssDesc->aucSrcAddr)));
+				       "IBSS MERGE: Ignore Peer MAC: " MACSTR
+					" - Unsupported Phy.\n", MAC2STR(prBssDesc->aucSrcAddr));
 
 				break;
 			}
 
 			if (prBssDesc->fgIsUnknownBssBasicRate) {
 				DBGLOG(BSS, LOUD,
-				       ("IBSS MERGE: Ignore Peer MAC: " MACSTR
-					" - Unknown Basic Rate.\n",
-					MAC2STR(prBssDesc->aucSrcAddr)));
+				       "IBSS MERGE: Ignore Peer MAC: " MACSTR
+					" - Unknown Basic Rate.\n", MAC2STR(prBssDesc->aucSrcAddr));
 
 				break;
 			}
 
-			if (ibssCheckCapabilityForAdHocMode(prAdapter, prBssDesc) ==
-			    WLAN_STATUS_FAILURE) {
+			if (ibssCheckCapabilityForAdHocMode(prAdapter, prBssDesc) == WLAN_STATUS_FAILURE) {
 				DBGLOG(BSS, LOUD,
-				       ("IBSS MERGE: Ignore Peer MAC: " MACSTR
-					" - Capability is not matched.\n",
-					MAC2STR(prBssDesc->aucSrcAddr)));
+				       "IBSS MERGE: Ignore Peer MAC: " MACSTR
+					" - Capability is not matched.\n", MAC2STR(prBssDesc->aucSrcAddr));
 
 				break;
 			}
@@ -2581,19 +2411,17 @@ ibssProcessMatchedBeacon(IN P_ADAPTER_T prAdapter,
 				 */
 
 				DBGLOG(BSS, LOUD,
-				       ("IBSS MERGE: Ignore Peer MAC: " MACSTR
-					" - Capability is not matched.\n",
-					MAC2STR(prBssDesc->aucSrcAddr)));
+				       "IBSS MERGE: Ignore Peer MAC: " MACSTR
+					" - Capability is not matched.\n", MAC2STR(prBssDesc->aucSrcAddr));
 			}
 
 			return;
 		}
 
 		DBGLOG(BSS, LOUD,
-		       ("IBSS MERGE: Peer MAC: " MACSTR " - Check capability was passed.\n",
-			MAC2STR(prBssDesc->aucSrcAddr)));
+		       "IBSS MERGE: Peer MAC: " MACSTR " - Check capability was passed.\n",
+			MAC2STR(prBssDesc->aucSrcAddr));
 	}
-
 
 	if (fgIsCheckTSF) {
 #if CFG_SLT_SUPPORT
@@ -2607,10 +2435,8 @@ ibssProcessMatchedBeacon(IN P_ADAPTER_T prAdapter,
 #endif
 	}
 
-
 	if (fgIsGoingMerging) {
 		P_MSG_AIS_IBSS_PEER_FOUND_T prAisIbssPeerFoundMsg;
-
 
 		/* 4 <1> We will merge with to this BSS immediately. */
 		prBssDesc->fgIsConnecting = TRUE;
@@ -2619,8 +2445,7 @@ ibssProcessMatchedBeacon(IN P_ADAPTER_T prAdapter,
 		/* 4 <2> Setup corresponding STA_RECORD_T */
 		prStaRec = bssCreateStaRecFromBssDesc(prAdapter,
 						      STA_TYPE_ADHOC_PEER,
-						      prAdapter->prAisBssInfo->ucBssIndex,
-						      prBssDesc);
+						      prAdapter->prAisBssInfo->ucBssIndex, prBssDesc);
 
 		if (!prStaRec) {
 			/* no memory ? */
@@ -2656,19 +2481,16 @@ ibssProcessMatchedBeacon(IN P_ADAPTER_T prAdapter,
 #if CFG_SLT_SUPPORT
 			prAisIbssPeerFoundMsg->fgIsMergeIn = TRUE;
 #else
-			prAisIbssPeerFoundMsg->fgIsMergeIn =
-			    (prBssDesc->fgIsLargerTSF) ? FALSE : TRUE;
+			prAisIbssPeerFoundMsg->fgIsMergeIn = (prBssDesc->fgIsLargerTSF) ? FALSE : TRUE;
 #endif
 		}
 
-		mboxSendMsg(prAdapter,
-			    MBOX_ID_0, (P_MSG_HDR_T) prAisIbssPeerFoundMsg, MSG_SEND_METHOD_BUF);
+		mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prAisIbssPeerFoundMsg, MSG_SEND_METHOD_BUF);
 
 	}
 
 	return;
 }				/* end of ibssProcessMatchedBeacon() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2685,7 +2507,6 @@ WLAN_STATUS ibssCheckCapabilityForAdHocMode(IN P_ADAPTER_T prAdapter, IN P_BSS_D
 {
 	P_CONNECTION_SETTINGS_T prConnSettings;
 	WLAN_STATUS rStatus = WLAN_STATUS_FAILURE;
-
 
 	ASSERT(prBssDesc);
 	prConnSettings = &(prAdapter->rWifiVar.rConnSettings);
@@ -2713,14 +2534,12 @@ WLAN_STATUS ibssCheckCapabilityForAdHocMode(IN P_ADAPTER_T prAdapter, IN P_BSS_D
 
 		/* 4 <3> Check the ATIM window setting. */
 		if (prBssDesc->u2ATIMWindow) {
-			DBGLOG(BSS, INFO, ("AdHoc PS was not supported(ATIM Window: %d)\n",
-					   prBssDesc->u2ATIMWindow));
+			DBGLOG(BSS, INFO, "AdHoc PS was not supported(ATIM Window: %d)\n", prBssDesc->u2ATIMWindow);
 			break;
 		}
 		/* 4 <4> Check the Security setting. */
 		if (!rsnPerformPolicySelection(prAdapter, prBssDesc))
 			break;
-
 
 		rStatus = WLAN_STATUS_SUCCESS;
 	} while (FALSE);
@@ -2728,7 +2547,6 @@ WLAN_STATUS ibssCheckCapabilityForAdHocMode(IN P_ADAPTER_T prAdapter, IN P_BSS_D
 	return rStatus;
 
 }				/* end of ibssCheckCapabilityForAdHocMode() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2745,32 +2563,25 @@ VOID ibssInitForAdHoc(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 	PUINT_16 pu2BSSID = (PUINT_16) &aucBSSID[0];
 	UINT_32 i;
 
-
 	ASSERT(prBssInfo);
 	ASSERT(prBssInfo->eCurrentOPMode == OP_MODE_IBSS);
-
 
 	/* 4 <1> Setup PHY Attributes and Basic Rate Set/Operational Rate Set */
 	prBssInfo->ucNonHTBasicPhyType = (UINT_8)
 	    rNonHTAdHocModeAttributes[prBssInfo->ucConfigAdHocAPMode].ePhyTypeIndex;
-	prBssInfo->u2BSSBasicRateSet =
-	    rNonHTAdHocModeAttributes[prBssInfo->ucConfigAdHocAPMode].u2BSSBasicRateSet;
+	prBssInfo->u2BSSBasicRateSet = rNonHTAdHocModeAttributes[prBssInfo->ucConfigAdHocAPMode].u2BSSBasicRateSet;
 
-
-	prBssInfo->u2OperationalRateSet =
-	    rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].u2SupportedRateSet;
+	prBssInfo->u2OperationalRateSet = rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].u2SupportedRateSet;
 
 	rateGetDataRatesFromRateSet(prBssInfo->u2OperationalRateSet,
 				    prBssInfo->u2BSSBasicRateSet,
-				    prBssInfo->aucAllSupportedRates,
-				    &prBssInfo->ucAllSupportedRatesLen);
+				    prBssInfo->aucAllSupportedRates, &prBssInfo->ucAllSupportedRatesLen);
 
 	/* 4 <2> Setup BSSID */
 	if (!prBssInfo->fgHoldSameBssidForIBSS) {
 
 		for (i = 0; i < sizeof(aucBSSID) / sizeof(UINT_16); i++)
 			pu2BSSID[i] = (UINT_16) (kalRandomNumber() & 0xFFFF);
-
 
 		aucBSSID[0] &= ~0x01;	/* 7.1.3.3.3 - The individual/group bit of the address is set to 0. */
 		aucBSSID[0] |= 0x02;	/* 7.1.3.3.3 - The universal/local bit of the address is set to 1. */
@@ -2780,9 +2591,9 @@ VOID ibssInitForAdHoc(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 
 	/* 4 <3> Setup Capability - Short Preamble */
 	if (rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].fgIsShortPreambleOptionImplemented &&
-		/* Short Preamble Option Enable is TRUE */
-		((prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_SHORT) ||
-		(prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_AUTO))) {
+	    /* Short Preamble Option Enable is TRUE */
+	    ((prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_SHORT) ||
+	     (prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_AUTO))) {
 
 		prBssInfo->fgIsShortPreambleAllowed = TRUE;
 		prBssInfo->fgUseShortPreamble = TRUE;
@@ -2791,11 +2602,9 @@ VOID ibssInitForAdHoc(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 		prBssInfo->fgUseShortPreamble = FALSE;
 	}
 
-
 	/* 4 <4> Setup Capability - Short Slot Time */
 	/* 7.3.1.4 For IBSS, the Short Slot Time subfield shall be set to 0. */
 	prBssInfo->fgUseShortSlotTime = FALSE;	/* Set to FALSE for AdHoc */
-
 
 	/* 4 <5> Compoase Capability */
 	prBssInfo->u2CapInfo = CAP_INFO_IBSS;
@@ -2803,14 +2612,11 @@ VOID ibssInitForAdHoc(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 	if (prBssInfo->fgIsProtection)
 		prBssInfo->u2CapInfo |= CAP_INFO_PRIVACY;
 
-
 	if (prBssInfo->fgIsShortPreambleAllowed)
 		prBssInfo->u2CapInfo |= CAP_INFO_SHORT_PREAMBLE;
 
-
 	if (prBssInfo->fgUseShortSlotTime)
 		prBssInfo->u2CapInfo |= CAP_INFO_SHORT_SLOT_TIME;
-
 
 	/* 4 <6> Find Lowest Basic Rate Index for default TX Rate of MMPDU */
 	nicTxUpdateBssDefaultRate(prBssInfo);
@@ -2818,8 +2624,7 @@ VOID ibssInitForAdHoc(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 	return;
 }				/* end of ibssInitForAdHoc() */
 
-#endif				/* CFG_SUPPORT_ADHOC */
-
+#endif /* CFG_SUPPORT_ADHOC */
 
 #if CFG_SUPPORT_AAA
 
@@ -2852,7 +2657,7 @@ VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEA
 	UINT_8 auTxop[WMM_AC_INDEX_NUM] = { 0, 0, 94, 47 };	/* If the AP is OFDM */
 
 	DEBUGFUNC("bssInitForAP");
-	DBGLOG(BSS, LOUD, ("\n"));
+	DBGLOG(BSS, LOUD, "\n");
 
 	ASSERT(prBssInfo);
 	ASSERT((prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)
@@ -2864,36 +2669,34 @@ VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEA
 	prAdapter->rWifiVar.rConnSettings.uc5GBandwidthMode = CONFIG_BW_20M;
 #endif
 
-
 	/* 4 <1> Setup PHY Attributes and Basic Rate Set/Operational Rate Set */
 	prBssInfo->ucNonHTBasicPhyType = (UINT_8)
 	    rNonHTApModeAttributes[prBssInfo->ucConfigAdHocAPMode].ePhyTypeIndex;
-	prBssInfo->u2BSSBasicRateSet =
-	    rNonHTApModeAttributes[prBssInfo->ucConfigAdHocAPMode].u2BSSBasicRateSet;
+	prBssInfo->u2BSSBasicRateSet = rNonHTApModeAttributes[prBssInfo->ucConfigAdHocAPMode].u2BSSBasicRateSet;
 
-
-	prBssInfo->u2OperationalRateSet =
-	    rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].u2SupportedRateSet;
-
-	/* 4 <1.1> Mask CCK 1M For Sco scenario*/
+	/* 4 <1.1> Mask CCK 1M For Sco scenario */
 	prBssInfo->u2BSSBasicRateSet &= ~RATE_SET_BIT_1M;
-	//prBssInfo->u2OperationalRateSet &= ~RATE_SET_BIT_1M;
+	/* prBssInfo->u2OperationalRateSet &= ~RATE_SET_BIT_1M; */
+
+	prBssInfo->u2OperationalRateSet = rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].u2SupportedRateSet;
+
+	/* 4 <1.1> Mask CCK 1M For Sco scenario */
+	prBssInfo->u2BSSBasicRateSet &= ~RATE_SET_BIT_1M;
+	/* prBssInfo->u2OperationalRateSet &= ~RATE_SET_BIT_1M; */
 
 	if (fgIsRateUpdate) {
 		rateGetDataRatesFromRateSet(prBssInfo->u2OperationalRateSet,
 					    prBssInfo->u2BSSBasicRateSet,
-					    prBssInfo->aucAllSupportedRates,
-					    &prBssInfo->ucAllSupportedRatesLen);
+					    prBssInfo->aucAllSupportedRates, &prBssInfo->ucAllSupportedRatesLen);
 	}
 	/* 4 <2> Setup BSSID */
 	COPY_MAC_ADDR(prBssInfo->aucBSSID, prBssInfo->aucOwnMacAddr);
 
-
 	/* 4 <3> Setup Capability - Short Preamble */
 	if (rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].fgIsShortPreambleOptionImplemented &&
-		/* Short Preamble Option Enable is TRUE */
-		((prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_SHORT) ||
-		(prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_AUTO))) {
+	    /* Short Preamble Option Enable is TRUE */
+	    ((prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_SHORT) ||
+	     (prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_AUTO))) {
 
 		prBssInfo->fgIsShortPreambleAllowed = TRUE;
 		prBssInfo->fgUseShortPreamble = TRUE;
@@ -2901,7 +2704,6 @@ VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEA
 		prBssInfo->fgIsShortPreambleAllowed = FALSE;
 		prBssInfo->fgUseShortPreamble = FALSE;
 	}
-
 
 	/* 4 <4> Setup Capability - Short Slot Time */
 	prBssInfo->fgUseShortSlotTime = TRUE;
@@ -2912,18 +2714,14 @@ VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEA
 	if (prBssInfo->fgIsProtection)
 		prBssInfo->u2CapInfo |= CAP_INFO_PRIVACY;
 
-
 	if (prBssInfo->fgIsShortPreambleAllowed)
 		prBssInfo->u2CapInfo |= CAP_INFO_SHORT_PREAMBLE;
-
 
 	if (prBssInfo->fgUseShortSlotTime)
 		prBssInfo->u2CapInfo |= CAP_INFO_SHORT_SLOT_TIME;
 
-
 	/* 4 <6> Find Lowest Basic Rate Index for default TX Rate of MMPDU */
 	nicTxUpdateBssDefaultRate(prBssInfo);
-
 
 	/* 4 <7> Fill the EDCA */
 
@@ -2941,10 +2739,9 @@ VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEA
 		prBssInfo->aucCWmaxLog2ForBcast[eAci] = auCWmaxLog2ForBcast[eAci];
 
 		DBGLOG(BSS, INFO,
-		       ("Bcast: eAci = %d, ACM = %d, Aifsn = %d, CWmin = %d, CWmax = %d, TxopLimit = %d\n",
+		       "Bcast: eAci = %d, ACM = %d, Aifsn = %d, CWmin = %d, CWmax = %d, TxopLimit = %d\n",
 			eAci, prACQueParms[eAci].ucIsACMSet, prACQueParms[eAci].u2Aifsn,
-			prACQueParms[eAci].u2CWmin, prACQueParms[eAci].u2CWmax,
-			prACQueParms[eAci].u2TxopLimit));
+			prACQueParms[eAci].u2CWmin, prACQueParms[eAci].u2CWmax, prACQueParms[eAci].u2TxopLimit);
 
 	}
 
@@ -2959,16 +2756,14 @@ VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEA
 		prACQueParms[eAci].u2TxopLimit = auTxop[eAci];
 
 		DBGLOG(BSS, INFO,
-		       ("eAci = %d, ACM = %d, Aifsn = %d, CWmin = %d, CWmax = %d, TxopLimit = %d\n",
+		       "eAci = %d, ACM = %d, Aifsn = %d, CWmin = %d, CWmax = %d, TxopLimit = %d\n",
 			eAci, prACQueParms[eAci].ucIsACMSet, prACQueParms[eAci].u2Aifsn,
-			prACQueParms[eAci].u2CWmin, prACQueParms[eAci].u2CWmax,
-			prACQueParms[eAci].u2TxopLimit));
+			prACQueParms[eAci].u2CWmin, prACQueParms[eAci].u2CWmax, prACQueParms[eAci].u2TxopLimit);
 	}
 
 	/* Note: Caller should update the EDCA setting to HW by nicQmUpdateWmmParms() it there is no AIS network */
 	/* Note: In E2, only 4 HW queues. The the Edca parameters should be folow by AIS network */
 	/* Note: In E3, 8 HW queues.  the Wmm parameters should be updated to right queues  according to BSS */
-
 
 	return;
 }				/* end of bssInitForAP() */
@@ -2986,7 +2781,6 @@ VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEA
 VOID bssUpdateDTIMCount(IN P_ADAPTER_T prAdapter, IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex)
 {
 	P_BSS_INFO_T prBssInfo;
-
 
 	ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
 
@@ -3008,7 +2802,6 @@ VOID bssUpdateDTIMCount(IN P_ADAPTER_T prAdapter, IN ENUM_NETWORK_TYPE_INDEX_T e
 	return;
 }				/* end of bssUpdateDTIMIE() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function is used to set the Virtual Bitmap in TIM Information Elements
@@ -3027,7 +2820,6 @@ VOID bssSetTIMBitmap(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN UIN
 	if (prBssInfo->ucNetTypeIndex == NETWORK_TYPE_P2P_INDEX) {
 		P_P2P_SPECIFIC_BSS_INFO_T prP2pSpecificBssInfo;
 
-
 		prP2pSpecificBssInfo = &(prAdapter->rWifiVar.rP2pSpecificBssInfo);
 
 		/* Use Association ID == 0 for BMCAST indication */
@@ -3037,7 +2829,6 @@ VOID bssSetTIMBitmap(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN UIN
 		} else {
 			PUINT_8 pucPartialVirtualBitmap;
 			UINT_8 ucBitmapToSet;
-
 
 			pucPartialVirtualBitmap = &prP2pSpecificBssInfo->aucPartialVirtualBitmap[(u2AssocId >> 3)];
 			ucBitmapToSet = (UINT_8) BIT((u2AssocId % 8));
@@ -3066,101 +2857,92 @@ VOID bssSetTIMBitmap(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN UIN
 }				/* end of bssSetTIMBitmap() */
 #endif
 
-#endif				/* CFG_SUPPORT_AAA */
-
+#endif /* CFG_SUPPORT_AAA */
 
 VOID bssCreateStaRecFromAuth(IN P_ADAPTER_T prAdapter)
 {
 
 }
 
-
 VOID bssUpdateStaRecFromAssocReq(IN P_ADAPTER_T prAdapter)
 {
 
 }
 
-
 VOID bssDumpBssInfo(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex)
 {
 	P_BSS_INFO_T prBssInfo;
-	//P_LINK_T prStaRecOfClientList = (P_LINK_T) NULL;
-	//P_STA_RECORD_T prCurrStaRec = (P_STA_RECORD_T) NULL;
+	/* P_LINK_T prStaRecOfClientList = (P_LINK_T) NULL; */
+	/* P_STA_RECORD_T prCurrStaRec = (P_STA_RECORD_T) NULL; */
 
 	if (ucBssIndex > MAX_BSS_INDEX) {
-		DBGLOG(SW4, INFO, ("Invalid BssInfo index[%u], skip dump!\n", ucBssIndex));
+		DBGLOG(SW4, INFO, "Invalid BssInfo index[%u], skip dump!\n", ucBssIndex);
 		return;
 	}
 
 	prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex);
 
 	if (!prBssInfo) {
-		DBGLOG(SW4, INFO, ("Invalid BssInfo index[%u], skip dump!\n", ucBssIndex));
+		DBGLOG(SW4, INFO, "Invalid BssInfo index[%u], skip dump!\n", ucBssIndex);
 		return;
 	}
 
-	DBGLOG(SW4, INFO, ("OWNMAC[" MACSTR "] BSSID[" MACSTR "] SSID[%s]\n",
-			   MAC2STR(prBssInfo->aucOwnMacAddr),
-			   MAC2STR(prBssInfo->aucBSSID), prBssInfo->aucSSID));
+	DBGLOG(SW4, INFO, "OWNMAC[" MACSTR "] BSSID[" MACSTR "] SSID[%s]\n",
+			   MAC2STR(prBssInfo->aucOwnMacAddr), MAC2STR(prBssInfo->aucBSSID), prBssInfo->aucSSID);
 
-	DBGLOG(SW4, INFO, ("BSS IDX[%u] Type[%s] OPMode[%s] ConnState[%u] Absent[%u]\n",
+	DBGLOG(SW4, INFO, "BSS IDX[%u] Type[%s] OPMode[%s] ConnState[%u] Absent[%u]\n",
 			   prBssInfo->ucBssIndex,
 			   apucNetworkType[prBssInfo->eNetworkType],
 			   apucNetworkOpMode[prBssInfo->eCurrentOPMode],
-			   prBssInfo->eConnectionState, prBssInfo->fgIsNetAbsent));
+			   prBssInfo->eConnectionState, prBssInfo->fgIsNetAbsent);
 
 	DBGLOG(SW4, INFO,
-	       ("Channel[%u] Band[%u] SCO[%u] Assoc40mBwAllowed[%u] 40mBwAllowed[%u] MaxBw[%u]\n",
+	       "Channel[%u] Band[%u] SCO[%u] Assoc40mBwAllowed[%u] 40mBwAllowed[%u] MaxBw[%u]\n",
 		prBssInfo->ucPrimaryChannel, prBssInfo->eBand, prBssInfo->eBssSCO,
 		prBssInfo->fgAssoc40mBwAllowed, prBssInfo->fg40mBwAllowed, cnmGetBssMaxBw(prAdapter,
-											  prBssInfo->
-											  ucBssIndex)));
+											  prBssInfo->ucBssIndex));
 
-	DBGLOG(SW4, INFO, ("QBSS[%u] CapInfo[0x%04x] AID[%u]\n",
-			   prBssInfo->fgIsQBSS, prBssInfo->u2CapInfo, prBssInfo->u2AssocId));
+	DBGLOG(SW4, INFO, "QBSS[%u] CapInfo[0x%04x] AID[%u]\n",
+			   prBssInfo->fgIsQBSS, prBssInfo->u2CapInfo, prBssInfo->u2AssocId);
 
-	DBGLOG(SW4, INFO, ("ShortPreamble Allowed[%u] EN[%u], ShortSlotTime[%u]\n",
+	DBGLOG(SW4, INFO, "ShortPreamble Allowed[%u] EN[%u], ShortSlotTime[%u]\n",
 			   prBssInfo->fgIsShortPreambleAllowed,
-			   prBssInfo->fgUseShortPreamble, prBssInfo->fgUseShortSlotTime));
+			   prBssInfo->fgUseShortPreamble, prBssInfo->fgUseShortSlotTime);
 
-	DBGLOG(SW4, INFO, ("PhyTypeSet: Basic[0x%02x] NonHtBasic[0x%02x]\n",
-			   prBssInfo->ucPhyTypeSet, prBssInfo->ucNonHTBasicPhyType));
+	DBGLOG(SW4, INFO, "PhyTypeSet: Basic[0x%02x] NonHtBasic[0x%02x]\n",
+			   prBssInfo->ucPhyTypeSet, prBssInfo->ucNonHTBasicPhyType);
 
-	DBGLOG(SW4, INFO, ("RateSet: BssBasic[0x%04x] Operational[0x%04x]\n",
-			   prBssInfo->u2BSSBasicRateSet, prBssInfo->u2OperationalRateSet));
+	DBGLOG(SW4, INFO, "RateSet: BssBasic[0x%04x] Operational[0x%04x]\n",
+			   prBssInfo->u2BSSBasicRateSet, prBssInfo->u2OperationalRateSet);
 
-	DBGLOG(SW4, INFO, ("ATIMWindow[%u] DTIM Period[%u] Count[%u]\n",
-			   prBssInfo->u2ATIMWindow,
-			   prBssInfo->ucDTIMPeriod, prBssInfo->ucDTIMCount));
+	DBGLOG(SW4, INFO, "ATIMWindow[%u] DTIM Period[%u] Count[%u]\n",
+			   prBssInfo->u2ATIMWindow, prBssInfo->ucDTIMPeriod, prBssInfo->ucDTIMCount);
 
-	DBGLOG(SW4, INFO, ("HT Operation Info1[0x%02x] Info2[0x%04x] Info3[0x%04x]\n",
-			   prBssInfo->ucHtOpInfo1, prBssInfo->u2HtOpInfo2, prBssInfo->u2HtOpInfo3));
+	DBGLOG(SW4, INFO, "HT Operation Info1[0x%02x] Info2[0x%04x] Info3[0x%04x]\n",
+			   prBssInfo->ucHtOpInfo1, prBssInfo->u2HtOpInfo2, prBssInfo->u2HtOpInfo3);
 
-	DBGLOG(SW4, INFO, ("ProtectMode HT[%u] ERP[%u], OperationMode GF[%u] RIFS[%u]\n",
+	DBGLOG(SW4, INFO, "ProtectMode HT[%u] ERP[%u], OperationMode GF[%u] RIFS[%u]\n",
 			   prBssInfo->eHtProtectMode,
-			   prBssInfo->fgErpProtectMode,
-			   prBssInfo->eGfOperationMode, prBssInfo->eRifsOperationMode));
+			   prBssInfo->fgErpProtectMode, prBssInfo->eGfOperationMode, prBssInfo->eRifsOperationMode);
 
-	DBGLOG(SW4, INFO, ("(OBSS) ProtectMode HT[%u] ERP[%u], OperationMode GF[%u] RIFS[%u]\n",
+	DBGLOG(SW4, INFO, "(OBSS) ProtectMode HT[%u] ERP[%u], OperationMode GF[%u] RIFS[%u]\n",
 			   prBssInfo->eObssHtProtectMode,
 			   prBssInfo->fgObssErpProtectMode,
-			   prBssInfo->eObssGfOperationMode, prBssInfo->fgObssRifsOperationMode));
+			   prBssInfo->eObssGfOperationMode, prBssInfo->fgObssRifsOperationMode);
 
-	DBGLOG(SW4, INFO, ("======== Dump Connected Client ========\n"));
+	DBGLOG(SW4, INFO, "======== Dump Connected Client ========\n");
 
 #if 0
-	DBGLOG(SW4, INFO, ("NumOfClient[%u]\n", bssGetClientCount(prAdapter, 
-        prBssInfo)));
+	DBGLOG(SW4, INFO, "NumOfClient[%u]\n", bssGetClientCount(prAdapter, prBssInfo));
 
 	prStaRecOfClientList = &prBssInfo->rStaRecOfClientList;
 
 	LINK_FOR_EACH_ENTRY(prCurrStaRec, prStaRecOfClientList, rLinkEntry, STA_RECORD_T) {
-		DBGLOG(SW4, INFO, ("STA[%u] [" MACSTR "]\n",
-				   prCurrStaRec->ucIndex, MAC2STR(prCurrStaRec->aucMacAddr)));
+		DBGLOG(SW4, INFO, "STA[%u] [" MACSTR "]\n", prCurrStaRec->ucIndex, MAC2STR(prCurrStaRec->aucMacAddr));
 	}
 #else
-    bssDumpClientList(prAdapter, prBssInfo);
+	bssDumpClientList(prAdapter, prBssInfo);
 #endif
 
-	DBGLOG(SW4, INFO, ("============== Dump Done ==============\n"));
+	DBGLOG(SW4, INFO, "============== Dump Done ==============\n");
 }

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/include/wlan_p2p.h#3 $
+** Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/include/wlan_p2p.h#3
 */
 
 /*! \file   "wlan_p2p.h"
@@ -7,10 +7,8 @@
 	   processing routines for MediaTek Inc. 802.11 Wireless LAN Adapters.
 */
 
-
-
 /*
-** $Log: wlan_p2p.h $
+** Log: wlan_p2p.h
 **
 ** 03 07 2013 yuche.tsai
 ** [BORA00002398] [MT6630][Volunteer Patch] P2P Driver Re-Design for Multiple BSS support
@@ -38,7 +36,8 @@
  * Add RSSI support for P2P network.
  *
  * 11 08 2011 yuche.tsai
- * [WCXRP00001094] [Volunteer Patch][Driver] Driver version & supplicant version query & set support for service discovery version check.
+ * [WCXRP00001094] [Volunteer Patch][Driver] Driver version & supplicant version
+ * query & set support for service discovery version check.
  * Add support for driver version query & p2p supplicant verseion set.
  * For new service discovery mechanism sync.
  *
@@ -72,11 +71,13 @@
  * Add Security check related code.
  *
  * 01 05 2011 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface
+ * for supporting Wi-Fi Direct Service Discovery
  * ioctl implementations for P2P Service Discovery
  *
  * 12 22 2010 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface
+ * for supporting Wi-Fi Direct Service Discovery
  * 1. header file restructure for more clear module isolation
  * 2. add function interface definition for implementing Service Discovery callbacks
  *
@@ -183,11 +184,9 @@ typedef struct _PARAM_P2P_GET_SD_RESPONSE_EX {
 	UINT_8 aucPacketContent[0];	/*native 802.11 */
 } PARAM_P2P_GET_SD_RESPONSE_EX, *P_PARAM_P2P_GET_SD_RESPONSE_EX;
 
-
 typedef struct _PARAM_P2P_TERMINATE_SD_PHASE {
 	PARAM_MAC_ADDRESS rPeerAddr;
 } PARAM_P2P_TERMINATE_SD_PHASE, *P_PARAM_P2P_TERMINATE_SD_PHASE;
-
 
 /*! \brief Key mapping of BSSID */
 typedef struct _P2P_PARAM_KEY_T {
@@ -199,7 +198,6 @@ typedef struct _P2P_PARAM_KEY_T {
 	UINT_8 aucKeyMaterial[32];	/*!< Key content by above setting */
 	UINT_8 ucBssIdx;	/* for specific P2P BSS interface. */
 } P2P_PARAM_KEY_T, *P_P2P_PARAM_KEY_T;
-
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A
@@ -229,26 +227,22 @@ wlanoidSetRemoveP2PKey(IN P_ADAPTER_T prAdapter,
 
 WLAN_STATUS
 wlanoidSetNetworkAddress(IN P_ADAPTER_T prAdapter,
-			 IN PVOID pvSetBuffer,
-			 IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+			 IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 
 WLAN_STATUS
 wlanoidSetP2PMulticastList(IN P_ADAPTER_T prAdapter,
-			   IN PVOID pvSetBuffer,
-			   IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+			   IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 
 /*--------------------------------------------------------------*/
 /* Service Discovery Subroutines                                */
 /*--------------------------------------------------------------*/
 WLAN_STATUS
 wlanoidSendP2PSDRequest(IN P_ADAPTER_T prAdapter,
-			IN PVOID pvSetBuffer,
-			IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+			IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 
 WLAN_STATUS
 wlanoidSendP2PSDResponse(IN P_ADAPTER_T prAdapter,
-			 IN PVOID pvSetBuffer,
-			 IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+			 IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 
 WLAN_STATUS
 wlanoidGetP2PSDRequest(IN P_ADAPTER_T prAdapter,
@@ -256,24 +250,20 @@ wlanoidGetP2PSDRequest(IN P_ADAPTER_T prAdapter,
 
 WLAN_STATUS
 wlanoidGetP2PSDResponse(IN P_ADAPTER_T prAdapter,
-			IN PVOID pvQueryBuffer,
-			IN UINT_32 u4QueryBufferLen, OUT PUINT_32 puQueryInfoLen);
+			IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 puQueryInfoLen);
 
 WLAN_STATUS
 wlanoidSetP2PTerminateSDPhase(IN P_ADAPTER_T prAdapter,
-			      IN PVOID pvQueryBuffer,
-			      IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
+			      IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
 
 #if CFG_SUPPORT_ANTI_PIRACY
 WLAN_STATUS
 wlanoidSetSecCheckRequest(IN P_ADAPTER_T prAdapter,
-			  IN PVOID pvSetBuffer,
-			  IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+			  IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 
 WLAN_STATUS
 wlanoidGetSecCheckResponse(IN P_ADAPTER_T prAdapter,
-			   IN PVOID pvQueryBuffer,
-			   IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
+			   IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
 #endif
 
 WLAN_STATUS
@@ -290,48 +280,39 @@ wlanoidSetUApsdParam(IN P_ADAPTER_T prAdapter,
 
 WLAN_STATUS
 wlanoidQueryP2pPowerSaveProfile(IN P_ADAPTER_T prAdapter,
-				IN PVOID pvQueryBuffer,
-				IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
+				IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
 
 WLAN_STATUS
 wlanoidSetP2pPowerSaveProfile(IN P_ADAPTER_T prAdapter,
-			      IN PVOID pvSetBuffer,
-			      IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+			      IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 
 WLAN_STATUS
 wlanoidSetP2pSetNetworkAddress(IN P_ADAPTER_T prAdapter,
-			       IN PVOID pvSetBuffer,
-			       IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+			       IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 
 WLAN_STATUS
 wlanoidQueryP2pOpChannel(IN P_ADAPTER_T prAdapter,
-			 IN PVOID pvQueryBuffer,
-			 IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
+			 IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
 
 WLAN_STATUS
 wlanoidQueryP2pVersion(IN P_ADAPTER_T prAdapter,
-		       IN PVOID pvQueryBuffer,
-		       IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
+		       IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
 
 WLAN_STATUS
 wlanoidSetP2pSupplicantVersion(IN P_ADAPTER_T prAdapter,
-			       IN PVOID pvSetBuffer,
-			       IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+			       IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 
 #if CFG_SUPPORT_HOTSPOT_WPS_MANAGER
 WLAN_STATUS
 wlanoidSetP2pWPSmode(IN P_ADAPTER_T prAdapter,
-		     IN PVOID pvQueryBuffer,
-		     IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
+		     IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
 #endif
 
 #if CFG_SUPPORT_P2P_RSSI_QUERY
 WLAN_STATUS
 wlanoidQueryP2pRssi(IN P_ADAPTER_T prAdapter,
-		    IN PVOID pvQueryBuffer,
-		    IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
+		    IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
 #endif
-
 
 /*--------------------------------------------------------------*/
 /* Callbacks for event indication                               */
@@ -343,4 +324,4 @@ wlanoidQueryP2pRssi(IN P_ADAPTER_T prAdapter,
 */
 
 #endif
-#endif				/* _WLAN_P2P_H */
+#endif /* _WLAN_P2P_H */

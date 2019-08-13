@@ -70,8 +70,7 @@
 #include "internal.h"
 
 #ifdef CONFIG_MTK_EXTMEM
-extern bool extmem_in_mspace(struct vm_area_struct *vma);
-extern unsigned long get_virt_from_mspace(unsigned long pa);
+#include <linux/exm_driver.h>
 #endif
 
 #ifdef LAST_NID_NOT_IN_PAGE_FLAGS
@@ -1467,16 +1466,6 @@ int zap_vma_ptes(struct vm_area_struct *vma, unsigned long address,
 }
 EXPORT_SYMBOL_GPL(zap_vma_ptes);
 
-/*
- * FOLL_FORCE can write to even unwritable pte's, but only
- * after we've gone through a COW cycle and they are dirty.
- */
-static inline bool can_follow_write_pte(pte_t pte, unsigned int flags)
-{
-	return pte_write(pte) ||
-		((flags & FOLL_FORCE) && (flags & FOLL_COW) && pte_dirty(pte));
-}
-
 /**
  * follow_page_mask - look up a page descriptor from a user-virtual address
  * @vma: vm_area_struct mapping @address
@@ -1584,7 +1573,7 @@ split_fallthrough:
 	}
 	if ((flags & FOLL_NUMA) && pte_numa(pte))
 		goto no_page;
-	if ((flags & FOLL_WRITE) && !can_follow_write_pte(pte, flags))
+	if ((flags & FOLL_WRITE) && !pte_write(pte))
 		goto unlock;
 
 	page = vm_normal_page(vma, address, pte);
@@ -1805,9 +1794,7 @@ long __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 		}
     #ifdef CONFIG_MTK_EXTMEM
         if (!vma || !(vm_flags & vma->vm_flags))
-		{
 		    return i ? : -EFAULT;
-        }
 
 		if (vma->vm_flags & (VM_IO | VM_PFNMAP))
 		{
@@ -1905,7 +1892,7 @@ long __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
 				 */
 				if ((ret & VM_FAULT_WRITE) &&
 				    !(vma->vm_flags & VM_WRITE))
-					foll_flags |= FOLL_COW;
+					foll_flags &= ~FOLL_WRITE;
 
 				cond_resched();
 			}
@@ -2397,9 +2384,9 @@ int remap_pfn_range(struct vm_area_struct *vma, unsigned long addr,
 	 * See vm_normal_page() for details.
 	 */
 #ifdef CONFIG_MTK_EXTMEM
-	if (addr == vma->vm_start && end == vma->vm_end) {
+	if (addr == vma->vm_start && end == vma->vm_end)
 		vma->vm_pgoff = pfn;
-	} else if (is_cow_mapping(vma->vm_flags))
+	else if (is_cow_mapping(vma->vm_flags))
 		return -EINVAL;
 #else
 	if (is_cow_mapping(vma->vm_flags)) {
@@ -4163,7 +4150,10 @@ static int __access_remote_vm(struct task_struct *tsk, struct mm_struct *mm,
 				if (vma->vm_end < addr + len)
 					len = vma->vm_end - addr;
 				if (extmem_in_mspace(vma)) {
-					void *extmem_va = (void *)get_virt_from_mspace(vma->vm_pgoff << PAGE_SHIFT) + (addr - vma->vm_start);
+					unsigned long pa = vma->vm_pgoff << PAGE_SHIFT;
+					void *extmem_va =
+						(void *)(get_virt_from_mspace(pa) + (addr - vma->vm_start));
+
 					memcpy(buf, extmem_va, len);
 					buf += len;
 					break;

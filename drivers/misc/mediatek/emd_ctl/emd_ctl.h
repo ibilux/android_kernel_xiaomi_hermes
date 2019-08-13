@@ -7,6 +7,7 @@
 #define EMD_CHR_CLIENT_NUM       (8)
 #define EMD_CFIFO_NUM            (1) //modem&muxd =>1 cfifo
 #define EMD_MSG_INF(tag, fmt, args...)  printk(KERN_ERR "[emd/" tag "]" fmt, ##args)
+#define EMD_MSG_DBG(tag, fmt, args...)  printk(KERN_DEBUG "[emd/" tag "]" fmt, ##args)
 
 extern int emd_request_reset(void);
 extern int emd_md_exception(void);

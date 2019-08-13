@@ -69,7 +69,8 @@
 /* Conventional and unconventional sample rate supported */
 static unsigned int audio_ap_supported_high_sample_rates[] =
 {
-    8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000,88200, 96000, 176400,192000
+    8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000,
+    88200, 96000, 176400, 192000
 };
 
 static struct snd_pcm_hw_constraint_list constraints_sample_rates =
@@ -535,6 +536,19 @@ static struct snd_soc_dai_driver mtk_dai_stub_dai[] =
         .name = MT_SOC_MOD_DAI_NAME,
         .ops = &mtk_dai_stub_ops,
     },
+	{
+		.playback = {
+			.stream_name = MT_SOC_DL2_STREAM_NAME,
+			.rates = SNDRV_PCM_RATE_8000_192000,
+			.formats = SND_SOC_ADV_MT_FMTS,
+			.channels_min = 1,
+			.channels_max = 2,
+			.rate_min = 8000,
+			.rate_max = 192000,
+		},
+		.name = MT_SOC_DL2DAI_NAME,
+		.ops = &mtk_dai_stub_ops,
+	},
 };
 
 
@@ -594,7 +608,7 @@ static struct platform_driver mtk_dai_stub_driver =
         .owner = THIS_MODULE,
         #ifdef CONFIG_OF
         .of_match_table = mt_soc_dai_stub_of_ids,
-        #endif
+        #endif        
     },
 };
 
@@ -606,7 +620,7 @@ static int __init mtk_dai_stub_init(void)
 {
     int ret = 0;
     printk("%s:\n", __func__);
-    #ifndef CONFIG_OF
+    #ifndef CONFIG_OF	
     soc_mtk_dai_dev = platform_device_alloc(MT_SOC_DAI_NAME , -1);
     if (!soc_mtk_dai_dev)
     {

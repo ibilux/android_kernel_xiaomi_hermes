@@ -32,16 +32,11 @@
 
 #define CLK_BUF_TAG     "Power/swap"
 
-#define clk_buf_err(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_ERROR, CLK_BUF_TAG, fmt, ##args)
-#define clk_buf_warn(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_WARN, CLK_BUF_TAG, fmt, ##args)
-#define clk_buf_info(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_INFO, CLK_BUF_TAG, fmt, ##args)
-#define clk_buf_dbg(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_DEBUG, CLK_BUF_TAG, fmt, ##args)
-#define clk_buf_ver(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_VERBOSE, CLK_BUF_TAG, fmt, ##args)
+#define clk_buf_err(fmt, args...)		pr_emerg(CLK_BUF_TAG fmt, ##args)
+#define clk_buf_warn(fmt, args...)		pr_warn(CLK_BUF_TAG fmt, ##args)
+#define clk_buf_info(fmt, args...)		pr_notice(CLK_BUF_TAG fmt, ##args)
+#define clk_buf_dbg(fmt, args...)		pr_info(CLK_BUF_TAG fmt, ##args)
+#define clk_buf_ver(fmt, args...)		pr_info(CLK_BUF_TAG fmt, ##args)	/* pr_debug show nothing */
 
 //
 // LOCK

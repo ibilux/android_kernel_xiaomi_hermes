@@ -489,13 +489,20 @@ __acquires(fc->lock)
 	}
 }
 
+#ifdef MET_FUSEIO_TRACE
 #define CREATE_TRACE_POINTS
 #include <linux/met_ftrace_fuse.h>
 
-void met_fuse(int t_pid, char *t_name, unsigned int op, unsigned int size, struct timespec s_time, struct timespec e_time)
+void met_fuse_start(int t_pid, char *t_name, unsigned int op, unsigned int size)
 {
-	MET_FTRACE_PRINTK(met_fuse, t_pid, t_name, op, size, s_time, e_time);
+	MET_FTRACE_PRINTK(met_fuse_start, t_pid, t_name, op, size);
 }
+
+void met_fuse_stop(int t_pid, char *t_name, unsigned int op, unsigned int size)
+{
+	MET_FTRACE_PRINTK(met_fuse_stop, t_pid, t_name, op, size);
+}
+#endif
 
 static void __fuse_request_send(struct fuse_conn *fc, struct fuse_req *req)
 {
@@ -520,23 +527,26 @@ static void __fuse_request_send(struct fuse_conn *fc, struct fuse_req *req)
 void fuse_request_send_ex(struct fuse_conn *fc, struct fuse_req *req,
     __u32 size)
 {
+	FUSE_IOLOG_INIT(size, req->in.h.opcode);
 #ifdef MET_FUSEIO_TRACE
-	char name[TASK_COMM_LEN];
+	int pid;
+	char task_name[TASK_COMM_LEN];
+	unsigned int opcode;
 #endif
-
-	FUSE_IOLOG_INIT();
-	MET_FUSE_IOLOG_INIT();
 	req->isreply = 1;
-	FUSE_IOLOG_START();
-	MET_FUSE_IOLOG_START();
-	__fuse_request_send(fc, req);
-	MET_FUSE_IOLOG_END();
-	FUSE_IOLOG_END();
-	FUSE_IOLOG_PRINT(size, req->in.h.opcode);
-
 #ifdef MET_FUSEIO_TRACE
-	met_fuse(task_pid_nr(current), get_task_comm(name, current), req->in.h.opcode, size, met_fuse_start_time, met_fuse_end_time);
+	pid = task_pid_nr(current);
+	get_task_comm(task_name, current);
+	opcode = req->in.h.opcode;
+	met_fuse_start(pid, task_name, opcode, size);
 #endif
+	FUSE_IOLOG_START();
+	__fuse_request_send(fc, req);
+#ifdef MET_FUSEIO_TRACE
+	met_fuse_stop(pid, task_name, opcode, size);
+#endif
+	FUSE_IOLOG_END();
+	FUSE_IOLOG_PRINT();
 }
 EXPORT_SYMBOL_GPL(fuse_request_send_ex);
 
@@ -577,12 +587,24 @@ static void fuse_request_send_nowait(struct fuse_conn *fc, struct fuse_req *req)
 void fuse_request_send_background_ex(struct fuse_conn *fc, struct fuse_req *req,
     __u32 size)
 {
-	FUSE_IOLOG_INIT();
+	FUSE_IOLOG_INIT(size, req->in.h.opcode);
+#ifdef MET_FUSEIO_TRACE
+	int pid;
+	char task_name[TASK_COMM_LEN];
+	unsigned int opcode;
+	pid = task_pid_nr(current);
+	get_task_comm(task_name, current);
+	opcode = req->in.h.opcode;
+	met_fuse_start(pid, task_name, opcode, size);
+#endif
 	FUSE_IOLOG_START();
 	req->isreply = 1;
 	fuse_request_send_nowait(fc, req);
+#ifdef MET_FUSEIO_TRACE
+	met_fuse_stop(pid, task_name, opcode, size);
+#endif
 	FUSE_IOLOG_END();
-	FUSE_IOLOG_PRINT(size, req->in.h.opcode);
+	FUSE_IOLOG_PRINT();
 }
 EXPORT_SYMBOL_GPL(fuse_request_send_background_ex);
 

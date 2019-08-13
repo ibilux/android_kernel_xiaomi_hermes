@@ -825,10 +825,13 @@ static int toi_bio_get_next_page_read(int no_readahead)
 	 * delay submitting the read until after we've gotten the
 	 * extents out of the first page.
 	 */
-	if (unlikely(no_readahead && toi_start_one_readahead(0))) {
-		printk(KERN_EMERG "%d:No readahead and toi_start_one_readahead "
-		       "returned non-zero.\n", __LINE__);
-		return -EIO;
+	if (unlikely(no_readahead)) {
+		int result = toi_start_one_readahead(0);
+		if (result) {
+			printk(KERN_EMERG "%d:No readahead and toi_start_one_readahead "
+				   "returned non-zero.\n", __LINE__);
+			return -EIO;
+		}
 	}
 
 	if (unlikely(!readahead_list_head)) {
@@ -1355,7 +1358,11 @@ static void toi_bio_cleanup(int finishing_cycle)
 
 	header_block_device = NULL;
 
+#ifdef CONFIG_TOI_FIXUP
+	close_resume_dev_t(1);
+#else
 	close_resume_dev_t(0);
+#endif
 }
 
 static int toi_bio_write_header_init(void)
@@ -1406,6 +1413,10 @@ static int toi_bio_write_header_cleanup(void)
 	if (!result)
 		result = toi_bio_mark_have_image();
 
+#ifdef CONFIG_MTK_MTD_NAND
+	/* FIXME: mtdblock doesn't sync without this */
+	blkdev_ioctl(resume_block_device, 0, BLKFLSBUF, 0);
+#endif
 	return result;
 }
 

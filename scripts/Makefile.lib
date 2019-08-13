@@ -273,6 +273,8 @@ $(obj)/%.dtb: $(src)/%.dts FORCE
 
 dtc-tmp = $(subst $(comma),_,$(dot-target).dts.tmp)
 
+targets += $(DTB_OBJS)
+
 # cat
 # ---------------------------------------------------------------------------
 # Concatentate multiple files together

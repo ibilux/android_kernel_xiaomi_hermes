@@ -6,7 +6,6 @@
 #include <linux/thermal.h>
 #include <linux/platform_device.h>
 #include <linux/aee.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/delay.h>
 #include <linux/proc_fs.h>
@@ -66,7 +65,7 @@ static int polling_factor2 = 10000;
 #define mtktspmic_dprintk(fmt, args...)   \
 do {									\
 	if (mtktspmic_debug_log) {				\
-		xlog_printk(ANDROID_LOG_INFO, "Power/PMIC_Thermal", fmt, ##args); \
+		pr_notice("Power/PMIC_Thermal" fmt, ##args); \
 	}								   \
 } while(0)
 
@@ -88,6 +87,40 @@ extern int PMIC_IMM_GetOneChannelValue(int dwChannel, int deCount, int trimd);
 void mtktspmic_read_6331_efuse(void);
 extern kal_uint32 upmu_get_reg_value(kal_uint32 reg);
 
+#if 1
+void mtktspmic_read_6331_efuse(void)
+{
+    U32 ret=0;
+    U32 reg_val=0;
+    int i=0,j=0;
+    U32 efusevalue[2];
+
+    mtktspmic_dprintk("[mtktspmic_read_6331_efuse] start\n");
+
+	efusevalue[0] = pmic_Read_Efuse_HPOffset(0x14);
+	efusevalue[1] = pmic_Read_Efuse_HPOffset(0x15);
+    printk("6331_efuse : efusevalue[0]=0x%x, efusevalue[1]=0x%x\n",efusevalue[0],efusevalue[1]);
+
+	g_adc_cali_en = (efusevalue[0]>>3)&0x1;
+    g_degc_cali   = (efusevalue[0]>>4)&0x3F;
+    g_o_vts       = ((efusevalue[0]>>10)&0x3F) + (((efusevalue[1])&0x7F)<<6);
+	g_o_slope_sign= (efusevalue[1]>>7)&0x1;
+    g_o_slope     = (efusevalue[1]>>8)&0x3F;
+	g_id          = (efusevalue[1]>>14)&0x1;
+
+	mtktspmic_dprintk("mtktspmic_read_6331_efuse: g_o_vts        = %x\n", g_o_vts);
+    mtktspmic_dprintk("mtktspmic_read_6331_efuse: g_degc_cali    = %x\n", g_degc_cali);
+    mtktspmic_dprintk("mtktspmic_read_6331_efuse: g_adc_cali_en  = %x\n", g_adc_cali_en);
+    mtktspmic_dprintk("mtktspmic_read_6331_efuse: g_o_slope      = %x\n", g_o_slope);
+    mtktspmic_dprintk("mtktspmic_read_6331_efuse: g_o_slope_sign = %x\n", g_o_slope_sign);
+    mtktspmic_dprintk("mtktspmic_read_6331_efuse: g_id           = %x\n", g_id);
+
+    mtktspmic_dprintk("mtktspmic_read_6331_efuse: ((efusevalue[0]>>10)&0x3F) = 0x%x\n", ((efusevalue[0]>>10)&0x3F));
+    mtktspmic_dprintk("mtktspmic_read_6331_efuse: (((efusevalue[1])&0x7F)<<6) = 0x%x\n", (((efusevalue[1])&0x7F)<<6));
+
+    mtktspmic_dprintk("[mtktspmic_read_6331_efuse] Done\n");
+}
+#else
 void mtktspmic_read_6331_efuse(void)
 {
     U32 ret=0;
@@ -105,7 +138,7 @@ void mtktspmic_read_6331_efuse(void)
     ret=pmic_config_interface(0x0616, 0x1, 0x1, 0);
 /*
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
+    mtktspmic_dprintk("Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         0x0154,upmu_get_reg_value(0x0154),
         0x0148,upmu_get_reg_value(0x0148),
         0x0616,upmu_get_reg_value(0x0616)
@@ -138,7 +171,7 @@ void mtktspmic_read_6331_efuse(void)
         efusevalue[j] = upmu_get_reg_value(0x0618);
         printk("6331_efuse : efusevalue[%d]=0x%x\n",j, efusevalue[j]);
 /*
-        xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "i=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
+        mtktspmic_dprintk("i=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
             i,
             0x0600,upmu_get_reg_value(0x0600),
             0x061A,upmu_get_reg_value(0x061A),
@@ -154,7 +187,7 @@ void mtktspmic_read_6331_efuse(void)
     ret=pmic_config_interface(0x0152, 0x0010, 0xFFFF, 0); // new add
     //dump
 /*
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x\n",
+    mtktspmic_dprintk("Reg[0x%x]=0x%x\n",
         0x0144,upmu_get_reg_value(0x0144)
         );
 */
@@ -179,7 +212,7 @@ void mtktspmic_read_6331_efuse(void)
     mtktspmic_dprintk("[mtktspmic_read_6331_efuse] Done\n");
 }
 
-
+#endif
 
 static void pmic_cali_prepare(void)
 {
@@ -263,7 +296,7 @@ static int mtktspmic_get_hw_temp(void)
 
 
 
-	temp = PMIC_IMM_GetOneChannelValue(ADC_TSENSE_31_AP , y_pmic_repeat_times , 2);
+	temp = PMIC_IMM_GetOneChannelValue(AUX_TSENSE_31_AP , y_pmic_repeat_times , 2);
     temp1 = pmic_raw_to_temp(temp);
 
 	mtktspmic_dprintk("[mtktspmic_get_hw_temp]Raw=%d, T=%d\n",temp, temp1);
@@ -652,13 +685,13 @@ int mtktspmic_register_cooler(void)
 
 int mtktspmic_register_thermal(void)
 {
-	mtktspmic_dprintk("[mtktspmic_register_thermal] \n");
+	mtktspmic_dprintk("[mtktspmic_register_thermal]\n");
 
-    /* trips : trip 0~2 */
-    if (NULL == thz_dev) {
-        thz_dev = mtk_thermal_zone_device_register("mtktspmic", num_trip, NULL,
-                                                   &mtktspmic_dev_ops, 0, 0, 0, interval*1000);
-    }
+	/* trips : trip 0~2 */
+	if (NULL == thz_dev) {
+		thz_dev = mtk_thermal_zone_device_register("mtktspmic", num_trip, NULL,
+					&mtktspmic_dev_ops, 0, 0, 0, interval*1000);
+	}
 
 	return 0;
 }
@@ -673,7 +706,7 @@ void mtktspmic_unregister_cooler(void)
 
 void mtktspmic_unregister_thermal(void)
 {
-	mtktspmic_dprintk("[mtktspmic_unregister_thermal] \n");
+	mtktspmic_dprintk("[mtktspmic_unregister_thermal]\n");
 
 	if (thz_dev) {
 		mtk_thermal_zone_device_unregister(thz_dev);

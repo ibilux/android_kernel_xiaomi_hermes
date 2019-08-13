@@ -62,7 +62,6 @@ enum {
 #define FM_TX_SCAN_HOLE_LOW  923	/* 92.3MHz~95.4MHz should not show to user */
 #define FM_TX_SCAN_HOLE_HIGH 954	/* 92.3MHz~95.4MHz should not show to user */
 
-
 /* ***************************************************************************************** */
 /* ***********************************FM config for customer:end ******************************* */
 /* ***************************************************************************************** */
@@ -102,4 +101,4 @@ enum {
 
 /* seek threshold */
 #define FM_SEEKTH_LEVEL_DEFAULT 4
-#endif				/* __FM_CUST_CFG_H__ */
+#endif /* __FM_CUST_CFG_H__ */

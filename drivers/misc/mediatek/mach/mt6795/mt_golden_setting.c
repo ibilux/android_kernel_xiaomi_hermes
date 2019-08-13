@@ -71,35 +71,30 @@
 #define HEX_FMT "0x%08x"
 
 #define clk_err(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_ERROR, TAG, fmt, ##args)
+    pr_debug(fmt, ##args)
 #define clk_warn(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_WARN, TAG, fmt, ##args)
+    pr_debug(fmt, ##args)
 #define clk_info(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_INFO, TAG, fmt, ##args)
+    pr_debug(fmt, ##args)
 #define clk_dbg(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_DEBUG, TAG, fmt, ##args)
+    pr_debug(fmt, ##args)
 #define clk_ver(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_VERBOSE, TAG, fmt, ##args)
+    pr_debug(fmt, ##args)
 
 #else
 
 #define TAG     "[Power/clkmgr] "
 
 #define clk_err(fmt, args...)       \
-    printk(KERN_ERR TAG);           \
-    printk(KERN_CONT fmt, ##args)
+    pr_debug(fmt, ##args)
 #define clk_warn(fmt, args...)      \
-    printk(KERN_WARNING TAG);       \
-    printk(KERN_CONT fmt, ##args)
+    pr_debug(fmt, ##args)
 #define clk_info(fmt, args...)      \
-    printk(KERN_NOTICE TAG);        \
-    printk(KERN_CONT fmt, ##args)
+    pr_debug(fmt, ##args)
 #define clk_dbg(fmt, args...)       \
-    printk(KERN_INFO TAG);          \
-    printk(KERN_CONT fmt, ##args)
+    pr_debug(fmt, ##args)
 #define clk_ver(fmt, args...)       \
-    printk(KERN_DEBUG TAG);         \
-    printk(KERN_CONT fmt, ##args)
+    pr_debug(fmt, ##args)
 
 #endif
 
@@ -113,8 +108,8 @@
 #define FUNC_LV_MASK        (FUNC_LV_API | FUNC_LV_LOCKED | FUNC_LV_BODY | FUNC_LV_OP | FUNC_LV_REG_ACCESS | FUNC_LV_DONT_CARE)
 
 #if defined(CONFIG_CLKMGR_SHOWLOG)
-#define ENTER_FUNC(lv)      do { if (lv & FUNC_LV_MASK) xlog_printk(ANDROID_LOG_WARN, TAG, ">> %s()\n", __FUNCTION__); } while(0)
-#define EXIT_FUNC(lv)       do { if (lv & FUNC_LV_MASK) xlog_printk(ANDROID_LOG_WARN, TAG, "<< %s():%d\n", __FUNCTION__, __LINE__); } while(0)
+#define ENTER_FUNC(lv)      do { if (lv & FUNC_LV_MASK) pr_debug(">> %s()\n", __FUNCTION__); } while(0)
+#define EXIT_FUNC(lv)       do { if (lv & FUNC_LV_MASK) pr_debug("<< %s():%d\n", __FUNCTION__, __LINE__); } while(0)
 #else
 #define ENTER_FUNC(lv)
 #define EXIT_FUNC(lv)
@@ -129,30 +124,30 @@
 #if defined(CONFIG_CLKMGR_EMULATION)   // XXX: NOT ACCESS REGISTER
 
 #define clk_readl(addr) \
-    ((FUNC_LV_REG_ACCESS & FUNC_LV_MASK) ? xlog_printk(ANDROID_LOG_WARN, TAG, "clk_readl("HEX_FMT") @ %s():%d\n", (addr), __FUNCTION__, __LINE__) : 0, 0)
+    ((FUNC_LV_REG_ACCESS & FUNC_LV_MASK) ? pr_debug("clk_readl("HEX_FMT") @ %s():%d\n", (addr), __FUNCTION__, __LINE__) : 0, 0)
 
 #define clk_writel(addr, val)   \
-    do { if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) xlog_printk(ANDROID_LOG_WARN, TAG, "clk_writel("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (val), __FUNCTION__, __LINE__); } while(0)
+    do { if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) pr_debug("clk_writel("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (val), __FUNCTION__, __LINE__); } while(0)
 
 #define clk_setl(addr, val) \
-    do { if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) xlog_printk(ANDROID_LOG_WARN, TAG, "clk_setl("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (val), __FUNCTION__, __LINE__); } while(0)
+    do { if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) pr_debug("clk_setl("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (val), __FUNCTION__, __LINE__); } while(0)
 
 #define clk_clrl(addr, val) \
-    do { if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) xlog_printk(ANDROID_LOG_WARN, TAG, "clk_clrl("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (val), __FUNCTION__, __LINE__); } while(0)
+    do { if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) pr_debug("clk_clrl("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (val), __FUNCTION__, __LINE__); } while(0)
 
 #else                           // XXX: ACCESS REGISTER
 
 #define clk_readl(addr) \
-    ((FUNC_LV_REG_ACCESS & FUNC_LV_MASK) ? xlog_printk(ANDROID_LOG_WARN, TAG, "clk_readl("HEX_FMT") @ %s():%d\n", (addr), __FUNCTION__, __LINE__) : 0, DRV_Reg32(addr))
+    ((FUNC_LV_REG_ACCESS & FUNC_LV_MASK) ? pr_debug("clk_readl("HEX_FMT") @ %s():%d\n", (addr), __FUNCTION__, __LINE__) : 0, DRV_Reg32(addr))
 
 #define clk_writel(addr, val)   \
-    do { unsigned int value; if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) xlog_printk(ANDROID_LOG_WARN, TAG, "clk_writel("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (value = val), __FUNCTION__, __LINE__); mt65xx_reg_sync_writel((value), (addr)); } while(0)
+    do { unsigned int value; if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) pr_debug("clk_writel("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (value = val), __FUNCTION__, __LINE__); mt65xx_reg_sync_writel((value), (addr)); } while(0)
 
 #define clk_setl(addr, val) \
-    do { if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) xlog_printk(ANDROID_LOG_WARN, TAG, "clk_setl("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (val), __FUNCTION__, __LINE__); mt65xx_reg_sync_writel(clk_readl(addr) | (val), (addr)); } while(0)
+    do { if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) pr_debug("clk_setl("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (val), __FUNCTION__, __LINE__); mt65xx_reg_sync_writel(clk_readl(addr) | (val), (addr)); } while(0)
 
 #define clk_clrl(addr, val) \
-    do { if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) xlog_printk(ANDROID_LOG_WARN, TAG, "clk_clrl("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (val), __FUNCTION__, __LINE__); mt65xx_reg_sync_writel(clk_readl(addr) & ~(val), (addr)); } while(0)
+    do { if (FUNC_LV_REG_ACCESS & FUNC_LV_MASK) pr_debug("clk_clrl("HEX_FMT", "HEX_FMT") @ %s():%d\n", (addr), (val), __FUNCTION__, __LINE__); mt65xx_reg_sync_writel(clk_readl(addr) & ~(val), (addr)); } while(0)
 
 #endif // defined(CONFIG_CLKMGR_EMULATION)
 

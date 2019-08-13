@@ -39,6 +39,9 @@
 #ifdef CONFIG_OF
 #include <linux/of_irq.h>
 #endif
+#ifdef CONFIG_MT_TRUSTONIC_TEE_DEBUGFS
+#include <linux/debugfs.h>
+#endif
 #include <net/net_namespace.h>
 #include <net/sock.h>
 #include <net/tcp_states.h>
@@ -102,7 +105,7 @@ static struct sock *__get_socket(struct file *filp)
 
 
 /* MobiCore interrupt context data */
-struct mc_context ctx;
+static struct mc_context ctx;
 
 /* Get process context from file pointer */
 static struct mc_instance *get_instance(struct file *file)
@@ -112,11 +115,10 @@ static struct mc_instance *get_instance(struct file *file)
 
 uint32_t mc_get_new_handle(void)
 {
-	static DEFINE_MUTEX(local_mutex);
 	uint32_t handle;
 	struct mc_buffer *buffer;
 
-	mutex_lock(&local_mutex);
+	mutex_lock(&ctx.cont_bufs_lock);
 retry:
 	handle = atomic_inc_return(&ctx.handle_counter);
 	/* The handle must leave 12 bits (PAGE_SHIFT) for the 12 LSBs to be
@@ -132,7 +134,7 @@ retry:
 		if (buffer->handle == handle)
 			goto retry;
 	}
-	mutex_unlock(&local_mutex);
+	mutex_unlock(&ctx.cont_bufs_lock);
 
 	return handle;
 }
@@ -191,7 +193,7 @@ static uint32_t mc_find_cont_wsm_addr(struct mc_instance *instance, void *uaddr,
 
 	mutex_lock(&instance->lock);
 
-	mutex_lock(&ctx.bufs_lock);
+	mutex_lock(&ctx.cont_bufs_lock);
 
 	/* search for the given handle in the buffers list */
 	list_for_each_entry(buffer, &ctx.cont_bufs, list) {
@@ -205,7 +207,7 @@ static uint32_t mc_find_cont_wsm_addr(struct mc_instance *instance, void *uaddr,
 	ret = -EINVAL;
 
 found:
-	mutex_unlock(&ctx.bufs_lock);
+	mutex_unlock(&ctx.cont_bufs_lock);
 	mutex_unlock(&instance->lock);
 
 	return ret;
@@ -253,8 +255,10 @@ bool mc_check_owner_fd(struct mc_instance *instance, int32_t fd)
 		MCDRV_DBG(mcd, "Owner not found!");
 	}
 out:
-	if (peer)
+	if (peer) {
 		task_unlock(peer);
+		put_task_struct(peer);
+	}
 	rcu_read_unlock();
 	if (!ret)
 		MCDRV_DBG(mcd, "Owner not found!");
@@ -279,7 +283,7 @@ static uint32_t mc_find_cont_wsm(struct mc_instance *instance, uint32_t handle,
 
 	mutex_lock(&instance->lock);
 
-	mutex_lock(&ctx.bufs_lock);
+	mutex_lock(&ctx.cont_bufs_lock);
 
 	/* search for the given handle in the buffers list */
 	list_for_each_entry(buffer, &ctx.cont_bufs, list) {
@@ -298,7 +302,7 @@ static uint32_t mc_find_cont_wsm(struct mc_instance *instance, uint32_t handle,
 	ret = -EINVAL;
 
 found:
-	mutex_unlock(&ctx.bufs_lock);
+	mutex_unlock(&ctx.cont_bufs_lock);
 	mutex_unlock(&instance->lock);
 
 	return ret;
@@ -325,7 +329,7 @@ static int __free_buffer(struct mc_instance *instance, uint32_t handle,
 	if (WARN(!instance, "No instance data available"))
 		return -EFAULT;
 
-	mutex_lock(&ctx.bufs_lock);
+	mutex_lock(&ctx.cont_bufs_lock);
 	/* search for the given handle in the buffers list */
 	list_for_each_entry(buffer, &ctx.cont_bufs, list) {
 		if (buffer->handle == handle)
@@ -338,7 +342,7 @@ found_buffer:
 		ret = -EPERM;
 		goto err;
 	}
-	mutex_unlock(&ctx.bufs_lock);
+	mutex_unlock(&ctx.cont_bufs_lock);
 	/* Only unmap if the request is coming from the user space and
 	 * it hasn't already been unmapped */
 	if (!unlock && buffer->uaddr != NULL) {
@@ -362,7 +366,7 @@ found_buffer:
 		}
 	}
 
-	mutex_lock(&ctx.bufs_lock);
+	mutex_lock(&ctx.cont_bufs_lock);
 	/* search for the given handle in the buffers list */
 	list_for_each_entry(buffer, &ctx.cont_bufs, list) {
 		if (buffer->handle == handle)
@@ -377,7 +381,7 @@ del_buffer:
 	else
 		ret = -EPERM;
 err:
-	mutex_unlock(&ctx.bufs_lock);
+	mutex_unlock(&ctx.cont_bufs_lock);
 	return ret;
 }
 
@@ -430,25 +434,20 @@ int mc_get_buffer(struct mc_instance *instance,
 
 	/* allocate a new buffer. */
 	cbuffer = kzalloc(sizeof(*cbuffer), GFP_KERNEL);
-
-	if (cbuffer == NULL) {
-		MCDRV_DBG_WARN(mcd,
-			       "MMAP_WSM request: could not allocate buffer");
+	if (!cbuffer) {
 		ret = -ENOMEM;
-		goto unlock_instance;
+		goto end;
 	}
-	mutex_lock(&ctx.bufs_lock);
 
 	MCDRV_DBG_VERBOSE(mcd, "size %ld -> order %d --> %ld (2^n pages)",
 			  len, order, allocated_size);
 
 	addr = (void *)__get_free_pages(GFP_USER | __GFP_ZERO, order);
-
-	if (addr == NULL) {
-		MCDRV_DBG_WARN(mcd, "get_free_pages failed");
+	if (!addr) {
 		ret = -ENOMEM;
-		goto err;
+		goto end;
 	}
+
 	phys = virt_to_phys(addr);
 	cbuffer->handle = mc_get_new_handle();
 	cbuffer->phys = phys;
@@ -461,7 +460,9 @@ int mc_get_buffer(struct mc_instance *instance,
 	atomic_set(&cbuffer->usage, 1);
 
 	INIT_LIST_HEAD(&cbuffer->list);
+	mutex_lock(&ctx.cont_bufs_lock);
 	list_add(&cbuffer->list, &ctx.cont_bufs);
+	mutex_unlock(&ctx.cont_bufs_lock);
 
 	MCDRV_DBG_VERBOSE(mcd,
 			  "phy=0x%llx-0x%llx, kaddr=0x%p h=%d buf=%p usage=%d",
@@ -470,13 +471,11 @@ int mc_get_buffer(struct mc_instance *instance,
 			  addr, cbuffer->handle,
 			  cbuffer, atomic_read(&(cbuffer->usage)));
 	*buffer = cbuffer;
-	goto unlock;
 
-err:
-	kfree(cbuffer);
-unlock:
-	mutex_unlock(&ctx.bufs_lock);
-unlock_instance:
+end:
+	if (ret)
+		kfree(cbuffer);
+
 	mutex_unlock(&instance->lock);
 	return ret;
 }
@@ -498,7 +497,7 @@ static int __lock_buffer(struct mc_instance *instance, uint32_t handle)
 		return -EPERM;
 	}
 
-	mutex_lock(&ctx.bufs_lock);
+	mutex_lock(&ctx.cont_bufs_lock);
 	/* search for the given handle in the buffers list */
 	list_for_each_entry(buffer, &ctx.cont_bufs, list) {
 		if (buffer->handle == handle) {
@@ -512,7 +511,7 @@ static int __lock_buffer(struct mc_instance *instance, uint32_t handle)
 	ret = -EINVAL;
 
 unlock:
-	mutex_unlock(&ctx.bufs_lock);
+	mutex_unlock(&ctx.cont_bufs_lock);
 	return ret;
 }
 
@@ -808,7 +807,7 @@ static int mc_fd_mmap(struct file *file, struct vm_area_struct *vmarea)
 		return -ENOMEM;
 	}
 	if (handle) {
-		mutex_lock(&ctx.bufs_lock);
+		mutex_lock(&ctx.cont_bufs_lock);
 
 		/* search for the buffer list. */
 		list_for_each_entry(buffer, &ctx.cont_bufs, list) {
@@ -826,7 +825,7 @@ static int mc_fd_mmap(struct file *file, struct vm_area_struct *vmarea)
 				}
 		}
 		/* Nothing found return */
-		mutex_unlock(&ctx.bufs_lock);
+		mutex_unlock(&ctx.cont_bufs_lock);
 		MCDRV_DBG_ERROR(mcd, "handle not found");
 		return -EINVAL;
 
@@ -847,7 +846,7 @@ found:
 		 * since the unmaping will also fail */
 		if (ret)
 			buffer->uaddr = NULL;
-		mutex_unlock(&ctx.bufs_lock);
+		mutex_unlock(&ctx.cont_bufs_lock);
 	} else {
 		if (!is_daemon(instance))
 			return -EPERM;
@@ -1289,7 +1288,7 @@ int mc_release_instance(struct mc_instance *instance)
 	mutex_lock(&instance->lock);
 	mc_clear_mmu_tables(instance);
 
-	mutex_lock(&ctx.bufs_lock);
+	mutex_lock(&ctx.cont_bufs_lock);
 	/* release all mapped data */
 
 	/* Check if some buffers are orphaned. */
@@ -1303,7 +1302,7 @@ int mc_release_instance(struct mc_instance *instance)
 			free_buffer(buffer);
 		}
 	}
-	mutex_unlock(&ctx.bufs_lock);
+	mutex_unlock(&ctx.cont_bufs_lock);
 
 	mutex_unlock(&instance->lock);
 
@@ -1421,6 +1420,43 @@ static irqreturn_t mc_ssiq_isr(int intr, void *context)
 	return IRQ_HANDLED;
 }
 
+#ifdef CONFIG_MT_TRUSTONIC_TEE_DEBUGFS
+uint8_t trustonic_swd_debug;
+static ssize_t debugfs_read(struct file *filep, char __user *buf, size_t len, loff_t *ppos)
+{
+	char mybuf[2];
+
+	if (*ppos != 0)
+		return 0;
+	mybuf[0] = trustonic_swd_debug + '0';
+	mybuf[1] = '\n';
+	if (copy_to_user(buf, mybuf + *ppos, 2))
+		return -EFAULT;
+	*ppos = 2;
+	return 2;
+}
+
+static ssize_t debugfs_write(struct file *filep, const char __user *buf, size_t len, loff_t *ppos)
+{
+	uint8_t val=0;
+
+	if (len >=2) {
+		if (!copy_from_user(&val, &buf[0], 1))
+			if (val >= '0' && val <= '9') {
+				trustonic_swd_debug = val - '0';
+			}
+		return len;
+	}
+
+	return -EFAULT;
+}
+
+const struct file_operations debug_fops = {
+	.read = debugfs_read,
+	.write = debugfs_write
+};
+#endif
+
 /* function table structure of this device driver. */
 static const struct file_operations mc_admin_fops = {
 	.owner		= THIS_MODULE,
@@ -1512,20 +1548,25 @@ out:
  * This device is installed and registered as cdev, then interrupt and
  * queue handling is set up
  */
-static unsigned int mobicore_irq_id = MC_INTR_SSIQ; 
+static unsigned int mobicore_irq_id = MC_INTR_SSIQ;
 static int __init mobicore_init(void)
 {
 	int ret = 0;
 	dev_set_name(mcd, "mcd");
+#ifdef CONFIG_MT_TRUSTONIC_TEE_DEBUGFS
+	struct dentry *debug_root;
+#endif
 #ifdef CONFIG_OF
 	struct device_node *node;
+#if 0
 	unsigned int irq_info[3] = {0, 0, 0};
+#endif
 #endif
 
 	/* Do not remove or change the following trace.
 	 * The string "MobiCore" is used to detect if <t-base is in of the image
 	 */
-	dev_info(mcd, "MobiCore Driver, Build: " __TIMESTAMP__ "\n");
+	dev_info(mcd, "MobiCore Driver, Build: " "\n");
 	dev_info(mcd, "MobiCore mcDrvModuleApi version is %i.%i\n",
 		 MCDRVMODULEAPI_VERSION_MAJOR,
 		 MCDRVMODULEAPI_VERSION_MINOR);
@@ -1556,12 +1597,16 @@ static int __init mobicore_init(void)
 
 #ifdef CONFIG_OF
 	node = of_find_compatible_node(NULL, NULL, "trustonic,mobicore");
+#if 0
 	if (of_property_read_u32_array(node, "interrupts", irq_info, ARRAY_SIZE(irq_info))) {
 		MCDRV_DBG_ERROR(mcd,
 				"Fail to get SSIQ id from device tree!");
 		return -ENODEV;
 	}
 	mobicore_irq_id = irq_info[1];
+#else
+    mobicore_irq_id = irq_of_parse_and_map(node, 0);
+#endif
 	MCDRV_DBG_VERBOSE(mcd, "Interrupt from device tree is %d\n", mobicore_irq_id);
 #endif
 
@@ -1602,18 +1647,28 @@ static int __init mobicore_init(void)
 	INIT_LIST_HEAD(&ctx.cont_bufs);
 
 	/* init lock for the buffers list */
-	mutex_init(&ctx.bufs_lock);
+	mutex_init(&ctx.cont_bufs_lock);
 
 	memset(&ctx.mci_base, 0, sizeof(ctx.mci_base));
 	MCDRV_DBG(mcd, "initialized");
+#ifdef CONFIG_MT_TRUSTONIC_TEE_DEBUGFS
+	debug_root = debugfs_create_dir("trustonic", NULL);
+	if (debug_root) {
+		if (!debugfs_create_file("swd_debug", 0644, debug_root, NULL, &debug_fops)) {
+			MCDRV_DBG_ERROR(mcd, "Create trustonic debugfs swd_debug failed!");
+		}
+	} else {
+		MCDRV_DBG_ERROR(mcd, "Create trustonic debugfs directory failed!");
+	}
+#endif
 	return 0;
 
 free_pm:
 #ifdef MC_PM_RUNTIME
 	mc_pm_free();
 free_isr:
-	free_irq(mobicore_irq_id, &ctx);
 #endif
+	free_irq(MC_INTR_SSIQ, &ctx);
 err_req_irq:
 	mc_fastcall_destroy();
 error:

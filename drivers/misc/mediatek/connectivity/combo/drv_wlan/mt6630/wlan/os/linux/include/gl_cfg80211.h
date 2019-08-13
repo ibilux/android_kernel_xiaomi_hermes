@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_cfg80211.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_cfg80211.h#1
 */
 
 /*! \file   gl_cfg80211.h
     \brief  This file is for Portable Driver linux cfg80211 support.
 */
 
-
-
 /*
-** $Log: gl_cfg80211.h $
+** Log: gl_cfg80211.h
 **
 ** 08 23 2013 wh.su
 ** [BORA00002446] [MT6630] [Wi-Fi] [Driver] Update the security function code
@@ -88,19 +86,6 @@ typedef struct _NL80211_DRIVER_GET_STA_STATISTICS_PARAMS {
 	UINT_8 aucMacAddr[MAC_ADDR_LEN];
 } NL80211_DRIVER_GET_STA_STATISTICS_PARAMS, *P_NL80211_DRIVER_GET_STA_STATISTICS_PARAMS;
 
-typedef enum _ENUM_TESTMODE_LINK_DETECTION_ATTR {
-	NL80211_TESTMODE_LINK_INVALID = 0,
-	NL80211_TESTMODE_LINK_TX_FAIL_CNT,
-	NL80211_TESTMODE_LINK_TX_RETRY_CNT,
-	NL80211_TESTMODE_LINK_TX_MULTI_RETRY_CNT,
-	NL80211_TESTMODE_LINK_ACK_FAIL_CNT,
-	NL80211_TESTMODE_LINK_FCS_ERR_CNT,
-	NL80211_TESTMODE_LINK_TX_CNT,
-	NL80211_TESTMODE_LINK_RX_CNT,
-
-	NL80211_TESTMODE_LINK_DETECT_NUM,
-} ENUM_TESTMODE_LINK_DETECTION_ATTR;
-
 typedef enum _ENUM_TESTMODE_STA_STATISTICS_ATTR {
 	NL80211_TESTMODE_STA_STATISTICS_INVALID = 0,
 	NL80211_TESTMODE_STA_STATISTICS_VERSION,
@@ -170,168 +155,102 @@ typedef enum _ENUM_TESTMODE_AVAILABLE_CHAN_ATTR {
 /* cfg80211 hooks */
 int
 mtk_cfg80211_change_iface(struct wiphy *wiphy,
-			  struct net_device *ndev,
-			  enum nl80211_iftype type, u32 *flags, struct vif_params *params);
-
+			  struct net_device *ndev, enum nl80211_iftype type, u32 *flags, struct vif_params *params);
 
 int
 mtk_cfg80211_add_key(struct wiphy *wiphy,
 		     struct net_device *ndev,
 		     u8 key_index, bool pairwise, const u8 *mac_addr, struct key_params *params);
 
-
 int
 mtk_cfg80211_get_key(struct wiphy *wiphy,
 		     struct net_device *ndev,
 		     u8 key_index,
 		     bool pairwise,
-		     const u8 *mac_addr,
-		     void *cookie, void (*callback) (void *cookie, struct key_params *)
-    );
-
+		     const u8 *mac_addr, void *cookie, void (*callback) (void *cookie, struct key_params *));
 
 int
-mtk_cfg80211_del_key(struct wiphy *wiphy,
-		     struct net_device *ndev, u8 key_index, bool pairwise, const u8 *mac_addr);
-
+mtk_cfg80211_del_key(struct wiphy *wiphy, struct net_device *ndev, u8 key_index, bool pairwise, const u8 *mac_addr);
 
 int
-mtk_cfg80211_set_default_key(struct wiphy *wiphy,
-			     struct net_device *ndev, u8 key_index, bool unicast, bool multicast);
+mtk_cfg80211_set_default_key(struct wiphy *wiphy, struct net_device *ndev, u8 key_index, bool unicast, bool multicast);
 
+int mtk_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, u8 *mac, struct station_info *sinfo);
 
 int
-mtk_cfg80211_get_station(struct wiphy *wiphy,
-			 struct net_device *ndev, u8 *mac, struct station_info *sinfo);
-
+mtk_cfg80211_get_link_statistics(struct wiphy *wiphy, struct net_device *ndev, u8 *mac, struct station_info *sinfo);
 
 int mtk_cfg80211_scan(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-		      struct net_device *ndev,
-#endif
 		      struct cfg80211_scan_request *request);
 
-
-int
-mtk_cfg80211_connect(struct wiphy *wiphy,
-		     struct net_device *ndev, struct cfg80211_connect_params *sme);
-
+int mtk_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev, struct cfg80211_connect_params *sme);
 
 int mtk_cfg80211_disconnect(struct wiphy *wiphy, struct net_device *ndev, u16 reason_code);
 
-
-int
-mtk_cfg80211_join_ibss(struct wiphy *wiphy,
-		       struct net_device *ndev, struct cfg80211_ibss_params *params);
-
+int mtk_cfg80211_join_ibss(struct wiphy *wiphy, struct net_device *ndev, struct cfg80211_ibss_params *params);
 
 int mtk_cfg80211_leave_ibss(struct wiphy *wiphy, struct net_device *ndev);
 
+int mtk_cfg80211_set_power_mgmt(struct wiphy *wiphy, struct net_device *ndev, bool enabled, int timeout);
 
-int
-mtk_cfg80211_set_power_mgmt(struct wiphy *wiphy,
-			    struct net_device *ndev, bool enabled, int timeout);
+int mtk_cfg80211_set_pmksa(struct wiphy *wiphy, struct net_device *ndev, struct cfg80211_pmksa *pmksa);
 
-
-int
-mtk_cfg80211_set_pmksa(struct wiphy *wiphy, struct net_device *ndev, struct cfg80211_pmksa *pmksa);
-
-
-int
-mtk_cfg80211_del_pmksa(struct wiphy *wiphy, struct net_device *ndev, struct cfg80211_pmksa *pmksa);
-
+int mtk_cfg80211_del_pmksa(struct wiphy *wiphy, struct net_device *ndev, struct cfg80211_pmksa *pmksa);
 
 int mtk_cfg80211_flush_pmksa(struct wiphy *wiphy, struct net_device *ndev);
 
-int
-mtk_cfg80211_set_rekey_data(struct wiphy *wiphy,
-			    struct net_device *dev, struct cfg80211_gtk_rekey_data *data);
+int mtk_cfg80211_set_rekey_data(struct wiphy *wiphy, struct net_device *dev, struct cfg80211_gtk_rekey_data *data);
 
 int mtk_cfg80211_remain_on_channel(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 				   struct wireless_dev *wdev,
-#else
-				   struct net_device *ndev,
-#endif
 				   struct ieee80211_channel *chan,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-				   enum nl80211_channel_type channel_type,
-#endif
 				   unsigned int duration, u64 *cookie);
 
-
 int mtk_cfg80211_cancel_remain_on_channel(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 					  struct wireless_dev *wdev,
-#else
-					  struct net_device *ndev,
-#endif
 					  u64 cookie);
 
-
 int mtk_cfg80211_mgmt_tx(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 			 struct wireless_dev *wdev,
-#else
-			 struct net_device *ndev,
-#endif
 			 struct ieee80211_channel *channel, bool offscan,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-			 enum nl80211_channel_type channel_type, bool channel_type_valid,
-#endif
 			 unsigned int wait,
-			 const u8 *buf,
-			 size_t len, bool no_cck, bool dont_wait_for_ack, u64 *cookie);
+			 const u8 *buf, size_t len, bool no_cck, bool dont_wait_for_ack, u64 *cookie);
 
 void mtk_cfg80211_mgmt_frame_register(IN struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 				      IN struct wireless_dev *wdev,
-#else
-				      IN struct net_device *ndev,
-#endif
 				      IN u16 frame_type, IN bool reg);
 
 int mtk_cfg80211_mgmt_tx_cancel_wait(struct wiphy *wiphy,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 				     struct wireless_dev *wdev,
-#else
-				     struct net_device *ndev,
-#endif
 				     u64 cookie);
 
 #if CONFIG_NL80211_TESTMODE
 #if CFG_AUTO_CHANNEL_SEL_SUPPORT
 WLAN_STATUS
 wlanoidQueryACSChannelList(IN P_ADAPTER_T prAdapter,
-			   IN PVOID pvQueryBuffer,
-			   IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
+			   IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
 
 int
-mtk_cfg80211_testmode_get_lte_channel(IN struct wiphy *wiphy,
-				      IN void *data, IN int len, IN P_GLUE_INFO_T prGlueInfo);
+mtk_cfg80211_testmode_get_lte_channel(IN struct wiphy *wiphy, IN void *data, IN int len, IN P_GLUE_INFO_T prGlueInfo);
 #endif
 int
 mtk_cfg80211_testmode_get_sta_statistics(IN struct wiphy *wiphy,
 					 IN void *data, IN int len, IN P_GLUE_INFO_T prGlueInfo);
 
-int
-mtk_cfg80211_testmode_get_scan_done(IN struct wiphy *wiphy,
-				    IN void *data, IN int len, IN P_GLUE_INFO_T prGlueInfo);
+int mtk_cfg80211_testmode_get_scan_done(IN struct wiphy *wiphy, IN void *data, IN int len, IN P_GLUE_INFO_T prGlueInfo);
 int mtk_cfg80211_testmode_cmd(IN struct wiphy *wiphy, IN void *data, IN int len);
 
 int mtk_cfg80211_testmode_sw_cmd(IN struct wiphy *wiphy, IN void *data, IN int len);
 
 #if CFG_SUPPORT_PASSPOINT
 int mtk_cfg80211_testmode_hs20_cmd(IN struct wiphy *wiphy, IN void *data, IN int len);
-#endif				/* CFG_SUPPORT_PASSPOINT */
+#endif /* CFG_SUPPORT_PASSPOINT */
 
 #if CFG_SUPPORT_WAPI
 int mtk_cfg80211_testmode_set_key_ext(IN struct wiphy *wiphy, IN void *data, IN int len);
 #endif
 #if CFG_SUPPORT_NFC_BEAM_PLUS
-int
-mtk_cfg80211_testmode_get_scan_done(IN struct wiphy *wiphy,
-				    IN void *data, IN int len, IN P_GLUE_INFO_T prGlueInfo);
+int mtk_cfg80211_testmode_get_scan_done(IN struct wiphy *wiphy, IN void *data, IN int len, IN P_GLUE_INFO_T prGlueInfo);
 #endif
 #else
 #error "Please ENABLE kernel config (CONFIG_NL80211_TESTMODE) to support Wi-Fi Direct"
@@ -339,44 +258,29 @@ mtk_cfg80211_testmode_get_scan_done(IN struct wiphy *wiphy,
 
 int
 mtk_cfg80211_sched_scan_start(IN struct wiphy *wiphy,
-			      IN struct net_device *ndev,
-			      IN struct cfg80211_sched_scan_request *request);
+			      IN struct net_device *ndev, IN struct cfg80211_sched_scan_request *request);
 
 int mtk_cfg80211_sched_scan_stop(IN struct wiphy *wiphy, IN struct net_device *ndev);
 
-int
-mtk_cfg80211_assoc(struct wiphy *wiphy,
-		   struct net_device *ndev, struct cfg80211_assoc_request *req);
-
+int mtk_cfg80211_assoc(struct wiphy *wiphy, struct net_device *ndev, struct cfg80211_assoc_request *req);
 
 int
-mtk_cfg80211_change_station(struct wiphy *wiphy,
-			    struct net_device *ndev, u8 *mac, struct station_parameters *params);
+mtk_cfg80211_change_station(struct wiphy *wiphy, struct net_device *ndev, u8 *mac, struct station_parameters *params);
 
-
-int
-mtk_cfg80211_add_station(struct wiphy *wiphy,
-			 struct net_device *ndev, u8 *mac, struct station_parameters *params);
-
+int mtk_cfg80211_add_station(struct wiphy *wiphy, struct net_device *ndev, u8 *mac, struct station_parameters *params);
 
 int mtk_cfg80211_del_station(struct wiphy *wiphy, struct net_device *ndev, u8 *mac);
 
 int
 mtk_cfg80211_tdls_mgmt(struct wiphy *wiphy,
 		       struct net_device *dev,
-		       u8 *peer,
-		       u8 action_code,
-		       u8 dialog_token, u16 status_code, const u8 *buf, size_t len);
+		       u8 *peer, u8 action_code, u8 dialog_token, u16 status_code, const u8 *buf, size_t len);
 
-int
-mtk_cfg80211_tdls_oper(struct wiphy *wiphy,
-		       struct net_device *dev, u8 *peer, enum nl80211_tdls_operation oper);
-
-int mtk_cfg80211_suspend(struct wiphy *wiphy, struct cfg80211_wowlan *wow);
+int mtk_cfg80211_tdls_oper(struct wiphy *wiphy, struct net_device *dev, u8 *peer, enum nl80211_tdls_operation oper);
 
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
 */
 
-#endif				/* _GL_CFG80211_H */
+#endif /* _GL_CFG80211_H */

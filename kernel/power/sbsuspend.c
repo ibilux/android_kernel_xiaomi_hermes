@@ -406,19 +406,21 @@ static ssize_t sb_state_store(struct kobject *kobj, struct kobj_attribute *attr,
     return error ? error : n;
 }
 
+//FIXME  walk around for FPGA Bring up, need owner to review
+#ifndef CONFIG_MTK_FPGA
 sb_attr(sb_state);
-
-
-
+#endif
 
 static int __init sbsuspend_init(void)
 {
+//FIXME  walk around for FPGA Bring up, need owner to review
+#ifndef CONFIG_MTK_FPGA
     int err = 0;
-    
     err |= sysfs_create_file(power_kobj, &sb_state_attr.attr);
     if (err) {
         printk("[%s]: fail to create sysfs\n", __func__);
     }
+#endif
     return 0;
 }
 

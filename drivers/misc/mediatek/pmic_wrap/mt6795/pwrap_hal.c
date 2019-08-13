@@ -1298,12 +1298,8 @@ static irqreturn_t mt_pmic_wrap_irq(int irqno, void *dev_id)
 	if(((WRAP_RD32(PMIC_WRAP_WDT_FLG)&(1<<1))==0x10) || ((WRAP_RD32(PMIC_WRAP_WACS0_RDATA)&(1<<22))==0x0)) 
        /*do nothing if WACS0 wait for idle timeout*/
 	  PWRAPERR("PWRAP WACS0 wait for idle timeout and no need to trigger BUG_ON\n");
-	else{
-       pwrap_of_iomap();
-	   PWRAPLOG("the infra clock register =0x%x\n",WRAP_RD32(INFRACFG_AO_REG_BASE+0x048));
-	   pwrap_of_iounmap();
+	else
 	  BUG_ON(1);
-	}
 	spin_unlock_irqrestore(&wrp_lock,flags);
 	return IRQ_HANDLED;
 }

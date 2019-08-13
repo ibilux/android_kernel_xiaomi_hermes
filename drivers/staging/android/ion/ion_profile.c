@@ -3,11 +3,14 @@
 
 MMP_Event ION_MMP_Events[PROFILE_MAX];
 
+extern void MMProfileEnable(int enable);
+extern void MMProfileStart(int start);
+
 void ion_profile_init(void)
 {
     MMP_Event ION_Event;
-    ION_Event = MMProfileRegisterEvent(MMP_RootEvent, "ION");
-    
+    MMProfileEnable(1);
+    ION_Event = MMProfileRegisterEvent(MMP_RootEvent, "ION");    
     ION_MMP_Events[PROFILE_ALLOC] = MMProfileRegisterEvent(ION_Event, "alloc");
     ION_MMP_Events[PROFILE_FREE] = MMProfileRegisterEvent(ION_Event, "free");
     ION_MMP_Events[PROFILE_SHARE] = MMProfileRegisterEvent(ION_Event, "share");
@@ -24,6 +27,18 @@ void ion_profile_init(void)
     ION_MMP_Events[PROFILE_DMA_CLEAN_ALL] = MMProfileRegisterEvent(ION_Event, "clean_all");
     ION_MMP_Events[PROFILE_DMA_FLUSH_ALL] = MMProfileRegisterEvent(ION_Event, "flush_all");
     ION_MMP_Events[PROFILE_DMA_INVALID_ALL] = MMProfileRegisterEvent(ION_Event, "inv_all");
+   
+    //enable events by default
+    MMProfileEnableEvent(ION_MMP_Events[PROFILE_ALLOC], 1);
+    MMProfileEnableEvent(ION_MMP_Events[PROFILE_MAP_KERNEL], 1);
+    MMProfileEnableEvent(ION_MMP_Events[PROFILE_MAP_USER], 1);
+    MMProfileEnableEvent(ION_MMP_Events[PROFILE_DMA_CLEAN_RANGE], 1);
+    MMProfileEnableEvent(ION_MMP_Events[PROFILE_DMA_FLUSH_RANGE], 1);
+    MMProfileEnableEvent(ION_MMP_Events[PROFILE_DMA_INVALID_RANGE], 1);
+    MMProfileEnableEvent(ION_MMP_Events[PROFILE_DMA_CLEAN_ALL], 1);
+    MMProfileEnableEvent(ION_MMP_Events[PROFILE_DMA_FLUSH_ALL], 1);
+    MMProfileEnableEvent(ION_MMP_Events[PROFILE_DMA_INVALID_ALL], 1);
+    MMProfileStart(1);
     
 }
 

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/include/gl_kal.h#2 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/include/gl_kal.h#2
 */
 
 /*! \file   gl_kal.h
@@ -8,10 +8,8 @@
     Any definitions in this file will be shared among GLUE Layer and internal Driver Stack.
 */
 
-
-
 /*
-** $Log: gl_kal.h $
+** Log: gl_kal.h
 **
 ** 01 15 2014 eason.tsai
 ** [ALPS01070904] [Need Patch] [Volunteer Patch][MT6630][Driver]MT6630 Wi-Fi Patch
@@ -70,11 +68,13 @@
  * Add dummy kal function for wake lock
  *
  * 06 07 2011 yuche.tsai
- * [WCXRP00000696] [Volunteer Patch][MT6620][Driver] Infinite loop issue when RX invitation response.[WCXRP00000763] [Volunteer Patch][MT6620][Driver] RX Service Discovery Frame under AP mode Issue
+ * [WCXRP00000696] [Volunteer Patch][MT6620][Driver] Infinite loop issue when RX invitation response.
+ * [WCXRP00000763] [Volunteer Patch][MT6620][Driver] RX Service Discovery Frame under AP mode Issue
  * Add invitation support.
  *
  * 04 22 2011 cp.wu
- * [WCXRP00000598] [MT6620 Wi-Fi][Driver] Implementation of interface for communicating with user space process for RESET_START and RESET_END events
+ * [WCXRP00000598] [MT6620 Wi-Fi][Driver] Implementation of interface for communicating
+ * with user space process for RESET_START and RESET_END events
  * skip power-off handshaking when RESET indication is received.
  *
  * 04 18 2011 terry.wu
@@ -82,31 +82,37 @@
  * Remove flag CFG_WIFI_DIRECT_MOVED.
  *
  * 04 14 2011 cp.wu
- * [WCXRP00000598] [MT6620 Wi-Fi][Driver] Implementation of interface for communicating with user space process for RESET_START and RESET_END events
+ * [WCXRP00000598] [MT6620 Wi-Fi][Driver] Implementation of interface
+ * for communicating with user space process for RESET_START and RESET_END events
  * 1. add code to put whole-chip resetting trigger when abnormal firmware assertion is detected
  * 2. add dummy function for both Win32 and Linux part.
  *
  * 04 12 2011 cp.wu
- * [WCXRP00000635] [MT6620 Wi-Fi][Driver] Clear pending security frames when QM clear pending data frames for dedicated network type
+ * [WCXRP00000635] [MT6620 Wi-Fi][Driver] Clear pending security frames when QM
+ * clear pending data frames for dedicated network type
  * clear pending security frames for dedicated network type when BSS is being deactivated/disconnected
  *
  * 03 16 2011 cp.wu
- * [WCXRP00000562] [MT6620 Wi-Fi][Driver] I/O buffer pre-allocation to avoid physically continuous memory shortage after system running for a long period
+ * [WCXRP00000562] [MT6620 Wi-Fi][Driver] I/O buffer pre-allocation to avoid physically
+ * continuous memory shortage after system running for a long period
  * 1. pre-allocate physical continuous buffer while module is being loaded
  * 2. use pre-allocated physical continuous buffer for TX/RX DMA transfer
  *
  * The windows part remained the same as before, but added similiar APIs to hide the difference.
  *
  * 03 02 2011 cp.wu
- * [WCXRP00000503] [MT6620 Wi-Fi][Driver] Take RCPI brought by association response as initial RSSI right after connection is built.
+ * [WCXRP00000503] [MT6620 Wi-Fi][Driver] Take RCPI brought by association response
+ * as initial RSSI right after connection is built.
  * use RCPI brought by ASSOC-RESP after connection is built as initial RCPI to avoid using a uninitialized MAC-RX RCPI.
  *
  * 02 24 2011 cp.wu
- * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation because NdisMSleep() won't sleep long enough for specified interval such as 500ms
+ * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep()
+ * implementation because NdisMSleep() won't sleep long enough for specified interval such as 500ms
  * modify cnm_timer and hem_mbox APIs to be thread safe to ease invoking restrictions
  *
  * 02 23 2011 cp.wu
- * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation because NdisMSleep() won't sleep long enough for specified interval such as 500ms
+ * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep()
+ * implementation because NdisMSleep() won't sleep long enough for specified interval such as 500ms
  * add design to avoid system ticks wraps around
  *
  * 01 25 2011 eddie.chen
@@ -114,20 +120,25 @@
  * Fix the compile error in windows.
  *
  * 01 04 2011 cp.wu
- * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and vmalloc implementations to ease physically continous memory demands
+ * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc
+ * and vmalloc implementations to ease physically continous memory demands
  * separate kalMemAlloc() into virtually-continous and physically-continous type to ease slab system pressure
  *
  * 12 31 2010 cp.wu
- * [WCXRP00000335] [MT6620 Wi-Fi][Driver] change to use milliseconds sleep instead of delay to avoid blocking to system scheduling
- * change to use msleep() and shorten waiting interval to reduce blocking to other task while Wi-Fi driver is being loaded
+ * [WCXRP00000335] [MT6620 Wi-Fi][Driver] change to use milliseconds sleep instead
+ * of delay to avoid blocking to system scheduling
+ * change to use msleep() and shorten waiting interval to reduce blocking
+ * to other task while Wi-Fi driver is being loaded
  *
  * 11 30 2010 yuche.tsai
  * NULL
  * Invitation & Provision Discovery Indication.
  *
  * 11 26 2010 cp.wu
- * [WCXRP00000209] [MT6620 Wi-Fi][Driver] Modify NVRAM checking mechanism to warning only with necessary data field checking
- * 1. NVRAM error is now treated as warning only, thus normal operation is still available but extra scan result used to indicate user is attached
+ * [WCXRP00000209] [MT6620 Wi-Fi][Driver] Modify NVRAM checking mechanism to warning
+ * only with necessary data field checking
+ * 1. NVRAM error is now treated as warning only, thus normal operation is still available
+ * but extra scan result used to indicate user is attached
  * 2. DPD and TX-PWR are needed fields from now on, if these 2 fields are not availble then warning message is shown
  *
  * 11 08 2010 cp.wu
@@ -135,13 +146,15 @@
  * change to use CMD52 for enabling/disabling interrupt to reduce SDIO transaction time
  *
  * 11 01 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver]
+ * Add implementation for querying current TX rate from firmware auto rate module
  * 1) Query link speed (TX rate) from firmware directly with buffering mechanism to reduce overhead
  * 2) Remove CNM CH-RECOVER event handling
  * 3) cfg read/write API renamed with kal prefix for unified naming rules.
  *
  * 10 18 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version
+ * Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
  * complete implementation of Android NVRAM access
  *
  * 10 05 2010 cp.wu
@@ -159,7 +172,8 @@
  * fixed compiling error while enable p2p.
  *
  * 10 04 2010 cp.wu
- * [WCXRP00000077] [MT6620 Wi-Fi][Driver][FW] Eliminate use of ENUM_NETWORK_TYPE_T and replaced by ENUM_NETWORK_TYPE_INDEX_T only
+ * [WCXRP00000077] [MT6620 Wi-Fi][Driver][FW] Eliminate use of ENUM_NETWORK_TYPE_T and
+ * replaced by ENUM_NETWORK_TYPE_INDEX_T only
  * remove ENUM_NETWORK_TYPE_T definitions
  *
  * 09 28 2010 wh.su
@@ -167,7 +181,8 @@
  * [WCXRP00000069][MT6620 Wi-Fi][Driver] Fix some code for phase 1 P2P Demo.
  *
  * 09 21 2010 cp.wu
- * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and might leads to BSOD when entering RF test with AIS associated
+ * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and
+ * might leads to BSOD when entering RF test with AIS associated
  * Do a complete reset with STA-REC null checking for RF test re-entry
  *
  * 09 10 2010 wh.su
@@ -289,9 +304,9 @@
  * 04 13 2010 cp.wu
  * [WPD00003823][MT6620 Wi-Fi] Add Bluetooth-over-Wi-Fi support
  * add framework for BT-over-Wi-Fi support.
- *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 1) prPendingCmdInfo is replaced by queue for multiple handler capability
- *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 2) command sequence number is now increased atomically
- *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 3) private data could be hold and taken use for other purpose
+ *  *  *  *  *  *  *  *  *  *  *  *   1) prPendingCmdInfo is replaced by queue for multiple handler capability
+ *  *  *  *  *  *  *  *  *  *  *  *   2) command sequence number is now increased atomically
+ *  *  *  *  *  *  *  *  *  *  *  *   3) private data could be hold and taken use for other purpose
  *
  * 04 07 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
@@ -331,7 +346,8 @@
  * 03 19 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
  * 1) add ACPI D0/D3 state switching support
- *  *  *  *  *  *  *  *  *  *  *  * 2) use more formal way to handle interrupt when the status is retrieved from enhanced RX response
+ *  *  *  *  *  *  *  *  *  *  *  * 2) use more formal way to handle interrupt
+ *  *  *  *  *  *  *  *  *  *  *  *  * when the status is retrieved from enhanced RX response
  *
  * 03 08 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
@@ -369,7 +385,8 @@
 **  \main\maintrunk.MT6620WiFiDriver_Prj\18 2009-11-16 21:41:03 GMT mtk02752
 **  wlanQoSFrameClassifierAndPacketInfo
 **
-**  rename wlanQoSFrameClassifierAndPacketInfo() to kalQoSFrameClassifierAndPacketInfo() and make it non-inline external function, due to AP mode RX-to-TX path will take use of it
+**  rename wlanQoSFrameClassifierAndPacketInfo() to kalQoSFrameClassifierAndPacketInfo()
+**  and make it non-inline external function, due to AP mode RX-to-TX path will take use of it
 **
 **  \main\maintrunk.MT6620WiFiDriver_Prj\17 2009-10-05 11:29:00 GMT mtk01084
 **  change CFG_SDIO_TX_ENHANCE to CFG_SDIO_TX_AGG
@@ -425,7 +442,6 @@
 #include "wlan_lib.h"
 #include "wlan_oid.h"
 #include "queue.h"
-
 
 #if CFG_ENABLE_BT_OVER_WIFI
 #include "nic/bow.h"
@@ -517,41 +533,43 @@ typedef UINT_32 KAL_WAKE_LOCK_T, *P_KAL_WAKE_LOCK_T;
 /*----------------------------------------------------------------------------*/
 #if defined(WINDOWS_DDK)
 #define KAL_CREATE_THREAD(pvThreadHandle, pfnThreadProc, pvArg, ppvKThread) \
-    DBGLOG(INIT, TRACE, ("KAL_CREATE_THREAD\n")); \
-    PsCreateSystemThread(&pvThreadHandle, \
-			 (ACCESS_MASK)0, \
-			 NULL, \
-			 (HANDLE) 0, \
-			 NULL, \
-			 pfnThreadProc, \
-			 pvArg); \
-    ObReferenceObjectByHandle(pvThreadHandle, THREAD_ALL_ACCESS, NULL, KernelMode, \
-			    (PVOID *) ppvKThread, NULL);
+do { \
+	DBGLOG1(INIT, TRACE, "KAL_CREATE_THREAD\n"); \
+	PsCreateSystemThread(&pvThreadHandle, \
+			(ACCESS_MASK)0, \
+			NULL, \
+			(HANDLE) 0, \
+			NULL, \
+			pfnThreadProc, \
+			pvArg); \
+	ObReferenceObjectByHandle(pvThreadHandle, THREAD_ALL_ACCESS, NULL, KernelMode, \
+			(PVOID *) ppvKThread, NULL); \
+} while (FALSE)
 
 #define KAL_KILL_THREAD(pvEvent, pKThread) \
+do { \
 	NdisSetEvent(pvEvent); \
-        DBGLOG(INIT, TRACE, ("Notify TxServiceThread to terminate it\n")); \
+	DBGLOG1(INIT, TRACE, "Notify TxServiceThread to terminate it\n"); \
 	if (pKThread) { \
-	    KeWaitForSingleObject(pKThread, \
+		KeWaitForSingleObject(pKThread, \
 				Executive, \
 				KernelMode, \
 				FALSE, \
 				NULL); \
-	    ObDereferenceObject(pKThread); \
-	    /*prGlueInfo->hTxService = NULL;*/\
-	}
-
-
+		ObDereferenceObject(pKThread); \
+		/*prGlueInfo->hTxService = NULL;*/\
+	} \
+} while (FALSE)
 
 #define KAL_WAIT_FOR_SINGLE_OBJECT(pvThreadHandle) \
-    KeWaitForSingleObject(pvThreadHandle, \
+	KeWaitForSingleObject(pvThreadHandle, \
 			Executive, \
 			KernelMode, \
 			FALSE, \
 			NULL);
 
 #define KAL_CLOSE_HANDLE(pvThreadHandle) \
-    ObDereferenceObject(pvThreadHandle);
+	ObDereferenceObject(pvThreadHandle);
 
 #endif
 
@@ -560,9 +578,9 @@ typedef UINT_32 KAL_WAKE_LOCK_T, *P_KAL_WAKE_LOCK_T;
 				/* CreateThread (NULL, 0, kalTxServiceThread, prGlueInfo, 0, NULL) */
 CreateThread(NULL, 0, pfnThreadProc, pvArg, 0, NULL)
 #define KAL_WAIT_FOR_SINGLE_OBJECT(pvThreadHandle) \
-    WaitForSingleObject(pvThreadHandle, INFINITE);
+	WaitForSingleObject(pvThreadHandle, INFINITE);
 #define KAL_CLOSE_HANDLE(pvThreadHandle) \
-    CloseHandle(pvThreadHandle);
+	CloseHandle(pvThreadHandle);
 #endif
 /*----------------------------------------------------------------------------*/
 /* Macros of SPIN LOCK operations for using in Driver Layer                   */
@@ -608,8 +626,7 @@ VOID NdisMoveMemory(OUT PVOID Destination, IN PVOID Source, IN ULONG Length);
 VOID NdisFillMemory(IN PVOID Destination, IN ULONG Length, IN UCHAR Fill);
 
 ULONG NdisEqualMemory(PVOID Source1, PVOID Source2, ULONG Length);
-#endif				/* _lint */
-
+#endif /* _lint */
 
 /*! Copy memory block with specific size */
 #define kalMemCopy(pvDst, pvSrc, u4Size)            NdisMoveMemory(pvDst, pvSrc, u4Size)
@@ -625,7 +642,6 @@ ULONG NdisEqualMemory(PVOID Source1, PVOID Source2, ULONG Length);
 /*! Zero specific memory block */
 #define kalMemZero(pvAddr, u4Size)                  NdisZeroMemory(pvAddr, u4Size)
 
-
 #if CFG_SDIO_TX_AGG
 #define kalGetSDIOWriteBlkSize(prGlueInfo)          prGlueInfo->rHifInfo.sdHostBlockCap.WriteBlockSize
 #define kalGetSDIOWriteBlkBitSize(prGlueInfo)       prGlueInfo->rHifInfo.WBlkBitSize
@@ -640,8 +656,6 @@ ULONG NdisEqualMemory(PVOID Source1, PVOID Source2, ULONG Length);
 #else
 #define kalDevSetPowerState(prGlueInfo, ePowerMode)
 #endif
-
-
 
 /*! Definitions for all of the Debug macros.  If we're in a debug (DBG) mode,
  * these macros will print information to the debug terminal.  If the
@@ -673,15 +687,15 @@ static inline void kalPrint(PUINT_8 dbgstr, ...)
 #elif (LOG_METHOD == FILE_DEBUG_MSG) || (LOG_METHOD == MSG_DEBUG_MSG)
 #define CREATE_LOG_FILE()       dbgFileCreate()
 #define kalPrint                dbgLogWr
-#else				/* FILE_DEBUG_MSG */
+#else /* FILE_DEBUG_MSG */
 #if UNICODE_MESSAGE
 #define CREATE_LOG_FILE()
 #define kalPrint                dbgLogWr2
-#else				/* UNICODE_MESSAGE */
+#else /* UNICODE_MESSAGE */
 #define CREATE_LOG_FILE()
 #define kalPrint                DbgPrint
-#endif				/* !UNICODE_MESSAGE */
-#endif				/* LOG_METHOD */
+#endif /* !UNICODE_MESSAGE */
+#endif /* LOG_METHOD */
 
 #define kalBreakPoint()             DbgBreakPoint()
 
@@ -694,7 +708,6 @@ static inline void kalPrint(PUINT_8 dbgstr, ...)
 #define SYSTIME_TO_MSEC(_systime)   (_systime)
 
 #define kalIndicateBssInfo(prGlueInfo, pucFrameBuf, u4BufLen, ucChannelNum, i4SignalStrength)
-
 
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
@@ -721,38 +734,29 @@ VOID kalPacketFree(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket);
 WLAN_STATUS
 kalProcessRxPacket(IN P_GLUE_INFO_T prGlueInfo,
 		   IN PVOID pvPacket,
-		   IN PUINT_8 pucPacketStart,
-		   IN UINT_32 u4PacketLen, IN BOOL fgIsRetain, IN ENUM_CSUM_RESULT_T aeCSUM[]
-    );
+		   IN PUINT_8 pucPacketStart, IN UINT_32 u4PacketLen,
+		   IN BOOL fgIsRetain, IN ENUM_CSUM_RESULT_T aeCSUM[]);
 
 WLAN_STATUS kalRxIndicatePkts(IN P_GLUE_INFO_T prGlueInfo, IN PVOID apvPkts[], IN UINT_32 ucPktNum);
 
 VOID
-kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo,
-			     IN WLAN_STATUS eStatus, IN PVOID pvBuf, IN UINT_32 u4BufLen);
+kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus, IN PVOID pvBuf, IN UINT_32 u4BufLen);
 
 VOID
 kalUpdateReAssocReqInfo(IN P_GLUE_INFO_T prGlueInfo,
-			IN PUINT_8 pucFrameBody,
-			IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest);
+			IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest);
 
-VOID
-kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo,
-			IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen);
+VOID kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen);
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
 VOID kalQueryTxChksumOffloadParam(IN PVOID pvPacket, OUT PUINT_8 pucFlag);
 
-
-VOID kalUpdateRxCSUMOffloadParam(IN PVOID pvPacket, IN ENUM_CSUM_RESULT_T aeCSUM[]
-    );
-#endif				/* CFG_TCP_IP_CHKSUM_OFFLOAD */
-
+VOID kalUpdateRxCSUMOffloadParam(IN PVOID pvPacket, IN ENUM_CSUM_RESULT_T aeCSUM[]);
+#endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
 
 VOID kalSendComplete(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket, IN WLAN_STATUS rStatus);
 
 VOID kalHandleAssocInfo(IN P_GLUE_INFO_T prGlueInfo, IN P_EVENT_ASSOC_INFO prAssocInfo);
-
 
 /*----------------------------------------------------------------------------*/
 /* Routines in gl_kal_common.c                                                */
@@ -782,9 +786,7 @@ VOID
 kalOidComplete(IN P_GLUE_INFO_T prGlueInfo,
 	       IN BOOLEAN fgSetQuery, IN UINT_32 u4SetQueryInfoLen, IN WLAN_STATUS rOidStatus);
 
-BOOLEAN
-kalGetEthDestAddr(IN P_GLUE_INFO_T prGlueInfo,
-		  IN P_NATIVE_PACKET prPacket, OUT PUINT_8 pucEthDestAddr);
+BOOLEAN kalGetEthDestAddr(IN P_GLUE_INFO_T prGlueInfo, IN P_NATIVE_PACKET prPacket, OUT PUINT_8 pucEthDestAddr);
 
 BOOL
 kalQoSFrameClassifierAndPacketInfo(IN P_GLUE_INFO_T prGlueInfo,
@@ -793,21 +795,15 @@ kalQoSFrameClassifierAndPacketInfo(IN P_GLUE_INFO_T prGlueInfo,
 				   OUT PUINT_32 pu4PacketLen,
 				   OUT PUINT_8 pucEthDestAddr,
 				   OUT PBOOLEAN pfgIs1X,
-				   OUT PBOOLEAN pfgIsPAL,
-				   OUT PBOOLEAN pfgIs802_3, OUT PBOOLEAN pfgIsVlanExists);
-
+				   OUT PBOOLEAN pfgIsPAL, OUT PBOOLEAN pfgIs802_3, OUT PBOOLEAN pfgIsVlanExists);
 
 VOID kalUpdateMACAddress(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucMacAddr);
 
-
 UINT_32 kalWriteToFile(const PUINT_8 pucPath, BOOLEAN fgDoAppend, PUINT_8 pucData, UINT_32 u4Size);
 
-UINT_32
-kal_sprintf_ddk(const PUINT_8 pucPath,
-		UINT_32 u4size, const char *fmt1, const char *fmt2, const char *fmt3);
+UINT_32 kal_sprintf_ddk(const PUINT_8 pucPath, UINT_32 u4size, const char *fmt1, const char *fmt2, const char *fmt3);
 
 UINT_32 kal_sprintf_done_ddk(const PUINT_8 pucPath, UINT_32 u4size);
-
 
 #ifdef WINDOWS_CE
 /*----------------------------------------------------------------------------*/
@@ -818,16 +814,14 @@ UINT_32 kal_sprintf_done_ddk(const PUINT_8 pucPath, UINT_32 u4size);
 
 NDIS_STATUS dbgFileCreate(VOID);
 
-NDIS_STATUS dbgLogWr(IN PINT_8 debugStr, IN ...
-    );
+NDIS_STATUS dbgLogWr(IN PINT_8 debugStr, IN ...);
 
 #elif UNICODE_MESSAGE
 
-NDIS_STATUS dbgLogWr2(IN PINT_8 debugStr, IN ...
-    );
+NDIS_STATUS dbgLogWr2(IN PINT_8 debugStr, IN ...);
 
 #endif
-#endif				/* DBG */
+#endif /* DBG */
 #endif
 
 /*----------------------------------------------------------------------------*/
@@ -839,20 +833,17 @@ BOOL kalDevRegWrite(P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_32 
 
 BOOL
 kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
-	       IN UINT_32 u4Port,
-	       IN UINT_32 u4Len, OUT PUINT_8 pucBuf, IN UINT_32 u4ValidOutBufSize);
+	       IN UINT_32 u4Port, IN UINT_32 u4Len, OUT PUINT_8 pucBuf, IN UINT_32 u4ValidOutBufSize);
 
 BOOL
 kalDevPortWrite(IN P_GLUE_INFO_T prGlueInfo,
-		IN UINT_32 u4Port,
-		IN UINT_32 u4Len, IN PUINT_8 pucBuf, IN UINT_32 u4ValidInBufSize);
+		IN UINT_32 u4Port, IN UINT_32 u4Len, IN PUINT_8 pucBuf, IN UINT_32 u4ValidInBufSize);
 
 BOOL kalDevWriteWithSdioCmd52(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Addr, IN UINT_8 ucData);
 
 BOOL
 kalDevReadAfterWriteWithSdioCmd52(IN P_GLUE_INFO_T prGlueInfo,
-				  IN UINT_32 u4Addr,
-				  IN OUT PUINT_8 pucRwBuffer, IN UINT_32 u4RwBufLen);
+				  IN UINT_32 u4Addr, IN OUT PUINT_8 pucRwBuffer, IN UINT_32 u4RwBufLen);
 
 /*----------------------------------------------------------------------------*/
 /* Timer                                                                      */
@@ -869,23 +860,17 @@ BOOLEAN kalCancelTimer(IN P_GLUE_INFO_T prGlueInfo);
 
 VOID kalTimeoutHandler(IN P_GLUE_INFO_T prGlueInfo);
 
-
 /*----------------------------------------------------------------------------*/
 /* Firmware Image Loading & Mapping                                           */
 /*----------------------------------------------------------------------------*/
-PVOID
-kalFirmwareImageMapping(IN P_GLUE_INFO_T prGlueInfo,
-			OUT PPVOID ppvMapFileBuf, OUT PUINT_32 pu4FileLength);
+PVOID kalFirmwareImageMapping(IN P_GLUE_INFO_T prGlueInfo, OUT PPVOID ppvMapFileBuf, OUT PUINT_32 pu4FileLength);
 
-VOID
-kalFirmwareImageUnmapping(IN P_GLUE_INFO_T prGlueInfo, IN PVOID prFwHandle, IN PVOID pvMapFileBuf);
-
+VOID kalFirmwareImageUnmapping(IN P_GLUE_INFO_T prGlueInfo, IN PVOID prFwHandle, IN PVOID pvMapFileBuf);
 
 /*----------------------------------------------------------------------------*/
 /* Card Removal Check                                                         */
 /*----------------------------------------------------------------------------*/
 BOOLEAN kalIsCardRemoved(IN P_GLUE_INFO_T prGlueInfo);
-
 
 /*----------------------------------------------------------------------------*/
 /* TX                                                                         */
@@ -896,17 +881,12 @@ UINT_32 kalGetTxPendingFrameCount(IN P_GLUE_INFO_T prGlueInfo);
 
 UINT_32 kalGetTxPendingCmdCount(IN P_GLUE_INFO_T prGlueInfo);
 
-
 /*----------------------------------------------------------------------------*/
 /* Media State Indication                                                     */
 /*----------------------------------------------------------------------------*/
 ENUM_PARAM_MEDIA_STATE_T kalGetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo);
 
-
-VOID
-kalSetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo,
-			  IN ENUM_PARAM_MEDIA_STATE_T eParamMediaStateIndicate);
-
+VOID kalSetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_PARAM_MEDIA_STATE_T eParamMediaStateIndicate);
 
 /*----------------------------------------------------------------------------*/
 /* Firmware Load/Start Address                                                */
@@ -914,7 +894,6 @@ kalSetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo,
 UINT_32 kalGetFwLoadAddress(IN P_GLUE_INFO_T prGlueInfo);
 
 UINT_32 kalGetFwStartAddress(IN P_GLUE_INFO_T prGlueInfo);
-
 
 /*----------------------------------------------------------------------------*/
 /* OID handling                                                               */
@@ -932,29 +911,22 @@ VOID kalClearSecurityFrames(IN P_GLUE_INFO_T prGlueInfo);
 
 VOID kalClearSecurityFramesByBssIdx(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucBssIndex);
 
-VOID
-kalSecurityFrameSendComplete(IN P_GLUE_INFO_T prGlueInfo,
-			     IN PVOID pvPacket, IN WLAN_STATUS rStatus);
-
+VOID kalSecurityFrameSendComplete(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket, IN WLAN_STATUS rStatus);
 
 /*----------------------------------------------------------------------------*/
 /* Management Frame Clearance                                                 */
 /*----------------------------------------------------------------------------*/
 VOID kalClearMgmtFrames(IN P_GLUE_INFO_T prGlueInfo);
 
-
 /*----------------------------------------------------------------------------*/
 /* Random number Service                                                      */
 /*----------------------------------------------------------------------------*/
 UINT_32 kalRandomNumber(VOID);
 
-
 /*----------------------------------------------------------------------------*/
 /* Scan Done Indication                                                       */
 /*----------------------------------------------------------------------------*/
-VOID
-kalScanDone(IN P_GLUE_INFO_T prGlueInfo,
-	    IN ENUM_KAL_NETWORK_TYPE_INDEX_T eNetTypeIdx, IN WLAN_STATUS rStatus);
+VOID kalScanDone(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_KAL_NETWORK_TYPE_INDEX_T eNetTypeIdx, IN WLAN_STATUS rStatus);
 
 #if CFG_ENABLE_BT_OVER_WIFI
 /*----------------------------------------------------------------------------*/
@@ -964,9 +936,7 @@ VOID kalIndicateBOWEvent(IN P_GLUE_INFO_T prGlueInfo, IN P_AMPC_EVENT prEvent);
 
 ENUM_BOW_DEVICE_STATE kalGetBowState(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rPeerAddr);
 
-VOID
-kalSetBowState(IN P_GLUE_INFO_T prGlueInfo,
-	       IN ENUM_BOW_DEVICE_STATE eBowState, IN PARAM_MAC_ADDRESS rPeerAddr);
+VOID kalSetBowState(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_BOW_DEVICE_STATE eBowState, IN PARAM_MAC_ADDRESS rPeerAddr);
 
 ENUM_BOW_DEVICE_STATE kalGetBowGlobalState(IN P_GLUE_INFO_T prGlueInfo);
 
@@ -987,13 +957,11 @@ ENUM_PARAM_MEDIA_STATE_T kalP2PGetState(IN P_GLUE_INFO_T prGlueInfo);
 
 VOID
 kalP2PSetState(IN P_GLUE_INFO_T prGlueInfo,
-	       IN ENUM_PARAM_MEDIA_STATE_T eState,
-	       IN PARAM_MAC_ADDRESS rPeerAddr, IN UINT_8 ucRole);
+	       IN ENUM_PARAM_MEDIA_STATE_T eState, IN PARAM_MAC_ADDRESS rPeerAddr, IN UINT_8 ucRole);
 
 VOID
 kalP2PUpdateAssocInfo(IN P_GLUE_INFO_T prGlueInfo,
-		      IN PUINT_8 pucFrameBody,
-		      IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest);
+		      IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest);
 
 UINT_32 kalP2PGetFreqInKHz(IN P_GLUE_INFO_T prGlueInfo);
 
@@ -1005,15 +973,16 @@ kalP2PSetRole(IN P_GLUE_INFO_T prGlueInfo,
 
 BOOLEAN kalP2PIndicateFound(IN P_GLUE_INFO_T prGlueInfo);
 
-VOID kalP2PIndicateConnReq(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucDevName, IN INT_32 u4NameLength, IN PARAM_MAC_ADDRESS rPeerAddr, IN UINT_8 ucDevType,	/* 0: P2P Device / 1: GC / 2: GO */
+VOID kalP2PIndicateConnReq(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucDevName,
+			   IN INT_32 u4NameLength, IN PARAM_MAC_ADDRESS rPeerAddr,
+			   IN UINT_8 ucDevType,	/* 0: P2P Device / 1: GC / 2: GO */
 			   IN INT_32 i4ConfigMethod, IN INT_32 i4ActiveConfigMethod);
 
 VOID
 kalP2PInvitationIndication(IN P_GLUE_INFO_T prGlueInfo,
 			   IN P_P2P_DEVICE_DESC_T prP2pDevDesc,
 			   IN PUINT_8 pucSsid,
-			   IN UINT_8 ucSsidLen,
-			   IN UINT_8 ucOperatingChnl, IN UINT_8 ucInvitationType);
+			   IN UINT_8 ucSsidLen, IN UINT_8 ucOperatingChnl, IN UINT_8 ucInvitationType);
 
 VOID kalP2PSetCipher(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Cipher);
 
@@ -1041,8 +1010,7 @@ BOOLEAN kalCfgDataRead16(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Offset, OUT P
 
 BOOLEAN kalCfgDataWrite16(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Offset, IN UINT_16 u2Data);
 
-BOOLEAN
-kalRetrieveNetworkAddress(IN P_GLUE_INFO_T prGlueInfo, IN OUT PARAM_MAC_ADDRESS * prMacAddr);
+BOOLEAN kalRetrieveNetworkAddress(IN P_GLUE_INFO_T prGlueInfo, IN OUT PARAM_MAC_ADDRESS * prMacAddr);
 
 /*----------------------------------------------------------------------------*/
 /* WSC Connection                                                     */
@@ -1063,7 +1031,6 @@ PVOID kalAllocateIOBuffer(IN UINT_32 u4AllocSize);
 
 VOID kalReleaseIOBuffer(IN PVOID pvAddr, IN UINT_32 u4Size);
 
-
 /*----------------------------------------------------------------------------*/
 /* Whole-chip Reset Trigger                                                   */
 /*----------------------------------------------------------------------------*/
@@ -1081,25 +1048,21 @@ BOOLEAN kalIsResetting(VOID);
 BOOLEAN kalSetSdioTestPattern(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgEn, IN BOOLEAN fgRead);
 #endif
 
-
 /*----------------------------------------------------------------------------*/
 /* AIS Remain-On-Channel, MGMT TX/RX Support                                  */
 /*----------------------------------------------------------------------------*/
 VOID
 kalReadyOnChannel(IN P_GLUE_INFO_T prGlueInfo,
 		  IN UINT_64 u8Cookie,
-		  IN ENUM_BAND_T eBand,
-		  IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum, IN UINT_32 u4DurationMs);
+		  IN ENUM_BAND_T eBand, IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum, IN UINT_32 u4DurationMs);
 
 VOID
 kalRemainOnChannelExpired(IN P_GLUE_INFO_T prGlueInfo,
-			  IN UINT_64 u8Cookie,
-			  IN ENUM_BAND_T eBand, IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum);
+			  IN UINT_64 u8Cookie, IN ENUM_BAND_T eBand, IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum);
 
 VOID
 kalIndicateMgmtTxStatus(IN P_GLUE_INFO_T prGlueInfo,
-			IN UINT_64 u8Cookie,
-			IN BOOLEAN fgIsAck, IN PUINT_8 pucFrameBuf, IN UINT_32 u4FrameLen);
+			IN UINT_64 u8Cookie, IN BOOLEAN fgIsAck, IN PUINT_8 pucFrameBuf, IN UINT_32 u4FrameLen);
 
 VOID kalIndicateRxMgmtFrame(IN P_GLUE_INFO_T prGlueInfo, IN P_SW_RFB_T prSwRfb);
 
@@ -1115,4 +1078,4 @@ VOID kalSchedScanStopped(IN P_GLUE_INFO_T prGlueInfo);
 ********************************************************************************
 */
 
-#endif				/* _GL_KAL_H */
+#endif /* _GL_KAL_H */

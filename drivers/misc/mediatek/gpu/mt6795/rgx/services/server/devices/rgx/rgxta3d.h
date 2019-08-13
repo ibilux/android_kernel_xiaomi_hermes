@@ -63,6 +63,7 @@ typedef struct {
 	DEVMEM_MEMDESC			*psFWHWRTDataMemDesc;
 	DEVMEM_MEMDESC			*psRTACtlMemDesc;
 	DEVMEM_MEMDESC			*psRTArrayMemDesc;
+	DEVMEM_MEMDESC          	*psRendersAccArrayMemDesc;
 	RGX_FREELIST 			*apsFreeLists[RGXFW_MAX_FREELISTS];
 	PVRSRV_CLIENT_SYNC_PRIM	*psCleanupSync;
 } RGX_RTDATA_CLEANUP_DATA;
@@ -379,27 +380,33 @@ PVRSRV_ERROR PVRSRVRGXDestroyRenderContextKM(RGX_SERVER_RENDER_CONTEXT *psRender
 IMG_EXPORT
 PVRSRV_ERROR PVRSRVRGXKickTA3DKM(RGX_SERVER_RENDER_CONTEXT	*psRenderContext,
 								 IMG_UINT32					ui32ClientTAFenceCount,
-								 PRGXFWIF_UFO_ADDR			*pauiClientTAFenceUFOAddress,
+								 SYNC_PRIMITIVE_BLOCK				**apsClientTAFenceSyncPrimBlock,
+								 IMG_UINT32					*paui32ClientTAFenceSyncOffset,
 								 IMG_UINT32					*paui32ClientTAFenceValue,
 								 IMG_UINT32					ui32ClientTAUpdateCount,
-								 PRGXFWIF_UFO_ADDR			*pauiClientUpdateTAUFOAddress,
+								 SYNC_PRIMITIVE_BLOCK				**apsClientUpdateSyncPrimBlock,
+								 IMG_UINT32					*paui32ClientUpdateSyncOffset,
 								 IMG_UINT32					*paui32ClientTAUpdateValue,
 								 IMG_UINT32					ui32ServerTASyncPrims,
 								 IMG_UINT32					*paui32ServerTASyncFlags,
 								 SERVER_SYNC_PRIMITIVE 		**pasServerTASyncs,
 								 IMG_UINT32					ui32Client3DFenceCount,
-								 PRGXFWIF_UFO_ADDR			*pauiClient3DFenceUFOAddress,
+								 SYNC_PRIMITIVE_BLOCK				**apsClient3DFenceSyncPrimBlock,
+								 IMG_UINT32					*pauiClient3DFenceSyncOffset,
 								 IMG_UINT32					*paui32Client3DFenceValue,
 								 IMG_UINT32					ui32Client3DUpdateCount,
-								 PRGXFWIF_UFO_ADDR			*pauiClientUpdate3DUFOAddress,
+								 SYNC_PRIMITIVE_BLOCK				**apsClient3DUpdateSyncPrimBlock,
+								 IMG_UINT32					*paui32Client3DUpdateSyncOffset,
 								 IMG_UINT32					*paui32Client3DUpdateValue,
 								 IMG_UINT32					ui32Server3DSyncPrims,
 								 IMG_UINT32					*paui32Server3DSyncFlags,
 								 SERVER_SYNC_PRIMITIVE 		**pasServer3DSyncs,
-								 PRGXFWIF_UFO_ADDR			uiPRFenceUFOAddress,
+								 SYNC_PRIMITIVE_BLOCK				*psPRSyncPrimBlock,
+								 IMG_UINT32					ui32PRSyncOffset,
 								 IMG_UINT32					ui32PRFenceValue,
-								 IMG_UINT32					ui32NumFenceFds,
-								 IMG_INT32					*pai32FenceFds,
+								 IMG_UINT32					ui32NumCheckFenceFDs,
+								 IMG_INT32					*pai32CheckFenceFDs,
+								 IMG_INT32                  i32UpdateFenceFD,
 								 IMG_UINT32					ui32TACmdSize,
 								 IMG_PBYTE					pui8TADMCmd,
 								 IMG_UINT32					ui323DPRCmdSize,
@@ -414,14 +421,13 @@ PVRSRV_ERROR PVRSRVRGXKickTA3DKM(RGX_SERVER_RENDER_CONTEXT	*psRenderContext,
 								 IMG_BOOL					bKick3D,
 								 IMG_BOOL					bAbort,
 								 IMG_BOOL					bPDumpContinuous,
-								 RGX_RTDATA_CLEANUP_DATA        *psRTDataCleanup,
-								 RGX_ZSBUFFER_DATA              *psZBuffer,
-								 RGX_ZSBUFFER_DATA               *psSBuffer,
-								 IMG_BOOL						bCommitRefCountsTA,
-								 IMG_BOOL						bCommitRefCounts3D,
-								 IMG_BOOL						*pbCommittedRefCountsTA,
-								 IMG_BOOL						*pbCommittedRefCounts3D);
-
+								 RGX_RTDATA_CLEANUP_DATA	*psRTDataCleanup,
+								 RGX_ZSBUFFER_DATA		*psZBuffer,
+								 RGX_ZSBUFFER_DATA		*psSBuffer,
+								 IMG_BOOL			bCommitRefCountsTA,
+								 IMG_BOOL			bCommitRefCounts3D,
+								 IMG_BOOL			*pbCommittedRefCountsTA,
+								 IMG_BOOL			*pbCommittedRefCounts3D);
 
 PVRSRV_ERROR PVRSRVRGXSetRenderContextPriorityKM(CONNECTION_DATA *psConnection,
 												 RGX_SERVER_RENDER_CONTEXT *psRenderContext,
@@ -440,28 +446,33 @@ IMG_VOID CheckForStalledRenderCtxt(PVRSRV_RGXDEV_INFO *psDevInfo,
 /* Debug/Watchdog - check if client contexts are stalled */
 IMG_BOOL CheckForStalledClientRenderCtxt(PVRSRV_RGXDEV_INFO *psDevInfo);
 
-IMG_EXPORT PVRSRV_ERROR 
+IMG_EXPORT PVRSRV_ERROR
 PVRSRVRGXKickSyncTAKM(RGX_SERVER_RENDER_CONTEXT  *psRenderContext,
                        IMG_UINT32                  ui32TAClientFenceCount,
-                       PRGXFWIF_UFO_ADDR           *pauiTAClientFenceUFOAddress,
+                       SYNC_PRIMITIVE_BLOCK				**apsClientTAFenceSyncPrimBlock,
+                       IMG_UINT32					*paui32ClientTAFenceSyncOffset,
                        IMG_UINT32                  *paui32TAClientFenceValue,
                        IMG_UINT32                  ui32TAClientUpdateCount,
-                       PRGXFWIF_UFO_ADDR           *pauiTAClientUpdateUFOAddress,
+                       SYNC_PRIMITIVE_BLOCK				**apsClientTAUpdateSyncPrimBlock,
+                       IMG_UINT32					*paui32ClientTAUpdateSyncOffset,
                        IMG_UINT32                  *paui32TAClientUpdateValue,
-                       IMG_UINT32                  ui32TAServerSyncPrims,
+                       IMG_UINT32                  ui32TAServerSyncPrimsCount,
                        IMG_UINT32                  *paui32TAServerSyncFlags,
                        SERVER_SYNC_PRIMITIVE       **pasTAServerSyncs,
 					   IMG_UINT32                  ui323DClientFenceCount,
-					   PRGXFWIF_UFO_ADDR           *paui3DClientFenceUFOAddress,
+                       SYNC_PRIMITIVE_BLOCK				**apsClient3DFenceSyncPrimBlock,
+                       IMG_UINT32					*paui32Client3DFenceSyncOffset,
 					   IMG_UINT32                  *paui323DClientFenceValue,
 					   IMG_UINT32                  ui323DClientUpdateCount,
-					   PRGXFWIF_UFO_ADDR           *paui3DClientUpdateUFOAddress,
+                       SYNC_PRIMITIVE_BLOCK				**apsClient3DUpdateSyncPrimBlock,
+                       IMG_UINT32					*paui32Client3DUpdateSyncOffset,
 					   IMG_UINT32                  *paui323DClientUpdateValue,
 					   IMG_UINT32                  ui323DServerSyncPrims,
 					   IMG_UINT32                  *paui323DServerSyncFlags,
 					   SERVER_SYNC_PRIMITIVE       **pas3DServerSyncs,
 					   IMG_UINT32				   ui32NumFenceFDs,
-					   IMG_INT32				   *paui32FenceFDs,
+					   IMG_INT32				   *pai32FenceFDs,
+					   IMG_INT32                   i32UpdateFenceFD,
                        IMG_BOOL                    bPDumpContinuous);
 
 #endif /* __RGXTA3D_H__ */

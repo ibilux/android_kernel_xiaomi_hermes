@@ -859,7 +859,6 @@ static int ion_debug_client_show(struct seq_file *s, void *unused)
 	        struct ion_buffer *buffer = handle->buffer;
 	        seq_printf(s, "%16.s %3d %8zu %3d %p %p.\n", buffer->heap->name, 
                                client->pid, buffer->size, buffer->handle_count, handle, buffer);
-
 	}
 	mutex_unlock(&client->lock);
 
@@ -1744,14 +1743,12 @@ static int ion_debug_heap_pool_show(struct seq_file *s, void *unused)
 	struct rb_node *n;
 
 	// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 begin
-	size_t total_size;
 	if (!heap->ops->page_pool_total) {
-		pr_err("%s: ion page pool total is not implemented by heap(%s).\n",
-		       __func__, heap->name);
+		pr_err("%s: ion page pool total is not implemented by heap(%s).\n", __func__, heap->name);
 		return -ENODEV;
 	}
 
-	total_size = heap->ops->page_pool_total(heap);
+	size_t total_size = heap->ops->page_pool_total(heap);
 	// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 end
 
 	seq_printf(s, "%16.s %16zu\n", "total_in_pool ", total_size);
@@ -2011,6 +2008,44 @@ int ion_drv_put_kernel_handle(void *kernel_handle)
 	return ion_handle_put(kernel_handle);
 }
 
+int ion_device_destory_heaps(struct ion_device *dev, int need_lock)
+{
+	struct ion_heap *heap, *tmp;
+	int i;
+
+	if(need_lock)
+		down_write(&dev->lock);
+
+	plist_for_each_entry_safe(heap, tmp, &dev->heaps, node) {
+		plist_del(heap, &dev->heaps);
+		ion_heap_destroy(heap);
+	}
+	
+	if(need_lock)
+		up_write(&dev->lock);
+	return 0;
+}
+
+struct ion_heap * ion_drv_get_heap(struct ion_device *dev, int heap_id, int need_lock)
+{
+	struct ion_heap *_heap, *heap = NULL, *tmp;
+	int i;
+
+	if(need_lock)
+		down_write(&dev->lock);
+
+	plist_for_each_entry_safe(_heap, tmp, &dev->heaps, node) {
+		if(_heap->id == heap_id) {
+			heap = _heap;
+			break;
+		}
+	}
+	
+	if(need_lock)
+		up_write(&dev->lock);
+	
+	return heap;
+}
 //=============================================================================================
 
 #if ION_DEBUG

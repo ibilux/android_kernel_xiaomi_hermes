@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/nic.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/nic.h#1
 */
 
 /*! \file   "nic.h"
@@ -8,10 +8,8 @@
     Detail description.
 */
 
-
-
 /*
-** $Log: nic.h $
+** Log: nic.h
 **
 ** 03 11 2014 eason.tsai
 ** [ALPS01070904] [Need Patch] [Volunteer Patch][MT6630][Driver]MT6630 Wi-Fi Patch
@@ -50,7 +48,8 @@
  * 11 01 2011 chinglan.wang
  * NULL
  * Modify the Wi-Fi method of the flush TX queue when disconnect the AP.
- * If disconnect the AP and flush all the data frame in the TX queue, WPS cannot do the 4-way handshake to connect to the AP..
+ * If disconnect the AP and flush all the data frame in the TX queue, WPS
+ * cannot do the 4-way handshake to connect to the AP..
  *
  * 07 18 2011 chinghwa.yu
  * [WCXRP00000063] Update BCM CoEx design and settings[WCXRP00000612] [MT6620 Wi-Fi] [FW] CSD update SWRDD algorithm
@@ -65,7 +64,8 @@
  * Fix kernel panic issue when MMPDU of P2P is pending in driver.
  *
  * 03 02 2011 cp.wu
- * [WCXRP00000503] [MT6620 Wi-Fi][Driver] Take RCPI brought by association response as initial RSSI right after connection is built.
+ * [WCXRP00000503] [MT6620 Wi-Fi][Driver] Take RCPI brought by association response as initial RSSI right
+ * after connection is built.
  * use RCPI brought by ASSOC-RESP after connection is built as initial RCPI to avoid using a uninitialized MAC-RX RCPI.
  *
  * 02 01 2011 cm.chang
@@ -81,7 +81,8 @@
  * 4. assume that change of link quality in smooth way.
  *
  * 10 26 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000137] [MT6620 Wi-Fi] [FW] Support NIC capability query command
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000137] [MT6620 Wi-Fi] [FW]
+ * Support NIC capability query command
  * 1) update NVRAM content template to ver 1.02
  * 2) add compile option for querying NIC capability (default: off)
  * 3) modify AIS 5GHz support to run-time option, which could be turned on by registry or NVRAM setting
@@ -108,11 +109,13 @@
  * 3) add OID implementation for NVRAM read/write service
  *
  * 10 04 2010 cp.wu
- * [WCXRP00000077] [MT6620 Wi-Fi][Driver][FW] Eliminate use of ENUM_NETWORK_TYPE_T and replaced by ENUM_NETWORK_TYPE_INDEX_T only
+ * [WCXRP00000077] [MT6620 Wi-Fi][Driver][FW] Eliminate use of ENUM_NETWORK_TYPE_T and replaced
+ * by ENUM_NETWORK_TYPE_INDEX_T only
  * remove ENUM_NETWORK_TYPE_T definitions
  *
  * 09 21 2010 cp.wu
- * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and might leads to BSOD when entering RF test with AIS associated
+ * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and might leads to BSOD when entering RF test
+ * with AIS associated
  * Do a complete reset with STA-REC null checking for RF test re-entry
  *
  * 09 08 2010 cp.wu
@@ -268,7 +271,6 @@
 ********************************************************************************
 */
 
-
 struct _REG_ENTRY_T {
 	UINT_32 u4Offset;
 	UINT_32 u4Value;
@@ -285,6 +287,11 @@ typedef struct _INT_EVENT_MAP_T {
 	UINT_32 u4Event;
 } INT_EVENT_MAP_T, *P_INT_EVENT_MAP_T;
 
+typedef struct _ECO_INFO_T {
+	UINT_8 ucHwVer;
+	UINT_8 ucRomVer;
+	UINT_8 ucFactoryVer;
+} ECO_INFO_T, *P_ECO_INFO_T;
 
 enum ENUM_INT_EVENT_T {
 	INT_EVENT_ABNORMAL,
@@ -299,7 +306,6 @@ typedef enum _ENUM_IE_UPD_METHOD_T {
 	IE_UPD_METHOD_UPDATE_ALL,
 	IE_UPD_METHOD_DELETE_ALL,
 } ENUM_IE_UPD_METHOD_T, *P_ENUM_IE_UPD_METHOD_T;
-
 
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
@@ -321,7 +327,6 @@ typedef enum _ENUM_IE_UPD_METHOD_T {
 ********************************************************************************
 */
 
-
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
@@ -332,8 +337,6 @@ typedef enum _ENUM_IE_UPD_METHOD_T {
 WLAN_STATUS nicAllocateAdapterMemory(IN P_ADAPTER_T prAdapter);
 
 VOID nicReleaseAdapterMemory(IN P_ADAPTER_T prAdapter);
-
-VOID nicCheckAdapterMemory(IN P_ADAPTER_T prAdapter);
 
 VOID nicDisableInterrupt(IN P_ADAPTER_T prAdapter);
 
@@ -348,7 +351,6 @@ WLAN_STATUS nicInitializeAdapter(IN P_ADAPTER_T prAdapter);
 VOID nicMCRInit(IN P_ADAPTER_T prAdapter);
 
 BOOL nicVerifyChipID(IN P_ADAPTER_T prAdapter);
-
 
 #if CFG_SDIO_INTR_ENHANCE
 VOID nicSDIOInit(IN P_ADAPTER_T prAdapter);
@@ -366,7 +368,6 @@ BOOLEAN nicpmSetAcpiPowerD0(IN P_ADAPTER_T prAdapter);
 
 BOOLEAN nicpmSetAcpiPowerD3(IN P_ADAPTER_T prAdapter);
 
-
 #if defined(_HIF_SPI)
 void nicRestoreSpiDefMode(IN P_ADAPTER_T prAdapter);
 #endif
@@ -383,8 +384,7 @@ VOID nicSetSwIntr(IN P_ADAPTER_T prAdapter, IN UINT_32 u4SwIntrBitmap);
 
 P_CMD_INFO_T nicGetPendingCmdInfo(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSeqNum);
 
-P_MSDU_INFO_T
-nicGetPendingTxMsduInfo(IN P_ADAPTER_T prAdapter, IN UINT_8 ucWlanIndex, IN UINT_8 ucSeqNum);
+P_MSDU_INFO_T nicGetPendingTxMsduInfo(IN P_ADAPTER_T prAdapter, IN UINT_8 ucWlanIndex, IN UINT_8 ucSeqNum);
 
 P_MSDU_INFO_T nicGetPendingStaMMPDU(IN P_ADAPTER_T prAdapter, IN UINT_8 ucStaRecIdx);
 
@@ -396,26 +396,22 @@ UINT_8 nicIncreaseTxSeqNum(IN P_ADAPTER_T prAdapter);
 
 /* Media State Change */
 WLAN_STATUS
-nicMediaStateChange(IN P_ADAPTER_T prAdapter,
-		    IN UINT_8 ucBssIndex, IN P_EVENT_CONNECTION_STATUS prConnectionStatus);
+nicMediaStateChange(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex, IN P_EVENT_CONNECTION_STATUS prConnectionStatus);
 
-WLAN_STATUS
-nicMediaJoinFailure(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex, IN WLAN_STATUS rStatus);
+WLAN_STATUS nicMediaJoinFailure(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex, IN WLAN_STATUS rStatus);
 
 /* Utility function for channel number conversion */
 UINT_32 nicChannelNum2Freq(IN UINT_32 u4ChannelNum);
 
 UINT_32 nicFreq2ChannelNum(IN UINT_32 u4FreqInKHz);
 
-UINT_8 nicGetVhtS1 (IN UINT_8 ucPrimaryChannel);
-
+UINT_8 nicGetVhtS1(IN UINT_8 ucPrimaryChannel);
 
 /* firmware command wrapper */
     /* NETWORK (WIFISYS) */
 WLAN_STATUS nicActivateNetwork(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex);
 
 WLAN_STATUS nicDeactivateNetwork(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex);
-
 
     /* BSS-INFO */
 WLAN_STATUS nicUpdateBss(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex);
@@ -431,8 +427,7 @@ WLAN_STATUS nicPmIndicateBssAbort(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex
 WLAN_STATUS
 nicUpdateBeaconIETemplate(IN P_ADAPTER_T prAdapter,
 			  IN ENUM_IE_UPD_METHOD_T eIeUpdMethod,
-			  IN UINT_8 ucBssIndex,
-			  IN UINT_16 u2Capability, IN PUINT_8 aucIe, IN UINT_16 u2IELen);
+			  IN UINT_8 ucBssIndex, IN UINT_16 u2Capability, IN PUINT_8 aucIe, IN UINT_16 u2IELen);
 
 WLAN_STATUS nicQmUpdateWmmParms(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex);
 
@@ -446,7 +441,6 @@ WLAN_STATUS nicUpdateTxPower(IN P_ADAPTER_T prAdapter, IN P_CMD_TX_PWR_T prTxPwr
 WLAN_STATUS nicUpdate5GOffset(IN P_ADAPTER_T prAdapter, IN P_CMD_5G_PWR_OFFSET_T pr5GPwrOffset);
 
 WLAN_STATUS nicUpdateDPD(IN P_ADAPTER_T prAdapter, IN P_CMD_PWR_PARAM_T prDpdCalResult);
-
 
 /*----------------------------------------------------------------------------*/
 /* PHY configuration                                                          */
@@ -467,17 +461,9 @@ VOID nicInitMGMT(IN P_ADAPTER_T prAdapter, IN P_REG_INFO_T prRegInfo);
 VOID nicUninitMGMT(IN P_ADAPTER_T prAdapter);
 
 WLAN_STATUS
-nicConfigPowerSaveProfile(IN P_ADAPTER_T prAdapter,
-			  UINT_8 ucBssIndex, PARAM_POWER_MODE ePwrMode, BOOLEAN fgEnCmdEvent);
+nicConfigPowerSaveProfile(IN P_ADAPTER_T prAdapter, UINT_8 ucBssIndex, PARAM_POWER_MODE ePwrMode, BOOLEAN fgEnCmdEvent);
 
 WLAN_STATUS nicEnterCtiaMode(IN P_ADAPTER_T prAdapter, BOOLEAN fgEnterCtia, BOOLEAN fgEnCmdEvent);
-
-WLAN_STATUS nicEnterCtiaModeOfScan(IN P_ADAPTER_T prAdapter, BOOLEAN fgEnterCtia, BOOLEAN fgEnCmdEvent);
-WLAN_STATUS nicEnterCtiaModeOfRoaming(IN P_ADAPTER_T prAdapter, BOOLEAN fgEnterCtia, BOOLEAN fgEnCmdEvent);
-WLAN_STATUS nicEnterCtiaModeOfCAM(IN P_ADAPTER_T prAdapter, BOOLEAN fgEnterCtia, BOOLEAN fgEnCmdEvent);
-WLAN_STATUS nicEnterCtiaModeOfBCNTimeout(IN P_ADAPTER_T prAdapter, BOOLEAN fgEnterCtia, BOOLEAN fgEnCmdEvent);
-WLAN_STATUS nicEnterCtiaModeOfAutoTxPower(IN P_ADAPTER_T prAdapter, BOOLEAN fgEnterCtia, BOOLEAN fgEnCmdEvent);
-WLAN_STATUS nicEnterCtiaModeOfFIFOFullNoAck(IN P_ADAPTER_T prAdapter, BOOLEAN fgEnterCtia, BOOLEAN fgEnCmdEvent);
 
 /*----------------------------------------------------------------------------*/
 /* Scan Result Processing                                                     */
@@ -524,19 +510,15 @@ nicRlmArUpdateParms(IN P_ADAPTER_T prAdapter,
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS nicRoamingUpdateParams(IN P_ADAPTER_T prAdapter, IN UINT_32 u4EnableRoaming);
 
-
 VOID nicPrintFirmwareAssertInfo(IN P_ADAPTER_T prAdapter);
 
 /*----------------------------------------------------------------------------*/
 /* Link Quality Updating                                                      */
 /*----------------------------------------------------------------------------*/
 VOID
-nicUpdateLinkQuality(IN P_ADAPTER_T prAdapter,
-		     IN UINT_8 ucBssIndex, IN P_EVENT_LINK_QUALITY_V2 prEventLinkQuality);
+nicUpdateLinkQuality(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex, IN P_EVENT_LINK_QUALITY_V2 prEventLinkQuality);
 
-VOID
-nicUpdateRSSI(IN P_ADAPTER_T prAdapter,
-	      IN UINT_8 ucBssIndex, IN INT_8 cRssi, IN INT_8 cLinkQuality);
+VOID nicUpdateRSSI(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex, IN INT_8 cRssi, IN INT_8 cLinkQuality);
 
 VOID nicUpdateLinkSpeed(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex, IN UINT_16 u2LinkSpeed);
 
@@ -549,4 +531,11 @@ WLAN_STATUS nicUpdateRddTestMode(IN P_ADAPTER_T prAdapter, IN P_CMD_RDD_CH_T prR
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS nicApplyNetworkAddress(IN P_ADAPTER_T prAdapter);
 
-#endif				/* _NIC_H */
+/*----------------------------------------------------------------------------*/
+/* ECO Version                                                                */
+/*----------------------------------------------------------------------------*/
+UINT_8 nicGetChipEcoVer(VOID);
+BOOLEAN nicIsEcoVerEqualTo(UINT_8 ucEcoVer);
+BOOLEAN nicIsEcoVerEqualOrLaterTo(UINT_8 ucEcoVer);
+
+#endif /* _NIC_H */

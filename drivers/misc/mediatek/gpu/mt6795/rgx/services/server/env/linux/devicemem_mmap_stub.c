@@ -64,6 +64,7 @@ IMG_INTERNAL PVRSRV_ERROR
 OSMMapPMR(IMG_HANDLE hBridge,
           IMG_HANDLE hPMR,
           IMG_DEVMEM_SIZE_T uiPMRSize,
+          IMG_UINT32 uiFlags,
           IMG_HANDLE *phOSMMapPrivDataOut,
           void **ppvMappingAddressOut,
           IMG_SIZE_T *puiMappingLengthOut)
@@ -75,6 +76,7 @@ OSMMapPMR(IMG_HANDLE hBridge,
     IMG_HANDLE hPriv;
 
     PVR_UNREFERENCED_PARAMETER(hBridge);
+    PVR_UNREFERENCED_PARAMETER(uiFlags);
 
     /*
       Normally this function would mmap a PMR into the memory space of

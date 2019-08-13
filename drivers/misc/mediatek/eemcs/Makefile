@@ -44,6 +44,14 @@ ifeq ($(CONFIG_MTK_SEC_MODEM_NVRAM_ANTI_CLONE), y)
 ccflags-y  += -DMTK_SEC_MODEM_NVRAM_ANTI_CLONE
 endif
 
+ifeq ($(GEMINI), yes)
+ccflags-y  += -DGEMINI
+endif
+
+ifeq ($(MTK_CU_3G_DSDS_SUPPORT), yes)
+ccflags-y  += -DMTK_CU_3G_DSDS_SUPPORT
+endif
+
 else
 obj- :=dummy.o
 endif

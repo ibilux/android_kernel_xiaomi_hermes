@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/rlm_protection.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/rlm_protection.c#1
 */
 
 /*! \file   "rlm_protection.c"
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: rlm_protection.c $
+** Log: rlm_protection.c
  *
  * 08 20 2010 cm.chang
  * NULL
@@ -105,4 +103,3 @@
 *                              F U N C T I O N S
 ********************************************************************************
 */
-

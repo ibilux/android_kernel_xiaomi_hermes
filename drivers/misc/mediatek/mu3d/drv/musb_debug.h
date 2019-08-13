@@ -35,12 +35,9 @@
 #ifndef __MUSB_LINUX_DEBUG_H__
 #define __MUSB_LINUX_DEBUG_H__
 
-#define yprintk(facility, format, args...) \
-	do { printk(facility "%s %d: " format , \
-	__func__, __LINE__ , ## args); } while (0)
-#define WARNING(fmt, args...) yprintk(KERN_WARNING, fmt, ## args)
-#define INFO(fmt, args...) yprintk(KERN_INFO, fmt, ## args)
-#define ERR(fmt, args...) yprintk(KERN_ERR, fmt, ## args)
+#define WARNING(fmt, args...) pr_debug("%s %d: " fmt, __func__, __LINE__, ## args)
+#define INFO(fmt, args...) pr_debug("%s %d: " fmt, __func__, __LINE__, ## args)
+#define ERR(fmt, args...) pr_err("%s %d: " fmt, __func__, __LINE__, ## args)
 
 #ifdef CONFIG_DEBUG_FS
 int musb_init_debugfs(struct musb *musb);

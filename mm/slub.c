@@ -204,9 +204,6 @@ static struct notifier_block slab_notifier;
  * Tracking user of a slab.
  */
 
-#ifdef MTK_COMPACT_SLUB_TRACK
-#define LOW_BYTE_MASK 0xffffffff00000000
-#endif
 
 #define TRACK_ADDRS_COUNT 8
 
@@ -214,7 +211,7 @@ static struct notifier_block slab_notifier;
 struct track {
 	unsigned long addr;	/* Called from address */
 #ifdef CONFIG_STACKTRACE
-	u32 addrs[TRACK_ADDRS_COUNT];	/* only lower 32bit for 64bit pointer Called from address */
+	u32 addrs[TRACK_ADDRS_COUNT];	/* we store the offset after MODULES_VADDR for kernel module and kernel text address  */
 #endif
 	int cpu;		/* Was running on cpu */
 	int pid;		/* Pid context */
@@ -550,8 +547,13 @@ static void set_track(struct kmem_cache *s, void *object,
 		for (i = trace.nr_entries; i < TRACK_ADDRS_COUNT; i++)
 			addrs[i] = 0;
 
-		for (i = 0; i < TRACK_ADDRS_COUNT; i++)
-		    p->addrs[i] = (u32)addrs[i];
+		for (i = 0; i < TRACK_ADDRS_COUNT; i++){
+            if(addrs[i])
+		        p->addrs[i] = addrs[i] - MODULES_VADDR;
+            else
+                p->addrs[i] = 0;
+        }
+        
 
 #endif
 		p->addr = addr;
@@ -617,14 +619,14 @@ static void print_track(const char *s, struct track *t)
 	    unsigned long addrs[TRACK_ADDRS_COUNT];	/* Called from address */
 		for (i = 0; i < TRACK_ADDRS_COUNT; i++) {
 
-            if(((unsigned int*)t->addrs)[i])
-                /*Assume high 32 bit will never change , text section should never cross _etext*/
-               addrs[i] = ((unsigned long)_etext & LOW_BYTE_MASK) | (t->addrs[i]);
+            if(t->addrs[i])
+                /* we store the offset after MODULES_VADDR for kernel module and kernel text address  */
+               addrs[i] =  MODULES_VADDR + t->addrs[i];
             else
                addrs[i] = 0;
         }
 		for (i = 0; i < TRACK_ADDRS_COUNT; i++) {
-			if (addrs[i])
+			if (addrs[i]) 
 				printk(KERN_ERR "\t%pS\n", (void *)addrs[i]);
 			else
 				break;
@@ -5490,13 +5492,12 @@ static int mtk_memcfg_add_location(struct loc_track *t, struct kmem_cache *s,
 
 	start = -1;
 	end = t->count;
-
 	/* find the index of track->addr */
 	for (i = 0; i < TRACK_ADDRS_COUNT; i++) {
 #ifdef MTK_COMPACT_SLUB_TRACK
-        /*Assume high 32 bit will never change , text section should never cross _etext */
-		if ((track->addr == (((unsigned long)_etext & LOW_BYTE_MASK) | (track->addrs[i]))) ||
-			(track->addr - 4 == (((unsigned long)_etext & LOW_BYTE_MASK) | track->addrs[i])))
+        /* we store the offset after MODULES_VADDR for kernel module and kernel text address  */
+		if (track->addr == ((MODULES_VADDR + track->addrs[i])) ||
+			((track->addr - 4) == (MODULES_VADDR + track->addrs[i])))
 #else
 		if ((track->addr == track->addrs[i]) ||
 			(track->addr - 4 == track->addrs[i]))
@@ -5510,8 +5511,11 @@ static int mtk_memcfg_add_location(struct loc_track *t, struct kmem_cache *s,
         unsigned long addrs[TRACK_ADDRS_COUNT];
 
         for(j =0;j < TRACK_ADDRS_COUNT;j++) {
-            /*Assume high 32 bit will never change , text section should never cross _etext */
-            addrs[j] = ((unsigned long)_etext & LOW_BYTE_MASK) | (track->addrs[j]);
+            /* we store the offset after MODULES_VADDR for kernel module and kernel text address  */
+            if(track->addrs[j])
+                addrs[j] = MODULES_VADDR + track->addrs[j];
+            else    
+                addrs[j] = 0;
         }
         memcpy(taddrs, addrs + i, (cnt * sizeof (unsigned long)));
     }

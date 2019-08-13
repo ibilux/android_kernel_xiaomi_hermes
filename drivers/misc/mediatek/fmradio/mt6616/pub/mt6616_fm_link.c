@@ -42,10 +42,8 @@ static int fm_i2c_probe(struct i2c_client *client, const struct i2c_device_id *i
 static int fm_i2c_detect(struct i2c_client *client, int kind, struct i2c_board_info *info);
 static int fm_i2c_remove(struct i2c_client *client);
 
-
 static const struct i2c_device_id fm_i2c_id = { MT6626_DEV, 0 };
-static unsigned short force[] =
-    { MT6626_I2C_PORT, MT6626_SLAVE_ADDR, I2C_CLIENT_END, I2C_CLIENT_END };
+static unsigned short force[] = { MT6626_I2C_PORT, MT6626_SLAVE_ADDR, I2C_CLIENT_END, I2C_CLIENT_END };
 static const unsigned short *const forces[] = { force, NULL };
 
 static struct i2c_client_address_data addr_data = {

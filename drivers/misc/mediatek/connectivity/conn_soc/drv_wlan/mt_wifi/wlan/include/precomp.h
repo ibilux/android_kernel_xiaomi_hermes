@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/precomp.h#2 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/precomp.h#2
 */
 
 /*! \file   precomp.h
@@ -9,10 +9,8 @@
     enable/disable such switch or adjust numeric parameters.
 */
 
-
-
 /*
-** $Log: precomp.h $
+** Log: precomp.h
  *
  * 07 17 2012 yuche.tsai
  * NULL
@@ -170,7 +168,7 @@
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
-#include "gl_os.h" // Include "config.h"
+#include "gl_os.h"		/* Include "config.h" */
 
 #if CFG_ENABLE_WIFI_DIRECT
 #include "gl_p2p_os.h"
@@ -180,7 +178,6 @@
 
 #include "link.h"
 #include "queue.h"
-
 
 /*------------------------------------------------------------------------------
  * .\include\mgmt
@@ -220,6 +217,8 @@
 /* Dependency:  hif_rx.h (P_HIF_RX_HEADER_T) */
 #include "nic_rx.h"
 
+#include "que_mgt.h"
+
 #if CFG_ENABLE_WIFI_DIRECT
 #include "p2p_typedef.h"
 #include "p2p_cmd_buf.h"
@@ -227,7 +226,6 @@
 #include "p2p_mac.h"
 #include "p2p_nic.h"
 #endif
-
 
 /*------------------------------------------------------------------------------
  * .\include\mgmt
@@ -250,12 +248,10 @@
 #include "hal.h"
 
 #if defined(MT6620)
-    #include "mt6620_reg.h"
-#elif defined(MT5931)
-    #include "mt5931_reg.h"
+#include "mt6620_reg.h"
 #elif defined(MT6628)
-//    #include "mt6628_reg.h"
-    #include "mtreg.h"
+/* #include "mt6628_reg.h" */
+#include "mtreg.h"
 #endif
 
 #include "rlm.h"
@@ -270,7 +266,6 @@
 #include "aa_fsm.h"
 
 #include "cnm_timer.h"
-#include "que_mgt.h"
 
 #if CFG_ENABLE_BT_OVER_WIFI
 #include "bow.h"
@@ -287,7 +282,6 @@
 /* Dependency:  aa_fsm.h (ENUM_AA_STATE_T), p2p_fsm.h (WPS_ATTRI_MAX_LEN_DEVICE_NAME) */
 #include "cnm_mem.h"
 #include "cnm_scan.h"
-
 
 #if CFG_ENABLE_WIFI_DIRECT
 #include "p2p_rlm_obss.h"
@@ -315,13 +309,10 @@
 
 #include "ais_fsm.h"
 
-
 #include "adapter.h"
-
 
 #include "que_mgt.h"
 #include "rftest.h"
-
 
 #if CFG_RSN_MIGRATION
 #include "rsn.h"
@@ -341,6 +332,23 @@
 #if CFG_ENABLE_WIFI_DIRECT
 #include "gl_p2p_kal.h"
 #endif
+
+typedef int (*set_p2p_mode) (struct net_device *netdev, PARAM_CUSTOM_P2P_SET_STRUC_T p2pmode);
+typedef void (*set_dbg_level) (unsigned char modules[DBG_MODULE_NUM]);
+
+extern void wlanRegisterNotifier(void);
+extern void wlanUnregisterNotifier(void);
+extern void register_set_p2p_mode_handler(set_p2p_mode handler);
+extern void register_set_dbg_level_handler(set_dbg_level handler);
+
+#if CFG_TC1_FEATURE
+#define NIC_INF_NAME_IN_AP_MODE  "legacy%d"
+extern volatile int wlan_if_changed;
+#endif
+extern BOOLEAN fgIsResetting;
+
+extern UINT_8 g_aucBufIpAddr[32];
+extern UINT_8 aucDebugModule[];
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -378,5 +386,3 @@
 */
 
 #endif /* _PRECOMP_H */
-
-

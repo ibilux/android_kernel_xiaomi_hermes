@@ -19,14 +19,13 @@
 #include <linux/kthread.h>
 #include <linux/hrtimer.h>
 #include <linux/ktime.h>
-#include <linux/xlog.h>
 #include <linux/jiffies.h>
 
 #include <asm/system.h>
 #include <asm/uaccess.h>
 
 #include "mach/mt_typedefs.h"
-#include "mach/mt_freqhopping.h"
+#include "mt_freqhopping.h"
 #include "mach/mt_emifreq.h"
 #include "mach/upmu_common.h"
 
@@ -35,9 +34,9 @@
 ****************************/
 #define dprintk(fmt, args...)                                           \
 do {                                                                    \
-    if (mt_emifreq_debug) {                                             \
-        xlog_printk(ANDROID_LOG_INFO, "Power/EMI_DFS", fmt, ##args);   \
-    }                                                                   \
+	if (mt_emifreq_debug) {                                             \
+		pr_debug("[Power/EMI_DFS] " fmt, ##args);   \
+	}                                                                   \
 } while(0)
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
@@ -96,12 +95,12 @@ static ssize_t mt_emifreq_state_write(struct file *file, const char *buffer, uns
         }
         else
         {
-            xlog_printk(ANDROID_LOG_INFO, "Power/EMI_DFS", "bad argument!! argument should be \"1\" or \"0\"\n");
+            pr_err("[Power/EMI_DFS] bad argument!! argument should be \"1\" or \"0\"\n");
         }
     }
     else
     {
-        xlog_printk(ANDROID_LOG_INFO, "Power/EMI_DFS", "bad argument!! argument should be \"1\" or \"0\"\n");
+        pr_err("[Power/EMI_DFS] bad argument!! argument should be \"1\" or \"0\"\n");
     }
 
     return count;
@@ -133,7 +132,7 @@ static ssize_t mt_emifreq_debug_write(struct file *file, const char *buffer, uns
 
     if (sscanf(buffer, "%d", &debug) == 1)
     {
-        if (debug == 0) 
+        if (debug == 0)
         {
             mt_emifreq_debug = 0;
             return count;
@@ -145,12 +144,12 @@ static ssize_t mt_emifreq_debug_write(struct file *file, const char *buffer, uns
         }
         else
         {
-            xlog_printk(ANDROID_LOG_INFO, "Power/EMI_DFS", "bad argument!! should be 0 or 1 [0: disable, 1: enable]\n");
+            pr_err("[Power/EMI_DFS] bad argument!! should be 0 or 1 [0: disable, 1: enable]\n");
         }
     }
     else
     {
-        xlog_printk(ANDROID_LOG_INFO, "Power/EMI_DFS", "bad argument!! should be 0 or 1 [0: disable, 1: enable]\n");
+        pr_err("[Power/EMI_DFS] bad argument!! should be 0 or 1 [0: disable, 1: enable]\n");
     }
 
     return -EINVAL;
@@ -165,7 +164,7 @@ void mt_emifreq_early_suspend(struct early_suspend *h)
     if(mt_emifreq_pause == false)
     {
         mt_h2l_dvfs_mempll();
-        xlog_printk(ANDROID_LOG_INFO, "Power/EMI_DFS", "mt_emifreq_early_suspend\n");
+		dprintk("[Power/EMI_DFS] mt_emifreq_early_suspend\n");
     }
 }
 
@@ -177,7 +176,7 @@ void mt_emifreq_late_resume(struct early_suspend *h)
     if(mt_emifreq_pause == false)
     {
         mt_l2h_dvfs_mempll();
-        xlog_printk(ANDROID_LOG_INFO, "Power/EMI_DFS", "mt_emifreq_late_resume\n");
+		dprintk("[Power/EMI_DFS] mt_emifreq_late_resume\n");
     }
 }
 
@@ -188,7 +187,7 @@ static int __init mt_emifreq_init(void)
 {
     struct proc_dir_entry *mt_entry = NULL;
     struct proc_dir_entry *mt_emifreq_dir = NULL;
-	
+
     #ifdef CONFIG_HAS_EARLYSUSPEND
     mt_emifreq_early_suspend_handler.suspend = mt_emifreq_early_suspend;
     mt_emifreq_early_suspend_handler.resume = mt_emifreq_late_resume;
@@ -216,7 +215,7 @@ static int __init mt_emifreq_init(void)
                 mt_entry->write_proc = mt_emifreq_state_write;
             }
         }
-		
+
     return 0;
 }
 

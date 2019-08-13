@@ -21,8 +21,8 @@
 
 #include "sched.h"
 
-//#define TEST_SCHED_DEBUG_ENHANCEMENT
-//#define MTK_SCHED_CMP_PRINT
+/* #define TEST_SCHED_DEBUG_ENHANCEMENT */
+/* #define MTK_SCHED_CMP_PRINT */
 #define TRYLOCK_NUM 10
 #include <linux/delay.h>
 static DEFINE_SPINLOCK(sched_debug_lock);
@@ -42,7 +42,7 @@ DECLARE_PER_CPU(struct task_struct, exec_task);
 	if (m)					\
 		seq_printf(m, x);		\
 	else					\
-		printk(x);			\
+		pr_debug(x);			\
  } while (0)
 #else
 #define SEQ_printf(m, x...)			\
@@ -52,7 +52,7 @@ DECLARE_PER_CPU(struct task_struct, exec_task);
 	else if (__get_cpu_var(kdb_in_use) == 1)		\
 		kdb_printf(x);			\
 	else						\
-		printk(x);				\
+		pr_debug(x);				\
  } while (0)
 #endif
 /*
@@ -80,7 +80,7 @@ static unsigned long nsec_low(unsigned long long nsec)
 
 #define SPLIT_NS(x) nsec_high(x), nsec_low(x)
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+#if defined(CONFIG_FAIR_GROUP_SCHED) && defined(CONFIG_SMP)
 static void print_cfs_group_stats(struct seq_file *m, int cpu, struct task_group *tg)
 {
 	struct sched_entity *se = tg->se[cpu];
@@ -255,7 +255,7 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 			cfs_rq->runnable_load_avg);
 	SEQ_printf(m, "  .%-30s: %ld\n", "blocked_load_avg",
 			cfs_rq->blocked_load_avg);
-#ifdef CONFIG_FAIR_GROUP_SCHED
+# ifdef CONFIG_FAIR_GROUP_SCHED
 	SEQ_printf(m, "  .%-30s: %ld\n", "tg_load_contrib",
 			cfs_rq->tg_load_contrib);
 	SEQ_printf(m, "  .%-30s: %d\n", "tg_runnable_contrib",
@@ -266,19 +266,19 @@ void print_cfs_rq(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 			atomic_read(&cfs_rq->tg->runnable_avg));
 	SEQ_printf(m, "  .%-30s: %d\n", "tg->usage_avg",
 			atomic_read(&cfs_rq->tg->usage_avg));
-#endif
-#ifdef CONFIG_CFS_BANDWIDTH
+# endif
+# ifdef CONFIG_CFS_BANDWIDTH
 	SEQ_printf(m, "  .%-30s: %d\n", "tg->cfs_bandwidth.timer_active",
 			cfs_rq->tg->cfs_bandwidth.timer_active);
 	SEQ_printf(m, "  .%-30s: %d\n", "throttled",
 			cfs_rq->throttled);
 	SEQ_printf(m, "  .%-30s: %d\n", "throttle_count",
 			cfs_rq->throttle_count);
-#endif
+# endif
 
-#ifdef CONFIG_FAIR_GROUP_SCHED
+# ifdef CONFIG_FAIR_GROUP_SCHED
 	print_cfs_group_stats(m, cpu, cfs_rq->tg);
-#endif
+# endif
 #endif
 }
 
@@ -386,7 +386,7 @@ static const char *sched_tunable_scaling_names[] = {
 };
 
 #ifdef TEST_SCHED_DEBUG_ENHANCEMENT
-extern void lock_timekeeper(void);		
+extern void lock_timekeeper(void);
 #endif
 static void sched_debug_header(struct seq_file *m)
 {
@@ -394,11 +394,12 @@ static void sched_debug_header(struct seq_file *m)
 	unsigned long flags;
 
 #ifdef TEST_SCHED_DEBUG_ENHANCEMENT
-	static int i=0;
+	static int i;
+
 	i++;
-	if(i==10){
+	if (i == 10) {
 		struct rq *rq = cpu_rq(0);
-		//lock_timekeeper();	
+		/* lock_timekeeper(); */
 		raw_spin_lock_irq(&rq->lock);
 		spin_lock_irqsave(&sched_debug_lock, flags);
 		write_lock_irqsave(&tasklist_lock, flags);
@@ -476,7 +477,7 @@ void sysrq_sched_debug_show(void)
 
 	sched_debug_header(NULL);
 	read_lock_irqsave(&tasklist_lock, flags);
-	//for_each_online_cpu(cpu)
+	/* for_each_online_cpu(cpu) */
 	for_each_possible_cpu(cpu)
 		print_cpu(NULL, cpu);
 	read_unlock_irqrestore(&tasklist_lock, flags);
@@ -687,111 +688,127 @@ void proc_sched_set_task(struct task_struct *p)
 	({						\
 		typecheck(unsigned long, flags);	\
 		local_irq_save(flags);			\
-		read_trylock(lock)?			\
+		read_trylock(lock) ? \
 		1 : ({ local_irq_restore(flags); 0; }); \
 	})
 
-int read_trylock_n_irqsave(rwlock_t *lock, unsigned long *flags, struct seq_file *m, char *msg){
-	int locked, trylock_cnt=0;
+int read_trylock_n_irqsave(rwlock_t *lock, unsigned long *flags, struct seq_file *m, char *msg)
+{
+	int locked, trylock_cnt = 0;
 
-	do{
+	do {
 		locked = read_trylock_irqsave(lock, *flags);
 		trylock_cnt++;
 		mdelay(10);
-	}while((!locked) && (trylock_cnt < TRYLOCK_NUM));
+	} while ((!locked) && (trylock_cnt < TRYLOCK_NUM));
 
-	if (!locked){
-#ifdef CONFIG_DEBUG_SPINLOCK		
+	if (!locked) {
+#ifdef CONFIG_DEBUG_SPINLOCK
 		struct task_struct *owner = NULL;
-#endif		
+#endif
 		SEQ_printf(m, "Warning: fail to get lock in %s\n", msg);
 #ifdef CONFIG_DEBUG_SPINLOCK
-		if (lock->owner && lock->owner != SPINLOCK_OWNER_INIT )
+		if (lock->owner && lock->owner != SPINLOCK_OWNER_INIT)
 			owner = lock->owner;
+#ifdef CONFIG_SMP
 		SEQ_printf(m, " lock: %p, .magic: %08x, .owner: %s/%d, "
-				".owner_cpu: %d, value: %d\n", 
-			lock, lock->magic, 
-			owner ? owner-> comm: "<<none>>", 	
-			owner ? task_pid_nr(owner): -1, 
-			lock->owner_cpu, lock->raw_lock.lock);
+			   ".owner_cpu: %d, value: %d\n",
+			   lock, lock->magic,
+			   owner ? owner->comm : "<<none>>",
+			   owner ? task_pid_nr(owner) : -1, lock->owner_cpu, lock->raw_lock.lock);
+#else
+		SEQ_printf(m, " lock: %p, .magic: %08x, .owner: %s/%d, "
+			   ".owner_cpu: %d\n",
+			   lock, lock->magic,
+			   owner ? owner->comm : "<<none>>",
+			   owner ? task_pid_nr(owner) : -1, lock->owner_cpu);
+#endif
 #endif
 	}
 
 	return locked;
 }
 
-int raw_spin_trylock_n_irqsave(raw_spinlock_t *lock, unsigned long *flags, struct seq_file *m, char *msg){
-	int locked, trylock_cnt=0;
+int raw_spin_trylock_n_irqsave(raw_spinlock_t *lock, unsigned long *flags, struct seq_file *m, char *msg)
+{
+	int locked, trylock_cnt = 0;
 
-	do{
+	do {
 		locked = raw_spin_trylock_irqsave(lock, *flags);
 		trylock_cnt++;
 		mdelay(10);
-	}while((!locked) && (trylock_cnt < TRYLOCK_NUM));
+	} while ((!locked) && (trylock_cnt < TRYLOCK_NUM));
 
-	if (!locked){
-#ifdef CONFIG_DEBUG_SPINLOCK		
+	if (!locked) {
+#ifdef CONFIG_DEBUG_SPINLOCK
 		struct task_struct *owner = NULL;
-#endif		
+#endif
 		SEQ_printf(m, "Warning: fail to get lock in %s\n", msg);
 #ifdef CONFIG_DEBUG_SPINLOCK
-		if (lock->owner && lock->owner != SPINLOCK_OWNER_INIT )
+		if (lock->owner && lock->owner != SPINLOCK_OWNER_INIT)
 			owner = lock->owner;
-# ifdef CONFIG_ARM64
+#ifdef CONFIG_ARM64
 		SEQ_printf(m, " lock: %lx, .magic: %08x, .owner: %s/%d, "
-				".owner_cpu: %d, value: %d\n", 
-			(long)lock, lock->magic, 
-			owner ? owner-> comm: "<<none>>", 	
-			owner ? task_pid_nr(owner): -1, 
-			lock->owner_cpu, lock->raw_lock.lock);
-# else
+			   ".owner_cpu: %d, value: %d\n",
+			   (long)lock, lock->magic,
+			   owner ? owner->comm : "<<none>>",
+			   owner ? task_pid_nr(owner) : -1, lock->owner_cpu,
+#ifdef CONFIG_SMP
+			   lock->raw_lock.lock);
+#else
+			   lock->raw_lock.slock);
+#endif
+#else
 		SEQ_printf(m, " lock: %x, .magic: %08x, .owner: %s/%d, "
-				".owner_cpu: %d, value: %d\n", 
-			(int)lock, lock->magic, 
-			owner ? owner-> comm: "<<none>>", 	
-			owner ? task_pid_nr(owner): -1, 
-			lock->owner_cpu, lock->raw_lock.slock);
-# endif
+			   ".owner_cpu: %d, value: %d\n",
+			   (int)lock, lock->magic,
+			   owner ? owner->comm : "<<none>>",
+			   owner ? task_pid_nr(owner) : -1, lock->owner_cpu, lock->raw_lock.slock);
+#endif
 #endif
 	}
 
 	return locked;
 }
 
-int spin_trylock_n_irqsave(spinlock_t *lock, unsigned long *flags, struct seq_file *m, char *msg){
-	int locked, trylock_cnt=0;
+int spin_trylock_n_irqsave(spinlock_t *lock, unsigned long *flags, struct seq_file *m, char *msg)
+{
+	int locked, trylock_cnt = 0;
 
-	do{
+	do {
 		locked = spin_trylock_irqsave(lock, *flags);
 		trylock_cnt++;
 		mdelay(10);
-		
-	}while((!locked) && (trylock_cnt < TRYLOCK_NUM));
 
-	if (!locked){
-#ifdef CONFIG_DEBUG_SPINLOCK		
+	} while ((!locked) && (trylock_cnt < TRYLOCK_NUM));
+
+	if (!locked) {
+#ifdef CONFIG_DEBUG_SPINLOCK
 		raw_spinlock_t rlock = lock->rlock;
 		struct task_struct *owner = NULL;
-#endif				
+#endif
 		SEQ_printf(m, "Warning: fail to get lock in %s\n", msg);
 #ifdef CONFIG_DEBUG_SPINLOCK
-		if (rlock.owner && rlock.owner != SPINLOCK_OWNER_INIT )
+		if (rlock.owner && rlock.owner != SPINLOCK_OWNER_INIT)
 			owner = rlock.owner;
-# ifdef CONFIG_ARM64
+#ifdef CONFIG_ARM64
 		SEQ_printf(m, " lock: %lx, .magic: %08x, .owner: %s/%d, "
-				".owner_cpu: %d, value: %d\n", 
-			(long) &rlock, rlock.magic, 
-			owner ? owner-> comm: "<<none>>", 	
-			owner ? task_pid_nr(owner): -1, 
-			rlock.owner_cpu, rlock.raw_lock.lock);
-# else
+			   ".owner_cpu: %d, value: %d\n",
+			   (long)&rlock, rlock.magic,
+			   owner ? owner->comm : "<<none>>",
+			   owner ? task_pid_nr(owner) : -1, rlock.owner_cpu,
+#ifdef CONFIG_SMP
+			   rlock.raw_lock.lock);
+#else
+			   rlock.raw_lock.slock);
+#endif
+#else
 		SEQ_printf(m, " lock: %x, .magic: %08x, .owner: %s/%d, "
-				".owner_cpu: %d, value: %d\n", 
-			(int) &rlock, rlock.magic, 
-			owner ? owner-> comm: "<<none>>", 	
-			owner ? task_pid_nr(owner): -1, 
-			rlock.owner_cpu, rlock.raw_lock.slock);
-# endif
+			   ".owner_cpu: %d, value: %d\n",
+			   (int)&rlock, rlock.magic,
+			   owner ? owner->comm : "<<none>>",
+			   owner ? task_pid_nr(owner) : -1, rlock.owner_cpu, rlock.raw_lock.slock);
+#endif
 #endif
 	}
 
@@ -811,7 +828,7 @@ void print_rq_at_KE(struct seq_file *m, struct rq *rq, int rq_cpu)
 	"------------------------------------------------------"
 	"----------------------------------------------------\n");
 
-	//read_lock_irqsave(&tasklist_lock, flags);
+	/* read_lock_irqsave(&tasklist_lock, flags); */
 	locked = read_trylock_n_irqsave(&tasklist_lock, &flags, m, "print_rq_at_KE");
 
 	do_each_thread(g, p) {
@@ -893,7 +910,7 @@ void print_cfs_rq_at_KE(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 	SEQ_printf(m, "  .%-22s: %Ld.%06ld\n", "exec_clock",
 			SPLIT_NS(cfs_rq->exec_clock));
 
-	//raw_spin_lock_irqsave(&rq->lock, flags);
+	/* raw_spin_lock_irqsave(&rq->lock, flags); */
 	locked = raw_spin_trylock_n_irqsave(&rq->lock, &flags, m, "print_cfs_rq_at_KE");
 	if (cfs_rq->rb_leftmost)
 		MIN_vruntime = (__pick_first_entity(cfs_rq))->vruntime;
@@ -902,7 +919,7 @@ void print_cfs_rq_at_KE(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 		max_vruntime = last->vruntime;
 	min_vruntime = cfs_rq->min_vruntime;
 	rq0_min_vruntime = cpu_rq(0)->cfs.min_vruntime;
-	if(locked)
+	if (locked)
 		raw_spin_unlock_irqrestore(&rq->lock, flags);
 	SEQ_printf(m, "  .%-22s: %Ld.%06ld\n", "MIN_vruntime",
 			SPLIT_NS(MIN_vruntime));
@@ -971,13 +988,12 @@ void print_rt_rq_at_KE(struct seq_file *m, int cpu, struct rt_rq *rt_rq)
 	P(rt_nr_running);
 	P(rt_throttled);
 	SEQ_printf(m, "  exec_task[%d:%s], prio=%d exec_delta_time[%llu]"
-                             ", clock_task[%llu], exec_start[%llu]\n",
-			     per_cpu(exec_task, cpu).pid,
-			     per_cpu(exec_task, cpu).comm,
-			     per_cpu(exec_task, cpu).prio,
-                             per_cpu(exec_delta_time, cpu),
-                             per_cpu(clock_task, cpu),
-                             per_cpu(exec_start, cpu));
+		   ", clock_task[%llu], exec_start[%llu]\n",
+		   per_cpu(exec_task, cpu).pid,
+		   per_cpu(exec_task, cpu).comm,
+		   per_cpu(exec_task, cpu).prio,
+		   per_cpu(exec_delta_time, cpu),
+		   per_cpu(clock_task, cpu), per_cpu(exec_start, cpu));
 	PN(rt_time);
 	PN(rt_runtime);
 
@@ -1017,13 +1033,13 @@ typedef struct rt_rq *rt_rq_iter_t;
 
 void print_rt_stats_at_KE(struct seq_file *m, int cpu)
 {
-        rt_rq_iter_t iter;
-        struct rt_rq *rt_rq;
+	rt_rq_iter_t iter;
+	struct rt_rq *rt_rq;
 
-        rcu_read_lock();
-        for_each_rt_rq(rt_rq, iter, cpu_rq(cpu))
-                print_rt_rq_at_KE(m, cpu, rt_rq);
-        rcu_read_unlock();
+	rcu_read_lock();
+	for_each_rt_rq(rt_rq, iter, cpu_rq(cpu))
+	    print_rt_rq_at_KE(m, cpu, rt_rq);
+	rcu_read_unlock();
 }
 
 static void print_cpu_at_KE(struct seq_file *m, int cpu)
@@ -1089,8 +1105,8 @@ do {									\
 #undef P
 #undef P64
 #endif
-	//spin_lock_irqsave(&sched_debug_lock, flags);
-	locked = spin_trylock_n_irqsave( &sched_debug_lock, &flags, m, "print_cpu_at_KE");
+	/* spin_lock_irqsave(&sched_debug_lock, flags); */
+	locked = spin_trylock_n_irqsave(&sched_debug_lock, &flags, m, "print_cpu_at_KE");
 	print_cfs_stats_at_KE(m, cpu);
 	print_rt_stats_at_KE(m, cpu);
 
@@ -1106,11 +1122,11 @@ do {									\
 
 static void sched_debug_header_at_KE(struct seq_file *m)
 {
-	u64 ktime=0, sched_clk, cpu_clk;
+	u64 ktime = 0, sched_clk, cpu_clk;
 	unsigned long flags;
 
 	local_irq_save(flags);
-	// ktime = ktime_to_ns(ktime_get());
+	/* ktime = ktime_to_ns(ktime_get()); */
 	sched_clk = sched_clock();
 	cpu_clk = local_clock();
 	local_irq_restore(flags);
@@ -1134,7 +1150,7 @@ static void sched_debug_header_at_KE(struct seq_file *m)
 #undef PN
 #undef P
 
-	//SEQ_printf(m, "\n");
+	/* SEQ_printf(m, "\n"); */
 	SEQ_printf(m, "sysctl_sched\n");
 
 #define P(x) \
@@ -1163,11 +1179,11 @@ void sysrq_sched_debug_show_at_KE(void)
 	int locked;
 
 	sched_debug_header_at_KE(NULL);
-	//read_lock_irqsave(&tasklist_lock, flags);
+	/* read_lock_irqsave(&tasklist_lock, flags); */
 	locked = read_trylock_n_irqsave(&tasklist_lock, &flags, NULL, "sched_debug_show_at_KE");
-	//for_each_online_cpu(cpu)
+	/* for_each_online_cpu(cpu) */
 	for_each_possible_cpu(cpu)
-		print_cpu_at_KE(NULL, cpu);
+	    print_cpu_at_KE(NULL, cpu);
 	if (locked)
 		read_unlock_irqrestore(&tasklist_lock, flags);
 
@@ -1178,13 +1194,13 @@ void sysrq_sched_debug_show_at_KE(void)
 #include <linux/export.h>
 #include <linux/met_drv.h>
 
-static char header[] = 
-"met-info [000] 0.0: ms_ud_sys_header: TaskTh,B->th,L->th,d,d\n"
-"met-info [000] 0.0: ms_ud_sys_header: HmpStat,force_up,force_down,d,d\n"
-"met-info [000] 0.0: ms_ud_sys_header: HmpLoad,big_load_avg,little_load_avg,d,d\n"
-"met-info [000] 0.0: ms_ud_sys_header: RqLen,rq0,rq1,rq2,rq3,d,d,d,d\n"
-"met-info [000] 0.0: ms_ud_sys_header: CfsLen,cfs_rq0,cfs_rq1,cfs_rq2,cfs_rq3,d,d,d,d\n"
-"met-info [000] 0.0: ms_ud_sys_header: RtLen,rt_rq0,rt_rq1,rt_rq2,rt_rq3,d,d,d,d\n";
+static char header[] =
+    "met-info [000] 0.0: ms_ud_sys_header: TaskTh,B->th,L->th,d,d\n"
+    "met-info [000] 0.0: ms_ud_sys_header: HmpStat,force_up,force_down,d,d\n"
+    "met-info [000] 0.0: ms_ud_sys_header: HmpLoad,big_load_avg,little_load_avg,d,d\n"
+    "met-info [000] 0.0: ms_ud_sys_header: RqLen,rq0,rq1,rq2,rq3,d,d,d,d\n"
+    "met-info [000] 0.0: ms_ud_sys_header: CfsLen,cfs_rq0,cfs_rq1,cfs_rq2,cfs_rq3,d,d,d,d\n"
+    "met-info [000] 0.0: ms_ud_sys_header: RtLen,rt_rq0,rt_rq1,rt_rq2,rt_rq3,d,d,d,d\n";
 
 static char help[] = "  --met_hmp_cfs                              monitor hmp_cfs\n";
 static int sample_print_help(char *buf, int len)
@@ -1197,16 +1213,16 @@ static int sample_print_header(char *buf, int len)
 	return snprintf(buf, PAGE_SIZE, header);
 }
 
-unsigned int mt_cfs_dbg=0;
+unsigned int mt_cfs_dbg = 0;
 static void sample_start(void)
 {
-	mt_cfs_dbg=1;
+	mt_cfs_dbg = 1;
 	return;
 }
 
 static void sample_stop(void)
 {
-	mt_cfs_dbg=0;
+	mt_cfs_dbg = 0;
 	return;
 }
 
@@ -1221,49 +1237,58 @@ struct metdevice met_hmp_cfs = {
 };
 EXPORT_SYMBOL(met_hmp_cfs);
 
-void TaskTh(unsigned int B_th,unsigned int L_th){	
-if(mt_cfs_dbg)	
-trace_printk("%d,%d\n",B_th,L_th);
+void TaskTh(unsigned int B_th, unsigned int L_th)
+{
+	if (mt_cfs_dbg)
+		trace_printk("%d,%d\n", B_th, L_th);
 }
 
-void HmpStat(struct hmp_statisic *hmp_stats){
-if(mt_cfs_dbg)	
-trace_printk("%d,%d\n",hmp_stats->nr_force_up,hmp_stats->nr_force_down);
+void HmpStat(struct hmp_statisic *hmp_stats)
+{
+	if (mt_cfs_dbg)
+		trace_printk("%d,%d\n", hmp_stats->nr_force_up, hmp_stats->nr_force_down);
 }
 
-void HmpLoad(int big_load_avg, int little_load_avg){
-if(mt_cfs_dbg)
-trace_printk("%d,%d\n",big_load_avg,little_load_avg);
+void HmpLoad(int big_load_avg, int little_load_avg)
+{
+	if (mt_cfs_dbg)
+		trace_printk("%d,%d\n", big_load_avg, little_load_avg);
 }
 
 static DEFINE_PER_CPU(unsigned int, cfsrqCnt);
 static DEFINE_PER_CPU(unsigned int, rtrqCnt);
 static DEFINE_PER_CPU(unsigned int, rqCnt);
 
-void RqLen(int cpu, int length){
-if(mt_cfs_dbg){
-        per_cpu(rqCnt, cpu) = length;
-	#if NR_CPUS == 4  
-	trace_printk("%d,%d,%d,%d\n",per_cpu(rqCnt,0),per_cpu(rqCnt,1),per_cpu(rqCnt,2),per_cpu(rqCnt,3));
-	#endif
+void RqLen(int cpu, int length)
+{
+	if (mt_cfs_dbg) {
+		per_cpu(rqCnt, cpu) = length;
+#if NR_CPUS == 4
+		trace_printk("%d,%d,%d,%d\n", per_cpu(rqCnt, 0), per_cpu(rqCnt, 1),
+			     per_cpu(rqCnt, 2), per_cpu(rqCnt, 3));
+#endif
 	}
 }
 
-void CfsLen(int cpu, int length){
-if(mt_cfs_dbg){
-        per_cpu(cfsrqCnt, cpu) = length;
-	#if NR_CPUS == 4  
-	trace_printk("%d,%d,%d,%d\n",per_cpu(cfsrqCnt,0),per_cpu(cfsrqCnt,1),per_cpu(cfsrqCnt,2),per_cpu(cfsrqCnt,3));
-	#endif
+void CfsLen(int cpu, int length)
+{
+	if (mt_cfs_dbg) {
+		per_cpu(cfsrqCnt, cpu) = length;
+#if NR_CPUS == 4
+		trace_printk("%d,%d,%d,%d\n", per_cpu(cfsrqCnt, 0), per_cpu(cfsrqCnt, 1),
+			     per_cpu(cfsrqCnt, 2), per_cpu(cfsrqCnt, 3));
+#endif
 	}
 }
 
-void RtLen(int cpu, int length){
-if(mt_cfs_dbg){
-        per_cpu(rtrqCnt, cpu) = length;        
-	#if NR_CPUS == 4  
-	trace_printk("%d,%d,%d,%d\n",per_cpu(rtrqCnt,0),per_cpu(rtrqCnt,1),per_cpu(rtrqCnt,2),per_cpu(rtrqCnt,3));
-	#endif
+void RtLen(int cpu, int length)
+{
+	if (mt_cfs_dbg) {
+		per_cpu(rtrqCnt, cpu) = length;
+#if NR_CPUS == 4
+		trace_printk("%d,%d,%d,%d\n", per_cpu(rtrqCnt, 0), per_cpu(rtrqCnt, 1),
+			     per_cpu(rtrqCnt, 2), per_cpu(rtrqCnt, 3));
+#endif
 	}
 }
 #endif

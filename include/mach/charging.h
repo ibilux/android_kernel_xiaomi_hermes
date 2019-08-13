@@ -23,6 +23,10 @@
  * $Revision:   1.0  $
  * $Modtime:   11 Aug 2005 10:28:16  $
  * $Log:   //mtkvs01/vmdata/Maui_sw/archives/mcu/hal/peripheral/inc/bmt_chr_setting.h-arc  $
+ *
+ * 03 04 2015 wy.chuang
+ * [ALPS01921641] [L1_merge] for PMIC and charging
+ * .
  *------------------------------------------------------------------------------
  * Upper this line, this part is controlled by PVCS VM. DO NOT MODIFY!!
  *============================================================================
@@ -48,6 +52,13 @@
       pr_notice(fmt, ##args); \
     } \
   } while (0)
+
+#define battery_log(num, fmt, args...) \
+	  do { \
+		if (Enable_BATDRV_LOG >= (int)num) { \
+		  pr_notice(fmt, ##args); \
+		} \
+	  } while (0)
 
 
 /* ============================================================ */
@@ -76,8 +87,10 @@ typedef enum {
 	CHARGING_CMD_GET_CSDAC_FALL_FLAG,
 	CHARGING_CMD_SET_TA_CURRENT_PATTERN,
 	CHARGING_CMD_SET_ERROR_STATE,
+#if defined(CONFIG_MTK_DUAL_INPUT_CHARGER_SUPPORT)
 	CHARGING_CMD_DISO_INIT,
 	CHARGING_CMD_GET_DISO_STATE,
+#endif 
 	CHARGING_CMD_NUMBER
 } CHARGING_CTRL_CMD;
 
@@ -92,6 +105,7 @@ typedef enum {
 	APPLE_1_0A_CHARGER,	/* 1A apple charger */
 	APPLE_0_5A_CHARGER,	/* 0.5A apple charger */
 	WIRELESS_CHARGER,
+	MAX_CHARGE,
 } CHARGER_TYPE;
 
 
@@ -448,6 +462,7 @@ typedef enum {
 	CHARGE_CURRENT_2900_00_MA = 290000,
 	CHARGE_CURRENT_3000_00_MA = 300000,
 	CHARGE_CURRENT_3100_00_MA = 310000,
+	CHARGE_CURRENT_4500_00_MA = 450000,
 	CHARGE_CURRENT_MAX
 } CHR_CURRENT_ENUM;
 
@@ -473,4 +488,11 @@ extern kal_bool chargin_hw_init_done;
 /* External function */
 /* ============================================================ */
 extern kal_int32 chr_control_interface(CHARGING_CTRL_CMD cmd, void *data);
+extern kal_uint32 upmu_get_reg_value(kal_uint32 reg);
+extern bool mt_usb_is_device(void);
+extern void Charger_Detect_Init(void);
+extern void Charger_Detect_Release(void);
+extern void mt_power_off(void);
+
+extern bool get_usb_current_unlimited(void);
 #endif				/* #ifndef _CHARGING_H */

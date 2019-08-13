@@ -10,10 +10,8 @@
     conversion between Rate Set and Data Rates.
 */
 
-
-
 /*
-** $Log: rate.c $
+** Log: rate.c
 **
 ** 07 12 2013 terry.wu
 ** [BORA00002207] [MT6630 Wi-Fi] TXM & MQM Implementation
@@ -119,7 +117,6 @@ const UINT_16 au2RateOFDM[OFDM_RATE_NUM] = {
 	RATE_OFDM_54M		/* RATE_54M_INDEX */
 };
 
-
 const UINT_16 au2RateHTMixed[HT_RATE_NUM] = {
 	RATE_MM_MCS_32,		/* RATE_MCS32_INDEX, */
 	RATE_MM_MCS_0,		/* RATE_MCS0_INDEX, */
@@ -132,7 +129,6 @@ const UINT_16 au2RateHTMixed[HT_RATE_NUM] = {
 	RATE_MM_MCS_7		/* RATE_MCS7_INDEX, */
 };
 
-
 const UINT_16 au2RateHTGreenField[HT_RATE_NUM] = {
 	RATE_GF_MCS_32,		/* RATE_MCS32_INDEX, */
 	RATE_GF_MCS_0,		/* RATE_MCS0_INDEX, */
@@ -144,7 +140,6 @@ const UINT_16 au2RateHTGreenField[HT_RATE_NUM] = {
 	RATE_GF_MCS_6,		/* RATE_MCS6_INDEX, */
 	RATE_GF_MCS_7,		/* RATE_MCS7_INDEX, */
 };
-
 
 const UINT_16 au2RateVHT[VHT_RATE_NUM] = {
 	RATE_VHT_MCS_0,		/* RATE_MCS0_INDEX, */
@@ -189,49 +184,42 @@ const UINT_16 au2RateVHT[VHT_RATE_NUM] = {
 ********************************************************************************
 */
 
-WLAN_STATUS
-nicRateIndex2RateCode(IN UINT_8 ucPreambleOption, IN UINT_8 ucRateIndex, OUT PUINT_16 pu2RateCode)
+WLAN_STATUS nicRateIndex2RateCode(IN UINT_8 ucPreambleOption, IN UINT_8 ucRateIndex, OUT PUINT_16 pu2RateCode)
 {
 	switch (ucPreambleOption) {
 	case PREAMBLE_DEFAULT_LONG_NONE:
-		if (ucRateIndex >= CCK_RATE_NUM) {
+		if (ucRateIndex >= CCK_RATE_NUM)
 			return WLAN_STATUS_INVALID_DATA;
-		}
 		*pu2RateCode = au2RateCCKLong[ucRateIndex];
 		break;
 
 	case PREAMBLE_OPTION_SHORT:
-		if (ucRateIndex >= CCK_RATE_NUM) {
+		if (ucRateIndex >= CCK_RATE_NUM)
 			return WLAN_STATUS_INVALID_DATA;
-		}
 		*pu2RateCode = au2RateCCKShort[ucRateIndex];
 		break;
 
 	case PREAMBLE_OFDM_MODE:
-		if (ucRateIndex >= OFDM_RATE_NUM) {
+		if (ucRateIndex >= OFDM_RATE_NUM)
 			return WLAN_STATUS_INVALID_DATA;
-		}
 		*pu2RateCode = au2RateOFDM[ucRateIndex];
 		break;
 
 	case PREAMBLE_HT_MIXED_MODE:
-		if (ucRateIndex >= HT_RATE_NUM) {
+		if (ucRateIndex >= HT_RATE_NUM)
 			return WLAN_STATUS_INVALID_DATA;
-		}
 		*pu2RateCode = au2RateHTMixed[ucRateIndex];
 		break;
 
 	case PREAMBLE_HT_GREEN_FIELD:
-		if (ucRateIndex >= HT_RATE_NUM) {
+		if (ucRateIndex >= HT_RATE_NUM)
 			return WLAN_STATUS_INVALID_DATA;
-		}
 		*pu2RateCode = au2RateHTGreenField[ucRateIndex];
 		break;
 
 	case PREAMBLE_VHT_FIELD:
-		if (ucRateIndex >= VHT_RATE_NUM) {
+		if (ucRateIndex >= VHT_RATE_NUM)
 			return WLAN_STATUS_INVALID_DATA;
-		}
 		*pu2RateCode = au2RateVHT[ucRateIndex];
 		break;
 

@@ -50,7 +50,7 @@ fi
 
 #add by dingyin for kernel version commit id
 if test -z "$KERNEL_GIT_COMMIT_ID"; then
-KERNEL_GIT_COMMIT_ID=$(cd "$ROOTDIR/kernel-3.10";echo "`git log -1 | grep commit | sed 's/commit //'`" | awk 'BEGIN{FS=""}{print $1$2$3$4$5$6$7$8"-"$9$10$11$12$13"-"$14$15$16$17$18$19$20$21}')
+KERNEL_GIT_COMMIT_ID=$(cd "$ROOTDIR/";echo "`git log -1 | grep commit | sed 's/commit //'`" | awk 'BEGIN{FS=""}{print $1$2$3$4$5$6$7$8"-"$9$10$11$12$13"-"$14$15$16$17$18$19$20$21}')
 echo $KERNEL_GIT_COMMIT_ID
 fi
 

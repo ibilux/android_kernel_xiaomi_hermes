@@ -28,7 +28,6 @@
 #include "fm_rds.h"
 #include "mt6620_fm_reg.h"
 
-
 #define MT6620_RDS_BLER_TH1 90
 #define MT6620_RDS_BLER_TH2 60
 #define MT6620_RDS_BLER_C1  12
@@ -246,8 +245,7 @@ static fm_s32 mt6620_RDS_BlerCheck(rds_t *dst)
 					RDS_Block_Reset_Cnt, bRDS_FirstIn);
 			} else if (TOTAL_CNT > 12) {
 				/* LCH question 2, why 12??? */
-				WCN_DBG(FM_DBG | RDSC, "RDS Block Reset: %x\n",
-					RDS_Block_Reset_Cnt);
+				WCN_DBG(FM_DBG | RDSC, "RDS Block Reset: %x\n", RDS_Block_Reset_Cnt);
 
 				if ((ret = mt6620_RDS_Reset_Block()))
 					return ret;
@@ -302,8 +300,7 @@ DEFINE_RDSLOG(mt6620_rds_log);
  * @fm - main data structure of FM driver
  * This function first get RDS raw data, then call RDS spec parser
  */
-static fm_s32 mt6620_rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size,
-				fm_u16(*getfreq) (void))
+static fm_s32 mt6620_rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size, fm_u16(*getfreq) (void))
 {
 	mt6620_rds_log.log_in(&mt6620_rds_log, rds_raw, rds_size);
 	return rds_parser(rds_dst, rds_raw, rds_size, getfreq);

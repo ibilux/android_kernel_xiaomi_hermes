@@ -101,19 +101,19 @@ static int wiphy_suspend(struct device *dev, pm_message_t state)
 
 	rtnl_lock();
 	if (rdev->wiphy.registered) {
-#if 0	//add by lizhiye, begin for W_And00317250, wifi signal instability	
+#if !defined(CONFIG_MTK_TC1_FEATURE)
 		if (!rdev->wowlan)
 			cfg80211_leave_all(rdev);
-		#endif
+#endif
 		if (rdev->ops->suspend)
 			ret = rdev_suspend(rdev, rdev->wowlan);
-		#if 0
+#if !defined(CONFIG_MTK_TC1_FEATURE)
 		if (ret == 1) {
 			/* Driver refuse to configure wowlan */
 			cfg80211_leave_all(rdev);
 			ret = rdev_suspend(rdev, NULL);
 		}
-#endif	//add by lizhiye, end for W_And00317250, wifi signal instability
+#endif
 	}
 	rtnl_unlock();
 

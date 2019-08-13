@@ -72,10 +72,4 @@ PVRSRVRGXDebugMiscSetFWLogKM(
 IMG_EXPORT PVRSRV_ERROR
 PVRSRVRGXDebugMiscDumpFreelistPageListKM(PVRSRV_DEVICE_NODE *psDeviceNode);
 
-IMG_EXPORT PVRSRV_ERROR
-PowMonTestIoctlKM(IMG_UINT32  uiCmd,
-				  IMG_UINT32  uiIn1,
-				  IMG_UINT32  uiIn2,
-				  IMG_UINT32  *puiOut1,
-				  IMG_UINT32  *puiOut2);
 #endif

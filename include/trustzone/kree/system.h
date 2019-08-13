@@ -10,7 +10,7 @@
 #include "trustzone/tz_cross/trustzone.h"
 
 /// KREE session handle type.
-typedef void* KREE_SESSION_HANDLE;
+typedef uint32_t KREE_SESSION_HANDLE;
 
 typedef uint32_t KREE_SHAREDMEM_HANDLE;
 

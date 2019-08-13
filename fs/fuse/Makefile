@@ -5,7 +5,7 @@
 obj-$(CONFIG_FUSE_FS) += fuse.o
 obj-$(CONFIG_CUSE) += cuse.o
 
-ifeq ($(CONFIG_MTK_MET), y)
+ifneq (,$(filter userdebug eng,$(TARGET_BUILD_VARIANT)))
 ccflags-y += -DMET_FUSEIO_TRACE
 endif
 

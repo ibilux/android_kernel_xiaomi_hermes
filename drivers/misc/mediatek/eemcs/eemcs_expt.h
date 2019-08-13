@@ -252,6 +252,7 @@ ccci_expt_port_cfg* get_expt_port_info(KAL_UINT32 port_id);
 
 ssize_t 	eemcs_expt_show_statistics(char *buf);
 void 		eemcs_expt_reset_statistics(void);
+void 		eemcs_mem_dump(void *start_addr, int len);
 
 
 #define hif_expt_dl_pkt_in_swq             mtlte_df_DL_pkt_in_swq
@@ -259,6 +260,8 @@ void 		eemcs_expt_reset_statistics(void);
 #define hif_expt_dl_pkt_handle_complete    mtlte_df_DL_pkt_handle_complete
 #define hif_expt_ul_pkt_in_swq             mtlte_df_UL_pkt_in_swq
 //#define hif_expt_ul_read_swq               mtlte_df_UL_read_skb_from_swq
+#define hif_expt_mbx_read(buf,len)        sdio_xboot_mb_rd(buf,len)
+#define hif_expt_mbx_write(buf,len)       sdio_xboot_mb_wr(buf,len)
 
 
 

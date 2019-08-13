@@ -443,6 +443,24 @@ IMG_INTERNAL PVRSRV_ERROR IMG_CALLCONV BridgeDevmemSLCFlushInvalRequest(IMG_HAND
 	return eError;
 }
 
+IMG_INTERNAL PVRSRV_ERROR IMG_CALLCONV BridgeDevmemIsVDevAddrValid(IMG_HANDLE hBridge,
+								   IMG_HANDLE hDevmemCtx,
+								   IMG_DEV_VIRTADDR sAddress)
+{
+	PVRSRV_ERROR eError;
+	DEVMEMINT_CTX * psDevmemCtxInt;
+	PVR_UNREFERENCED_PARAMETER(hBridge);
+
+	psDevmemCtxInt = (DEVMEMINT_CTX *) hDevmemCtx;
+
+	eError =
+		DevmemIntIsVDevAddrValid(
+					psDevmemCtxInt,
+					sAddress);
+
+	return eError;
+}
+
 IMG_INTERNAL PVRSRV_ERROR IMG_CALLCONV BridgeHeapCfgHeapConfigCount(IMG_HANDLE hBridge,
 								    IMG_HANDLE hDeviceNode,
 								    IMG_UINT32 *pui32NumHeapConfigs)
@@ -511,7 +529,8 @@ IMG_INTERNAL PVRSRV_ERROR IMG_CALLCONV BridgeHeapCfgHeapDetails(IMG_HANDLE hBrid
 								IMG_CHAR *puiHeapNameOut,
 								IMG_DEV_VIRTADDR *psDevVAddrBase,
 								IMG_DEVMEM_SIZE_T *puiHeapLength,
-								IMG_UINT32 *pui32Log2DataPageSizeOut)
+								IMG_UINT32 *pui32Log2DataPageSizeOut,
+								IMG_UINT32 *pui32Log2ImportAlignmentOut)
 {
 	PVRSRV_ERROR eError;
 	IMG_HANDLE hDeviceNodeInt;
@@ -528,7 +547,8 @@ IMG_INTERNAL PVRSRV_ERROR IMG_CALLCONV BridgeHeapCfgHeapDetails(IMG_HANDLE hBrid
 					puiHeapNameOut,
 					psDevVAddrBase,
 					puiHeapLength,
-					pui32Log2DataPageSizeOut);
+					pui32Log2DataPageSizeOut,
+					pui32Log2ImportAlignmentOut);
 
 	return eError;
 }

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/include/m6630def.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/include/m6630def.h#1
 */
 
 /*! \file   m6630def.h
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: m6630def.h $
+** Log: m6630def.h
 **
 ** 10 25 2012 cp.wu
 ** [BORA00002227] [MT6630 Wi-Fi][Driver] Update for Makefile and HIFSYS modifications
@@ -67,7 +65,6 @@
 #define NIC_DRIVER_INTERNAL_NAME        FILE_NAME
 #define NIC_DRIVER_ORIGINAL_FILE_NAME   FILE_NAME
 
-
 #ifdef WINDOWS_CE
 #define NIC_DRIVER_FILE_DESCRIPTION "NDIS 5.1/5.0 WINCE Driver"
 #else
@@ -105,4 +102,4 @@
 ********************************************************************************
 */
 
-#endif				/* _M6630DEF_H */
+#endif /* _M6630DEF_H */

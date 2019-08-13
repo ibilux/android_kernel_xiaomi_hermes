@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/spi/include/hif.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/spi/include/hif.h#1
 */
 
 /*! \file   "hif.h"
     \brief  spi specific structure for GLUE layer
 */
 
-
-
 /*
-** $Log: hif.h $
+** Log: hif.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -76,7 +74,6 @@
 
 #define BUS_RETRY_COUNT         10000
 
-
 /* Todo: these three values shall be shared with SDIO when enhanced mode
  *       is enabled
  */
@@ -133,12 +130,10 @@
 	    (MCR_WCSR & 0xFFFF) | (4 << 16) | SPI_FUN_WR \
 	)
 
-
 /*******************************************************************************
 *                         D A T A   T Y P E S
 ********************************************************************************
 */
-
 
 /* Windows glue layer's private data structure, which is
  * attached to adapter_p structure
@@ -160,9 +155,33 @@ typedef struct _GL_HIF_INFO_T {
 
 } GL_HIF_INFO_T, *P_GL_HIF_INFO_T;
 
-
 /*******************************************************************************
 *              F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-#endif				/* _HIF_H */
+#ifdef _lint
+BOOLEAN InterruptInitialize(UINT_32, PVOID, UINT_32, UINT_32);
+
+NDIS_STATUS NdisMRegisterInterrupt(PVOID, UINT_32, UINT_32, UINT_32, BOOLEAN,	/* RequestIsr */
+				   BOOLEAN,	/* SharedInterrupt */
+				   UINT_32);
+
+BOOLEAN
+KernelIoControl(UINT_32 dwIoControlCode,
+		PUCHAR lpInBuf, UINT_32 nInBufSize, PVOID lpOutBuf, UINT_32 nOutBufSize, PUINT_32 lpBytesReturned);
+
+BOOL CloseHandle(UINT_32 hObject);
+
+BOOL DisableThreadLibraryCalls(UINT_32 hModule);
+
+VOID CTL_CODE(UINT_32 DeviceType, UINT_32 Access, UINT_32 Function, UINT_32 Method);
+
+VOID NdisMDeregisterInterrupt(IN PUINT_32 Interrupt);
+
+VOID NdisWriteErrorLogEntry(IN UINT_32 NdisAdapterHandle, IN UINT_32 ErrorCode, IN ULONG NumberOfErrorValues);
+
+UINT_32 CreateEvent(PUINT_32 lpEventAttributes, BOOL bManualReset, BOOL bInitialState, PVOID lpName);
+
+#endif /* end of _lint */
+
+#endif /* _HIF_H */

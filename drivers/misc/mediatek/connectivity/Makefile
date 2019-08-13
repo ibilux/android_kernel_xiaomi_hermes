@@ -1,7 +1,7 @@
 MTK_PLATFORM := $(subst ",,$(CONFIG_MTK_PLATFORM))
 
 ifneq ($(CONFIG_MTK_COMBO),)
-	ifeq ($(CONFIG_MTK_LTE_SUPPORT),y)	
+	ifeq ($(CONFIG_MTK_CONN_LTE_IDC_SUPPORT),y)	
 	subdir-ccflags-y += -D WMT_IDC_SUPPORT=1
 	else
 	subdir-ccflags-y += -D WMT_IDC_SUPPORT=0
@@ -23,7 +23,9 @@ ifneq ($(CONFIG_MTK_COMBO),)
 	ifneq ($(filter "MT6630",$(CONFIG_MTK_COMBO_CHIP)),)
 		obj-y   +=  combo/
 		subdir-ccflags-y += -D MT6630
+	ifneq ($(CONFIG_ARCH_MT2601),y)
 		subdir-ccflags-y += -D MTK_MERGE_INTERFACE_SUPPORT
+	endif
 	endif
 	ifneq ($(filter "CONSYS_6572",$(CONFIG_MTK_COMBO_CHIP)),)
 		obj-y   +=  conn_soc/
@@ -40,8 +42,14 @@ ifneq ($(CONFIG_MTK_COMBO),)
 	ifneq ($(filter "CONSYS_6592",$(CONFIG_MTK_COMBO_CHIP)),)
 		obj-y   +=  conn_soc/
 	endif
-  ifneq ($(filter "CONSYS_6735",$(CONFIG_MTK_COMBO_CHIP)),)
-     obj-y   +=  conn_soc/
-  endif
+	ifneq ($(filter "CONSYS_6735",$(CONFIG_MTK_COMBO_CHIP)),)
+		obj-y   +=  conn_soc/
+	endif
+	ifneq ($(filter "CONSYS_8163",$(CONFIG_MTK_COMBO_CHIP)),)
+		obj-y   +=  conn_soc/
+	endif
+	ifneq ($(filter "CONSYS_6580",$(CONFIG_MTK_COMBO_CHIP)),)
+		obj-y   +=  conn_soc/
+	endif
 	obj-y   +=  common_detect/
 endif

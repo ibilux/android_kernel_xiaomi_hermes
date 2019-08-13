@@ -6,7 +6,7 @@
 #include <linux/list.h>
 #include <linux/init.h>
 #include <linux/smp.h>
-#include <linux/mt_sched_mon.h>
+#include "mt_sched_mon.h"
 #include <linux/io.h>
 #include <linux/delay.h>
 #include <linux/hardirq.h>

@@ -3,4 +3,4 @@
 #
 
 # MTK sync driver interface
-obj-y += mtk_sync.o
+obj-$(CONFIG_MTK_SYNC) += mtk_sync.o

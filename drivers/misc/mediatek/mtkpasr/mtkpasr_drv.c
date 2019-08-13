@@ -17,14 +17,12 @@
 #include <linux/vmalloc.h>
 #include <linux/interrupt.h>
 #include <linux/swap.h>
-#include <linux/syscore_ops.h>
 #include <linux/suspend.h>
 #include <linux/earlysuspend.h>
 #include <linux/migrate.h>
 #include "mtkpasr_drv.h"
 
 /* #define NO_UART_CONSOLE */
-#define MTKPASR_FAST_PATH
 
 /* MTKPASR Information */
 static struct zs_pool *mtkpasr_mem_pool;
@@ -65,10 +63,7 @@ static int mtkpasr_admit_order;
 
 /* Switch : Enabled by default */
 int mtkpasr_enable = 1;
-unsigned long mtkpasr_enable_sr = 1;
-
-/* Receive PM notifier flag */
-static bool pm_in_hibernation = false;
+int mtkpasr_enable_sr = 1;
 
 /* Debug filter */
 #ifdef CONFIG_MT_ENG_BUILD
@@ -376,7 +371,7 @@ void mtkpasr_reset_slots(void)
 /* To avoid fragmentation through mtkpasr_admit_order */
 static struct page *mtkpasr_alloc(struct page *migratepage, unsigned long data, int **result)
 {
-#ifdef MTKPASR_FAST_PATH/* FAST PATH */
+#if 1	/* FAST PATH */
 	struct page *page = NULL, *end_page;
 	struct zone *z;
 	/*unsigned long flags;*/
@@ -410,7 +405,6 @@ retry:
 		while (page < end_page) {
 			/* Lock this zone */
 			/*** spin_lock_irqsave(&z->lock, flags); ***/
-			local_irq_disable();
 			/* Find free pages */
 			if (!PageBuddy(page)) {
 				/*** spin_unlock_irqrestore(&z->lock, flags); ***/
@@ -665,7 +659,6 @@ void mtkpasr_restoring(void)
  */
 static int check_if_compressed(long start, long end, int pfn)
 {
-#ifndef CONFIG_64BIT
 	long mid;
 	int found = 0;
 
@@ -686,9 +679,6 @@ static int check_if_compressed(long start, long end, int pfn)
 	}
 
 	return found;
-#else
-	return 0;
-#endif
 }
 
 /* Return the number of inuse pages */
@@ -732,10 +722,10 @@ static void compute_bank_inused(int all)
 	/*
 	 * Drain pcp LRU lists to free some "unused" pages!
 	 * (During page migration, there may be some OLD pages be in pcp pagevec! To free them!)
-	 * To call lru_add_drain();
+	 * To call lru_add_drain_all();
 	 *
 	 * Drain pcp free lists to free some hot/cold pages into buddy!
-	 * To call drain_local_pages(NULL);
+	 * To call drain_all_pages();
 	 */
 	MTKPASR_FLUSH();
 
@@ -1041,7 +1031,7 @@ void shrink_mtkpasr_all(void)
 					}
 				}
 				/* Start migration */
-				if (MIGRATE_PAGES(&fromlist, compacting_alloc, 0) != 0) {
+				if (migrate_pages(&fromlist, compacting_alloc, 0, false, MIGRATE_ASYNC) != 0) {
 					putback_lru_pages(&fromlist);
 				}
 				fromlist_count = 0;
@@ -1298,8 +1288,8 @@ static unsigned long putback_free_pages(struct list_head *freelist)
 #define COMPACTING_COLLECT()										\
 	{												\
 		if (collect_free_pages_for_compacting_banks(&bank_cc) >= fromlist_count) {		\
-			if (MIGRATE_PAGES(&fromlist, compacting_alloc, 0) != 0) {	\
-				mtkpasr_log("(AC) Bank[%d] can't be cleared!\n", from);			\
+			if (migrate_pages(&fromlist, compacting_alloc, 0, false, MIGRATE_ASYNC) != 0) {	\
+				mtkpasr_log("Bank[%d] can't be cleared!\n", from);			\
 				ret = -1;								\
 				goto next;								\
 			}										\
@@ -1374,7 +1364,7 @@ static int compacting_banks(int from, int to, unsigned long *from_cursor, unsign
 				--BANK_INUSED(from);
 			} else {
 				/* This bank can't be cleared! */
-				mtkpasr_log("(BC) Bank[%d] can't be cleared!\n", from);
+				mtkpasr_log("Bank[%d] can't be cleared!\n", from);
 				ret = -1;
 				break;
 			}
@@ -1623,17 +1613,14 @@ static int pasr_scan_memory(void *src_map, unsigned long start, unsigned long en
 		}
 	} while (++start_pfn < end_pfn);
 
-#ifndef CONFIG_64BIT
 	/* Clear sorted (we only need to clear (end-start) entries.)*/
 	memset(sorted, 0, (end-start)*sizeof(unsigned long));
-#endif
 
 	mtkpasr_info("@@@ start_pfn[0x%lx] end_pfn[0x%lx] - to process[%d] @@@\n", start, end, need_compressed);
 
 	return need_compressed;
 }
 
-#ifndef CONFIG_64BIT
 /* Implementation of MTKPASR Direct Compression! DON'T MODIFY IT.  */
 #define MTKPASR_DIRECT_COMPRESSION()							\
 	{										\
@@ -1661,9 +1648,6 @@ static int pasr_scan_memory(void *src_map, unsigned long start, unsigned long en
 		}									\
 		unlock_page(page);							\
 	}
-#else
-#define MTKPASR_DIRECT_COMPRESSION()	do { ret = 0; } while (0);
-#endif
 
 /*
  * Drop, Compress, Migration, Compaction
@@ -1698,12 +1682,8 @@ enum mtkpasr_phase mtkpasr_entering(void)
 	int ret = 0;
 	struct mtkpasr *mtkpasr;
 	struct page *page;
-	int current_bank, current_pos;
-	unsigned long bank_start_pfn, bank_end_pfn;
-#ifndef CONFIG_64BIT
-	int current_index;
-	unsigned long which_pfn;
-#endif
+	int current_bank, current_pos, current_index;
+	unsigned long which_pfn, bank_start_pfn, bank_end_pfn;
 #ifdef CONFIG_MTKPASR_DEBUG
 	int drop_cnt, to_be_migrated, splitting, no_migrated;
 #endif
@@ -1734,11 +1714,9 @@ enum mtkpasr_phase mtkpasr_entering(void)
 
 	/* Reset "CROSS-OPS" variables: extcomp position index, extcomp start & end positions */
 	atomic_set(&sloti, -1);
-#ifndef CONFIG_64BIT
 	for (current_bank = 0; current_bank < num_banks; ++current_bank) {
 		mtkpasr_banks[current_bank].comp_pos = 0;
 	}
-#endif
 
 #ifdef CONFIG_MTKPASR_MAFL
 	/* Set for verification of ops-invariant */
@@ -1797,10 +1775,8 @@ enum mtkpasr_phase mtkpasr_entering(void)
 	mtkpasr_last_scan = mtkpasr_start_pfn - pageblock_nr_pages;
 
 next_bank:
-#ifndef CONFIG_64BIT
 	/* Set start pos at extcomp */
 	mtkpasr_banks[current_bank].comp_start = (s16)compressed;
-#endif
 
 	/* Scan MTKPASR-imposed pages */
 #ifdef CONFIG_MTKPASR_MAFL
@@ -1892,7 +1868,7 @@ next_page:
 		splitting += current_pos;
 #endif
 		/* Migrate pages */
-		if (MIGRATE_PAGES(this, mtkpasr_alloc, 0)) {
+		if (migrate_pages(this, mtkpasr_alloc, 0, false, MIGRATE_ASYNC)) {
 			/* Failed migration on remaining pages! No list add/remove operations! */
 			list_for_each_entry(page, this, lru) {
 #ifdef CONFIG_MTKPASR_DEBUG
@@ -1912,7 +1888,6 @@ next_page:
 	putback_lru_pages(&batch_to_migrate);
 	putback_lru_pages(&to_migrate);
 
-#ifndef CONFIG_64BIT
 	/* Set pos next to the last one at extcomp */
 	mtkpasr_banks[current_bank].comp_end = (s16)compressed;
 	mtkpasr_info("bank[%d] - comp_start[%d] comp_end[%d]\n",
@@ -1937,7 +1912,6 @@ next_page:
 		}
 #endif
 	}
-#endif
 
 	/* Check whether we should go to the next bank */
 	/* Because PASR only takes effect on continuous PASR banks, we should add "!ret" to avoid unnecessary works */
@@ -1973,8 +1947,12 @@ next_page:
 no_safe:
 	/* Go to MTKPASR_DISABLINGSR state if success */
 	if (result == MTKPASR_SUCCESS) {
-		/* Migrate to non-PASR range is not feasible(Means there may be some movable pages), so we should compact banks for PASR. */
-		if (mtkpasr_admit_order < 0)
+		/* Compaction on banks */
+#ifndef CONFIG_MTKPASR_RDIRECT
+		if (current_bank < (num_banks - 1))
+#else
+		if (current_bank > 0)
+#endif
 			result = mtkpasr_compact();
 		/* Successful PASR ops */
 		if (result == MTKPASR_SUCCESS) {
@@ -2192,147 +2170,12 @@ static void __init mtkpasr_construct_bankrank(void)
 	for (bank = 0; bank < num_banks; bank++) {
 		if (mtkpasr_banks[bank].inused == 0) {
 			remove_bank_from_buddy(bank);
-			pr_notice("(+)bank[%d]\n",bank);
-		} else {
-			pr_notice("(-)bank[%d] inused[%u]\n",bank,mtkpasr_banks[bank].inused);
 		}
 	}
 
 	prev_mafl_count = mafl_total_count;
 #endif
-
-	/* Sanity check - confirm all pages in MTKPASR banks are MIGRATE_MTKPASR */
-	rank = 0;
-	for (bank = 0; bank < num_banks; bank++) {
-		spfn = mtkpasr_banks[bank].start_pfn;
-		epfn = mtkpasr_banks[bank].end_pfn;
-		for (; spfn < epfn; spfn += pageblock_nr_pages)
-			if (!is_migrate_mtkpasr(get_pageblock_migratetype(pfn_to_page(spfn))))
-				rank++;
-	}
-	if (rank != 0)
-		pr_alert("\n\n\n[%s][%d]: There is non-MIGRATE_MTKPASR page in MTKPASR range!!!\n\n\n",__func__,__LINE__);
-
-	pr_notice("Non-MIGRATE_MTKPASR pages in MTKPASR range [%d]\n",rank);
 }
-
-#ifdef CONFIG_PM
-
-static int mtkpasr_pm_event(struct notifier_block *notifier, unsigned long pm_event, void *unused)
-{
-	switch(pm_event) {
-	case PM_HIBERNATION_PREPARE: 	/* Going to hibernate */
-		/* MTKPASR off */
-		pm_in_hibernation = true;
-		return NOTIFY_DONE;
-	case PM_POST_HIBERNATION: 	/* Hibernation finished */
-		/* MTKPASR on */
-		pm_in_hibernation = false;
-		return NOTIFY_DONE;
-	}
-	return NOTIFY_OK;
-}
-
-static struct notifier_block mtkpasr_pm_notifier_block = {
-	.notifier_call = mtkpasr_pm_event,
-	.priority = 0,
-};
-
-extern unsigned long mtkpasr_triggered;
-extern unsigned long failed_mtkpasr;
-static int mtkpasr_syscore_suspend(void)
-{
-	enum mtkpasr_phase result;
-	int ret = 0;
-	int irq_disabled = 0;		/* MTKPASR_FLUSH -> drain_all_pages -> on_each_cpu_mask will enable local irq */
-
-	IS_MTKPASR_ENABLED;
-
-	/* If system is currently in hibernation, just return. */
-	if (pm_in_hibernation == true) {
-		mtkpasr_log("In hibernation!\n");
-		return 0;
-	}
-
-	/* Setup SPM wakeup event firstly */
-	spm_set_wakeup_src_check();
-	
-	/* Check whether we are in irq-disabled environment */
-	if (irqs_disabled()) {
-		irq_disabled = 1;
-	}
-
-	/* Count for every trigger */
-	++mtkpasr_triggered;
-
-	/* It will go to MTKPASR stage */
-	current->flags |= PF_MTKPASR | PF_SWAPWRITE;
-	
-	/* RAM-to-RAM compression - State change: MTKPASR_OFF -> MTKPASR_ENTERING -> MTKPASR_DISABLINGSR */
-	result = mtkpasr_entering();
-	
-	/* It will leave MTKPASR stage */
-	current->flags &= ~(PF_MTKPASR | PF_SWAPWRITE);
-	
-	/* Any pending wakeup source? */
-	if (result == MTKPASR_GET_WAKEUP) {
-		mtkpasr_restoring();
-		mtkpasr_err("PM: Failed to enter MTKPASR\n");
-		++failed_mtkpasr;
-		ret = -1;
-	} else if (result == MTKPASR_WRONG_STATE) {
-		mtkpasr_reset_state();
-		mtkpasr_err("Wrong state!\n");
-		++failed_mtkpasr;
-	}
-
-	/* Recover it to irq-disabled environment if needed */
-	if (irq_disabled == 1) {
-		if (!irqs_disabled()) {
-			mtkpasr_log("IRQ is enabled! To disable it here!\n");
-			arch_suspend_disable_irqs();
-		}
-	}
-
-	return ret;
-}
-
-static void mtkpasr_syscore_resume(void)
-{
-	enum mtkpasr_phase result;
-	
-	/* If system is currently in hibernation, just return. */
-	if (pm_in_hibernation == true) {
-		mtkpasr_log("In hibernation!\n");
-		return;
-	}
-
-	/* RAM-to-RAM decompression - State change: MTKPASR_EXITING -> MTKPASR_OFF */
-	result = mtkpasr_exiting();
-
-	if (result == MTKPASR_WRONG_STATE) {
-		mtkpasr_reset_state();
-		mtkpasr_err("Wrong state!\n");
-	} else if (result == MTKPASR_FAIL) {
-		printk(KERN_ERR"\n\n\n Some Fatal Error!\n\n\n");
-	}
-}
-
-static struct syscore_ops mtkpasr_syscore_ops = {
-	.suspend	= mtkpasr_syscore_suspend,
-	.resume		= mtkpasr_syscore_resume,
-};
-
-static int __init mtkpasr_init_ops(void)
-{
-	if (!register_pm_notifier(&mtkpasr_pm_notifier_block))
-		register_syscore_ops(&mtkpasr_syscore_ops);
-	else
-		mtkpasr_err("Failed to register pm notifier block\n");
-		
-	return 0;
-}
-#endif
 
 /* mtkpasr initcall */
 static int __init mtkpasr_init(void)
@@ -2366,14 +2209,6 @@ static int __init mtkpasr_init(void)
 		goto out;
 	}
 
-	/* Construct memory rank & bank information */
-	num_banks = compute_valid_pasr_range(&mtkpasr_start_pfn, &mtkpasr_end_pfn, &num_ranks);
-	if (num_banks < 0) {
-		mtkpasr_err("No valid PASR range!\n");
-		ret = -EINVAL;
-		goto free_devices;
-	}
-
 	/* To allocate memory for src_pgmap if needed (corresponding to one bank size) */
 	if (src_pgmap == NULL) {
 		src_pgmap = (void *)__get_free_pages(GFP_KERNEL, get_order(pasrbank_pfns * sizeof(unsigned long)));
@@ -2385,7 +2220,7 @@ static int __init mtkpasr_init(void)
 	}
 
 	/* To allocate memory for keeping external compression information */
-	if (extcomp == NULL && !!MTKPASR_MAX_EXTCOMP) {
+	if (extcomp == NULL) {
 		extcomp = (unsigned long *)__get_free_pages(GFP_KERNEL, get_order(MTKPASR_MAX_EXTCOMP * sizeof(unsigned long)));
 		if (extcomp == NULL) {
 			mtkpasr_err("Failed to allocate memory for extcomp!\n");
@@ -2420,6 +2255,13 @@ static int __init mtkpasr_init(void)
 		goto reset_devices;
 	}
 
+	/* Construct memory rank & bank information */
+	num_banks = compute_valid_pasr_range(&mtkpasr_start_pfn, &mtkpasr_end_pfn, &num_ranks);
+	if (num_banks < 0) {
+		mtkpasr_err("No valid PASR range!\n");
+		ret = -EINVAL;
+		goto free_banks_ranks;
+	}
 	/* mtkpasr_total_pfns = mtkpasr_end_pfn - mtkpasr_start_pfn; */
 	mtkpasr_banks = kzalloc(num_banks * sizeof(struct mtkpasr_bank), GFP_KERNEL);
 	if (!mtkpasr_banks) {
@@ -2433,7 +2275,6 @@ static int __init mtkpasr_init(void)
 		ret = -ENOMEM;
 		goto free_banks_ranks;
 	}
-
 	mtkpasr_construct_bankrank();
 
 	/* Indicate migration end */
@@ -2444,11 +2285,6 @@ static int __init mtkpasr_init(void)
 
 	/* Register early suspend/resume desc */
 	register_early_suspend(&mtkpasr_early_suspend_desc);
-
-#ifdef CONFIG_PM
-	/* Register syscore_ops */
-	mtkpasr_init_ops();
-#endif
 
 	/* Setup others */
 	nz = &NODE_DATA(0)->node_zones[ZONE_NORMAL];
@@ -2473,10 +2309,8 @@ free_banks_ranks:
 
 reset_devices:
 	mtkpasr_reset_device(mtkpasr_device);
-	if (extcomp != NULL) {
-		free_pages((unsigned long)extcomp, get_order(MTKPASR_MAX_EXTCOMP * sizeof(unsigned long)));
-		free_pages((unsigned long)sorted_for_extcomp, get_order(pasrbank_pfns * sizeof(unsigned long)));
-	}
+	free_pages((unsigned long)extcomp, get_order(MTKPASR_MAX_EXTCOMP * sizeof(unsigned long)));
+	free_pages((unsigned long)sorted_for_extcomp, get_order(pasrbank_pfns * sizeof(unsigned long)));
 
 no_memory:
 	free_pages((unsigned long)src_pgmap, get_order(pasrbank_pfns * sizeof(unsigned long)));
@@ -2515,7 +2349,7 @@ static void __exit mtkpasr_exit(void)
 
 	pr_debug("Cleanup done!\n");
 }
-device_initcall_sync(mtkpasr_init);
+subsys_initcall_sync(mtkpasr_init);
 module_exit(mtkpasr_exit);
 
 MODULE_AUTHOR("MTK");

@@ -1,5 +1,5 @@
 /*
-** $Id: @(#) p2p_nic.c@@
+** Id: @(#) p2p_nic.c@@
 */
 
 /*! \file   p2p_nic.c
@@ -9,10 +9,6 @@
     and also take the responsibility of Software Resource Management in order
     to keep the synchronization with Hardware Manipulation.
 */
-
-
-
-
 
 /*******************************************************************************
 *                         C O M P I L E R   F L A G S
@@ -61,7 +57,6 @@
 ********************************************************************************
 */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief When Probe Rsp & Beacon frame is received and decide a P2P device,
@@ -75,8 +70,7 @@
 /*----------------------------------------------------------------------------*/
 VOID
 nicRxAddP2pDevice(IN P_ADAPTER_T prAdapter,
-		  IN P_EVENT_P2P_DEV_DISCOVER_RESULT_T prP2pResult,
-		  IN PUINT_8 pucRxIEBuf, IN UINT_16 u2RxIELength)
+		  IN P_EVENT_P2P_DEV_DISCOVER_RESULT_T prP2pResult, IN PUINT_8 pucRxIEBuf, IN UINT_16 u2RxIELength)
 {
 	P_P2P_INFO_T prP2pInfo = (P_P2P_INFO_T) NULL;
 	P_EVENT_P2P_DEV_DISCOVER_RESULT_T prTargetResult = (P_EVENT_P2P_DEV_DISCOVER_RESULT_T) NULL;
@@ -106,8 +100,7 @@ nicRxAddP2pDevice(IN P_ADAPTER_T prAdapter,
 			kalMemZero(prTargetResult, sizeof(EVENT_P2P_DEV_DISCOVER_RESULT_T));
 
 			/* then buffer */
-			kalMemCopy(prTargetResult,
-				   (PVOID) prP2pResult, sizeof(EVENT_P2P_DEV_DISCOVER_RESULT_T));
+			kalMemCopy(prTargetResult, (PVOID) prP2pResult, sizeof(EVENT_P2P_DEV_DISCOVER_RESULT_T));
 
 			/* See if new IE length is longer or not. */
 			if ((u2RxIELength > u2IELength) && (u2IELength != 0)) {
@@ -119,19 +112,16 @@ nicRxAddP2pDevice(IN P_ADAPTER_T prAdapter,
 				pucIeBuf = prP2pInfo->pucCurrIePtr;
 
 				if (((ULONG) prP2pInfo->pucCurrIePtr + (ULONG) u2RxIELength) >
-				    (ULONG) &prP2pInfo->
-				    aucCommIePool[CFG_MAX_COMMON_IE_BUF_LEN]) {
+				    (ULONG) & prP2pInfo->aucCommIePool[CFG_MAX_COMMON_IE_BUF_LEN]) {
 					/* Common Buffer is no enough. */
 					u2RxIELength =
-					    (UINT_16) ((ULONG) &prP2pInfo->
-						       aucCommIePool[CFG_MAX_COMMON_IE_BUF_LEN] -
+					    (UINT_16) ((ULONG) & prP2pInfo->aucCommIePool[CFG_MAX_COMMON_IE_BUF_LEN] -
 						       (ULONG) prP2pInfo->pucCurrIePtr);
 				}
 
 				/* Step to next buffer address. */
 				prP2pInfo->pucCurrIePtr =
-				    (PUINT_8) ((ULONG) prP2pInfo->pucCurrIePtr +
-					       (ULONG) u2RxIELength);
+				    (PUINT_8) ((ULONG) prP2pInfo->pucCurrIePtr + (ULONG) u2RxIELength);
 			}
 
 			/* Restore buffer pointer. */
@@ -154,39 +144,36 @@ nicRxAddP2pDevice(IN P_ADAPTER_T prAdapter,
 		/* We would flush the whole scan result after each scan request is issued.
 		 * If P2P device is too many, it may over the scan list.
 		 */
-		if ((u4Idx < CFG_MAX_NUM_BSS_LIST) && (UNEQUAL_MAC_ADDR(zeroMac, prP2pResult->aucDeviceAddr))) {	/* whsu:XXX */
+		if ((u4Idx < CFG_MAX_NUM_BSS_LIST) && (UNEQUAL_MAC_ADDR(zeroMac, prP2pResult->aucDeviceAddr))) {
 			prTargetResult = &prP2pInfo->arP2pDiscoverResult[u4Idx];
 
 			/* zero */
 			kalMemZero(prTargetResult, sizeof(EVENT_P2P_DEV_DISCOVER_RESULT_T));
 
 			/* then buffer */
-			kalMemCopy(prTargetResult,
-				   (PVOID) prP2pResult, sizeof(EVENT_P2P_DEV_DISCOVER_RESULT_T));
+			kalMemCopy(prTargetResult, (PVOID) prP2pResult, sizeof(EVENT_P2P_DEV_DISCOVER_RESULT_T));
 
-			/* printk("DVC FND %d " MACSTR", " MACSTR "\n", prP2pInfo->u4DeviceNum, MAC2STR(prP2pResult->aucDeviceAddr), MAC2STR(prTargetResult->aucDeviceAddr)); */
+			/* printk("DVC FND %d " MACSTR", " MACSTR "\n",
+			 * prP2pInfo->u4DeviceNum, MAC2STR(prP2pResult->aucDeviceAddr),
+			 * MAC2STR(prTargetResult->aucDeviceAddr)); */
 
 			if (u2RxIELength) {
 				prTargetResult->pucIeBuf = prP2pInfo->pucCurrIePtr;
 
 				if (((ULONG) prP2pInfo->pucCurrIePtr + (ULONG) u2RxIELength) >
-				    (ULONG) &prP2pInfo->
-				    aucCommIePool[CFG_MAX_COMMON_IE_BUF_LEN]) {
+				    (ULONG) & prP2pInfo->aucCommIePool[CFG_MAX_COMMON_IE_BUF_LEN]) {
 					/* Common Buffer is no enough. */
 					u2IELength =
-					    (UINT_16) ((ULONG) &prP2pInfo->
-						       aucCommIePool[CFG_MAX_COMMON_IE_BUF_LEN] -
+					    (UINT_16) ((ULONG) & prP2pInfo->aucCommIePool[CFG_MAX_COMMON_IE_BUF_LEN] -
 						       (ULONG) prP2pInfo->pucCurrIePtr);
 				} else {
 					u2IELength = u2RxIELength;
 				}
 
 				prP2pInfo->pucCurrIePtr =
-				    (PUINT_8) ((ULONG) prP2pInfo->pucCurrIePtr +
-					       (ULONG) u2IELength);
+				    (PUINT_8) ((ULONG) prP2pInfo->pucCurrIePtr + (ULONG) u2IELength);
 
-				kalMemCopy((PVOID) prTargetResult->pucIeBuf, (PVOID) pucRxIEBuf,
-					   (UINT_32) u2IELength);
+				kalMemCopy((PVOID) prTargetResult->pucIeBuf, (PVOID) pucRxIEBuf, (UINT_32) u2IELength);
 				prTargetResult->u2IELength = u2IELength;
 			} else {
 				prTargetResult->pucIeBuf = NULL;

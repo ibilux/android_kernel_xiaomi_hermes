@@ -31,7 +31,8 @@
 #define MT6627_CQI_TH          0x00E9	/* FM radio Channel quality indicator threshold(0x0000~0x00FF) */
 #define MT6627_SEEK_SPACE      1	/* FM radio seek space,1:100KHZ; 2:200KHZ */
 #define MT6627_SCAN_CH_SIZE    40	/* FM radio scan max channel size */
-#define MT6627_BAND            1	/* FM radio band, 1:87.5MHz~108.0MHz; 2:76.0MHz~90.0MHz; 3:76.0MHz~108.0MHz; 4:special */
+/* FM radio band, 1:87.5MHz~108.0MHz; 2:76.0MHz~90.0MHz; 3:76.0MHz~108.0MHz; 4:special */
+#define MT6627_BAND            1
 #define MT6627_BAND_FREQ_L     875	/* FM radio special band low freq(Default 87.5MHz) */
 #define MT6627_BAND_FREQ_H     1080	/* FM radio special band high freq(Default 108.0MHz) */
 #define MT6627_DEEMPHASIS_50us TRUE
@@ -55,4 +56,4 @@
 #define ext_clk			/* if define ext_clk use external reference clock or mask will use internal */
 #define MT6627_DEV			"MT6627"
 
-#endif				/* end of #ifndef __MT6627_FM_H__ */
+#endif /* end of #ifndef __MT6627_FM_H__ */

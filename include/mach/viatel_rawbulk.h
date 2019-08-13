@@ -45,6 +45,8 @@
 #define MAX_TTY_TX          8
 #define MAX_TTY_TX_PACKAGE  512
 
+//#define CONFIG_EVDO_DT_VIA_SUPPORT
+#ifdef CONFIG_EVDO_DT_VIA_SUPPORT
 enum transfer_id {
 	RAWBULK_TID_MODEM,
 	RAWBULK_TID_ETS,
@@ -53,6 +55,16 @@ enum transfer_id {
 	RAWBULK_TID_GPS,
 	_MAX_TID
 };
+#else
+enum transfer_id {
+	RAWBULK_TID_PCV,
+	RAWBULK_TID_MODEM,
+	RAWBULK_TID_ETS,
+	RAWBULK_TID_AT,
+	RAWBULK_TID_GPS,
+	_MAX_TID
+};
+#endif
 
 struct rawbulk_function {
 	int transfer_id;
@@ -149,8 +161,6 @@ void rawbulk_unbind_function(int trasfer_id);
 int rawbulk_check_enable(struct rawbulk_function *fn);
 void rawbulk_disable_function(struct rawbulk_function *fn);
 
-
-
 /* operations for transactions */
 int rawbulk_start_transactions(int transfer_id, int nups, int ndowns, int upsz, int downsz);
 void rawbulk_stop_transactions(int transfer_id);
@@ -163,5 +173,35 @@ extern int modem_dtr_set(int on, int low_latency);
 extern int modem_dcd_state(void);
 extern int sdio_buffer_push(int port_num, const unsigned char *buf, int count);
 extern int sdio_rawbulk_intercept(int port_num, unsigned int inception);
+
+/* debug mechanism */
+extern unsigned int c2k_usb_dbg_level;	/* refer to rawbulk_transfer.c */
+static inline int c2k_dbg_level(unsigned level)
+{
+	return c2k_usb_dbg_level >= level;
+}
+
+#define C2K_LOG_EMERG 		0 
+#define C2K_LOG_ALERT  		1
+#define C2K_LOG_CRIT   		2
+#define C2K_LOG_ERR    		3
+#define C2K_LOG_WARN    	4
+#define C2K_LOG_NOTICE 		5
+#define C2K_LOG_INFO   		6
+#define C2K_LOG_DBG  		7
+
+#define C2K_USB_DBG_ON
+#ifdef C2K_USB_DBG_ON
+#define C2K_ERR(format, args...) do {if(c2k_dbg_level(C2K_LOG_ERR)){printk(KERN_WARNING "C2K_USB_ERR,<%s %d>, " format , __func__, __LINE__ , ## args);}}while(0)
+#define C2K_WARN(format, args...) do {if(c2k_dbg_level(C2K_LOG_WARN)){printk(KERN_WARNING "C2K_USB_WARN,<%s %d>, " format , __func__, __LINE__ , ## args);}}while(0)
+#define C2K_NOTE(format, args...) do {if(c2k_dbg_level(C2K_LOG_NOTICE)){printk(KERN_WARNING "C2K_USB_NOTE,<%s %d>, " format , __func__, __LINE__ , ## args);}}while(0)
+#define C2K_INFO(format, args...) do {if(c2k_dbg_level(C2K_LOG_INFO)){printk(KERN_WARNING "C2K_USB_INFO,<%s %d>, " format , __func__, __LINE__ , ## args);}}while(0)
+#define C2K_DBG(format, args...) do {if(c2k_dbg_level(C2K_LOG_DBG)){printk(KERN_WARNING "C2K_USB_DBG,<%s %d>, " format , __func__, __LINE__ , ## args);}}while(0)
+#else
+#define C2K_ERR(format, args...) do {}while(0) 
+#define C2K_WARN(format, args...) do {}while(0) 
+#define C2K_INFO(format, args...) do {}while(0) 
+#define C2K_DBG(format, args...) do {}while(0) 
+#endif
 
 #endif				/* __RAWBULK_HEADER_FILE__ */

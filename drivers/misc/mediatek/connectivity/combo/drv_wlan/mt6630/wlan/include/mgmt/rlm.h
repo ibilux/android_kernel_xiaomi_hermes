@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm.h#2 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm.h#2
 */
 
 /*! \file   "rlm.h"
     \brief
 */
 
-
-
 /*
-** $Log: rlm.h $
+** Log: rlm.h
 **
 ** 07 12 2013 terry.wu
 ** [BORA00002207] [MT6630 Wi-Fi] TXM & MQM Implementation
@@ -205,7 +203,6 @@ extern UINT_16 g_u2DumpIndex;
 #define ELEM_EXT_CAP_DEFAULT_VAL \
 	(ELEM_EXT_CAP_20_40_COEXIST_SUPPORT /*| ELEM_EXT_CAP_PSMP_CAP*/)
 
-
 #if CFG_SUPPORT_RX_STBC
 #define FIELD_HT_CAP_INFO_RX_STBC   HT_CAP_INFO_RX_STBC_1_SS
 #else
@@ -229,10 +226,8 @@ extern UINT_16 g_u2DumpIndex;
 #define HT_CAP_INFO_DEFAULT_VAL \
 	(HT_CAP_INFO_SUP_CHNL_WIDTH | HT_CAP_INFO_DSSS_CCK_IN_40M)
 
-
 #define AMPDU_PARAM_DEFAULT_VAL \
 	(AMPDU_PARAM_MAX_AMPDU_LEN_64K | AMPDU_PARAM_MSS_NO_RESTRICIT)
-
 
 #define SUP_MCS_TX_DEFAULT_VAL \
 	SUP_MCS_TX_SET_DEFINED	/* TX defined and TX/RX equal (TBD) */
@@ -275,7 +270,6 @@ extern UINT_16 g_u2DumpIndex;
 
 #define ASEL_CAP_DEFAULT_VAL                        0
 
-
 /* Define bandwidth from user setting */
 #define CONFIG_BW_20_40M            0
 #define CONFIG_BW_20M               1	/* 20MHz only */
@@ -291,7 +285,7 @@ extern UINT_16 g_u2DumpIndex;
 
 #define VHT_CAP_INFO_DEFAULT_VAL \
 	(VHT_CAP_INFO_MAX_MPDU_LEN_3K | \
-	 (AMPDU_PARAM_MAX_AMPDU_LEN_1024K << VHT_CAP_INFO_MAX_AMPDU_LENGTH_OFFSET))
+	 (AMPDU_PARAM_MAX_AMPDU_LEN_64K << VHT_CAP_INFO_MAX_AMPDU_LENGTH_OFFSET))
 
 #define VHT_CAP_INFO_DEFAULT_HIGHEST_DATA_RATE			0
 #endif
@@ -336,17 +330,16 @@ extern UINT_16 g_u2DumpIndex;
 	((_prBssInfo)->ucPhyTypeSet & PHY_TYPE_SET_802_11AC)
 #endif
 
-
 /* The bandwidth modes are not used anymore. They represent if AP
  * can use 20/40 bandwidth, not all modes. (20110411)
  */
 #define RLM_AP_IS_BW_40_ALLOWED(_prAdapter, _prBssInfo) \
-    (((_prBssInfo)->eBand == BAND_2G4 && \
-      (_prAdapter)->rWifiVar.rConnSettings.uc2G4BandwidthMode \
-      == CONFIG_BW_20_40M) || \
-     ((_prBssInfo)->eBand == BAND_5G && \
-      (_prAdapter)->rWifiVar.rConnSettings.uc5GBandwidthMode \
-      == CONFIG_BW_20_40M))
+	(((_prBssInfo)->eBand == BAND_2G4 && \
+	(_prAdapter)->rWifiVar.rConnSettings.uc2G4BandwidthMode \
+	== CONFIG_BW_20_40M) || \
+	((_prBssInfo)->eBand == BAND_5G && \
+	(_prAdapter)->rWifiVar.rConnSettings.uc5GBandwidthMode \
+	== CONFIG_BW_20_40M))
 
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
@@ -374,8 +367,7 @@ BOOLEAN rlmParseCheckMTKOuiIE(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuf, IN PU
 
 VOID rlmProcessBcn(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb, PUINT_8 pucIE, UINT_16 u2IELength);
 
-VOID
-rlmProcessAssocRsp(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb, PUINT_8 pucIE, UINT_16 u2IELength);
+VOID rlmProcessAssocRsp(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb, PUINT_8 pucIE, UINT_16 u2IELength);
 
 VOID rlmFillSyncCmdParam(P_CMD_SET_BSS_RLM_PARAM_T prCmdBody, P_BSS_INFO_T prBssInfo);
 
@@ -383,28 +375,22 @@ VOID rlmSyncOperationParams(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
 
 VOID rlmBssInitForAPandIbss(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
 
-VOID
-rlmProcessAssocReq(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb, PUINT_8 pucIE, UINT_16 u2IELength);
+VOID rlmProcessAssocReq(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb, PUINT_8 pucIE, UINT_16 u2IELength);
 
 VOID rlmBssAborted(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
-
 
 #if CFG_SUPPORT_TDLS
 UINT_32
 rlmFillHtCapIEByParams(BOOLEAN fg40mAllowed,
 		       BOOLEAN fgShortGIDisabled,
 		       UINT_8 u8SupportRxSgi20,
-		       UINT_8 u8SupportRxSgi40,
-		       UINT_8 u8SupportRxGf, ENUM_OP_MODE_T eCurrentOPMode, UINT_8 * pOutBuf);
+		       UINT_8 u8SupportRxSgi40, UINT_8 u8SupportRxGf, ENUM_OP_MODE_T eCurrentOPMode, UINT_8 * pOutBuf);
 
 UINT_32 rlmFillHtCapIEByAdapter(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo, UINT_8 *pOutBuf);
 
-
 UINT_32 rlmFillVhtCapIEByAdapter(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo, UINT_8 *pOutBuf);
 
-
 #endif
-
 
 #if CFG_SUPPORT_802_11AC
 VOID rlmReqGenerateVhtCapIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
@@ -417,19 +403,10 @@ VOID rlmFillVhtOpIE(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo, P_MSDU_INFO_T
 #endif
 
 #if CFG_SUPPORT_DFS
-VOID
-rlmProcessSpecMgtAction(
-        P_ADAPTER_T prAdapter,
-        P_SW_RFB_T  prSwRfb
-        );
+VOID rlmProcessSpecMgtAction(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb);
 
 VOID
-rlmSendOpModeNotificationFrame(
-    P_ADAPTER_T     prAdapter,
-    P_STA_RECORD_T  prStaRec,
-    UINT_8          ucChannelWidth,
-    UINT_8          ucNss
-    );
+rlmSendOpModeNotificationFrame(P_ADAPTER_T prAdapter, P_STA_RECORD_T prStaRec, UINT_8 ucChannelWidth, UINT_8 ucNss);
 
 #endif
 
@@ -443,6 +420,6 @@ static __KAL_INLINE__ VOID rlmDataTypeCheck(VOID)
 {
 	return;
 }
-#endif				/* _lint */
+#endif /* _lint */
 
-#endif				/* _RLM_H */
+#endif /* _RLM_H */

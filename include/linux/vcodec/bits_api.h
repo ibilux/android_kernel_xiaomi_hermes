@@ -1,23 +1,3 @@
-/**
- * @file
- *   bits_api.h
- *
- * @par Project:
- *   Video
- *
- * @par Description:
- *   bitstream parsing utility API for external use
- *
- * @par Author:
- *   Jackal Chen (mtk02532)
- *
- * @par $Revision: #1 $
- * @par $Modtime:$
- * @par $Log:$
- *
- */
-
-
 #ifndef _BITS_API_H_
 #define _BITS_API_H_
 
@@ -28,7 +8,7 @@ extern "C" {
 #include "val_types_public.h"
 #include "hal_api.h"
 
-typedef VAL_UINT32_T(*fgPrepare32FN)(VAL_HANDLE_T *a_phBitsHandle);     ///< fgPrepare32FN definition
+typedef VAL_UINT32_T(*fgPrepare32FN)(VAL_HANDLE_T * a_phBitsHandle);
 
 /**
  * @par Structure
@@ -36,31 +16,30 @@ typedef VAL_UINT32_T(*fgPrepare32FN)(VAL_HANDLE_T *a_phBitsHandle);     ///< fgP
  * @par Description
  *  This is a parameter for bitstream parsing utility related function
  */
-typedef struct __VBITS_HANDLE_T
-{
-    VAL_HANDLE_T    hHALHandle;                             ///< HAL Handle
-    VAL_HANDLE_T    hVALHandle;                             ///< VAL Handle
-    VAL_MEM_ADDR_T  BitsStart;                              ///< Bits Start
-    VAL_MEMORY_T    rHandleMem;                             ///< Handle memory
-    VAL_UINT32_T    nReadingMode;                           ///< 0 for software, 1 for mmap, 2 for hardware
-    VAL_ULONG_T     StartAddr;                              ///< used for software mode fast access
-    VAL_ULONG_T     nSize;                                  ///< Size
-    VAL_UINT32_T    nBitCnt;                                ///< bits count
-    VAL_UINT32_T    nZeroCnt;                               ///< zero count
-    VAL_UINT32_T    Cur32Bits;                              ///< current 32 bits
-    VAL_UINT32_T    CurBitCnt;                              ///< current bits count
-    VAL_UINT32_T    n03RemoveCount;                         ///< 03 Remove Count
-    VAL_UINT32_T    n03CountBit;                            ///< 03 Count Bit
-    VAL_INT32_T     n03FirstIndex;                          ///< 03 First Index
-    VAL_INT32_T     n03SecondIndex;                         ///< 03 Second Index
-    VAL_UINT32_T    n03RemoveIgnore;                        ///< 03 Remove Ignore
-    VAL_BOOL_T      bFirstCheck;                            ///< First Check
-    VAL_BOOL_T      bEverRemove;                            ///< Ever Remove
-    VAL_BOOL_T      bIgnoreByBS;                            ///< Ignore By BS
-    VAL_BOOL_T      bEOF;                                   ///< EOF
-    fgPrepare32FN   Prepare32Bits;                          ///< Prepare 32 Bits
-    VAL_DRIVER_TYPE_T vFormat;                              ///< Format
-    VAL_UINT32_T    value;                                  ///< value
+typedef struct __VBITS_HANDLE_T {
+	VAL_HANDLE_T    hHALHandle;                             /* /< HAL Handle */
+	VAL_HANDLE_T    hVALHandle;                             /* /< VAL Handle */
+	VAL_MEM_ADDR_T  BitsStart;                              /* /< Bits Start */
+	VAL_MEMORY_T    rHandleMem;                             /* /< Handle memory */
+	VAL_UINT32_T    nReadingMode;                           /* /< 0 for software, 1 for mmap, 2 for hardware */
+	VAL_ULONG_T     StartAddr;                              /* /< used for software mode fast access */
+	VAL_ULONG_T     nSize;                                  /* /< Size */
+	VAL_UINT32_T    nBitCnt;                                /* /< bits count */
+	VAL_UINT32_T    nZeroCnt;                               /* /< zero count */
+	VAL_UINT32_T    Cur32Bits;                              /* /< current 32 bits */
+	VAL_UINT32_T    CurBitCnt;                              /* /< current bits count */
+	VAL_UINT32_T    n03RemoveCount;                         /* /< 03 Remove Count */
+	VAL_UINT32_T    n03CountBit;                            /* /< 03 Count Bit */
+	VAL_INT32_T     n03FirstIndex;                          /* /< 03 First Index */
+	VAL_INT32_T     n03SecondIndex;                         /* /< 03 Second Index */
+	VAL_UINT32_T    n03RemoveIgnore;                        /* /< 03 Remove Ignore */
+	VAL_BOOL_T      bFirstCheck;                            /* /< First Check */
+	VAL_BOOL_T      bEverRemove;                            /* /< Ever Remove */
+	VAL_BOOL_T      bIgnoreByBS;                            /* /< Ignore By BS */
+	VAL_BOOL_T      bEOF;                                   /* /< EOF */
+	fgPrepare32FN   Prepare32Bits;                          /* /< Prepare 32 Bits */
+	VAL_DRIVER_TYPE_T vFormat;                              /* /< Format */
+	VAL_UINT32_T    value;                                  /* /< value */
 } VBITS_HANDLE_T;
 
 
@@ -70,12 +49,11 @@ typedef struct __VBITS_HANDLE_T
  * @par Description
  *   This is the item used for bits read type
  */
-typedef enum VBITS_READTYPE_T
-{
-    VBITS_SOFTWARE = 0,         ///< software
-    VBITS_MMAP,                 ///< mmap
-    VBITS_HARDWARE,             ///< hardware
-    VBITS_MAX                   ///< MAX value
+typedef enum VBITS_READTYPE_T {
+	VBITS_SOFTWARE = 0,         /* /< software */
+	VBITS_MMAP,                 /* /< mmap */
+	VBITS_HARDWARE,             /* /< hardware */
+	VBITS_MAX                   /* /< MAX value */
 } VBITS_READTYPE_T;
 /*=============================================================================
  *                             Function Declaration
@@ -98,7 +76,12 @@ typedef enum VBITS_READTYPE_T
  * @par Returns
  *   VAL_UINT32_T, return VAL_RESULT_NO_ERROR if success, return VAL_RESULT_UNKNOWN_ERROR if failed
  */
-VAL_UINT32_T eBufEnable(VAL_HANDLE_T *a_phBitsHandle, VAL_HANDLE_T hHALHandle, VAL_UINT32_T nMode, VAL_DRIVER_TYPE_T vFormat);
+VAL_UINT32_T eBufEnable(
+	VAL_HANDLE_T *a_phBitsHandle,
+	VAL_HANDLE_T hHALHandle,
+	VAL_UINT32_T nMode,
+	VAL_DRIVER_TYPE_T vFormat
+);
 
 
 /**
@@ -117,7 +100,12 @@ VAL_UINT32_T eBufEnable(VAL_HANDLE_T *a_phBitsHandle, VAL_HANDLE_T hHALHandle, V
  * @par Returns
  *   VAL_UINT32_T, return VAL_RESULT_NO_ERROR if success, return VAL_RESULT_UNKNOWN_ERROR if failed
  */
-VAL_UINT32_T eBufDisable(VAL_HANDLE_T *a_phBitsHandle, VAL_HANDLE_T hHALHandle, VAL_UINT32_T nMode, VAL_DRIVER_TYPE_T vFormat);
+VAL_UINT32_T eBufDisable(
+	VAL_HANDLE_T *a_phBitsHandle,
+	VAL_HANDLE_T hHALHandle,
+	VAL_UINT32_T nMode,
+	VAL_DRIVER_TYPE_T vFormat
+);
 
 
 /**
@@ -140,7 +128,14 @@ VAL_UINT32_T eBufDisable(VAL_HANDLE_T *a_phBitsHandle, VAL_HANDLE_T hHALHandle, 
  * @par Returns
  *   VAL_RESULT_T, return VAL_RESULT_NO_ERROR if success, return others if failed
  */
-VAL_RESULT_T eBufInit(VAL_HANDLE_T *a_phBitsHandle, VAL_HANDLE_T hVALHandle, VAL_HANDLE_T hHALHandle, VAL_MEM_ADDR_T rBufAddrStart, VAL_UINT32_T nMode, VAL_DRIVER_TYPE_T vFormat);
+VAL_RESULT_T eBufInit(
+	VAL_HANDLE_T *a_phBitsHandle,
+	VAL_HANDLE_T hVALHandle,
+	VAL_HANDLE_T hHALHandle,
+	VAL_MEM_ADDR_T rBufAddrStart,
+	VAL_UINT32_T nMode,
+	VAL_DRIVER_TYPE_T vFormat
+);
 
 
 /**
@@ -316,4 +311,4 @@ VAL_BOOL_T eBufReInite(VAL_HANDLE_T *a_phBitsHandle, VAL_UINT32_T nBytes, VAL_UI
 }
 #endif
 
-#endif // #ifndef _VAL_API_H_
+#endif /* #ifndef _VAL_API_H_ */

@@ -1,7 +1,6 @@
 #include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/kobject.h>
 #include <linux/proc_fs.h>
@@ -24,14 +23,14 @@ extern int exec_ccci_kern_func_by_md_id(int md_id, unsigned int id, char *buf, u
 #define cl_type_lower               "cl-amutt-l"
 
 #define mtk_cooler_amutt_dprintk_always(fmt, args...) \
-  do { xlog_printk(ANDROID_LOG_INFO, "thermal/cooler/amutt", fmt, ##args); } while(0)
+	do { pr_debug("thermal/cooler/amutt" fmt, ##args); } while (0)
 
 #define mtk_cooler_amutt_dprintk(fmt, args...) \
-  do { \
-    if (1 == cl_amutt_klog_on) { \
-      xlog_printk(ANDROID_LOG_INFO, "thermal/cooler/amutt", fmt, ##args); \
-    } \
-  } while(0)
+	do { \
+		if (1 == cl_amutt_klog_on) { \
+			pr_debug("thermal/cooler/amutt" fmt, ##args); \
+		} \
+	} while (0)
 
 static int cl_amutt_klog_on = 0;
 
@@ -207,7 +206,7 @@ static int judge_throttling(int index, int is_on, int interval)
 					    over_up_time = 0;
 					}
 				} else {
-					mtk_cooler_amutt_dprintk("[%s] Error state1!!\n", __func__, throttling_pre_stat);
+					mtk_cooler_amutt_dprintk("[%s] Error state1=%d!!\n", __func__, throttling_pre_stat);
 				}
 				mtk_cooler_amutt_dprintk_always("case2 time=%d\n", over_up_time);
 			break;
@@ -287,7 +286,7 @@ static int amutt_cooler_upper_get_max_state(struct thermal_cooling_device *cool_
              unsigned long *pv)
 {
     *pv = 1;
-    mtk_cooler_amutt_dprintk("[%s] %d\n", __func__, *pv);
+    mtk_cooler_amutt_dprintk("[%s] %lu\n", __func__, *pv);
     return 0;
 }
 
@@ -295,7 +294,7 @@ static int amutt_cooler_upper_get_cur_state(struct thermal_cooling_device *cool_
              unsigned long *pv)
 {
     *pv = cl_upper_dev_state;
-    mtk_cooler_amutt_dprintk("[%s] %d\n", __func__, *pv);
+    mtk_cooler_amutt_dprintk("[%s] %lu\n", __func__, *pv);
     return 0;
 }
 
@@ -304,7 +303,7 @@ static int amutt_cooler_upper_set_cur_state(struct thermal_cooling_device *cool_
 {
 	int ret = 0;
 
-	mtk_cooler_amutt_dprintk("[%s] %d\n", __func__, v);
+	mtk_cooler_amutt_dprintk("[%s] %lu\n", __func__, v);
 
 	cl_upper_dev_state = (unsigned int)v;
 
@@ -330,7 +329,7 @@ static int amutt_cooler_lower_get_max_state(struct thermal_cooling_device *cool_
              unsigned long *pv)
 {
     *pv = 1;
-    mtk_cooler_amutt_dprintk("[%s] %d\n", __func__, *pv);
+    mtk_cooler_amutt_dprintk("[%s] %lu\n", __func__, *pv);
     return 0;
 }
 
@@ -338,7 +337,7 @@ static int amutt_cooler_lower_get_cur_state(struct thermal_cooling_device *cool_
              unsigned long *pv)
 {
     *pv = cl_lower_dev_state;
-    mtk_cooler_amutt_dprintk("[%s] %d\n", __func__, *pv);
+    mtk_cooler_amutt_dprintk("[%s] %lu\n", __func__, *pv);
     return 0;
 }
 
@@ -347,7 +346,7 @@ static int amutt_cooler_lower_set_cur_state(struct thermal_cooling_device *cool_
 {
 	int ret = 0;
 
-	mtk_cooler_amutt_dprintk("[%s] %d\n", __func__, v);
+	mtk_cooler_amutt_dprintk("[%s] %lu\n", __func__, v);
 
 	cl_lower_dev_state = (unsigned int)v;
 

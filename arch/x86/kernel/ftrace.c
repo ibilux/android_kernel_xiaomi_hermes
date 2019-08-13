@@ -678,8 +678,11 @@ void arch_ftrace_update_code(int command)
 	atomic_dec(&modifying_ftrace_code);
 }
 
-int __init ftrace_dyn_arch_init(void)
+int __init ftrace_dyn_arch_init(void *data)
 {
+	/* The return code is retured via data */
+	*(unsigned long *)data = 0;
+
 	return 0;
 }
 #endif

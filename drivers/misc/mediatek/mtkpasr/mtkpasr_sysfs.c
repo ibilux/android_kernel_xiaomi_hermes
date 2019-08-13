@@ -43,8 +43,8 @@ static unsigned long long mtkpasr_start_ns, mtkpasr_end_ns;
 #endif
 
 /* Statistics */
-unsigned long mtkpasr_triggered;
-unsigned long failed_mtkpasr;
+static unsigned long mtkpasr_triggered;
+static unsigned long failed_mtkpasr;
 static int mtkpasr_sroff;
 static int mtkpasr_dpd;
 
@@ -111,7 +111,7 @@ static ssize_t page_reserved_show(struct device *dev, struct device_attribute *a
 
 static ssize_t enable_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-	return sprintf(buf, "%d [%lu]\n", mtkpasr_enable, mtkpasr_enable_sr);
+	return sprintf(buf, "%d [%d]\n", mtkpasr_enable, mtkpasr_enable_sr);
 }
 
 /* 0: all disabled 1: enable MTKPASR 2: enable SR control 3: all enabled*/
@@ -125,7 +125,7 @@ static ssize_t enable_store(struct device *dev, struct device_attribute *attr, c
 		return ret;
 
 	mtkpasr_enable = (value & 0x1) ? 1 : 0;
-	mtkpasr_enable_sr = ((unsigned long)value & 0x2) ? 1 : 0;
+	mtkpasr_enable_sr = (value & 0x2) ? 1 : 0;
 	return len;
 }
 
@@ -191,7 +191,7 @@ static ssize_t execstate_show(struct device *dev, struct device_attribute *attr,
 	len += tmp;
 
 	/* Enable status */
-	tmp = sprintf(buf, "%d [%lu]\n", mtkpasr_enable, mtkpasr_enable_sr);
+	tmp = sprintf(buf, "%d [%d]\n", mtkpasr_enable, mtkpasr_enable_sr);
 	buf += tmp;
 	len += tmp;
 
@@ -226,7 +226,7 @@ static ssize_t execstate_show(struct device *dev, struct device_attribute *attr,
 }
 
 #ifdef CONFIG_MTKPASR
-/*extern void try_to_shrink_slab(void);*/
+extern void try_to_shrink_slab(void);
 extern void mtkpasr_reset_state(void);
 
 /* Hook to Linux PM */
@@ -252,8 +252,8 @@ void mtkpasr_phaseone_ops(void)
 	/* It will go to MTKPASR stage */
 	current->flags |= PF_MTKPASR;
 
-	/* Inform all other memory pools to release their memory
-	try_to_shrink_slab();*/
+	/* Inform all other memory pools to release their memory */
+	try_to_shrink_slab();
 
 	/* It will leave MTKPASR stage */
 	current->flags &= ~PF_MTKPASR;
@@ -291,6 +291,35 @@ int pasr_enter(u32 *sr, u32 *dpd)
 		irq_disabled = 1;
 	}
 
+	++mtkpasr_triggered;
+
+	/* It will go to MTKPASR stage */
+	current->flags |= PF_MTKPASR | PF_SWAPWRITE;
+
+	MTKPASR_START_PROFILE();
+
+	/* RAM-to-RAM compression - State change: MTKPASR_OFF -> MTKPASR_ENTERING -> MTKPASR_DISABLINGSR */
+	result = mtkpasr_entering();
+
+	MTKPASR_END_PROFILE();
+
+	/* It will leave MTKPASR stage */
+	current->flags &= ~(PF_MTKPASR | PF_SWAPWRITE);
+
+	/* Any pending wakeup source? */
+	if (result == MTKPASR_GET_WAKEUP) {
+		mtkpasr_restoring();
+		mtkpasr_err("PM: Failed to enter MTKPASR\n");
+		++failed_mtkpasr;
+		ret = -1;
+		goto out;
+	} else if (result == MTKPASR_WRONG_STATE) {
+		mtkpasr_reset_state();
+		mtkpasr_err("Wrong state!\n");
+		++failed_mtkpasr;
+		goto out;
+	}
+
 	MTKPASR_START_PROFILE();
 
 	/* SR-Off/DPD - Check which banks/ranks can enter PASR/DPD - State change:MTKPASR_DISABLINGSR -> MTKPASR_ON (-> MTKPASR_DPD_ON) */
@@ -316,12 +345,14 @@ int pasr_enter(u32 *sr, u32 *dpd)
 		mtkpasr_err("PM: Failed to enter SR_OFF/DPD\n");
 		++failed_mtkpasr;
 		ret = -1;
+		goto out;
 	} else if (result == MTKPASR_WRONG_STATE) {
 		mtkpasr_reset_state();
 		mtkpasr_err("Wrong state!\n");
 		++failed_mtkpasr;
 	}
 
+out:
 	/* Recover it to irq-disabled environment if needed */
 	if (irq_disabled == 1) {
 		if (!irqs_disabled()) {
@@ -349,8 +380,23 @@ int pasr_exit(void)
 
 	if (result == MTKPASR_WRONG_STATE) {
 		mtkpasr_err("Wrong state!\n");
+		goto out;
 	}
-	
+
+	MTKPASR_START_PROFILE();
+
+	/* RAM-to-RAM decompression - State change: MTKPASR_EXITING -> MTKPASR_OFF */
+	result = mtkpasr_exiting();
+
+	MTKPASR_END_PROFILE();
+
+	if (result == MTKPASR_WRONG_STATE) {
+		mtkpasr_err("Wrong state!\n");
+	} else if (result == MTKPASR_FAIL) {
+		printk(KERN_ERR"\n\n\n Some Fatal Error!\n\n\n");
+	}
+
+out:
 	return 0;
 }
 #endif

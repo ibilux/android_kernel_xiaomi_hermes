@@ -41,8 +41,10 @@ eint_inf_t ext_md_exp_eint;
 eint_inf_t ext_md_wdt_eint;
 eint_inf_t ext_md_wk_eint;
 atomic_t traffic_on;
+atomic_t allow_wk_md;
 static const char *uart_port = "ttyMT1";			//should sync with user space
 extern unsigned int mtk_uart_freeze_enable(char *port, int enable);
+void cm_hold_wakeup_md_signal(void);
 
 int get_eint_info(const char *name, eint_inf_t *eint_item)
 {
@@ -293,7 +295,6 @@ int cm_do_md_go(void)
 	    EMD_MSG_INF("chr","cm_do_md_go:1\n");
 	    EMD_MSG_INF("chr","cm_do_md_go2:GPIO_EXT_MD_RST(out)=%d,GPIO_EXT_MD_WD(in)=%d\n",mt_get_gpio_out(GPIO_EXT_MD_RST),mt_get_gpio_in(GPIO_EXT_MD_WD));
 	    cm_relese_rst_signal();
-    	atomic_set(&traffic_on, 1);
 	    EMD_MSG_INF("chr","cm_do_md_go3:GPIO_EXT_MD_RST(out)=%d,GPIO_EXT_MD_WD(in)=%d\n",mt_get_gpio_out(GPIO_EXT_MD_RST),mt_get_gpio_in(GPIO_EXT_MD_WD));
 	    // Check WDT pin to high
 	    while(retry>0){
@@ -308,6 +309,10 @@ int cm_do_md_go(void)
 	            break;
 	        }
 	    }
+	    atomic_set(&traffic_on, 1);
+	    msleep(1000); // for use AP_WK_MD as EXT_MD_META, give 6261 bootloader sometime to read boot mode
+	    atomic_set(&allow_wk_md, 1);
+	    cm_hold_wakeup_md_signal();
 	    EMD_MSG_INF("chr","cm_do_md_go4:GPIO_EXT_MD_RST(out)=%d,GPIO_EXT_MD_WD(in)=%d\n",mt_get_gpio_out(GPIO_EXT_MD_RST),mt_get_gpio_in(GPIO_EXT_MD_WD));
 		msleep(POWER_ON_HOLD_TIME);
 		mt_set_gpio_out(GPIO_EXT_MD_PWR_KEY, 0);
@@ -319,7 +324,7 @@ int cm_do_md_go(void)
     cm_enable_ext_md_wakeup_irq();
     cm_enable_ext_md_exp_irq();
     
-    msleep(50);
+    //msleep(50); // WDT IRQ is level triggered now, no need this debounce
     ignore_wdt_interrupt = 0;
     return ret;
 }
@@ -491,6 +496,7 @@ int cm_do_md_power_off(void)
 {
     EMD_MSG_INF("chr","cm_do_md_power_off\n");
     atomic_set(&traffic_on, 0);
+    atomic_set(&allow_wk_md, 0);
     // Release download key to let md can enter normal boot
     mt_set_gpio_dir(GPIO_EXT_MD_DL_KEY, 1);
 #ifdef GPIO_EXT_USB_SW2
@@ -548,14 +554,22 @@ int cm_do_md_power_off(void)
 
 void cm_hold_wakeup_md_signal(void)
 {
-    EMD_MSG_INF("chr","cm_hold_wakeup_md_signal:GPIO_EXT_AP_WK_MD=%d,0!\n",mt_get_gpio_out(GPIO_EXT_AP_WK_MD));
-    mt_set_gpio_out(GPIO_EXT_AP_WK_MD, 0);
+	if(atomic_read(&allow_wk_md)) {
+		EMD_MSG_INF("chr","cm_hold_wakeup_md_signal:GPIO_EXT_AP_WK_MD=%d,0!\n",mt_get_gpio_out(GPIO_EXT_AP_WK_MD));
+		mt_set_gpio_out(GPIO_EXT_AP_WK_MD, 0);
+	} else {
+		EMD_MSG_INF("chr","cm_hold_wakeup_md_signal:GPIO_EXT_AP_WK_MD=%d,ignore!\n",mt_get_gpio_out(GPIO_EXT_AP_WK_MD));
+	}
 }
 
 void cm_release_wakeup_md_signal(void)
 {    
-    mt_set_gpio_out(GPIO_EXT_AP_WK_MD, 1);
-    EMD_MSG_INF("chr","cm_release_wakeup_md_signal:GPIO_EXT_AP_WK_MD=%d,1!\n",mt_get_gpio_out(GPIO_EXT_AP_WK_MD));
+	if(atomic_read(&allow_wk_md)) {
+		mt_set_gpio_out(GPIO_EXT_AP_WK_MD, 1);
+		EMD_MSG_INF("chr","cm_release_wakeup_md_signal:GPIO_EXT_AP_WK_MD=%d,1!\n",mt_get_gpio_out(GPIO_EXT_AP_WK_MD));	
+	} else {
+		EMD_MSG_INF("chr","cm_release_wakeup_md_signal:GPIO_EXT_AP_WK_MD=%d,ignore!\n",mt_get_gpio_out(GPIO_EXT_AP_WK_MD));
+	}
 }
 
 int is_traffic_on(int type)
@@ -567,54 +581,55 @@ void cm_gpio_setup(void)
 {
     EMD_MSG_INF("chr","cm_gpio_setup 1\n");
     atomic_set(&traffic_on, 0);
+    atomic_set(&allow_wk_md, 0);
     // MD wake up AP pin
     mt_set_gpio_pull_enable(GPIO_EXT_MD_WK_AP, 1);
     mt_set_gpio_pull_select(GPIO_EXT_MD_WK_AP, 0);
     mt_set_gpio_dir(GPIO_EXT_MD_WK_AP, 0);
     mt_set_gpio_mode(GPIO_EXT_MD_WK_AP, GPIO_EXT_MD_WK_AP_M_EINT); 
-    EMD_MSG_INF("chr","cm_gpio_setup:GPIO_EXT_MD_WK_AP=%d\n",mt_get_gpio_out(GPIO_EXT_MD_WK_AP));
+    EMD_MSG_INF("chr","cm_gpio_setup:GPIO_EXT_MD_WK_AP(%x)=%d\n",GPIO_EXT_MD_WK_AP,mt_get_gpio_out(GPIO_EXT_MD_WK_AP));
     // AP wake up MD pin
     mt_set_gpio_mode(GPIO_EXT_AP_WK_MD, GPIO_EXT_AP_WK_MD_M_GPIO); // GPIO Mode
     mt_set_gpio_dir(GPIO_EXT_AP_WK_MD, 1);
     mt_set_gpio_out(GPIO_EXT_AP_WK_MD, 0);
-		EMD_MSG_INF("chr","cm_gpio_setup:GPIO_EXT_AP_WK_MD=%d\n",mt_get_gpio_out(GPIO_EXT_AP_WK_MD));
+	EMD_MSG_INF("chr","cm_gpio_setup:GPIO_EXT_AP_WK_MD(%x)=%d\n",GPIO_EXT_AP_WK_MD,mt_get_gpio_out(GPIO_EXT_AP_WK_MD));
     // Rest MD pin
     mt_set_gpio_mode(GPIO_EXT_MD_RST, GPIO_EXT_MD_RST_M_GPIO); //GPIO202 is reset pin
     mt_set_gpio_pull_enable(GPIO_EXT_MD_RST, 0);
     mt_set_gpio_pull_select(GPIO_EXT_MD_RST, 1);
     cm_relese_rst_signal();
     EMD_MSG_INF("chr","cm_gpio_setup 4\n");
-		EMD_MSG_INF("chr","cm_gpio_setup:GPIO_EXT_MD_RST=%d\n",mt_get_gpio_out(GPIO_EXT_MD_RST));
+	EMD_MSG_INF("chr","cm_gpio_setup:GPIO_EXT_MD_RST(%x)=%d\n",GPIO_EXT_MD_RST,mt_get_gpio_out(GPIO_EXT_MD_RST));
     // MD power key pin
     mt_set_gpio_mode(GPIO_EXT_MD_PWR_KEY, GPIO_EXT_MD_PWR_KEY_M_GPIO); //GPIO 200 is power key
     mt_set_gpio_pull_enable(GPIO_EXT_MD_PWR_KEY, 0);
     mt_set_gpio_dir(GPIO_EXT_MD_PWR_KEY, 1);
     mt_set_gpio_out(GPIO_EXT_MD_PWR_KEY, 0);
-		EMD_MSG_INF("chr","cm_gpio_setup:GPIO_EXT_MD_PWR_KEY=%d\n",mt_get_gpio_out(GPIO_EXT_MD_PWR_KEY));
+	EMD_MSG_INF("chr","cm_gpio_setup:GPIO_EXT_MD_PWR_KEY(%x)=%d\n",GPIO_EXT_MD_PWR_KEY,mt_get_gpio_out(GPIO_EXT_MD_PWR_KEY));
     // MD WDT irq pin
     mt_set_gpio_pull_enable(GPIO_EXT_MD_WD, 1);
     mt_set_gpio_pull_select(GPIO_EXT_MD_WD, 1);
     mt_set_gpio_dir(GPIO_EXT_MD_WD, 0);
     mt_set_gpio_mode(GPIO_EXT_MD_WD, GPIO_EXT_MD_WD_M_EINT); // EINT168
-    EMD_MSG_INF("chr","cm_gpio_setup GPIO_EXT_MD_WD(in)=%d\n",mt_get_gpio_in(GPIO_EXT_MD_WD));
+    EMD_MSG_INF("chr","cm_gpio_setup GPIO_EXT_MD_WD(%x)(in)=%d\n",GPIO_EXT_MD_WD,mt_get_gpio_in(GPIO_EXT_MD_WD));
 
     // MD Exception irq pin
     mt_set_gpio_pull_enable(GPIO_EXT_MD_EXP, 1);
     mt_set_gpio_pull_select(GPIO_EXT_MD_EXP, 1);
     mt_set_gpio_dir(GPIO_EXT_MD_EXP, 0);
     mt_set_gpio_mode(GPIO_EXT_MD_EXP, GPIO_EXT_MD_EXP_M_EINT); //     
-    EMD_MSG_INF("chr","cm_gpio_setup GPIO_EXT_MD_EXP(in)=%d\n",mt_get_gpio_in(GPIO_EXT_MD_EXP));
+    EMD_MSG_INF("chr","cm_gpio_setup GPIO_EXT_MD_EXP(%x)(in)=%d\n",GPIO_EXT_MD_EXP,mt_get_gpio_in(GPIO_EXT_MD_EXP));
 #ifndef  GPIO_EXT_USB_SW2     
     mt_set_gpio_mode(GPIO_EXT_MD_META, GPIO_EXT_MD_META_M_GPIO); 
     mt_set_gpio_dir(GPIO_EXT_MD_META, 1);// Using input floating    
     mt_set_gpio_out(GPIO_EXT_MD_META, 0);// Default @ reset state
-    EMD_MSG_INF("chr","cm_gpio_setup:phone GPIO_EXT_MD_META=%d\n",mt_get_gpio_out(GPIO_EXT_MD_META));
+    EMD_MSG_INF("chr","cm_gpio_setup:phone GPIO_EXT_MD_META(%x)=%d\n",GPIO_EXT_MD_META,mt_get_gpio_out(GPIO_EXT_MD_META));
 #else
     mt_set_gpio_pull_enable(GPIO_EXT_MD_DUMP, 1);
     mt_set_gpio_pull_select(GPIO_EXT_MD_DUMP, 0); 
     mt_set_gpio_dir(GPIO_EXT_MD_DUMP, 1);  
     mt_set_gpio_mode(GPIO_EXT_MD_DUMP, GPIO_EXT_MD_DUMP_M_GPIO);
-    EMD_MSG_INF("chr","cm_gpio_setup:evb GPIO_EXT_MD_DUMP(in)=(%d)\n",mt_get_gpio_in(GPIO_EXT_MD_DUMP));
+    EMD_MSG_INF("chr","cm_gpio_setup:evb GPIO_EXT_MD_DUMP(%x)(in)=(%d)\n",GPIO_EXT_MD_DUMP,mt_get_gpio_in(GPIO_EXT_MD_DUMP));
 #endif
 
     // Configure eint

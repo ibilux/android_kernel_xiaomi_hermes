@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/wlan_typedef.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/wlan_typedef.h#1
 */
 
 /*! \file   wlan_typedef.h
@@ -9,10 +9,8 @@
     to all MGMT Protocol Stack.
 */
 
-
-
 /*
-** $Log: wlan_typedef.h $
+** Log: wlan_typedef.h
 **
 ** 01 21 2013 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -65,15 +63,14 @@ typedef struct _BOW_SPECIFIC_BSS_INFO_T BOW_SPECIFIC_BSS_INFO_T, *P_BOW_SPECIFIC
 /* CFG_SUPPORT_WFD */
 typedef struct _WFD_CFG_SETTINGS_T WFD_CFG_SETTINGS_T, *P_WFD_CFG_SETTINGS_T;
 
-
 /* BSS related structures */
 /* Type definition for BSS_DESC_T structure, to describe parameter sets of a particular BSS */
 typedef struct _BSS_DESC_T BSS_DESC_T, *P_BSS_DESC_T, **PP_BSS_DESC_T;
+typedef struct _ROAM_BSS_DESC_T ROAM_BSS_DESC_T, *P_ROAM_BSS_DESC_T, **PP_ROAM_BSS_DESC_T;
 
 #if CFG_SUPPORT_PASSPOINT
 typedef struct _HS20_INFO_T HS20_INFO_T, *P_HS20_INFO_T;
-#endif				/* CFG_SUPPORT_PASSPOINT */
-
+#endif /* CFG_SUPPORT_PASSPOINT */
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -99,4 +96,4 @@ typedef struct _HS20_INFO_T HS20_INFO_T, *P_HS20_INFO_T;
 *                              F U N C T I O N S
 ********************************************************************************
 */
-#endif				/* _WLAN_TYPEDEF_H */
+#endif /* _WLAN_TYPEDEF_H */

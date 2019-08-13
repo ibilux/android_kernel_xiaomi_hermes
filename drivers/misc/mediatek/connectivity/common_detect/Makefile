@@ -4,7 +4,7 @@
 ifneq ($(KERNELRELEASE),)
 	include $(srctree)/drivers/misc/mediatek/Makefile.custom
 	subdir-ccflags-y += -I$(srctree)/arch/arm/mach-$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/dct/dct
-	
+
 	COMBO_CHIP_SUPPORT := false
 	ifneq ($(filter "MT6620E3",$(CONFIG_MTK_COMBO_CHIP)),)
 		COMBO_CHIP_SUPPORT := true
@@ -43,10 +43,18 @@ ifneq ($(KERNELRELEASE),)
 	ifneq ($(filter "CONSYS_6752",$(CONFIG_MTK_COMBO_CHIP)),)
 		SOC_CHIP_SUPPORT := true
 	endif
+	ifneq ($(filter "CONSYS_6755",$(CONFIG_MTK_COMBO_CHIP)),)
+		SOC_CHIP_SUPPORT := true
+	endif
 	ifneq ($(filter "CONSYS_6735",$(CONFIG_MTK_COMBO_CHIP)),)
 		SOC_CHIP_SUPPORT := true
 	endif
-
+	ifneq ($(filter "CONSYS_8163",$(CONFIG_MTK_COMBO_CHIP)),)
+		SOC_CHIP_SUPPORT := true
+	endif
+	ifneq ($(filter "CONSYS_6580",$(CONFIG_MTK_COMBO_CHIP)),)
+		SOC_CHIP_SUPPORT := true
+	endif
 	ifeq ($(SOC_CHIP_SUPPORT), true)
 		subdir-ccflags-y += -D MTK_WCN_SOC_CHIP_SUPPORT
 		CONN_COMMON := ../conn_soc/common

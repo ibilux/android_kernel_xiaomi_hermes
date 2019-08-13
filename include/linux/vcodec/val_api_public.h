@@ -1,22 +1,3 @@
-/**
- * @file
- *   val_api_public.h
- *
- * @par Project:
- *   Video
- *
- * @par Description:
- *   Video Abstraction Layer API for external use
- *
- * @par Author:
- *   Jackal Chen (mtk02532)
- *
- * @par $Revision: #1 $
- * @par $Modtime:$
- * @par $Log:$
- *
- */
-
 #ifndef _VAL_API_PUBLIC_H_
 #define _VAL_API_PUBLIC_H_
 
@@ -58,8 +39,13 @@ VAL_UINT32_T eVideoInitMVA(VAL_VOID_T **a_pvHandle);
  * @par Returns
  *   VAL_UINT32_T       [OUT] Non-Used
  */
-VAL_UINT32_T eVideoAllocMVA(VAL_VOID_T *a_pvHandle, VAL_UINT32_T a_u4Va, VAL_UINT32_T *ap_u4Pa, VAL_UINT32_T a_u4Size, VAL_VCODEC_M4U_BUFFER_CONFIG_T *a_pvM4uConfig);
-
+VAL_UINT32_T eVideoAllocMVA(
+	VAL_VOID_T *a_pvHandle,
+	VAL_UINT32_T a_u4Va,
+	VAL_UINT32_T *ap_u4Pa,
+	VAL_UINT32_T a_u4Size,
+	VAL_VCODEC_M4U_BUFFER_CONFIG_T * a_pvM4uConfig
+);
 
 /**
  * @par Function
@@ -79,7 +65,13 @@ VAL_UINT32_T eVideoAllocMVA(VAL_VOID_T *a_pvHandle, VAL_UINT32_T a_u4Va, VAL_UIN
  * @par Returns
  *   VAL_UINT32_T       [OUT] Non-Used
  */
-VAL_UINT32_T eVideoFreeMVA(VAL_VOID_T *a_pvHandle, VAL_UINT32_T a_u4Va, VAL_UINT32_T a_u4Pa, VAL_UINT32_T a_u4Size, VAL_VCODEC_M4U_BUFFER_CONFIG_T *a_pvM4uConfig);
+VAL_UINT32_T eVideoFreeMVA(
+	VAL_VOID_T *a_pvHandle,
+	VAL_UINT32_T a_u4Va,
+	VAL_UINT32_T a_u4Pa,
+	VAL_UINT32_T a_u4Size,
+	VAL_VCODEC_M4U_BUFFER_CONFIG_T * a_pvM4uConfig
+);
 
 
 /**
@@ -182,7 +174,9 @@ VAL_RESULT_T eVideoInvalidateCache(VAL_MEMORY_T *a_prParam, VAL_UINT32_T a_u4Par
  * @param
  *   a_u4ParamSize      [IN] The size of a_prParam structure
  * @par Returns
- *   VAL_RESULT_T       [OUT] VAL_RESULT_NO_ERROR for success, VAL_RESULT_INVALID_MEMORY or VAL_RESULT_INVALID_PARAMETER for fail
+ *   VAL_RESULT_T       [OUT]
+ *   VAL_RESULT_NO_ERROR for success,
+ *   VAL_RESULT_INVALID_MEMORY or VAL_RESULT_INVALID_PARAMETER for fail
  */
 VAL_RESULT_T eVideoMemAlloc(VAL_MEMORY_T *a_prParam, VAL_UINT32_T a_u4ParamSize);
 
@@ -218,7 +212,12 @@ VAL_RESULT_T eVideoMemFree(VAL_MEMORY_T *a_prParam, VAL_UINT32_T a_u4ParamSize);
  * @par Returns
  *   VAL_RESULT_T       [OUT] VAL_RESULT_NO_ERROR for success, VAL_RESULT_INVALID_PARAMETER for fail
  */
-VAL_RESULT_T eVideoMemSet(VAL_MEMORY_T *a_prParam, VAL_UINT32_T a_u4ParamSize, VAL_INT32_T a_u4Value, VAL_UINT32_T a_u4Size);
+VAL_RESULT_T eVideoMemSet(
+	VAL_MEMORY_T *a_prParam,
+	VAL_UINT32_T a_u4ParamSize,
+	VAL_INT32_T a_u4Value,
+	VAL_UINT32_T a_u4Size
+);
 
 
 /**
@@ -239,7 +238,13 @@ VAL_RESULT_T eVideoMemSet(VAL_MEMORY_T *a_prParam, VAL_UINT32_T a_u4ParamSize, V
  * @par Returns
  *   VAL_RESULT_T       [OUT] VAL_RESULT_NO_ERROR for success, VAL_RESULT_INVALID_PARAMETER for fail
  */
-VAL_RESULT_T eVideoMemCpy(VAL_MEMORY_T *a_prParamDst, VAL_UINT32_T a_u4ParamDstSize, VAL_MEMORY_T *a_prParamSrc, VAL_UINT32_T a_u4ParamSrcSize, VAL_UINT32_T a_u4Size);
+VAL_RESULT_T eVideoMemCpy(
+	VAL_MEMORY_T *a_prParamDst,
+	VAL_UINT32_T a_u4ParamDstSize,
+	VAL_MEMORY_T *a_prParamSrc,
+	VAL_UINT32_T a_u4ParamSrcSize,
+	VAL_UINT32_T a_u4Size
+);
 
 
 /**
@@ -260,7 +265,13 @@ VAL_RESULT_T eVideoMemCpy(VAL_MEMORY_T *a_prParamDst, VAL_UINT32_T a_u4ParamDstS
  * @par Returns
  *   VAL_RESULT_T       [OUT] VAL_RESULT_NO_ERROR for success, VAL_RESULT_INVALID_PARAMETER for fail
  */
-VAL_RESULT_T eVideoMemCmp(VAL_MEMORY_T *a_prParamSrc1, VAL_UINT32_T a_u4ParamSrc1Size, VAL_MEMORY_T *a_prParamSrc2, VAL_UINT32_T a_u4ParamSrc2Size, VAL_UINT32_T a_u4Size);
+VAL_RESULT_T eVideoMemCmp(
+	VAL_MEMORY_T *a_prParamSrc1,
+	VAL_UINT32_T a_u4ParamSrc1Size,
+	VAL_MEMORY_T *a_prParamSrc2,
+	VAL_UINT32_T a_u4ParamSrc2Size,
+	VAL_UINT32_T a_u4Size
+);
 
 
 /**
@@ -388,4 +399,4 @@ VAL_RESULT_T eVideoE3TCMPowerOFF(VAL_UINT32_T a_u4E3TCMClk);
 }
 #endif
 
-#endif // #ifndef _VAL_API_PUBLIC_H_
+#endif /* #ifndef _VAL_API_PUBLIC_H_ */

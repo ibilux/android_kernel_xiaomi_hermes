@@ -1,29 +1,10 @@
-/**
- * @file
- *   val_oal.h
- *
- * @par Project:
- *   Video
- *
- * @par Description:
- *   Video Codec Driver & Codec Liabrary Interface
- *
- * @par Author:
- *   Jackal Chen (mtk02532)
- *
- * @par $Revision: #1 $
- * @par $Modtime:$
- * @par $Log:$
- *
- */
-
 #ifndef _SP5_OAL_H_
 #define _SP5_OAL_H_
 
-// SP5 interface
+/* SP5 interface */
 #include "vcodec_OAL_v2.h"
 
-// ME1 interface
+/* ME1 interface */
 #include "val_types_private.h"
 
 /**
@@ -32,52 +13,91 @@
  * @par Description
  *   This is the item used to set OAL type
  */
-typedef enum ___VAL_OAL_TYPE
-{
-    _BYTE_  = 0x5000,     ///< BYTE
-    _WORD_,               ///< WORD
-    _LONG_                ///< LONG
+typedef enum ___VAL_OAL_TYPE {
+	_BYTE_  = 0x5000,     /* /< BYTE */
+	_WORD_,               /* /< WORD */
+	_LONG_                /* /< LONG */
 } __VAL_OAL_TYPE;
 
-
-#define  SP5_VCodecQueryMemType                       VCodecDrvQueryMemType                     ///< VCodecDrvQueryMemType definition for SW/hybrid codec
-#define  SP5_VCodecQueryPhysicalAddr                  VCodecDrvQueryPhysicalAddr                ///< VCodecDrvQueryPhysicalAddr definition for SW/hybrid codec
-#define  SP5_VCodecSwitchMemType                      VCodecDrvSwitchMemType                    ///< VCodecDrvSwitchMemType definition for SW/hybrid codec
-#define  SP5_VCodecFlushCachedBuffer                  VCodecDrvFlushCachedBuffer                ///< VCodecDrvFlushCachedBuffer definition for SW/hybrid codec
-#define  SP5_VCodecInvalidateCachedBuffer             VCodecDrvInvalidateCachedBuffer           ///< VCodecDrvInvalidateCachedBuffer definition for SW/hybrid codec
-#define  SP5_VCodecFlushCachedBufferAll               VCodecDrvFlushCachedBufferAll             ///< VCodecDrvFlushCachedBufferAll definition for SW/hybrid codec
-#define  SP5_VCodecInvalidateCachedBufferAll          VCodecDrvInvalidateCachedBufferAll        ///< VCodecDrvInvalidateCachedBufferAll definition for SW/hybrid codec
-#define  SP5_VCodecFlushInvalidateCacheBufferAll      VCodecDrvFlushInvalidateCacheBufferAll    ///< VCodecDrvFlushInvalidateCacheBufferAll definition for SW/hybrid codec
-#define  SP5_VCodecMemSet                             VCodecDrvMemSet                           ///< VCodecDrvMemSet definition for SW/hybrid codec
-#define  SP5_VCodecMemCopy                            VCodecDrvMemCopy                          ///< VCodecDrvMemCopy definition for SW/hybrid codec
-#define  SP5_VCodecAssertFail                         VCodecDrvAssertFail                       ///< VCodecDrvAssertFail definition for SW/hybrid codec
-#define  SP5_VCodecMMAP                               VCodecDrvMMAP                             ///< VCodecDrvMMAP definition for SW/hybrid codec
-#define  SP5_VCodecUnMMAP                             VCodecDrvUnMMAP                           ///< VCodecDrvUnMMAP definition for SW/hybrid codec
-#define  SP5_VCodecWaitISR                            VCodecDrvWaitISR                          ///< VCodecDrvWaitISR definition for SW/hybrid codec
-#define  SP5_VCodecLockHW                             VCodecDrvLockHW                           ///< VCodecDrvLockHW definition for SW/hybrid codec
-#define  SP5_VCodecUnLockHW                           VCodecDrvUnLockHW                         ///< VCodecDrvUnLockHW definition for SW/hybrid codec
-#define  SP5_VCodecInitHWLock                         VCodecDrvInitHWLock                       ///< VCodecDrvInitHWLock definition for SW/hybrid codec
-#define  SP5_VCodecDeInitHWLock                       VCodecDrvDeInitHWLock                     ///< VCodecDrvDeInitHWLock definition for SW/hybrid codec
+/* /< VCodecDrvQueryMemType definition for SW/hybrid codec */
+#define  SP5_VCodecQueryMemType                       VCodecDrvQueryMemType
+/* /< VCodecDrvQueryPhysicalAddr definition for SW/hybrid codec */
+#define  SP5_VCodecQueryPhysicalAddr                  VCodecDrvQueryPhysicalAddr
+/* /< VCodecDrvSwitchMemType definition for SW/hybrid codec */
+#define  SP5_VCodecSwitchMemType                      VCodecDrvSwitchMemType
+/* /< VCodecDrvFlushCachedBuffer definition for SW/hybrid codec */
+#define  SP5_VCodecFlushCachedBuffer                  VCodecDrvFlushCachedBuffer
+/* /< VCodecDrvInvalidateCachedBuffer definition for SW/hybrid codec */
+#define  SP5_VCodecInvalidateCachedBuffer             VCodecDrvInvalidateCachedBuffer
+/* /< VCodecDrvFlushCachedBufferAll definition for SW/hybrid codec */
+#define  SP5_VCodecFlushCachedBufferAll               VCodecDrvFlushCachedBufferAll
+/* /< VCodecDrvInvalidateCachedBufferAll definition for SW/hybrid codec */
+#define  SP5_VCodecInvalidateCachedBufferAll          VCodecDrvInvalidateCachedBufferAll
+/* /< VCodecDrvFlushInvalidateCacheBufferAll definition for SW/hybrid codec */
+#define  SP5_VCodecFlushInvalidateCacheBufferAll      VCodecDrvFlushInvalidateCacheBufferAll
+/* /< VCodecDrvMemSet definition for SW/hybrid codec */
+#define  SP5_VCodecMemSet                             VCodecDrvMemSet
+/* /< VCodecDrvMemCopy definition for SW/hybrid codec */
+#define  SP5_VCodecMemCopy                            VCodecDrvMemCopy
+/* /< VCodecDrvAssertFail definition for SW/hybrid codec */
+#define  SP5_VCodecAssertFail                         VCodecDrvAssertFail
+/* /< VCodecDrvMMAP definition for SW/hybrid codec */
+#define  SP5_VCodecMMAP                               VCodecDrvMMAP
+/* /< VCodecDrvUnMMAP definition for SW/hybrid codec */
+#define  SP5_VCodecUnMMAP                             VCodecDrvUnMMAP
+/* /< VCodecDrvWaitISR definition for SW/hybrid codec */
+#define  SP5_VCodecWaitISR                            VCodecDrvWaitISR
+/* /< VCodecDrvLockHW definition for SW/hybrid codec */
+#define  SP5_VCodecLockHW                             VCodecDrvLockHW
+/* /< VCodecDrvUnLockHW definition for SW/hybrid codec */
+#define  SP5_VCodecUnLockHW                           VCodecDrvUnLockHW
+/* /< VCodecDrvInitHWLock definition for SW/hybrid codec */
+#define  SP5_VCodecInitHWLock                         VCodecDrvInitHWLock
+/* /< VCodecDrvDeInitHWLock definition for SW/hybrid codec */
+#define  SP5_VCodecDeInitHWLock                       VCodecDrvDeInitHWLock
 #if 0
-#define  SP5_VcodecTraceLog0                          VCodecDrvTraceLog0                        ///< VCodecDrvTraceLog0 definition for SW/hybrid codec
-#define  SP5_VcodecTraceLog1                          VCodecDrvTraceLog1                        ///< VCodecDrvTraceLog1 definition for SW/hybrid codec
-#define  SP5_VcodecTraceLog2                          VCodecDrvTraceLog2                        ///< VCodecDrvTraceLog2 definition for SW/hybrid codec
-#define  SP5_VcodecTraceLog4                          VCodecDrvTraceLog4                        ///< VCodecDrvTraceLog4 definition for SW/hybrid codec
-#define  SP5_VcodecTraceLog8                          VCodecDrvTraceLog8                        ///< VCodecDrvTraceLog8 definition for SW/hybrid codec
+/* /< VCodecDrvTraceLog0 definition for SW/hybrid codec */
+#define  SP5_VcodecTraceLog0                          VCodecDrvTraceLog0
+/* /< VCodecDrvTraceLog1 definition for SW/hybrid codec */
+#define  SP5_VcodecTraceLog1                          VCodecDrvTraceLog1
+/* /< VCodecDrvTraceLog2 definition for SW/hybrid codec */
+#define  SP5_VcodecTraceLog2                          VCodecDrvTraceLog2
+/* /< VCodecDrvTraceLog4 definition for SW/hybrid codec */
+#define  SP5_VcodecTraceLog4                          VCodecDrvTraceLog4
+/* /< VCodecDrvTraceLog8 definition for SW/hybrid codec */
+#define  SP5_VcodecTraceLog8                          VCodecDrvTraceLog8
 #else
-#define  SP5_VCodecPrintf                             VCodecPrintf                              ///< VCodecPrintf definition for SW/hybrid codec
+/* /< VCodecPrintf definition for SW/hybrid codec */
+#define  SP5_VCodecPrintf                             VCodecPrintf
 #endif
-#define  SP5_VdoMemAllocAligned                       VCodecDrvMemAllocAligned                  ///< VCodecDrvMemAllocAligned definition for SW/hybrid codec
-#define  SP5_VdoMemFree                               VCodecDrvMemFree                          ///< VCodecDrvMemFree definition for SW/hybrid codec
-#define  SP5_VdoIntMalloc                             VCodecDrvIntMalloc                        ///< VCodecDrvIntMalloc definition for SW/hybrid codec
-#define  SP5_VdoIntFree                               VCodecDrvIntFree                          ///< VCodecDrvIntFree definition for SW/hybrid codec
-#define  SP5_RegSync                                  VCodecDrvRegSync                          ///< VCodecDrvRegSync definition for SW/hybrid codec
-#define  SP5_RegSyncWriteB                            VCodecDrvRegSyncWriteB                    ///< VCodecDrvRegSyncWriteB definition for SW/hybrid codec
-#define  SP5_RegSyncWriteW                            VCodecDrvRegSyncWriteW                    ///< VCodecDrvRegSyncWriteW definition for SW/hybrid codec
-#define  SP5_RegSyncWriteL                            VCodecDrvRegSyncWriteL                    ///< VCodecDrvRegSyncWriteL definition for SW/hybrid codec
-#define  SP5_VMPEG4EncCodecWaitISR                    VMPEG4EncCodecDrvWaitISR                  ///< VMPEG4EncCodecDrvWaitISR definition for SW/hybrid codec
-#define  SP5_VMPEG4EncCodecLockHW                     VMPEG4EncCodecDrvLockHW                   ///< VMPEG4EncCodecDrvLockHW definition for SW/hybrid codec
-#define  SP5_VMPEG4EncCodecUnLockHW                   VMPEG4EncCodecDrvUnLockHW                 ///< VMPEG4EncCodecDrvUnLockHW definition for SW/hybrid codec
+/* /< VCodecDrvMemAllocAligned definition for SW/hybrid codec */
+#define  SP5_VdoMemAllocAligned                       VCodecDrvMemAllocAligned
+/* /< VCodecDrvMemFree definition for SW/hybrid codec */
+#define  SP5_VdoMemFree                               VCodecDrvMemFree
+/* /< VCodecDrvIntMalloc definition for SW/hybrid codec */
+#define  SP5_VdoIntMalloc                             VCodecDrvIntMalloc
+/* /< VCodecDrvIntFree definition for SW/hybrid codec */
+#define  SP5_VdoIntFree                               VCodecDrvIntFree
+/* /< VCodecDrvRegSync definition for SW/hybrid codec */
+#define  SP5_RegSync                                  VCodecDrvRegSync
+/* /< VCodecDrvRegSyncWriteB definition for SW/hybrid codec */
+#define  SP5_RegSyncWriteB                            VCodecDrvRegSyncWriteB
+/* /< VCodecDrvRegSyncWriteW definition for SW/hybrid codec */
+#define  SP5_RegSyncWriteW                            VCodecDrvRegSyncWriteW
+/* /< VCodecDrvRegSyncWriteL definition for SW/hybrid codec */
+#define  SP5_RegSyncWriteL                            VCodecDrvRegSyncWriteL
+/* /< VMPEG4EncCodecDrvWaitISR definition for SW/hybrid codec */
+#define  SP5_VMPEG4EncCodecWaitISR                    VMPEG4EncCodecDrvWaitISR
+/* /< VMPEG4EncCodecDrvLockHW definition for SW/hybrid codec */
+#define  SP5_VMPEG4EncCodecLockHW                     VMPEG4EncCodecDrvLockHW
+/* /< VMPEG4EncCodecDrvUnLockHW definition for SW/hybrid codec */
+#define  SP5_VMPEG4EncCodecUnLockHW                   VMPEG4EncCodecDrvUnLockHW
+/* /< VH264DecCodecDrvWaitISR definition for SW/hybrid codec */
+#define  SP5_VH264DecCodecWaitISR                     VH264DecCodecDrvWaitISR
+/* /< VH264DecCodecDrvLockHW definition for SW/hybrid codec */
+#define  SP5_VH264DecCodecLockHW                      VH264DecCodecDrvLockHW
+/* /< VH264DecCodecDrvUnLockHW definition for SW/hybrid codec */
+#define  SP5_VH264DecCodecUnLockHW                    VH264DecCodecDrvUnLockHW
 
 
 /**
@@ -94,9 +114,10 @@ typedef enum ___VAL_OAL_TYPE
  * @par Returns
  *   void
  */
-void SP5_VCodecQueryMemType(IN void            *pBuffer_VA,
-                            IN unsigned int    u4Size,
-                            OUT VCODEC_MEMORY_TYPE_T *peMemType);
+void SP5_VCodecQueryMemType(
+	IN void            *pBuffer_VA,
+	IN unsigned int    u4Size,
+	OUT VCODEC_MEMORY_TYPE_T * peMemType);
 
 
 /**
@@ -112,7 +133,7 @@ void SP5_VCodecQueryMemType(IN void            *pBuffer_VA,
  *   void
  */
 void SP5_VCodecQueryPhysicalAddr(IN void       *pBuffer_VA,
-                                 OUT void     **pBufferOut_PA);
+				 OUT void     **pBufferOut_PA);
 
 
 /**
@@ -132,9 +153,9 @@ void SP5_VCodecQueryPhysicalAddr(IN void       *pBuffer_VA,
  *   int, return 0 if success, return -1 if failed
  */
 int SP5_VCodecSwitchMemType(IN void            *pBuffer_VA,
-                            IN unsigned int    u4Size,
-                            IN VCODEC_MEMORY_TYPE_T eMemType,
-                            OUT void           **pBufferOut_VA);
+			    IN unsigned int    u4Size,
+			    IN VCODEC_MEMORY_TYPE_T eMemType,
+			    OUT void           **pBufferOut_VA);
 
 
 /**
@@ -150,7 +171,7 @@ int SP5_VCodecSwitchMemType(IN void            *pBuffer_VA,
  *   void
  */
 void SP5_VCodecFlushCachedBuffer(IN void         *pBuffer_VA,
-                                 IN unsigned int u4Size);
+				 IN unsigned int u4Size);
 
 
 /**
@@ -166,7 +187,7 @@ void SP5_VCodecFlushCachedBuffer(IN void         *pBuffer_VA,
  *   void
  */
 void SP5_VCodecInvalidateCachedBuffer(IN void         *pBuffer_VA,
-                                      IN unsigned int   u4Size);
+				      IN unsigned int   u4Size);
 
 
 /**
@@ -177,7 +198,7 @@ void SP5_VCodecInvalidateCachedBuffer(IN void         *pBuffer_VA,
  * @par Returns
  *   void
  */
-void SP5_VCodecFlushCachedBufferAll();
+void SP5_VCodecFlushCachedBufferAll(void);
 
 
 /**
@@ -188,7 +209,7 @@ void SP5_VCodecFlushCachedBufferAll();
  * @par Returns
  *   void
  */
-void SP5_VCodecInvalidateCachedBufferAll();
+void SP5_VCodecInvalidateCachedBufferAll(void);
 
 
 /**
@@ -199,7 +220,7 @@ void SP5_VCodecInvalidateCachedBufferAll();
  * @par Returns
  *   void
  */
-void SP5_VCodecFlushInvalidateCacheBufferAll();
+void SP5_VCodecFlushInvalidateCacheBufferAll(void);
 
 
 /**
@@ -217,8 +238,8 @@ void SP5_VCodecFlushInvalidateCacheBufferAll();
  *   void
  */
 void  SP5_VCodecMemSet(IN void                *pBuffer_VA,
-                       IN char                cValue,
-                       IN unsigned int        u4Length);
+		       IN char                cValue,
+		       IN unsigned int        u4Length);
 
 
 /**
@@ -236,8 +257,8 @@ void  SP5_VCodecMemSet(IN void                *pBuffer_VA,
  *   void
  */
 void  SP5_VCodecMemCopy(IN void             *pvDest ,
-                        IN const void      *pvSrc ,
-                        IN unsigned int      u4Length);
+			IN const void      *pvSrc ,
+			IN unsigned int      u4Length);
 
 
 /**
@@ -255,8 +276,8 @@ void  SP5_VCodecMemCopy(IN void             *pvDest ,
  *   void
  */
 void SP5_VCodecAssertFail(IN char *ptr,
-                          IN int i4Line,
-                          IN int i4Arg);
+			  IN int i4Line,
+			  IN int i4Arg);
 
 
 /**
@@ -364,8 +385,8 @@ void SP5_VCodecDeInitHWLock(VCODEC_OAL_HW_REGISTER_T *prParam);
  *   void
  */
 void SP5_VcodecTraceLog0(IN VCODEC_LOG_GROUP_T eGroup,
-                         IN VCODEC_LOG_INDEX_T eIndex
-                        );
+			 IN VCODEC_LOG_INDEX_T eIndex
+			);
 
 
 /**
@@ -383,9 +404,9 @@ void SP5_VcodecTraceLog0(IN VCODEC_LOG_GROUP_T eGroup,
  *   void
  */
 void SP5_VcodecTraceLog1(IN VCODEC_LOG_GROUP_T eGroup,
-                         IN VCODEC_LOG_INDEX_T eIndex,
-                         IN UINT64 arg
-                        );
+			 IN VCODEC_LOG_INDEX_T eIndex,
+			 IN UINT64 arg
+			);
 
 
 /**
@@ -405,10 +426,10 @@ void SP5_VcodecTraceLog1(IN VCODEC_LOG_GROUP_T eGroup,
  *   void
  */
 void SP5_VcodecTraceLog2(IN VCODEC_LOG_GROUP_T eGroup,
-                         IN  VCODEC_LOG_INDEX_T eIndex,
-                         IN  UINT64 arg1,
-                         IN  UINT64 arg2
-                        );
+			 IN  VCODEC_LOG_INDEX_T eIndex,
+			 IN  UINT64 arg1,
+			 IN  UINT64 arg2
+			);
 
 
 /**
@@ -432,11 +453,11 @@ void SP5_VcodecTraceLog2(IN VCODEC_LOG_GROUP_T eGroup,
  *   void
  */
 void SP5_VcodecTraceLog4(IN VCODEC_LOG_GROUP_T eGroup,
-                         IN  VCODEC_LOG_INDEX_T eIndex,
-                         IN  UINT64 arg1,
-                         IN  UINT64 arg2, IN  UINT64 arg3,
-                         IN  UINT64 arg4
-                        );
+			 IN  VCODEC_LOG_INDEX_T eIndex,
+			 IN  UINT64 arg1,
+			 IN  UINT64 arg2, IN  UINT64 arg3,
+			 IN  UINT64 arg4
+			);
 
 
 /**
@@ -468,16 +489,16 @@ void SP5_VcodecTraceLog4(IN VCODEC_LOG_GROUP_T eGroup,
  *   void
  */
 void SP5_VcodecTraceLog8(IN VCODEC_LOG_GROUP_T eGroup,
-                         IN  VCODEC_LOG_INDEX_T eIndex,
-                         IN  UINT64 arg1,
-                         IN  UINT64 arg2,
-                         IN  UINT64 arg3,
-                         IN UINT64 arg4,
-                         IN  UINT64 arg5,
-                         IN  UINT64 arg6,
-                         IN  UINT64 arg7,
-                         IN  UINT64 arg8
-                        );
+			 IN  VCODEC_LOG_INDEX_T eIndex,
+			 IN  UINT64 arg1,
+			 IN  UINT64 arg2,
+			 IN  UINT64 arg3,
+			 IN UINT64 arg4,
+			 IN  UINT64 arg5,
+			 IN  UINT64 arg6,
+			 IN  UINT64 arg7,
+			 IN  UINT64 arg8
+			);
 #else
 /**
  * @par Function
@@ -513,7 +534,14 @@ VCODEC_OAL_ERROR_T SP5_VCodecPrintf(IN const char *_Format, ...);
  * @par Returns
  *   VAL_VOID_T
  */
-VAL_VOID_T SP5_VdoMemAllocAligned(VAL_VOID_T *handle, VAL_UINT32_T size, unsigned int u4AlignSize, VCODEC_MEMORY_TYPE_T cachable, VCODEC_BUFFER_T *pBuf, VAL_MEM_CODEC_T eMemCodec);
+VAL_VOID_T SP5_VdoMemAllocAligned(
+	VAL_VOID_T * handle,
+	VAL_UINT32_T size,
+	unsigned int u4AlignSize,
+	VCODEC_MEMORY_TYPE_T cachable,
+	VCODEC_BUFFER_T * pBuf,
+	VAL_MEM_CODEC_T eMemCodec
+);
 
 
 /**
@@ -623,6 +651,45 @@ int SP5_VMPEG4EncCodecUnLockHW(VCODEC_OAL_HW_LOCK_T *prParam);
 
 /**
  * @par Function
+ *   SP5_VH264DecCodecWaitISR
+ * @par Description
+ *   The ISR usage related function, whene trigger HW, we will use to wait HW complete
+ * @param
+ *   prParam            [IN/OUT] The structure contains used info for ISR usage
+ * @par Returns
+ *   int, return 1 if success, return 0 if failed
+ */
+int SP5_VH264DecCodecWaitISR(VCODEC_OAL_ISR_T *prParam);
+
+
+/**
+ * @par Function
+ *   SP5_VH264DecCodecLockHW
+ * @par Description
+ *   The single/multiple instance usage function, to allow using HW
+ * @param
+ *   prParam            [IN/OUT] The structure contains used info for Lock HW
+ * @par Returns
+ *   int, return 1 if success, return 0 if failed
+ */
+int SP5_VH264DecCodecLockHW(VCODEC_OAL_HW_LOCK_T *prParam);
+
+
+/**
+ * @par Function
+ *   SP5_VH264DecCodecUnLockHW
+ * @par Description
+ *   The single/multiple instance usage function, to release HW for another instance
+ * @param
+ *   prParam            [IN/OUT] The structure contains used info for unLock HW
+ * @par Returns
+ *   int, return 1 if success, return 0 if failed
+ */
+int SP5_VH264DecCodecUnLockHW(VCODEC_OAL_HW_LOCK_T *prParam);
+
+
+/**
+ * @par Function
  *   eValInit
  * @par Description
  *   The init driver function
@@ -674,7 +741,7 @@ int VCodecDrvCheck_Version(int version);
  * @par Returns
  *   int, pthread_attr_init((pthread_attr_t *)attr);
  */
-int VCodecDrvPthread_attr_init(OUT VCODEC_PTHREAD_ATTR_T *attr);
+int VCodecDrvPthread_attr_init(OUT VCODEC_PTHREAD_ATTR_T * attr);
 
 
 /**
@@ -687,7 +754,7 @@ int VCodecDrvPthread_attr_init(OUT VCODEC_PTHREAD_ATTR_T *attr);
  * @par Returns
  *   int, pthread_attr_destroy((pthread_attr_t *)attr);
  */
-int VCodecDrvPthread_attr_destroy(IN VCODEC_PTHREAD_ATTR_T *attr);
+int VCodecDrvPthread_attr_destroy(IN VCODEC_PTHREAD_ATTR_T * attr);
 
 
 /**
@@ -702,7 +769,7 @@ int VCodecDrvPthread_attr_destroy(IN VCODEC_PTHREAD_ATTR_T *attr);
  * @par Returns
  *   int, pthread_attr_getdetachstate((pthread_attr_t const *)attr, detachstate);
  */
-int VCodecDrvPthread_attr_getdetachstate(IN const VCODEC_PTHREAD_ATTR_T *attr, OUT int *detachstate);
+int VCodecDrvPthread_attr_getdetachstate(IN const VCODEC_PTHREAD_ATTR_T * attr, OUT int *detachstate);
 
 
 /**
@@ -717,7 +784,7 @@ int VCodecDrvPthread_attr_getdetachstate(IN const VCODEC_PTHREAD_ATTR_T *attr, O
  * @par Returns
  *   int, pthread_attr_getdetachstate((pthread_attr_t const *)attr, detachstate);
  */
-int VCodecDrvPthread_attr_setdetachstate(IN VCODEC_PTHREAD_ATTR_T *attr, IN  int detachstate);
+int VCodecDrvPthread_attr_setdetachstate(IN VCODEC_PTHREAD_ATTR_T * attr, IN  int detachstate);
 
 
 /**
@@ -736,7 +803,12 @@ int VCodecDrvPthread_attr_setdetachstate(IN VCODEC_PTHREAD_ATTR_T *attr, IN  int
  * @par Returns
  *   int, pthread_create((pthread_t *)thread, (pthread_attr_t const *)attr, start_routine, arg);
  */
-int VCodecDrvPthread_create(OUT VCODEC_PTHREAD_T *thread, IN  const VCODEC_PTHREAD_ATTR_T *attr, IN  void * (*start_routine)(void *), IN  void *arg);
+int VCodecDrvPthread_create(
+	OUT VCODEC_PTHREAD_T * thread,
+	IN  const VCODEC_PTHREAD_ATTR_T * attr,
+	IN  void * (*start_routine)(void *),
+	IN  void *arg
+);
 
 
 /**
@@ -781,7 +853,7 @@ void VCodecDrvPthread_exit(OUT void *retval);
  */
 int VCodecDrvPthread_join(IN  VCODEC_PTHREAD_T thid, OUT void **ret_val);
 
-//int VCodecDrvPthread_detach(IN VCODEC_PTHREAD_T  thid);
+/* int VCodecDrvPthread_detach(IN VCODEC_PTHREAD_T  thid); */
 
 
 /**
@@ -796,7 +868,7 @@ int VCodecDrvPthread_join(IN  VCODEC_PTHREAD_T thid, OUT void **ret_val);
  * @par Returns
  *   int, pthread_once((pthread_once_t *)once_control, init_routine);
  */
-int VCodecDrvPthread_once(IN VCODEC_PTHREAD_ONCE_T  *once_control, IN void (*init_routine)(void));
+int VCodecDrvPthread_once(IN VCODEC_PTHREAD_ONCE_T * once_control, IN void (*init_routine)(void));
 
 
 /**
@@ -809,7 +881,7 @@ int VCodecDrvPthread_once(IN VCODEC_PTHREAD_ONCE_T  *once_control, IN void (*ini
  */
 VCODEC_PTHREAD_T VCodecDrvPthread_self(void);
 
-//VCODEC_OAL_ERROR_T VCodecDrvPthread_equal(IN VCODEC_PTHREAD_T one,IN  VCODEC_PTHREAD_T two);
+/* VCODEC_OAL_ERROR_T VCodecDrvPthread_equal(IN VCODEC_PTHREAD_T one,IN  VCODEC_PTHREAD_T two); */
 
 /***** Mutex Functions ******/
 
@@ -824,7 +896,7 @@ VCODEC_PTHREAD_T VCodecDrvPthread_self(void);
  * @par Returns
  *   int, pthread_mutexattr_init((pthread_mutexattr_t *)attr);
  */
-int VCodecDrvPthread_mutexattr_init(OUT VCODEC_PTHREAD_MUTEXATTR_T *attr);
+int VCodecDrvPthread_mutexattr_init(OUT VCODEC_PTHREAD_MUTEXATTR_T * attr);
 
 
 /**
@@ -837,7 +909,7 @@ int VCodecDrvPthread_mutexattr_init(OUT VCODEC_PTHREAD_MUTEXATTR_T *attr);
  * @par Returns
  *   int, pthread_mutexattr_destroy((pthread_mutexattr_t *)attr);
  */
-int VCodecDrvPthread_mutexattr_destroy(IN VCODEC_PTHREAD_MUTEXATTR_T *attr);
+int VCodecDrvPthread_mutexattr_destroy(IN VCODEC_PTHREAD_MUTEXATTR_T * attr);
 
 
 /**
@@ -852,7 +924,7 @@ int VCodecDrvPthread_mutexattr_destroy(IN VCODEC_PTHREAD_MUTEXATTR_T *attr);
  * @par Returns
  *   int, pthread_mutex_init((pthread_mutex_t *)mutex, (const pthread_mutexattr_t *)attr);
  */
-int VCodecDrvPthread_mutex_init(OUT VCODEC_PTHREAD_MUTEX_T *mutex, IN  const VCODEC_PTHREAD_MUTEXATTR_T *attr);
+int VCodecDrvPthread_mutex_init(OUT VCODEC_PTHREAD_MUTEX_T * mutex, IN  const VCODEC_PTHREAD_MUTEXATTR_T * attr);
 
 
 /**
@@ -865,7 +937,7 @@ int VCodecDrvPthread_mutex_init(OUT VCODEC_PTHREAD_MUTEX_T *mutex, IN  const VCO
  * @par Returns
  *   int, pthread_mutex_destroy((pthread_mutex_t *)mutex);
  */
-int VCodecDrvPthread_mutex_destroy(IN VCODEC_PTHREAD_MUTEX_T *mutex);
+int VCodecDrvPthread_mutex_destroy(IN VCODEC_PTHREAD_MUTEX_T * mutex);
 
 
 /**
@@ -878,7 +950,7 @@ int VCodecDrvPthread_mutex_destroy(IN VCODEC_PTHREAD_MUTEX_T *mutex);
  * @par Returns
  *   int, pthread_mutex_lock((pthread_mutex_t *)mutex);
  */
-int VCodecDrvPthread_mutex_lock(IN VCODEC_PTHREAD_MUTEX_T *mutex);
+int VCodecDrvPthread_mutex_lock(IN VCODEC_PTHREAD_MUTEX_T * mutex);
 
 
 /**
@@ -891,7 +963,7 @@ int VCodecDrvPthread_mutex_lock(IN VCODEC_PTHREAD_MUTEX_T *mutex);
  * @par Returns
  *   int, pthread_mutex_unlock((pthread_mutex_t *)mutex);
  */
-int VCodecDrvPthread_mutex_unlock(IN VCODEC_PTHREAD_MUTEX_T *mutex);
+int VCodecDrvPthread_mutex_unlock(IN VCODEC_PTHREAD_MUTEX_T * mutex);
 
 
 /**
@@ -904,7 +976,7 @@ int VCodecDrvPthread_mutex_unlock(IN VCODEC_PTHREAD_MUTEX_T *mutex);
  * @par Returns
  *   int, pthread_mutex_trylock((pthread_mutex_t *)mutex);
  */
-int VCodecDrvPthread_mutex_trylock(IN VCODEC_PTHREAD_MUTEX_T *mutex);
+int VCodecDrvPthread_mutex_trylock(IN VCODEC_PTHREAD_MUTEX_T * mutex);
 
 /***** Spin Functions ******/
 
@@ -921,7 +993,7 @@ int VCodecDrvPthread_mutex_trylock(IN VCODEC_PTHREAD_MUTEX_T *mutex);
  * @par Returns
  *   int, -1, NOT implement
  */
-int VCodecDrvPthread_spin_init(OUT VCODEC_PTHREAD_SPINLOCK_T *lock, IN  int pshared);
+int VCodecDrvPthread_spin_init(OUT VCODEC_PTHREAD_SPINLOCK_T * lock, IN  int pshared);
 
 
 /**
@@ -934,7 +1006,7 @@ int VCodecDrvPthread_spin_init(OUT VCODEC_PTHREAD_SPINLOCK_T *lock, IN  int psha
  * @par Returns
  *   int, -1, NOT implement
  */
-int VCodecDrvPthread_spin_destroy(IN VCODEC_PTHREAD_SPINLOCK_T *lock);
+int VCodecDrvPthread_spin_destroy(IN VCODEC_PTHREAD_SPINLOCK_T * lock);
 
 
 /**
@@ -947,7 +1019,7 @@ int VCodecDrvPthread_spin_destroy(IN VCODEC_PTHREAD_SPINLOCK_T *lock);
  * @par Returns
  *   int, -1, NOT implement
  */
-int VCodecDrvPthread_spin_lock(IN VCODEC_PTHREAD_SPINLOCK_T *lock);
+int VCodecDrvPthread_spin_lock(IN VCODEC_PTHREAD_SPINLOCK_T * lock);
 
 
 /**
@@ -960,7 +1032,7 @@ int VCodecDrvPthread_spin_lock(IN VCODEC_PTHREAD_SPINLOCK_T *lock);
  * @par Returns
  *   int, -1, NOT implement
  */
-int VCodecDrvPthread_spin_trylock(IN VCODEC_PTHREAD_SPINLOCK_T *lock);
+int VCodecDrvPthread_spin_trylock(IN VCODEC_PTHREAD_SPINLOCK_T * lock);
 
 
 /**
@@ -973,7 +1045,7 @@ int VCodecDrvPthread_spin_trylock(IN VCODEC_PTHREAD_SPINLOCK_T *lock);
  * @par Returns
  *   int, -1, NOT implement
  */
-int VCodecDrvPthread_spin_unlock(IN VCODEC_PTHREAD_SPINLOCK_T *lock);
+int VCodecDrvPthread_spin_unlock(IN VCODEC_PTHREAD_SPINLOCK_T * lock);
 
 /***** Condition Variable Functions ******/
 
@@ -988,7 +1060,7 @@ int VCodecDrvPthread_spin_unlock(IN VCODEC_PTHREAD_SPINLOCK_T *lock);
  * @par Returns
  *   int, pthread_condattr_init((pthread_condattr_t *)attr);
  */
-int VCodecDrvPthread_condattr_init(OUT VCODEC_PTHREAD_CONDATTR_T *attr);
+int VCodecDrvPthread_condattr_init(OUT VCODEC_PTHREAD_CONDATTR_T * attr);
 
 
 /**
@@ -1001,7 +1073,7 @@ int VCodecDrvPthread_condattr_init(OUT VCODEC_PTHREAD_CONDATTR_T *attr);
  * @par Returns
  *   int, pthread_condattr_destroy((pthread_condattr_t *)attr);
  */
-int VCodecDrvPthread_condattr_destroy(IN VCODEC_PTHREAD_CONDATTR_T *attr);
+int VCodecDrvPthread_condattr_destroy(IN VCODEC_PTHREAD_CONDATTR_T * attr);
 
 
 /**
@@ -1016,7 +1088,7 @@ int VCodecDrvPthread_condattr_destroy(IN VCODEC_PTHREAD_CONDATTR_T *attr);
  * @par Returns
  *   int, pthread_cond_init((pthread_cond_t *)cond, (const pthread_condattr_t *)attr);
  */
-int VCodecDrvPthread_cond_init(OUT VCODEC_PTHREAD_COND_T *cond, IN  const VCODEC_PTHREAD_CONDATTR_T *attr);
+int VCodecDrvPthread_cond_init(OUT VCODEC_PTHREAD_COND_T * cond, IN  const VCODEC_PTHREAD_CONDATTR_T * attr);
 
 
 /**
@@ -1029,7 +1101,7 @@ int VCodecDrvPthread_cond_init(OUT VCODEC_PTHREAD_COND_T *cond, IN  const VCODEC
  * @par Returns
  *   int, pthread_cond_destroy((pthread_cond_t *)cond);
  */
-int VCodecDrvPthread_cond_destroy(IN VCODEC_PTHREAD_COND_T *cond);
+int VCodecDrvPthread_cond_destroy(IN VCODEC_PTHREAD_COND_T * cond);
 
 
 /**
@@ -1042,7 +1114,7 @@ int VCodecDrvPthread_cond_destroy(IN VCODEC_PTHREAD_COND_T *cond);
  * @par Returns
  *   int, pthread_cond_broadcast((pthread_cond_t *)cond);
  */
-int VCodecDrvPthread_cond_broadcast(IN VCODEC_PTHREAD_COND_T *cond);
+int VCodecDrvPthread_cond_broadcast(IN VCODEC_PTHREAD_COND_T * cond);
 
 
 /**
@@ -1055,7 +1127,7 @@ int VCodecDrvPthread_cond_broadcast(IN VCODEC_PTHREAD_COND_T *cond);
  * @par Returns
  *   int, pthread_cond_signal((pthread_cond_t *)cond);
  */
-int VCodecDrvPthread_cond_signal(IN VCODEC_PTHREAD_COND_T *cond);
+int VCodecDrvPthread_cond_signal(IN VCODEC_PTHREAD_COND_T * cond);
 
 
 /**
@@ -1070,7 +1142,7 @@ int VCodecDrvPthread_cond_signal(IN VCODEC_PTHREAD_COND_T *cond);
  * @par Returns
  *   int, pthread_cond_wait((pthread_cond_t *)cond, (pthread_mutex_t *)mutex);
  */
-int VCodecDrvPthread_cond_wait(IN VCODEC_PTHREAD_COND_T *cond, IN  VCODEC_PTHREAD_MUTEX_T *mutex);
+int VCodecDrvPthread_cond_wait(IN VCODEC_PTHREAD_COND_T * cond, IN  VCODEC_PTHREAD_MUTEX_T * mutex);
 
 /************  End of Multi-thread function ***********/
 
@@ -1091,7 +1163,7 @@ int VCodecDrvPthread_cond_wait(IN VCODEC_PTHREAD_COND_T *cond, IN  VCODEC_PTHREA
  * @par Returns
  *   int, sem_init((sem_t*)sem, pshared, value);
  */
-int VCodecDrv_sem_init(IN VCODEC_OAL_SEM_T *sem, IN int pshared, IN unsigned int value);
+int VCodecDrv_sem_init(IN VCODEC_OAL_SEM_T * sem, IN int pshared, IN unsigned int value);
 
 
 /**
@@ -1104,7 +1176,7 @@ int VCodecDrv_sem_init(IN VCODEC_OAL_SEM_T *sem, IN int pshared, IN unsigned int
  * @par Returns
  *   int, sem_destroy((sem_t*)sem);
  */
-int VCodecDrv_sem_destroy(IN VCODEC_OAL_SEM_T *sem);
+int VCodecDrv_sem_destroy(IN VCODEC_OAL_SEM_T * sem);
 
 
 /**
@@ -1117,7 +1189,7 @@ int VCodecDrv_sem_destroy(IN VCODEC_OAL_SEM_T *sem);
  * @par Returns
  *   int, sem_post((sem_t*)sem);
  */
-int VCodecDrv_sem_post(IN VCODEC_OAL_SEM_T *sem);
+int VCodecDrv_sem_post(IN VCODEC_OAL_SEM_T * sem);
 
 
 /**
@@ -1130,7 +1202,7 @@ int VCodecDrv_sem_post(IN VCODEC_OAL_SEM_T *sem);
  * @par Returns
  *   int, sem_wait((sem_t*)sem);
  */
-int VCodecDrv_sem_wait(IN VCODEC_OAL_SEM_T *sem);
+int VCodecDrv_sem_wait(IN VCODEC_OAL_SEM_T * sem);
 
 /***** Binding Functions ******/
 
@@ -1177,7 +1249,11 @@ VCODEC_OAL_ERROR_T VCodecDrvDeBindingCore(IN  VCODEC_PTHREAD_T ThreadHandle);
  * @par Returns
  *   VCODEC_OAL_ERROR_T, return VCODEC_OAL_ERROR_NONE if success, return VCODEC_OAL_ERROR_ERROR if failed
  */
-VCODEC_OAL_ERROR_T VCodecDrvGetAffinity(IN  VCODEC_PTHREAD_T ThreadHandle, OUT  unsigned int *pu4Mask, OUT  unsigned int *pu4SetMask);
+VCODEC_OAL_ERROR_T VCodecDrvGetAffinity(
+	IN  VCODEC_PTHREAD_T ThreadHandle,
+	OUT  unsigned int *pu4Mask,
+	OUT  unsigned int *pu4SetMask
+);
 
 
 /**
@@ -1233,7 +1309,7 @@ void VCodecDrvSleep(IN unsigned int u4Tick);
  * @par Returns
  *   int, return 0 if success, return -1 if failed
  */
-int OAL_SMP_BindingCore(int aCurrentTid, int aCPUid);   //ONLY used for TEST in main.c
+int OAL_SMP_BindingCore(int aCurrentTid, int aCPUid);   /* ONLY used for TEST in main.c */
 
 /***** MCI Functions ******/
 
@@ -1250,9 +1326,15 @@ int OAL_SMP_BindingCore(int aCurrentTid, int aCPUid);   //ONLY used for TEST in 
  * @param
  *   eCodecType         [OUT] VDEC or VENC
  * @par Returns
- *   VCODEC_OAL_ERROR_T, return VCODEC_OAL_ERROR_NONE if success, return VCODEC_OAL_ERROR_ERROR or VAL_RESULT_UNKNOWN_ERROR if failed
+ *   VCODEC_OAL_ERROR_T,
+ *   return VCODEC_OAL_ERROR_NONE if success,
+ *   return VCODEC_OAL_ERROR_ERROR or VAL_RESULT_UNKNOWN_ERROR if failed
  */
-VCODEC_OAL_ERROR_T VCodecConfigMCIPort(IN unsigned int u4PortConfig, OUT unsigned int *pu4PortResult, IN VCODEC_CODEC_TYPE_T eCodecType);
+VCODEC_OAL_ERROR_T VCodecConfigMCIPort(
+	IN unsigned int u4PortConfig,
+	OUT unsigned int *pu4PortResult,
+	IN VCODEC_CODEC_TYPE_T eCodecType
+);
 
 
 /***** Software vdec lib Functions ******/
@@ -1276,7 +1358,13 @@ VCODEC_OAL_ERROR_T VCodecConfigMCIPort(IN unsigned int u4PortConfig, OUT unsigne
  * @par Returns
  *   void
  */
-void VCodecDrvMemAllocAligned_NC(IN HANDLE hDrv, IN unsigned int u4Size, unsigned int u4AlignSize, IN VCODEC_MEMORY_TYPE_T fgCacheable, OUT VCODEC_BUFFER_T *prBuf);
+void VCodecDrvMemAllocAligned_NC(
+	IN HANDLE hDrv,
+	IN unsigned int u4Size,
+	unsigned int u4AlignSize,
+	IN VCODEC_MEMORY_TYPE_T fgCacheable,
+	OUT VCODEC_BUFFER_T *prBuf
+);
 
 
 /**
@@ -1310,18 +1398,18 @@ void VCodecDrvMemFree_NC(IN HANDLE hDrv, IN VCODEC_BUFFER_T *prBuf);
  */
 VCODEC_DEC_ERROR_T VDecCodecQueryInfo(IN HANDLE hDrv, IN VCODEC_DEC_QUERY_INFO_TYPE_T ID, OUT void *pvQueryData);
 #if 0
-// MACRO
+/* MACRO */
 
 #include "mach/sync_write.h"
 
 #define SP5_REGSYNC_WriteB(v, a) \
-    mt65xx_reg_sync_writeb(v, a);
+	mt65xx_reg_sync_writeb(v, a);
 
 #define SP5_REGSYNC_WriteW(v, a) \
-    mt65xx_reg_sync_writew(v, a);
+	mt65xx_reg_sync_writew(v, a);
 
 #define SP5_REGSYNC_WriteL(v, a) \
-    mt65xx_reg_sync_writel(v, a);
+	mt65xx_reg_sync_writel(v, a);
 
 
 VAL_VOID_T SP5_RegSyncWriteB(VAL_UINT32_T v, VAL_UINT32_T a);

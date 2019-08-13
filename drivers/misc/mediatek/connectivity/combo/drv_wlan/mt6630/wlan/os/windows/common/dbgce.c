@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/dbgce.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/dbgce.c#1
 */
 
 /*! \file   dbgce.c
     \brief  This file contains the debug routines of Windows CE driver.
  */
 
-
-
 /*
-** $Log: dbgce.c $
+** Log: dbgce.c
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -17,7 +15,8 @@
 ** (Davinci label: MT6620_WIFI_Driver_V2_3_120913_1942_As_MT6630_Base)
  *
  * 01 04 2011 cp.wu
- * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and vmalloc implementations to ease physically continous memory demands
+ * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and vmalloc
+ * implementations to ease physically continous memory demands
  * separate kalMemAlloc() into virtually-continous and physically-continous type to ease slab system pressure
  *
  * 07 08 2010 cp.wu
@@ -119,9 +118,7 @@ NDIS_STATUS dbgFileCreate(VOID)
 	hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE,
 				     NULL,
 				     PAGE_READWRITE,
-				     0,
-				     MAX_RECORD_NUM * sizeof(DEBUG_MSG_FORMAT) +
-				     sizeof(DEBUG_MSG_POOL), szName);
+				     0, MAX_RECORD_NUM * sizeof(DEBUG_MSG_FORMAT) + sizeof(DEBUG_MSG_POOL), szName);
 
 	if (hMapFile == NULL) {
 		TCHAR buf[256];
@@ -134,9 +131,7 @@ NDIS_STATUS dbgFileCreate(VOID)
 	pBuf = (PDEBUG_MSG_POOL) MapViewOfFile(hMapFile,	/* handle to map object */
 					       FILE_MAP_ALL_ACCESS,	/* read/write permission */
 					       0,
-					       0,
-					       MAX_RECORD_NUM * sizeof(DEBUG_MSG_FORMAT) +
-					       sizeof(DEBUG_MSG_POOL));
+					       0, MAX_RECORD_NUM * sizeof(DEBUG_MSG_FORMAT) + sizeof(DEBUG_MSG_POOL));
 
 	if (pBuf == NULL) {
 		TCHAR buf[256];
@@ -177,16 +172,14 @@ VOID closeLog(void)
 * \retval NDIS_STATUS_FAILURE If fail to log the message
 */
 /*----------------------------------------------------------------------------*/
-NDIS_STATUS dbgLogWr(IN PINT_8 debugStr, IN ...
-    )
+NDIS_STATUS dbgLogWr(IN PINT_8 debugStr, IN ...)
 {
 	va_list paramList;
 	PINT_8 buf_p = NULL;
 	UINT_32 systemUpTime;
 
-	if (pBuf == NULL) {
+	if (pBuf == NULL)
 		return NDIS_STATUS_FAILURE;
-	}
 
 	/* Format log message: systemTime + message */
 	buf_p = pBuf->dbgMsg[pBuf->currentIndex].dbgStr;
@@ -201,9 +194,8 @@ NDIS_STATUS dbgLogWr(IN PINT_8 debugStr, IN ...
 
 	g_logId++;
 	pBuf->currentIndex++;
-	if (pBuf->currentIndex >= MAX_RECORD_NUM) {
+	if (pBuf->currentIndex >= MAX_RECORD_NUM)
 		pBuf->currentIndex = (pBuf->currentIndex) % MAX_RECORD_NUM;
-	}
 
 	return NDIS_STATUS_SUCCESS;
 
@@ -221,16 +213,14 @@ NDIS_STATUS dbgLogWr(IN PINT_8 debugStr, IN ...
 * \retval NDIS_STATUS_FAILURE If fail to log the message
 */
 /*----------------------------------------------------------------------------*/
-NDIS_STATUS dbgLogWr1(IN PINT_8 debugStr, IN ...
-    )
+NDIS_STATUS dbgLogWr1(IN PINT_8 debugStr, IN ...)
 {
 	PINT_8 buf_p = NULL;
 	UINT_32 systemUpTime;
 	va_list paramList;
 
-	if (pBuf == NULL) {
+	if (pBuf == NULL)
 		return NDIS_STATUS_FAILURE;
-	}
 
 	/* Format log message: systemTime + message */
 	buf_p = pBuf->dbgMsg[pBuf->currentIndex].dbgStr;
@@ -245,9 +235,8 @@ NDIS_STATUS dbgLogWr1(IN PINT_8 debugStr, IN ...
 
 	g_logId++;
 	pBuf->currentIndex++;
-	if (pBuf->currentIndex >= MAX_RECORD_NUM) {
+	if (pBuf->currentIndex >= MAX_RECORD_NUM)
 		pBuf->currentIndex = (pBuf->currentIndex) % MAX_RECORD_NUM;
-	}
 
 	return NDIS_STATUS_SUCCESS;
 }				/* dbgLogWr1 */
@@ -279,14 +268,12 @@ NDIS_STATUS dbgFileCreate(VOID)
 					NULL,	/* Handle cannot be inherited */
 					CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-		if (FileHandle == INVALID_HANDLE_VALUE) {
+		if (FileHandle == INVALID_HANDLE_VALUE)
 			status = NDIS_STATUS_FAILURE;
-		}
 	}
 
-	if (FileHandle != INVALID_HANDLE_VALUE) {
+	if (FileHandle != INVALID_HANDLE_VALUE)
 		CloseHandle(FileHandle);
-	}
 
 	return status;
 
@@ -303,8 +290,7 @@ NDIS_STATUS dbgFileCreate(VOID)
 * \retval NDIS_STATUS_FAILURE If fail to log the message
 */
 /*----------------------------------------------------------------------------*/
-NDIS_STATUS dbgLogWr(IN PINT_8 debugStr, IN ...
-    )
+NDIS_STATUS dbgLogWr(IN PINT_8 debugStr, IN ...)
 {
 #define TMP_BUF_LEN  256
 
@@ -320,9 +306,8 @@ NDIS_STATUS dbgLogWr(IN PINT_8 debugStr, IN ...
 				NULL,	/* Handle cannot be inherited */
 				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	if (FileHandle == INVALID_HANDLE_VALUE) {
+	if (FileHandle == INVALID_HANDLE_VALUE)
 		return NDIS_STATUS_FAILURE;
-	}
 
 	/* Create log message buffer */
 	buf_p = (PUINT_8) kalMemAlloc(TMP_BUF_LEN, VIR_MEM_TYPE);
@@ -368,8 +353,7 @@ NDIS_STATUS dbgLogWr(IN PINT_8 debugStr, IN ...
 * \retval NDIS_STATUS_FAILURE If fail to log the message
 */
 /*----------------------------------------------------------------------------*/
-NDIS_STATUS dbgLogWr1(IN PINT_8 debugStr, IN ...
-    )
+NDIS_STATUS dbgLogWr1(IN PINT_8 debugStr, IN ...)
 {
 #define TMP_BUF_LEN  256
 
@@ -384,9 +368,8 @@ NDIS_STATUS dbgLogWr1(IN PINT_8 debugStr, IN ...
 				NULL,	/* Handle cannot be inherited */
 				OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	if (FileHandle == INVALID_HANDLE_VALUE) {
+	if (FileHandle == INVALID_HANDLE_VALUE)
 		return NDIS_STATUS_FAILURE;
-	}
 
 	/* Create log message buffer */
 	buf_p = (PUINT_8) kalMemAlloc(TMP_BUF_LEN);
@@ -426,8 +409,7 @@ NDIS_STATUS dbgLogWr1(IN PINT_8 debugStr, IN ...
 * \retval NDIS_STATUS_FAILURE If fail to log the message
 *
 /*----------------------------------------------------------------------------*/
-NDIS_STATUS dbgLogWr2(IN PINT_8 debugStr, IN ...
-    )
+NDIS_STATUS dbgLogWr2(IN PINT_8 debugStr, IN ...)
 {
 #define TMP_BUF_LEN   256
 #define TMP_WBUF_LEN  (TMP_BUF_LEN * 2)
@@ -439,9 +421,8 @@ NDIS_STATUS dbgLogWr2(IN PINT_8 debugStr, IN ...
 
 	/* Create log message buffer */
 	buf_p = (PINT_8) kalMemAlloc(TMP_BUF_LEN, VIR_MEM_TYPE);
-	if (buf_p == NULL) {
+	if (buf_p == NULL)
 		return NDIS_STATUS_FAILURE;
-	}
 	wbuf_p = (PINT_16) kalMemAlloc(TMP_WBUF_LEN, VIR_MEM_TYPE);
 	if (wbuf_p == NULL) {
 		kalMemFree(buf_p, VIR_MEM_TYPE, TMP_BUF_LEN);
@@ -469,6 +450,6 @@ NDIS_STATUS dbgLogWr2(IN PINT_8 debugStr, IN ...
 
 	return NDIS_STATUS_SUCCESS;
 }				/* dbgLogWr2 */
-#endif				/* UNICODE_MESSAGE */
+#endif /* UNICODE_MESSAGE */
 
-#endif				/* #if DBG */
+#endif /* #if DBG */

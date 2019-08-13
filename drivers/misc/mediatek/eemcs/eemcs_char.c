@@ -49,16 +49,24 @@ static KAL_UINT8 ccci_cdev_name[EEMCS_CDEV_MAX_NUM][32]=
     "eemcs_ioctl",   /* ioctl channel, support ioctl only no i/o*/
     "eemcs_ril",     /* rild channel, support ioctl only no i/o*/
     "eemcs_it",      /* END_OF_NORMAL_PORT-1 */
+#if defined (DBG_FEATURE_POLL_MD_STA)
+    "eemcs_poll",  	 /* poll md status*/
+#endif
+#if defined (DBG_FEATURE_CCCI_LB_IT)
+    "eemcs_lb_it",
+#endif
 };
 
 static unsigned int       catch_last_log = 0;
 static spinlock_t         md_logger_lock;
 static eemcs_cdev_node_t* md_log_node = NULL; 
+
 extern struct wake_lock   eemcs_wake_lock;
 
 
 #define PORT2IDX(port) ((port)-START_OF_NORMAL_PORT)
 #define IDX2PORT(idx) ((idx)+START_OF_NORMAL_PORT)
+
 
 static KAL_INT32 eemcs_cdev_rx_callback(struct sk_buff *skb, KAL_UINT32 private_data)
 {
@@ -137,10 +145,17 @@ static int eemcs_cdev_open(struct inode *inode,  struct file *file)
     nonseekable_open(inode, file);
     atomic_set(&eemcs_cdev_inst.cdev_node[PORT2IDX(id)].cdev_state, CDEV_OPEN);
 
-    if ( CCCI_PORT_META == id ) {
+    if (CCCI_PORT_META == id) {
         md_log_node = file->private_data;
-        DBGLOG(CHAR,INF, "init md log node");
+        DBGLOG(CHAR, INF, "init md log node");
         catch_last_log = 0;
+    }
+	
+    if (CCCI_PORT_MD_LOG == id) {
+        #if defined (DBG_FEATURE_POLL_MD_STA)
+        //start md status poll timer when mdlogger enable
+        eemcs_start_md_status_poll_timer(HZ);
+        #endif
     }
 
     DEBUG_LOG_FUNCTION_LEAVE;
@@ -269,29 +284,6 @@ int eemcs_cdev_msg(int port_id, unsigned int message, unsigned int reserved){
         return eemcs_cdev_rx_callback(new_skb, 0);
     }
 }
-    
-static void eemcs_cdev_write_force_md_rst(void)
-{
-	struct sk_buff *new_skb;
-	CCCI_BUFF_T *ccci_header;
-	int ret;
-	
-	new_skb = ccci_cdev_mem_alloc(CCCI_CDEV_HEADER_ROOM, GFP_ATOMIC);
-	while(NULL == new_skb)
-	{
-		new_skb = ccci_cdev_mem_alloc(CCCI_CDEV_HEADER_ROOM, GFP_ATOMIC);
-	}
-	/* reserve SDIO_H header room */
-	#ifdef CCCI_SDIO_HEAD
-	skb_reserve(new_skb, sizeof(SDIO_H)); 
-	#endif
-	
-	ccci_header = (CCCI_BUFF_T *)skb_put(new_skb, sizeof(CCCI_BUFF_T)) ; 
-	ccci_header->data[0]= CCCI_MAGIC_NUM; /* message box magic */
-	ccci_header->data[1]= 0;              /* message ID */
-	ccci_header->channel = CCCI_FORCE_RESET_MODEM_CHANNEL;      /* reset channel number */
-	ret = ccci_cdev_write_desc_to_q(CCCI_FORCE_RESET_MODEM_CHANNEL, new_skb);
-}
 
 void eemcs_md_logger_notify(void)
 {
@@ -418,9 +410,7 @@ static long eemcs_cdev_ioctl(struct file *fp, unsigned int cmd, unsigned long ar
         {
             DBGLOG(CHAR, INF, "CCCI_IOC_FORCE_MD_ASSERT by %s(%d)", ccci_cdev_name[PORT2IDX(port_id)], port_id); 
             /* force md assert channel is 20090215 */
-            eemcs_cdev_write_force_md_rst();
-            //CCCI_INIT_MAILBOX(&buff, 0);
-            //ret = ccci_write_force(CCCI_FORCE_RESET_MODEM_CHANNEL, &buff);
+            ccci_df_to_ccci_send_msg(CCCI_FORCE_RESET_MODEM_CHANNEL, 0, 0);
         }
         break;
 

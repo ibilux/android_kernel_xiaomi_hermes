@@ -8,7 +8,6 @@
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/delay.h>
-#include <linux/xlog.h>
 
 #include <asm/uaccess.h>
     
@@ -31,11 +30,13 @@ ROOTBUS_HW g_MT_PMIC_BusHW ;
 /**********************************************************************
 * Debug Message Settings
 *****************************************************************/
+#define LDO_DEBUG_ENABLE 0
+
 #if 1
 #define MSG(evt, fmt, args...) \
 do {    \
     if ((DBG_PMAPI_##evt) & DBG_PMAPI_MASK) { \
-        xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", fmt, ##args); \
+				pr_debug(fmt, ##args); \
     } \
 } while(0)
 
@@ -66,7 +67,7 @@ bool hwPowerOn(MT65XX_POWER powerId, MT65XX_POWER_VOLTAGE powerVolt, char *mode_
             g_MT_PMIC_BusHW.Power[j].dwPowerCount=0;
         }
         first_power_on_flag = 0;
-        xlog_printk(ANDROID_LOG_DEBUG, "Power/PMIC", "[hwPowerOn] init done.\r\n");
+        pr_debug("[hwPowerOn] init done.\r\n");
     }
 	
 #if 1	
@@ -77,7 +78,9 @@ bool hwPowerOn(MT65XX_POWER powerId, MT65XX_POWER_VOLTAGE powerVolt, char *mode_
     }
     for (i = 0; i< MAX_DEVICE; i++)
     {
-        xlog_printk(ANDROID_LOG_DEBUG, "Power/PMIC", "[hwPowerOn] %d,%s,%d\r\n", i, g_MT_PMIC_BusHW.Power[powerId].mod_name[i], g_MT_PMIC_BusHW.Power[powerId].dwPowerCount);
+#if LDO_DEBUG_ENABLE
+        pr_debug("[hwPowerOn] %d,%s,%d\r\n", i, g_MT_PMIC_BusHW.Power[powerId].mod_name[i], g_MT_PMIC_BusHW.Power[powerId].dwPowerCount);
+#endif
 	
         if (!strcmp(g_MT_PMIC_BusHW.Power[powerId].mod_name[i], NON_OP))
         {
@@ -98,13 +101,15 @@ bool hwPowerOn(MT65XX_POWER powerId, MT65XX_POWER_VOLTAGE powerVolt, char *mode_
     /* We've already enable this LDO before */
     if(g_MT_PMIC_BusHW.Power[powerId].dwPowerCount > 1)
     {
-        xlog_printk(ANDROID_LOG_DEBUG, "Power/PMIC", "[hwPowerOn] g_MT_PMIC_BusHW.Power[powerId].dwPowerCount (%d) > 1\r\n", g_MT_PMIC_BusHW.Power[powerId].dwPowerCount);
+        pr_debug("[hwPowerOn] g_MT_PMIC_BusHW.Power[powerId].dwPowerCount (%d) > 1\r\n", g_MT_PMIC_BusHW.Power[powerId].dwPowerCount);
         return TRUE;
     }
 #endif	
     /* Turn on PMU LDO*/
+#if LDO_DEBUG_ENABLE
     MSG(CG,"[%d] PMU LDO Enable\r\n",powerId );            
-    xlog_printk(ANDROID_LOG_DEBUG, "Power/PMIC", "[hwPowerOn] enable %d by %s \r\n", powerId, mode_name);
+    pr_debug("[hwPowerOn] enable %d by %s \r\n", powerId, mode_name);
+#endif
 
 #if 1
     if (  (powerId == MT6331_POWER_LDO_VAUD32) 
@@ -162,7 +167,9 @@ bool hwPowerDown(MT65XX_POWER powerId, char *mode_name)
     }
     for (i = 0; i< MAX_DEVICE; i++)
     {
-        xlog_printk(ANDROID_LOG_DEBUG, "Power/PMIC", "[hwPowerDown] %d,%s,%d\r\n", i, g_MT_PMIC_BusHW.Power[powerId].mod_name[i], g_MT_PMIC_BusHW.Power[powerId].dwPowerCount);
+#if LDO_DEBUG_ENABLE
+        pr_debug("[hwPowerDown] %d,%s,%d\r\n", i, g_MT_PMIC_BusHW.Power[powerId].mod_name[i], g_MT_PMIC_BusHW.Power[powerId].dwPowerCount);
+#endif
 	
         if (!strcmp(g_MT_PMIC_BusHW.Power[powerId].mod_name[i], mode_name))
         {
@@ -181,13 +188,15 @@ bool hwPowerDown(MT65XX_POWER powerId, char *mode_name)
     g_MT_PMIC_BusHW.Power[powerId].dwPowerCount--;
     if(g_MT_PMIC_BusHW.Power[powerId].dwPowerCount > 0)
     {
-        xlog_printk(ANDROID_LOG_DEBUG, "Power/PMIC", "[hwPowerDown] g_MT_PMIC_BusHW.Power[powerId].dwPowerCount (%d) > 0\r\n", g_MT_PMIC_BusHW.Power[powerId].dwPowerCount);
+        pr_debug("[hwPowerDown] g_MT_PMIC_BusHW.Power[powerId].dwPowerCount (%d) > 0\r\n", g_MT_PMIC_BusHW.Power[powerId].dwPowerCount);
         return TRUE;
     }
 #endif	
     /* Turn off PMU LDO*/
+#if LDO_DEBUG_ENABLE
     MSG(CG,"[%d] PMU LDO Disable\r\n",powerId );
-    xlog_printk(ANDROID_LOG_DEBUG, "Power/PMIC", "[hwPowerDown] disable %d by %s \r\n", powerId, mode_name);
+    pr_debug("[hwPowerDown] disable %d by %s \r\n", powerId, mode_name);
+#endif
 
     pmic_ldo_enable(powerId, KAL_FALSE);
 

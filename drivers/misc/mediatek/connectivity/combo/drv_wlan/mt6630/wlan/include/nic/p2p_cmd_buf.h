@@ -1,5 +1,5 @@
 /*
-** $Id:
+** Id:
 */
 
 /*! \file   "p2p_cmd_buf.h"
@@ -9,10 +9,8 @@
  *  of MGMT Memory Pool.
  */
 
-
-
 /*
-** $Log: p2p_cmd_buf.h $
+** Log: p2p_cmd_buf.h
 **
 ** 07 25 2014 eason.tsai
 ** AOSP
@@ -31,8 +29,8 @@
 * Compile no error before trial run.
 *
 * 12 22 2010 cp.wu
-* [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service
-*Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface
+ * for supporting Wi-Fi Direct Service Discovery
 * 1. header file restructure for more clear module isolation
 * 2. add function interface definition for implementing Service Discovery callbacks
 */
@@ -88,10 +86,6 @@ wlanoidSendSetQueryP2PCmd(IN P_ADAPTER_T prAdapter, IN UINT_8 ucCID, IN UINT_8 u
 			  BOOLEAN fgNeedResp, IN BOOLEAN fgIsOid, IN PFN_CMD_DONE_HANDLER pfCmdDoneHandler, IN
 			  PFN_CMD_TIMEOUT_HANDLER
 			  pfCmdTimeoutHandler, IN UINT_32 u4SetQueryInfoLen, IN PUINT_8 pucInfoBuffer, OUT PVOID
-			  pvSetQueryBuffer, IN UINT_32
-			  u4SetQueryBufferLen);
+			  pvSetQueryBuffer, IN UINT_32 u4SetQueryBufferLen);
 
-
-
-
-#endif				/* _P2P_CMD_BUF_H */
+#endif /* _P2P_CMD_BUF_H */

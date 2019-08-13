@@ -346,6 +346,7 @@ static void bad_page(struct page *page)
 
 	print_modules();
 	dump_stack();
+	BUG();
 out:
 	/* Leave bad fields for debug, except PageBuddy could make trouble */
 	page_mapcount_reset(page); /* remove PageBuddy */
@@ -2714,26 +2715,15 @@ extern void try_to_release_mtkpasr_page(int x);
 #endif
 
 #ifdef CONFIG_MT_ENG_BUILD
-
 #define __LOG_PAGE_ALLOC_ORDER__
-#define __LOG_PAGE_ALLOC_ORDER_COUNT_LIMIT__
+#include <linux/stacktrace.h>
 #endif
 
 #ifdef __LOG_PAGE_ALLOC_ORDER__
 
-#define LOG_PAGE_LIMIT_NUM 10
-#define LOG_PAGE_LIMIT_TIME 1000
-
-//static int page_alloc_order_log[11] = {0};
-//static int page_alloc_order_log_size = 11;
 static int page_alloc_dump_order_threshold = 4;
 static int page_alloc_log_order_threshold = 3;
-static u8 log_counter = 0;
-static unsigned long log_time_c0 = 0;
-static u8 log_limit_enable = 0;
 
-//module_param_array_named(order_log, page_alloc_order_log, int, &page_alloc_order_log_size,
-//                         S_IRUGO);
 //Jack remove page_alloc_order_log array for non-used
 module_param_named(dump_order_threshold, page_alloc_dump_order_threshold, int, S_IRUGO | S_IWUSR);
 module_param_named(log_order_threshold, page_alloc_log_order_threshold, int, S_IRUGO | S_IWUSR);
@@ -2753,6 +2743,10 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
 	unsigned int cpuset_mems_cookie;
 	int alloc_flags = ALLOC_WMARK_LOW|ALLOC_CPUSET;
 	struct mem_cgroup *memcg = NULL;
+#ifdef __LOG_PAGE_ALLOC_ORDER__
+	struct stack_trace trace;
+	unsigned long entries[6] = {0};
+#endif	
 
 	gfp_mask &= gfp_allowed_mask;
 
@@ -2855,66 +2849,16 @@ retry_cpuset:
    	{
 #endif 
 
-    //page_alloc_order_log[order] += 1;
-    // Enable the log in system server when boot completes
-    if (order >= page_alloc_log_order_threshold) {
-
-        
-        if (log_counter == 0)
-        {
-          log_time_c0 = jiffies;
-        }
-        if (log_limit_enable == 0)
-        {
-          //printk("caller api is %p \r\n",__builtin_return_address(0));
-          //printk_ratelimit()
-#ifdef __LOG_PAGE_ALLOC_ORDER_COUNT_LIMIT__
-          printk("alloc large continuous pages, order: %d, gfp_mask = 0x%x, printk_ratelimit() = %d\n", order,gfp_mask,printk_ratelimit());
-#else          
-          if (printk_ratelimit())
-            printk("alloc large continuous pages, order: %d, gfp_mask = 0x%x, printk_ratelimit() = %d\n", order,gfp_mask,printk_ratelimit());
-          //else
-          //  printk("alloc large cprintk_ratelimit() = 0 !!\n");
-#endif        
-
-          //printk("log_time_c0 = %d ms, jiffies = %d ms ",jiffies_to_msecs(log_time_c0),jiffies_to_msecs(jiffies));
-          //printk("jiffies_to_msecs(jiffies) - jiffies_to_msecs(log_time_c0) = %d ms",jiffies_to_msecs(jiffies) - jiffies_to_msecs(log_time_c0));
-          
-        }
-#ifdef __LOG_PAGE_ALLOC_ORDER_COUNT_LIMIT__
-
-        if (jiffies_to_msecs(jiffies) - jiffies_to_msecs(log_time_c0) < LOG_PAGE_LIMIT_TIME)
-        {
-            log_counter++;
-            if (log_limit_enable == 0)
-            {
-                if (log_counter > LOG_PAGE_LIMIT_NUM)
-                {
-                  log_limit_enable = 1;
-                  printk("alloc page log limit enable, log_counter = %d!!\n",log_counter);
-                }
-            }
-            
-        }
-        else
-        {
-          if (log_limit_enable != 0)
-          {
-            printk("alloc page log limit disable!!\n");       
-            log_limit_enable = 0;
-          }
-          log_counter = 0;
-          
-
-        }
-#endif      
-        
-    }
- 
     if (order >= page_alloc_dump_order_threshold) {
-		
-        if (log_limit_enable == 0)
-        dump_stack();
+        trace.nr_entries = 0;
+        trace.max_entries = ARRAY_SIZE(entries);
+        trace.entries = entries;
+        trace.skip = 2;
+
+        save_stack_trace(&trace);
+        trace_dump_allocate_large_pages(page, order, gfp_mask, entries);
+    } else if (order >= page_alloc_log_order_threshold) {
+        trace_debug_allocate_large_pages(page, order, gfp_mask);
     }
 
 #ifdef CONFIG_FREEZER 
@@ -6108,53 +6052,65 @@ static inline int pfn_to_bitidx(struct zone *zone, unsigned long pfn)
  * @end_bitidx: The last bit of interest
  * returns pageblock_bits flags
  */
-unsigned long get_pageblock_flags_group(struct page *page,
-					int start_bitidx, int end_bitidx)
+unsigned long get_pageblock_flags_mask(struct page *page,
+					unsigned long end_bitidx,
+					unsigned long mask)
 {
 	struct zone *zone;
 	unsigned long *bitmap;
-	unsigned long pfn, bitidx;
-	unsigned long flags = 0;
-	unsigned long value = 1;
+	unsigned long pfn, bitidx, word_bitidx;
+	unsigned long word;
 
 	zone = page_zone(page);
 	pfn = page_to_pfn(page);
 	bitmap = get_pageblock_bitmap(zone, pfn);
 	bitidx = pfn_to_bitidx(zone, pfn);
+	word_bitidx = bitidx / BITS_PER_LONG;
+	bitidx &= (BITS_PER_LONG-1);
 
-	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
-		if (test_bit(bitidx + start_bitidx, bitmap))
-			flags |= value;
-
-	return flags;
+	word = bitmap[word_bitidx];
+	bitidx += end_bitidx;
+	return (word >> (BITS_PER_LONG - bitidx - 1)) & mask;
 }
 
 /**
- * set_pageblock_flags_group - Set the requested group of flags for a pageblock_nr_pages block of pages
+ * set_pageblock_flags_mask - Set the requested group of flags for a pageblock_nr_pages block of pages
  * @page: The page within the block of interest
  * @start_bitidx: The first bit of interest
  * @end_bitidx: The last bit of interest
  * @flags: The flags to set
  */
-void set_pageblock_flags_group(struct page *page, unsigned long flags,
-					int start_bitidx, int end_bitidx)
+void set_pageblock_flags_mask(struct page *page, unsigned long flags,
+					unsigned long end_bitidx,
+					unsigned long mask)
 {
 	struct zone *zone;
 	unsigned long *bitmap;
-	unsigned long pfn, bitidx;
-	unsigned long value = 1;
+	unsigned long pfn, bitidx, word_bitidx;
+	unsigned long old_word, word;
+
+	BUILD_BUG_ON(NR_PAGEBLOCK_BITS != 4);
 
 	zone = page_zone(page);
 	pfn = page_to_pfn(page);
 	bitmap = get_pageblock_bitmap(zone, pfn);
 	bitidx = pfn_to_bitidx(zone, pfn);
+	word_bitidx = bitidx / BITS_PER_LONG;
+	bitidx &= (BITS_PER_LONG-1);
+
 	VM_BUG_ON(!zone_spans_pfn(zone, pfn));
 
-	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
-		if (flags & value)
-			__set_bit(bitidx + start_bitidx, bitmap);
-		else
-			__clear_bit(bitidx + start_bitidx, bitmap);
+	bitidx += end_bitidx;
+	mask <<= (BITS_PER_LONG - bitidx - 1);
+	flags <<= (BITS_PER_LONG - bitidx - 1);
+
+	word = ACCESS_ONCE(bitmap[word_bitidx]);
+	for (;;) {
+		old_word = cmpxchg(&bitmap[word_bitidx], word, (word & ~mask) | flags);
+		if (word == old_word)
+			break;
+		word = old_word;
+	}
 }
 
 /*
@@ -6713,7 +6669,7 @@ EXPORT_SYMBOL(pasr_acquire_inuse_page);
 /* Compute maximum safe order for page allocation */
 int pasr_compute_safe_order(void)
 {
-	struct zone *z = MTKPASR_ZONE;
+	struct zone *z = &NODE_DATA(0)->node_zones[ZONE_NORMAL];
 	int order;
 	unsigned long watermark = low_wmark_pages(z);
 	long free_pages = zone_page_state(z, NR_FREE_PAGES);

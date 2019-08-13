@@ -78,13 +78,11 @@ static const struct ctrl_word_operation PowerOnSetting[] = {
 
 static int Chip_Version = mt6626_E1;
 
-
 static fm_s32 mt6626_pwron(fm_s32 data)
 {
 	mt66x6_poweron(MT66x6_FM);
 	return 0;
 }
-
 
 static fm_s32 mt6626_pwroff(fm_s32 data)
 {
@@ -381,8 +379,7 @@ static fm_s32 mt6626_DspPatch(const fm_u16 *img, enum IMG_TYPE type)
 		if (MT6626_DEEMPHASIS_50us) {
 			for (i = 0; i < data_len; i++) {
 				if (i == 86) {
-					mt6626_write1(FM_DSP_PATCH_DATA,
-						      fm_cust_config_fetch(FM_CFG_RX_RSSI_TH_LONG));
+					mt6626_write1(FM_DSP_PATCH_DATA, fm_cust_config_fetch(FM_CFG_RX_RSSI_TH_LONG));
 				} else if (i == 292) {
 					mt6626_write1(FM_DSP_PATCH_DATA, 0x332B);
 					mt6626_write1(FM_DSP_PATCH_DATA, 0x2545);
@@ -399,9 +396,7 @@ static fm_s32 mt6626_DspPatch(const fm_u16 *img, enum IMG_TYPE type)
 					mt6626_write1(FM_DSP_PATCH_DATA, 0x0000);
 					i += 12;
 				} else if (i == 505) {
-					mt6626_write1(FM_DSP_PATCH_DATA,
-						      fm_cust_config_fetch
-						      (FM_CFG_RX_RSSI_TH_SHORT));
+					mt6626_write1(FM_DSP_PATCH_DATA, fm_cust_config_fetch(FM_CFG_RX_RSSI_TH_SHORT));
 				} else {
 					mt6626_write1(FM_DSP_PATCH_DATA, img[2 + i]);
 				}
@@ -409,12 +404,9 @@ static fm_s32 mt6626_DspPatch(const fm_u16 *img, enum IMG_TYPE type)
 		} else {
 			for (i = 0; i < data_len; i++) {
 				if (i == 86) {
-					mt6626_write1(FM_DSP_PATCH_DATA,
-						      fm_cust_config_fetch(FM_CFG_RX_RSSI_TH_LONG));
+					mt6626_write1(FM_DSP_PATCH_DATA, fm_cust_config_fetch(FM_CFG_RX_RSSI_TH_LONG));
 				} else if (i == 505) {
-					mt6626_write1(FM_DSP_PATCH_DATA,
-						      fm_cust_config_fetch
-						      (FM_CFG_RX_RSSI_TH_SHORT));
+					mt6626_write1(FM_DSP_PATCH_DATA, fm_cust_config_fetch(FM_CFG_RX_RSSI_TH_SHORT));
 				} else {
 					mt6626_write1(FM_DSP_PATCH_DATA, img[2 + i]);
 				}
@@ -622,7 +614,7 @@ static fm_bool mt6626_SetFreq(fm_u16 freq)
 	fm_u32 CHAN = 0x0000;
 	fm_u16 dataRead, cnt = 0, tempbuff = 0;
 
- Rampdown_again:
+Rampdown_again:
 	mt6626_RampDown();
 
 	fm_cb_op->cur_freq_set(freq);
@@ -690,8 +682,7 @@ static fm_bool mt6626_SetFreq(fm_u16 freq)
 * pFreq: IN/OUT parm, IN start freq/OUT seek valid freq
 * return fm_true:seek success; fm_false:seek failed
 */
-static fm_bool mt6626_Seek(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u16 seekdir,
-			   fm_u16 space)
+static fm_bool mt6626_Seek(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u16 seekdir, fm_u16 space)
 {
 	fm_u16 dataRead;
 	fm_u16 freq_l;
@@ -765,8 +756,7 @@ static fm_bool mt6626_Seek(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u
 }
 
 static fm_bool mt6626_Scan(fm_u16 min_freq, fm_u16 max_freq,
-			   fm_u16 *pFreq,
-			   fm_u16 *pScanTBL, fm_u16 *ScanTBLsize, fm_u16 scandir, fm_u16 space)
+			   fm_u16 *pFreq, fm_u16 *pScanTBL, fm_u16 *ScanTBLsize, fm_u16 scandir, fm_u16 space)
 {
 	fm_u16 tmp_reg, space_val, startfreq, offset = 0;
 	fm_u16 tmp_scanTBLsize = *ScanTBLsize;
@@ -992,7 +982,6 @@ static fm_s32 mt6626_GetCapArray(fm_s32 *ca)
 	return 0;
 }
 
-
 /*
  * mt6626_GetCurPamd - get current freq's PAMD value
  * PA=PAMD
@@ -1080,9 +1069,8 @@ static fm_s32 mt6626_I2s_Setting(fm_s32 onoff, fm_s32 mode, fm_s32 sample)
 		goto out;
 
 	WCN_DBG(FM_NTC | CHIP, "[onoff=%s][mode=%s][sample=%d](0)33KHz,(1)44.1KHz,(2)48KHz\n",
-		(onoff == MT6626_I2S_ON) ? "On" : "Off",
-		(mode == MT6626_I2S_MASTER) ? "Master" : "Slave", sample);
- out:
+		(onoff == MT6626_I2S_ON) ? "On" : "Off", (mode == MT6626_I2S_MASTER) ? "Master" : "Slave", sample);
+out:
 	return ret;
 }
 

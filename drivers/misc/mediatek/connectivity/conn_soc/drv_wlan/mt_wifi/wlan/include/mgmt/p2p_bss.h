@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/include/mgmt/p2p_bss.h#2 $
+** Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/include/mgmt/p2p_bss.h#2
 */
 
 /*! \file   "p2p_bss.h"
@@ -7,10 +7,6 @@
 
     The file contains the function declarations and defines for used in BSS/IBSS.
 */
-
-
-
-
 
 #ifndef _P2P_BSS_H
 #define _P2P_BSS_H
@@ -55,11 +51,6 @@
 ********************************************************************************
 */
 
-
-UINT_32 
-p2pGetTxProbRspIeTableSize(
-    VOID
-    );
+UINT_32 p2pGetTxProbRspIeTableSize(VOID);
 
 #endif
-

@@ -26,6 +26,8 @@
 //====syn nonsec pgt end
 
 #define M4U_TZCMD_SECPGTDUMP       100
+#define M4U_TZCMD_LARB_REG_BACKUP       101
+#define M4U_TZCMD_LARB_REG_RESTORE      102
 
 
 #if 1  // for m4u whole in tee. mt8135
@@ -35,6 +37,7 @@
 #define M4U_TZCMD_WAIT_ISR          78
 #define M4U_TZCMD_INVALID_CHECK     79
 #define M4U_TZCMD_INSERT_SEQ        80
+#define M4U_TZCMD_ERRHANGE_EN       81
 
 #define M4U_CHECKSELF_VALUE   0x12345678
 

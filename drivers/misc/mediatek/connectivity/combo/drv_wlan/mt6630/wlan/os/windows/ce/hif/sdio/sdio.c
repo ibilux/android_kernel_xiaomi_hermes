@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/sdio/sdio.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/sdio/sdio.c#1
 */
 
 /*! \file   sdio.c
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: sdio.c $
+** Log: sdio.c
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -85,17 +83,15 @@
 #define  ENABLE_ZONE_MCR_CNT    ZONE_ENABLE_3
 
 SD_DEBUG_INSTANTIATE_ZONES(TEXT("SDIO NDIS Sample"),	/*  module name */
-			   (ZONE_ENABLE_INIT | ZONE_ENABLE_INFO | ZONE_ENABLE_ERROR | ZONE_ENABLE_WARN | ENABLE_ZONE_SEND | ENABLE_ZONE_SPECIAL),	/*  initial settings */
+			   (ZONE_ENABLE_INIT | ZONE_ENABLE_INFO | ZONE_ENABLE_ERROR |
+			   ZONE_ENABLE_WARN | ENABLE_ZONE_SEND | ENABLE_ZONE_SPECIAL),	/*  initial settings */
 			   TEXT(""),
 			   TEXT(""),
-			   TEXT(""),
-			   TEXT(""),
-			   TEXT(""), TEXT(""), TEXT(""), TEXT(""), TEXT(""), TEXT(""), TEXT(""));
+			   TEXT(""), TEXT(""), TEXT(""), TEXT(""), TEXT(""), TEXT(""), TEXT(""), TEXT(""), TEXT(""));
 
 #define SD_BUS_WIDTH_REGISTRY_1BIT_MODE         1
 
 #define SD_BUS_WIDTH_REGISTRY_4BIT_MODE         4
-
 
 #define SD_BUS_BLOCK_SIZE_REGISTRY_USD_DEFAULT  0
 #define SD_BUS_CLOCK_RATE_REGISTRY_USD_DEFAULT  0
@@ -145,14 +141,42 @@ SD_DEBUG_INSTANTIATE_ZONES(TEXT("SDIO NDIS Sample"),	/*  module name */
 ********************************************************************************
 */
 
-#if CFG_SDIO_PATHRU_MODE
-SD_API_STATUS sdioInterruptCallback(SD_DEVICE_HANDLE hDevice, PVOID pvContext);
-#endif
-
 /*******************************************************************************
 *                          F U N C T I O N S
 ********************************************************************************
 */
+
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief This routine is the SDIO interrupt handler.
+*
+* \param[in] hDevice handle to the SDIO device.
+* \param[in] pvContext device specific context that was registered
+*
+* \retval SD_API_STATUS code
+*/
+/*----------------------------------------------------------------------------*/
+SD_API_STATUS sdioInterruptCallback(SD_DEVICE_HANDLE hDevice, PVOID pvContext)
+{
+	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) pvContext;
+
+	/* modify wlanISR interface to decide whether to control GINT or not */
+	if (GLUE_TEST_FLAG(prGlueInfo, GLUE_FLAG_HALT)) {
+		/* NOTE(Kevin): We should diable GINT if we are going to HALT the driver. */
+		wlanISR(prGlueInfo->prAdapter, TRUE);
+	} else if (
+	#if BUILD_ENE_INTR_WORKAROUND
+		wlanISR(prGlueInfo->prAdapter, TRUE)
+	#else
+		wlanISR(prGlueInfo->prAdapter, FALSE)
+	#endif
+		) {
+		wlanIST(prGlueInfo->prAdapter);
+	}
+
+	return SD_API_STATUS_SUCCESS;
+
+}				/* sdioInterruptCallback */
 
 #if CFG_SDIO_PATHRU_MODE
 /*----------------------------------------------------------------------------*/
@@ -212,9 +236,9 @@ sdioIndicateSlotStateChange(IN PSDCARD_HC_CONTEXT pHCContext,
 	ASSERT(pvClientContext);
 
 	if ((NULL == pHCContext) || (NULL == pvClientContext)) {
-		DBGLOG(HAL, ERROR,
-		       ("PATHRU: status indication from SDHC but parameter error:0x%08x 0x%08x\n",
-			pHCContext, pvClientContext));
+		DBGLOG2(HAL, ERROR,
+		       "PATHRU: status indication from SDHC but parameter error:0x%08x 0x%08x\n",
+			pHCContext, pvClientContext);
 		return;
 	}
 	prGlueInfo = (P_GLUE_INFO_T) pvClientContext;
@@ -223,11 +247,10 @@ sdioIndicateSlotStateChange(IN PSDCARD_HC_CONTEXT pHCContext,
 	if (DeviceInterrupting == Event) {
 		/* Skip CMD52 Read INT Pending. Callback and then ack interrupt. */
 		sdioInterruptCallback(prGlueInfo->rHifInfo.hDevice, prGlueInfo);
-		sdStatus = pHCContext->pSlotOptionHandler(pHCContext,
-							  SlotNumber,
-							  SDHCDAckSDIOInterrupt, NULL, 0);
+		sdStatus = pHCContext->pSlotOptionHandler(pHCContext, SlotNumber, SDHCDAckSDIOInterrupt, NULL, 0);
 	} else {
 		if (DeviceEjected == Event) {
+			/* ToDo:: Nothing */
 			/* Disable PATHRU here? */
 		}
 		prPathruOutInfo->pIndicateSlotStateChange(pHCContext, SlotNumber, Event);
@@ -252,13 +275,13 @@ VOID sdioInitPathruMode(IN P_GLUE_INFO_T prGlueInfo)
 	P_GL_PATHRU_INFO_T prPathruInfo = NULL;
 
 	ASSERT(prGlueInfo);
-	DBGLOG(INIT, TRACE, ("SDNdis: sdioInitPathruMode\n"));
+	DBGLOG1(INIT, TRACE, "SDNdis: sdioInitPathruMode\n");
 
 	prPathruInfo = &prGlueInfo->rHifInfo.rPathruInfo;
 
 	/* 4 <1> Check if initialized */
 	if (FALSE != prPathruInfo->fgInitialized) {
-		DBGLOG(INIT, WARN, ("SDNdis: init PATHRU mode but is ALREADY initialized\n"));
+		DBGLOG1(INIT, WARN, "SDNdis: init PATHRU mode but is ALREADY initialized\n");
 		return;
 	}
 	/* 4 <2> Initialize SW structure */
@@ -285,7 +308,7 @@ VOID sdioInitPathruMode(IN P_GLUE_INFO_T prGlueInfo)
 					   NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
 
 	if (INVALID_HANDLE_VALUE == prPathruInfo->hSHCDev) {
-		DBGLOG(INIT, ERROR, ("SDNdis: CreateFile() Failed: SHC1\n"));
+		DBGLOG1(INIT, ERROR, "SDNdis: CreateFile() Failed: SHC1\n");
 	} else {
 		InitializeCriticalSection(&prPathruInfo->rLock);
 
@@ -313,23 +336,21 @@ VOID sdioDeinitPathruMode(IN P_GLUE_INFO_T prGlueInfo)
 
 	ASSERT(prGlueInfo);
 
-	DBGLOG(INIT, TRACE, ("SDNdis: sdioDeinitPathruMode\n"));
+	DBGLOG1(INIT, TRACE, "SDNdis: sdioDeinitPathruMode\n");
 
 	prPathruInfo = &prGlueInfo->rHifInfo.rPathruInfo;
 
 	/* 4 <1> Check if initialized */
 	if (FALSE == prPathruInfo->fgInitialized) {
-		DBGLOG(INIT, WARN, ("SDNdis: deinit PATHRU mode but is not initialized\n"));
+		DBGLOG1(INIT, WARN, "SDNdis: deinit PATHRU mode but is not initialized\n");
 		return;
 	}
 	/* 4 <2> Disable PATHRU mode first if needed */
-	if (FALSE != prPathruInfo->fgEnabled) {
+	if (FALSE != prPathruInfo->fgEnabled)
 		sdioEnablePathruMode(prGlueInfo, FALSE);
-	}
 	/* 4 <3> Close handle to SDHC host controller device */
-	if (INVALID_HANDLE_VALUE != prPathruInfo->hSHCDev) {
+	if (INVALID_HANDLE_VALUE != prPathruInfo->hSHCDev)
 		CloseHandle(prPathruInfo->hSHCDev);
-	}
 	/* 4 <4> De-initialization complete */
 	prPathruInfo->dwSlotNumber = 0xFFFFFFFF;
 	prPathruInfo->pSHCContext = NULL;	/* Referenced from I/O control. Can't free it directly */
@@ -364,24 +385,23 @@ BOOLEAN sdioEnablePathruMode(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgEnable)
 	BOOL fgResult = FALSE;
 
 	ASSERT(prGlueInfo);
-	DBGLOG(INIT, TRACE, ("SDNdis: sdioEnablePathruMode :%d\n", (FALSE != fgEnable) ? 1 : 0));
+	DBGLOG1(INIT, TRACE, "SDNdis: sdioEnablePathruMode :%d\n", (FALSE != fgEnable) ? 1 : 0);
 
 	prPathruInfo = &prGlueInfo->rHifInfo.rPathruInfo;
 	pInfoIn = &prPathruInfo->rInfoIn;
 
 	/* 4 <1> Check if initialized */
 	if (FALSE == prPathruInfo->fgInitialized) {
-		DBGLOG(INIT, WARN,
-		       ("SDNdis: enable/disable PATHRU mode but is not initialized\n"));
+		DBGLOG1(INIT, WARN, "SDNdis: enable/disable PATHRU mode but is not initialized\n");
 		goto exit_en_pathru;
 	}
 	ASSERT(INVALID_HANDLE_VALUE != prPathruInfo->hSHCDev);
 
 	/* 4 <2> Check if already enabled/disabled */
 	if (fgEnable == prPathruInfo->fgEnabled) {
-		DBGLOG(INIT, WARN,
-		       ("SDNdis: enable/disable PATHRU mode but is already enabled/disabled :%d\n",
-			(FALSE != fgEnable) ? 1 : 0));
+		DBGLOG2(INIT, WARN,
+		       "SDNdis: enable/disable PATHRU mode but is already enabled/disabled :%d\n",
+			(FALSE != fgEnable) ? 1 : 0);
 		fgResult = TRUE;
 		goto exit_en_pathru;
 	}
@@ -401,8 +421,7 @@ BOOLEAN sdioEnablePathruMode(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgEnable)
 					   sizeof(prPathruInfo->rInfoOut), &dwBytesReturned, NULL);
 
 		if (FALSE == fgResult) {
-			DBGLOG(INIT, ERROR,
-			       ("SDNdis: DeviceIoControl() failed to enable SDHC PATHRU mode\n"));
+			DBGLOG1(INIT, ERROR, "SDNdis: DeviceIoControl() failed to enable SDHC PATHRU mode\n");
 			prPathruInfo->fgEnabled = FALSE;
 		} else {
 			prPathruInfo->pSHCContext = prPathruInfo->rInfoOut.pHcd;
@@ -426,13 +445,11 @@ BOOLEAN sdioEnablePathruMode(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgEnable)
 					   &prPathruInfo->rInfoOut,
 					   sizeof(prPathruInfo->rInfoOut), &dwBytesReturned, NULL);
 
-		if (FALSE == fgResult) {
-			DBGLOG(INIT, ERROR,
-			       ("SDNdis: DeviceIoControl() failed to disable SDHC PATHRU mode\n"));
-		}
+		if (FALSE == fgResult)
+			DBGLOG1(INIT, ERROR, "SDNdis: DeviceIoControl() failed to disable SDHC PATHRU mode\n");
 	}
 
- exit_en_pathru:
+exit_en_pathru:
 	return fgResult;
 }
 
@@ -477,21 +494,22 @@ sdioPathruSyncReq(IN P_GL_HIF_INFO_T prHifInfo,
 	/* Build-up request structure */
 	kalMemZero(&rRequest, sizeof(SD_BUS_REQUEST));
 
-	/* rRequest.ListEntry; // list entry */
+	/* rRequest.ListEntry; */ /* list entry */
 	/* ?PATHRU rRequest.hDevice = prHifInfo->hDevice; // the device this request belongs to */
-	/* rRequest.SystemFlags; // system flags */
+	/* rRequest.SystemFlags; */ /* system flags */
 	rRequest.TransferClass = tClass;	/* transfer class */
 	rRequest.CommandCode = ucCmd;	/* command code */
 	rRequest.CommandArgument = dwArg;	/* command argument */
 	rRequest.CommandResponse.ResponseType = rType;	/* command response */
-	/* PATHRU rRequest.RequestParam = 0; // optional request parameter */
-	/* rRequest.Status;           // completion status */
+	/* PATHRU rRequest.RequestParam = 0; */ /* optional request parameter */
+	/* rRequest.Status;           */ /* completion status */
 	rRequest.NumBlocks = u4BlockCount;	/* number of blocks */
 	rRequest.BlockSize = u4BlockSize;	/* size of each block */
-	/* rRequest.HCParam;            // host controller parameter, reserved for HC drivers */
+	/* rRequest.HCParam;            /* host controller parameter, reserved for HC drivers */
 	rRequest.pBlockBuffer = pBuff;	/* buffer holding block data */
 	rRequest.pCallback = NULL;	/* callback when the request completes */
-	/* rRequest.DataAccessClocks;   // data access clocks for data transfers (READ or WRITE), reserved for HC driver */
+	/* data access clocks for data transfers (READ or WRITE), reserved for HC driver */
+	/* rRequest.DataAccessClocks; */
 	rRequest.Flags = dwFlags;	/* request flags */
 	/* rRequest.cbSizeOfPhysList */
 	/* rRequest.pPhysBuffList */
@@ -507,20 +525,18 @@ sdioPathruSyncReq(IN P_GL_HIF_INFO_T prHifInfo,
 	}
 
 	sdioLockPathru(prPathruInfo);
-	sdStatus = pHCContext->pBusRequestHandler(pHCContext,
-						  prPathruInfo->dwSlotNumber, &rRequest);
+	sdStatus = pHCContext->pBusRequestHandler(pHCContext, prPathruInfo->dwSlotNumber, &rRequest);
 	sdioUnlockPathru(prPathruInfo);
 
 	if (sdStatus == SD_API_STATUS_FAST_PATH_SUCCESS) {
 		/* Restore to original success code */
 		sdStatus = SD_API_STATUS_SUCCESS;
 	} else {
-		DBGLOG(HAL, ERROR,
-		       ("PATHRU+Fast-path: request handler do NOT return Fast-path success: 0x%08x\n",
-			sdStatus));
+		DBGLOG2(HAL, ERROR,
+		       "PATHRU+Fast-path: request handler do NOT return Fast-path success: 0x%08x\n", sdStatus);
 	}
 
- exit_pathru_sync_req:
+exit_pathru_sync_req:
 	return sdStatus;
 }
 
@@ -561,8 +577,7 @@ SD_SYNC_BUS_REQ(IN P_GL_HIF_INFO_T prHifInfo,
 					 u4BlockCount, u4BlockSize, pBuff, dwFlags);
 	} else {
 		return SDSynchronousBusRequest(prHifInfo->hDevice, ucCmd, dwArg, tClass,
-					       type, pResp, u4BlockCount, u4BlockSize, pBuff,
-					       dwFlags);
+					       type, pResp, u4BlockCount, u4BlockSize, pBuff, dwFlags);
 	}
 }
 
@@ -586,6 +601,7 @@ SDIO_CONNECT_INTERRUPT(IN P_GL_HIF_INFO_T prHifInfo, IN PSD_INTERRUPT_CALLBACK p
 	ASSERT(pfnISTHandler);
 
 	if (FALSE != prHifInfo->rPathruInfo.fgEnabled) {
+		/* ToDo:: Nothing */
 		/* Nothing to do? */
 	}
 
@@ -610,6 +626,7 @@ static inline VOID SDIO_DISCONNECT_INTERRUPT(IN P_GL_HIF_INFO_T prHifInfo)
 	ASSERT(prHifInfo);
 
 	if (FALSE != prHifInfo->rPathruInfo.fgEnabled) {
+		/* ToDo:: Nothing */
 		/* Nothing to do? */
 	}
 	SDIODisconnectInterrupt(prHifInfo->hDevice);
@@ -690,8 +707,7 @@ static inline VOID SDIO_DISCONNECT_INTERRUPT(IN P_GL_HIF_INFO_T prHifInfo)
 	SDIODisconnectInterrupt(prHifInfo->hDevice);
 }
 
-#endif				/* end of CFG_SDIO_PATHRU_MODE */
-
+#endif /* end of CFG_SDIO_PATHRU_MODE */
 
 #if 0
 /*******************************************************************************
@@ -725,7 +741,7 @@ VOID sdioMpSendPacket(IN NDIS_HANDLE miniportAdapterContext, IN PNDIS_PACKET prN
 	WLAN_STATUS rStatus;
 
 	DEBUGFUNC("sdioMpSendPackets");
-	DBGLOG(TX, TRACE, ("+\n"));
+	DBGLOG1(TX, TRACE, "+\n");
 
 	for (i = 0; i < numberOfPackets; i++) {
 
@@ -734,11 +750,9 @@ VOID sdioMpSendPacket(IN NDIS_HANDLE miniportAdapterContext, IN PNDIS_PACKET prN
 		if (wlanQoSFrameClassifierAndPacketInfo(prGlueInfo,
 							prPacket,
 							&ucPriorityParam,
-							&u4PacketLen,
-							aucEthDestAddr, &fgIs1x) == FALSE) {
+							&u4PacketLen, aucEthDestAddr, &fgIs1x) == FALSE) {
 
-			NdisMSendComplete(prGlueInfo->rMiniportAdapterHandle,
-					  prPacket, NDIS_STATUS_INVALID_PACKET);
+			NdisMSendComplete(prGlueInfo->rMiniportAdapterHandle, prPacket, NDIS_STATUS_INVALID_PACKET);
 			continue;
 		}
 
@@ -765,13 +779,11 @@ VOID sdioMpSendPacket(IN NDIS_HANDLE miniportAdapterContext, IN PNDIS_PACKET prN
 				 (BOOLEAN) FALSE,
 				 fgIs1x,
 				 (P_NATIVE_PACKET) prPacket,
-				 ucPriorityParam,
-				 ucMacHeaderLen, u2PayloadLen, (PUINT_8) aucEthDestAddr);
+				 ucPriorityParam, ucMacHeaderLen, u2PayloadLen, (PUINT_8) aucEthDestAddr);
 
 		prGlueInfo->u4TxPendingFrameNum++;
-
-		if ((rStatus = wlanSendPacket(prAdapter, &rPacketInfo))
-		    == WLAN_STATUS_PENDING) {
+		rStatus = wlanSendPacket(prAdapter, &rPacketInfo);
+		if (rStatus == WLAN_STATUS_PENDING) {
 
 			NDIS_SET_PACKET_STATUS(prPacket, NDIS_STATUS_PENDING);
 		} else if (rStatus == WLAN_STATUS_SUCCESS) {
@@ -782,8 +794,7 @@ VOID sdioMpSendPacket(IN NDIS_HANDLE miniportAdapterContext, IN PNDIS_PACKET prN
 			/* Do nothing */
 		} else if (rStatus == WLAN_STATUS_FAILURE) {
 
-			NdisMSendComplete(prGlueInfo->rMiniportAdapterHandle,
-					  prPacket, NDIS_STATUS_INVALID_PACKET);
+			NdisMSendComplete(prGlueInfo->rMiniportAdapterHandle, prPacket, NDIS_STATUS_INVALID_PACKET);
 
 			prGlueInfo->u4TxPendingFrameNum--;
 		} else {
@@ -791,9 +802,9 @@ VOID sdioMpSendPacket(IN NDIS_HANDLE miniportAdapterContext, IN PNDIS_PACKET prN
 		}
 	}
 
-	DBGLOG(TX, TRACE, ("Tx pending %d\n", prGlueInfo->u4TxPendingFrameNum));
+	DBGLOG1(TX, TRACE, "Tx pending %d\n", prGlueInfo->u4TxPendingFrameNum);
 
-	DBGLOG(TX, TRACE, ("-\n"));
+	DBGLOG1(TX, TRACE, "-\n");
 
 }				/* sdioMpSendPackets */
 #endif
@@ -811,15 +822,12 @@ BOOL sdioDumpCISTuple(P_GL_HIF_INFO_T pDevice, UINT_8 ucTupleCode, BOOL fgCommon
 
 	if (!SD_API_SUCCESS(status)) {
 		DbgPrintZo(SDCARD_ZONE_ERROR,
-			   (TEXT("SDApiTest- SDGetTuple failed 0x%08X, ucTupleCode = 0x%x\n"),
-			    status, ucTupleCode));
+			   (TEXT("SDApiTest- SDGetTuple failed 0x%08X, ucTupleCode = 0x%x\n"), status, ucTupleCode));
 		return FALSE;
 	}
 
 	if (length == 0) {
-		DbgPrintZo(SDCARD_ZONE_ERROR,
-			   (TEXT("SDApiTest- ucTupleCode = 0x%x, tuple is missing\n"),
-			    ucTupleCode));
+		DbgPrintZo(SDCARD_ZONE_ERROR, (TEXT("SDApiTest- ucTupleCode = 0x%x, tuple is missing\n"), ucTupleCode));
 		return FALSE;
 	}
 
@@ -866,8 +874,7 @@ BOOL sdioCisTest(P_GL_HIF_INFO_T pDevice)
 	status = SDGetTuple(pDevice->hDevice, SD_CISTPL_MANFID, NULL, &length, TRUE);
 
 	if (!SD_API_SUCCESS(status)) {
-		DbgPrintZo(SDCARD_ZONE_ERROR,
-			   (TEXT("SDApiTest- SDGetTuple failed 0x%08X\n"), status));
+		DbgPrintZo(SDCARD_ZONE_ERROR, (TEXT("SDApiTest- SDGetTuple failed 0x%08X\n"), status));
 		return FALSE;
 	}
 
@@ -877,8 +884,7 @@ BOOL sdioCisTest(P_GL_HIF_INFO_T pDevice)
 	}
 
 	if (length != SD_CISTPL_MANFID_BODY_SIZE) {
-		DbgPrintZo(SDCARD_ZONE_ERROR,
-			   (TEXT("SDApiTest- MANFID tuple reports size of %d bytes\n"), length));
+		DbgPrintZo(SDCARD_ZONE_ERROR, (TEXT("SDApiTest- MANFID tuple reports size of %d bytes\n"), length));
 		return FALSE;
 	}
 
@@ -886,8 +892,7 @@ BOOL sdioCisTest(P_GL_HIF_INFO_T pDevice)
 	status = SDGetTuple(pDevice->hDevice, SD_CISTPL_MANFID, manfID, &length, TRUE);
 
 	if ((length == 0) || !SD_API_SUCCESS(status)) {
-		DbgPrintZo(SDCARD_ZONE_ERROR,
-			   (TEXT("SDApiTest- SDGetTuple failed 0x%08X, %d\n"), status, length));
+		DbgPrintZo(SDCARD_ZONE_ERROR, (TEXT("SDApiTest- SDGetTuple failed 0x%08X, %d\n"), status, length));
 		return FALSE;
 	}
 
@@ -901,8 +906,7 @@ BOOL sdioCisTest(P_GL_HIF_INFO_T pDevice)
 	status = SDGetTuple(pDevice->hDevice, CUSTOM_TUPLE, NULL, &length, FALSE);
 
 	if (!SD_API_SUCCESS(status)) {
-		DbgPrintZo(SDCARD_ZONE_ERROR,
-			   (TEXT("SDApiTest- SDGetTuple failed 0x%08X\n"), status));
+		DbgPrintZo(SDCARD_ZONE_ERROR, (TEXT("SDApiTest- SDGetTuple failed 0x%08X\n"), status));
 		return FALSE;
 	}
 
@@ -923,8 +927,7 @@ BOOL sdioCisTest(P_GL_HIF_INFO_T pDevice)
 	status = SDGetTuple(pDevice->hDevice, CUSTOM_TUPLE, custom, &length, FALSE);
 	if ((length == 0) || !SD_API_SUCCESS(status)) {
 		DbgPrintZo(SDCARD_ZONE_ERROR,
-			   (TEXT("SDApiTest- SDGetTuple custom failed 0x%08X, %d\n"), status,
-			    length));
+			   (TEXT("SDApiTest- SDGetTuple custom failed 0x%08X, %d\n"), status, length));
 		return FALSE;
 	}
 
@@ -932,7 +935,7 @@ BOOL sdioCisTest(P_GL_HIF_INFO_T pDevice)
 
 	return TRUE;
 
-#else				/* DBG & 0 */
+#else /* DBG & 0 */
 
 	/* Common CIS */
 	sdioDumpCISTuple(pDevice, SD_CISTPL_FUNCID, TRUE);
@@ -947,39 +950,6 @@ BOOL sdioCisTest(P_GL_HIF_INFO_T pDevice)
 	return TRUE;
 #endif
 }				/* CISTest */
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief This routine is the SDIO interrupt handler.
-*
-* \param[in] hDevice handle to the SDIO device.
-* \param[in] pvContext device specific context that was registered
-*
-* \retval SD_API_STATUS code
-*/
-/*----------------------------------------------------------------------------*/
-SD_API_STATUS sdioInterruptCallback(SD_DEVICE_HANDLE hDevice, PVOID pvContext)
-{
-	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) pvContext;
-
-	/* modify wlanISR interface to decide whether to control GINT or not */
-	if (GLUE_TEST_FLAG(prGlueInfo, GLUE_FLAG_HALT)) {
-		/* NOTE(Kevin): We should diable GINT if we are going to HALT the driver. */
-		wlanISR(prGlueInfo->prAdapter, TRUE);
-	} else if (
-#if BUILD_ENE_INTR_WORKAROUND
-			  wlanISR(prGlueInfo->prAdapter, TRUE)
-#else
-			  wlanISR(prGlueInfo->prAdapter, FALSE)
-#endif
-	    ) {
-		wlanIST(prGlueInfo->prAdapter);
-	}
-
-	return SD_API_STATUS_SUCCESS;
-
-}				/* sdioInterruptCallback */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1004,8 +974,7 @@ SD_API_STATUS sdioInterruptCallback(SD_DEVICE_HANDLE hDevice, PVOID pvContext)
 /*----------------------------------------------------------------------------*/
 VOID
 sdioSlotEventCallBack(SD_DEVICE_HANDLE hDevice,
-		      PVOID pContext,
-		      SD_SLOT_EVENT_TYPE SlotEventType, PVOID pData, DWORD DataLength)
+		      PVOID pContext, SD_SLOT_EVENT_TYPE SlotEventType, PVOID pData, DWORD DataLength)
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) pContext;
 
@@ -1028,7 +997,6 @@ sdioSlotEventCallBack(SD_DEVICE_HANDLE hDevice,
 	DbgPrintZo(SDCARD_ZONE_INIT, (TEXT("SDNdis: -SlotEventCallBack\n")));
 }				/* sdioSlotEventCallBack */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is to get the SD Device handle.
@@ -1044,8 +1012,7 @@ sdioSlotEventCallBack(SD_DEVICE_HANDLE hDevice,
 *        SDGetDeviceHandle API.
 */
 /*----------------------------------------------------------------------------*/
-NDIS_STATUS
-sdioGetDeviceHandle(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigurationContext)
+NDIS_STATUS sdioGetDeviceHandle(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigurationContext)
 {
 	NDIS_STATUS status;
 	NDIS_HANDLE configHandle;
@@ -1063,21 +1030,17 @@ sdioGetDeviceHandle(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigur
 	}
 
 	/* read the ActivePath key set by the NDIS loader driver */
-	NdisReadConfiguration(&status,
-			      &pConfigParm, configHandle, &activePathKey, NdisParameterString);
+	NdisReadConfiguration(&status, &pConfigParm, configHandle, &activePathKey, NdisParameterString);
 
 	if (!NDIS_SUCCESS(status)) {
-		DbgPrintZo(SDCARD_ZONE_ERROR,
-			   (TEXT("SDNdis: Failed to get active path key (0x%08X)\n"), status));
+		DbgPrintZo(SDCARD_ZONE_ERROR, (TEXT("SDNdis: Failed to get active path key (0x%08X)\n"), status));
 
 		switch (status) {
 		case NDIS_STATUS_RESOURCES:
-			DbgPrintZo(SDCARD_ZONE_ERROR,
-				   (TEXT("SDNdis: %s\n"), "NDIS_STATUS_RESOURCES"));
+			DbgPrintZo(SDCARD_ZONE_ERROR, (TEXT("SDNdis: %s\n"), "NDIS_STATUS_RESOURCES"));
 			break;
 		case NDIS_STATUS_FAILURE:
-			DbgPrintZo(SDCARD_ZONE_ERROR,
-				   (TEXT("SDNdis: %s\n"), "NDIS_STATUS_FAILURE"));
+			DbgPrintZo(SDCARD_ZONE_ERROR, (TEXT("SDNdis: %s\n"), "NDIS_STATUS_FAILURE"));
 			break;
 		}
 
@@ -1100,22 +1063,18 @@ sdioGetDeviceHandle(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigur
 
 	/* copy the counted string over */
 	memcpy(prGlueInfo->rHifInfo.ActivePath,
-	       pConfigParm->ParameterData.StringData.Buffer,
-	       pConfigParm->ParameterData.StringData.Length);
+	       pConfigParm->ParameterData.StringData.Buffer, pConfigParm->ParameterData.StringData.Length);
 
-	DbgPrintZo(SDCARD_ZONE_INIT,
-		   (TEXT("SDNdis: Active Path Retrieved: %s\n"), prGlueInfo->rHifInfo.ActivePath));
+	DbgPrintZo(SDCARD_ZONE_INIT, (TEXT("SDNdis: Active Path Retrieved: %s\n"), prGlueInfo->rHifInfo.ActivePath));
 
 	/* now get the device handle */
-	prGlueInfo->rHifInfo.hDevice =
-	    SDGetDeviceHandle((DWORD) prGlueInfo->rHifInfo.ActivePath, NULL);
+	prGlueInfo->rHifInfo.hDevice = SDGetDeviceHandle((DWORD) prGlueInfo->rHifInfo.ActivePath, NULL);
 	status = prGlueInfo->rHifInfo.hDevice ? NDIS_STATUS_SUCCESS : NDIS_STATUS_FAILURE;
 
 	/* close our registry configuration */
 	NdisCloseConfiguration(configHandle);
 	return status;
 }				/* sdioGetDeviceHandle */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1139,83 +1098,74 @@ SD_API_STATUS sdioSetupCardFeature(P_GL_HIF_INFO_T pDevice)
 
 	DEBUGFUNC("sdioSetUpCardFeature");
 
-
 	ASSERT(pDevice);
 
 	prReginfo = &pDevice->prGlueInfo->rRegInfo;
 
 	/* query the RCA */
-	status = SDCardInfoQuery(pDevice->hDevice,
-				 SD_INFO_REGISTER_RCA, &pDevice->RCA, sizeof(pDevice->RCA));
+	status = SDCardInfoQuery(pDevice->hDevice, SD_INFO_REGISTER_RCA, &pDevice->RCA, sizeof(pDevice->RCA));
 
 	if (!SD_API_SUCCESS(status)) {
-		DBGLOG(INIT, ERROR, ("MT6620 NDIS: Failed to query RCA ! 0x%08X \n", status));
+		DBGLOG1(INIT, ERROR, "MT6620 NDIS: Failed to query RCA ! 0x%08X\n", status);
 		return status;
 	}
-	DBGLOG(INIT, TRACE, ("MT6620 NDIS: RCA: 0x%04X\n", pDevice->RCA));
+	DBGLOG1(INIT, TRACE, "MT6620 NDIS: RCA: 0x%04X\n", pDevice->RCA);
 
 	/* query the card interface */
-	status = SDCardInfoQuery(pDevice->hDevice,
-				 SD_INFO_CARD_INTERFACE, &cardInterface, sizeof(cardInterface));
+	status = SDCardInfoQuery(pDevice->hDevice, SD_INFO_CARD_INTERFACE, &cardInterface, sizeof(cardInterface));
 
 	if (!SD_API_SUCCESS(status)) {
-		DBGLOG(INIT, ERROR, ("MT6620 NDIS: Failed to query interface ! 0x%08X \n",
-				     status));
+		DBGLOG1(INIT, ERROR, "MT6620 NDIS: Failed to query interface ! 0x%08X\n", status);
 		return status;
 	}
 
 	if (cardInterface.ClockRate == 0) {
-		DBGLOG(INIT, ERROR, ("MT6620 NDIS: Device interface rate is zero!\n"));
+		DBGLOG1(INIT, ERROR, "MT6620 NDIS: Device interface rate is zero!\n");
 		return SD_API_STATUS_UNSUCCESSFUL;
 	}
-	DBGLOG(INIT, TRACE, ("MT6620 NDIS: Interface Clock : %d Hz\n", cardInterface.ClockRate));
+	DBGLOG1(INIT, TRACE, "MT6620 NDIS: Interface Clock : %d Hz\n", cardInterface.ClockRate);
 
 	if (cardInterface.InterfaceMode == SD_INTERFACE_SD_MMC_1BIT) {
-		DBGLOG(INIT, TRACE, ("MT6620 NDIS: Bus return 1 Bit interface mode\n"));
+		DBGLOG1(INIT, TRACE, "MT6620 NDIS: Bus return 1 Bit interface mode\n");
 	} else if (cardInterface.InterfaceMode == SD_INTERFACE_SD_4BIT) {
-		DBGLOG(INIT, TRACE, ("MT6620 NDIS: Bus return 4 bit interface mode\n"));
+		DBGLOG1(INIT, TRACE, "MT6620 NDIS: Bus return 4 bit interface mode\n");
 	} else {
-		DBGLOG(INIT, TRACE, ("MT6620 NDIS: Bus return unknown interface mode! %d\n",
-				     cardInterface.InterfaceMode));
+		DBGLOG2(INIT, TRACE, "MT6620 NDIS: Bus return unknown interface mode! %d\n",
+				     cardInterface.InterfaceMode;
 		return SD_API_STATUS_UNSUCCESSFUL;
 	}
 
 	/* set clock rate and bit mode */
 	switch (prReginfo->u4SdClockRate) {
 	case SD_BUS_CLOCK_RATE_REGISTRY_USD_DEFAULT:
-		DBGLOG(INIT, TRACE, ("MT6620 NDIS:registry use bus defualt clock rate %d\n",
-				     cardInterface.ClockRate));
+		DBGLOG1(INIT, TRACE, "MT6620 NDIS:registry use bus defualt clock rate %d\n", cardInterface.ClockRate);
 		break;
 	default:
 		cardInterface.ClockRate = prReginfo->u4SdClockRate;
-		DBGLOG(INIT, TRACE, ("MT6620 NDIS:registry use registry clock rate %d\n",
-				     cardInterface.ClockRate));
+		DBGLOG1(INIT, TRACE, "MT6620 NDIS:registry use registry clock rate %d\n", cardInterface.ClockRate);
 		break;
 	}
-
 
 	switch (prReginfo->u4SdBusWidth) {
 	case SD_BUS_WIDTH_REGISTRY_4BIT_MODE:
 		cardInterface.InterfaceMode = SD_INTERFACE_SD_4BIT;
-		DBGLOG(INIT, TRACE, ("MT6620 NDIS:registry 4 bit interface mode\n"));
+		DBGLOG1(INIT, TRACE, "MT6620 NDIS:registry 4 bit interface mode\n");
 		break;
 	case SD_BUS_WIDTH_REGISTRY_1BIT_MODE:
 		cardInterface.InterfaceMode = SD_INTERFACE_SD_MMC_1BIT;
-		DBGLOG(INIT, TRACE, ("MT6620 NDIS:registry 1 bit interface mode\n"));
+		DBGLOG1(INIT, TRACE, "MT6620 NDIS:registry 1 bit interface mode\n");
 		break;
 	default:
-		DBGLOG(INIT, TRACE,
-		       ("MT6620 NDIS:registry use default mode  %d. ( 0:1bit, 1:4bits)\n",
-			cardInterface.InterfaceMode));
+		DBGLOG2(INIT, TRACE,
+		       "MT6620 NDIS:registry use default mode  %d. ( 0:1bit, 1:4bits)\n",
+			cardInterface.InterfaceMode);
 		break;
 	}
 
 	/* Clock rate is chanaged during this function call. */
-	status = SDSetCardFeature(pDevice->hDevice,
-				  SD_SET_CARD_INTERFACE, &cardInterface, sizeof(cardInterface));
+	status = SDSetCardFeature(pDevice->hDevice, SD_SET_CARD_INTERFACE, &cardInterface, sizeof(cardInterface));
 	if (!SD_API_SUCCESS(status)) {
-		DBGLOG(INIT, ERROR, ("MT6620 NDIS: Failed to set SDIO info clock rate! 0x%08X\n",
-				     status));
+		DBGLOG1(INIT, ERROR, "MT6620 NDIS: Failed to set SDIO info clock rate! 0x%08X\n", status);
 		return status;
 	}
 
@@ -1224,15 +1174,14 @@ SD_API_STATUS sdioSetupCardFeature(P_GL_HIF_INFO_T pDevice)
 	functionEnable.Interval = 500;
 	functionEnable.ReadyRetryCount = 3;
 
-	DBGLOG(INIT, TRACE, ("MT6620 NDIS : Enabling Card ...\n"));
+	DBGLOG1(INIT, TRACE, "MT6620 NDIS : Enabling Card ...\n");
 
 	/*turn on our function */
 	status = SDSetCardFeature(pDevice->hDevice,
-				  SD_IO_FUNCTION_ENABLE,
-				  &functionEnable, sizeof(SD_IO_FUNCTION_ENABLE_INFO));
+				  SD_IO_FUNCTION_ENABLE, &functionEnable, sizeof(SD_IO_FUNCTION_ENABLE_INFO));
 
 	if (!SD_API_SUCCESS(status)) {
-		DBGLOG(INIT, ERROR, ("MT6620 NDIS: Failed to enable Function:0x%08X\n", status));
+		DBGLOG1(INIT, ERROR, "MT6620 NDIS: Failed to enable Function:0x%08X\n", status);
 		return status;
 	}
 
@@ -1240,27 +1189,24 @@ SD_API_STATUS sdioSetupCardFeature(P_GL_HIF_INFO_T pDevice)
 	status = SDCardInfoQuery(pDevice->hDevice, SD_INFO_SDIO, &sdioInfo, sizeof(sdioInfo));
 
 	if (!SD_API_SUCCESS(status)) {
-		DBGLOG(INIT, ERROR,
-		       ("MT6620 NDIS: Failed to query SDIO info ! 0x%08X \n", status));
+		DBGLOG1(INIT, ERROR, "MT6620 NDIS: Failed to query SDIO info ! 0x%08X\n", status);
 		return status;
 	}
 
 	/* this card only has one function */
 	if (sdioInfo.FunctionNumber != 1) {
-		DBGLOG(INIT, ERROR, ("MT6620 NDIS: Function number %d is incorrect!\n",
-				     sdioInfo.FunctionNumber));
+		DBGLOG1(INIT, ERROR, "MT6620 NDIS: Function number %d is incorrect!\n", sdioInfo.FunctionNumber);
 		return SD_API_STATUS_UNSUCCESSFUL;
 	}
 
 	/* save off function number */
 	pDevice->Function = sdioInfo.FunctionNumber;
 
-	DBGLOG(INIT, TRACE, ("MT6620 NDIS: Function: %d\n", pDevice->Function));
-	DBGLOG(INIT, TRACE, ("MT6620 NDIS: Device Code: %d\n", sdioInfo.DeviceCode));
-	DBGLOG(INIT, TRACE, ("MT6620 NDIS: CISPointer: 0x%08X\n", sdioInfo.CISPointer));
-	DBGLOG(INIT, TRACE, ("MT6620 NDIS: CSAPointer: 0x%08X\n", sdioInfo.CSAPointer));
-	DBGLOG(INIT, TRACE, ("MT6620 NDIS: CardCaps: 0x%02X\n", sdioInfo.CardCapability));
-
+	DBGLOG1(INIT, TRACE, "MT6620 NDIS: Function: %d\n", pDevice->Function);
+	DBGLOG1(INIT, TRACE, "MT6620 NDIS: Device Code: %d\n", sdioInfo.DeviceCode);
+	DBGLOG1(INIT, TRACE, "MT6620 NDIS: CISPointer: 0x%08X\n", sdioInfo.CISPointer);
+	DBGLOG1(INIT, TRACE, "MT6620 NDIS: CSAPointer: 0x%08X\n", sdioInfo.CSAPointer);
+	DBGLOG1(INIT, TRACE, "MT6620 NDIS: CardCaps: 0x%02X\n", sdioInfo.CardCapability);
 
 	sdHostBlockCap.ReadBlockSize = BLOCK_TRANSFER_LEN;
 	sdHostBlockCap.WriteBlockSize = BLOCK_TRANSFER_LEN;
@@ -1269,26 +1215,23 @@ SD_API_STATUS sdioSetupCardFeature(P_GL_HIF_INFO_T pDevice)
 
 	switch (prReginfo->u4SdBlockSize) {
 	case SD_BUS_BLOCK_SIZE_REGISTRY_USD_DEFAULT:
-		DBGLOG(INIT, TRACE, ("MT6620 NDIS:registry use defualt block size %d\n",
-				     sdHostBlockCap.ReadBlockSize));
+		DBGLOG1(INIT, TRACE, "MT6620 NDIS:registry use defualt block size %d\n", sdHostBlockCap.ReadBlockSize);
 		break;
 	default:
 		sdHostBlockCap.ReadBlockSize = (UINT_16) prReginfo->u4SdBlockSize;
 		sdHostBlockCap.WriteBlockSize = (UINT_16) prReginfo->u4SdBlockSize;
-		DBGLOG(INIT, TRACE, ("MT6620 NDIS:registry block size = %d\n",
-				     sdHostBlockCap.ReadBlockSize));
+		DBGLOG1(INIT, TRACE, "MT6620 NDIS:registry block size = %d\n", sdHostBlockCap.ReadBlockSize);
 		break;
 	}
 
 	/* query the card interface */
 	status = SDCardInfoQuery(pDevice->hDevice,
-				 SD_INFO_HOST_BLOCK_CAPABILITY,
-				 &sdHostBlockCap, sizeof(sdHostBlockCap));
+				 SD_INFO_HOST_BLOCK_CAPABILITY, &sdHostBlockCap, sizeof(sdHostBlockCap));
 
-	DBGLOG(INIT, TRACE,
-	       ("MT6620 NDIS: SDIO host R_BlockSize %d W_BlockSize %d R_Blocks %d W_Blocks%d\n",
+	DBGLOG2(INIT, TRACE,
+	       "MT6620 NDIS: SDIO host R_BlockSize %d W_BlockSize %d R_Blocks %d W_Blocks%d\n",
 		sdHostBlockCap.ReadBlockSize, sdHostBlockCap.WriteBlockSize,
-		sdHostBlockCap.ReadBlocks, sdHostBlockCap.WriteBlocks));
+		sdHostBlockCap.ReadBlocks, sdHostBlockCap.WriteBlocks);
 
 	blockLength = sdHostBlockCap.WriteBlockSize;
 
@@ -1297,34 +1240,30 @@ SD_API_STATUS sdioSetupCardFeature(P_GL_HIF_INFO_T pDevice)
 	 */
 #if 0
 
-	if (sdHostBlockCap.WriteBlockSize < BLOCK_TRANSFER_LEN) {
+	if (sdHostBlockCap.WriteBlockSize < BLOCK_TRANSFER_LEN)
 		blockLength = sdHostBlockCap.WriteBlockSize;
-	} else {
+	else
 		blockLength = BLOCK_TRANSFER_LEN;
-	}
 #endif
 
 	/* set the block length for this function */
-	status = SDSetCardFeature(pDevice->hDevice,
-				  SD_IO_FUNCTION_SET_BLOCK_SIZE, &blockLength, sizeof(blockLength));
+	status = SDSetCardFeature(pDevice->hDevice, SD_IO_FUNCTION_SET_BLOCK_SIZE, &blockLength, sizeof(blockLength));
 
 	if (!SD_API_SUCCESS(status)) {
-		DBGLOG(INIT, ERROR, ("MT6620 NDIS: Failed to set Block Length ! 0x%08X\n", status));
+		DBGLOG1(INIT, ERROR, "MT6620 NDIS: Failed to set Block Length ! 0x%08X\n", status);
 		return status;
 	}
 
-	DBGLOG(INIT, TRACE, ("MT6620 NDIS: Block Size set to %d bytes\n", blockLength));
+	DBGLOG1(INIT, TRACE, "MT6620 NDIS: Block Size set to %d bytes\n", blockLength);
 
 	if (blockLength == 64) {
 		/* This is a workaround for PXA 255 platform */
 		cardInterface.InterfaceMode = SD_INTERFACE_SD_MMC_1BIT;
-		SDSetCardFeature(pDevice->hDevice,
-				 SD_SET_CARD_INTERFACE, &cardInterface, sizeof(SD_CARD_INTERFACE));
+		SDSetCardFeature(pDevice->hDevice, SD_SET_CARD_INTERFACE, &cardInterface, sizeof(SD_CARD_INTERFACE));
 	}
 
 	pDevice->sdHostBlockCap.ReadBlockSize = (USHORT) blockLength;
 	pDevice->sdHostBlockCap.WriteBlockSize = (USHORT) blockLength;
-
 
 	switch (sdHostBlockCap.WriteBlockSize) {
 	case 64:
@@ -1351,16 +1290,15 @@ SD_API_STATUS sdioSetupCardFeature(P_GL_HIF_INFO_T pDevice)
 	/* NOTE(George Kuo): Check if FAST_PATH is available */
 	status = SDSetCardFeature(pDevice->hDevice, SD_IS_FAST_PATH_AVAILABLE, NULL, 0);
 	if (!SD_API_SUCCESS(status)) {
-		DBGLOG(INIT, TRACE, ("MT6620 NDIS: SD bus driver Fast-Path is not available\n"));
+		DBGLOG1(INIT, TRACE, "MT6620 NDIS: SD bus driver Fast-Path is not available\n");
 	} else {
 		/* try to enable FAST_PATH */
 		status = SDSetCardFeature(pDevice->hDevice, SD_FAST_PATH_ENABLE, NULL, 0);
 		if (!SD_API_SUCCESS(status)) {
-			DBGLOG(INIT, TRACE,
-			       ("MT6620 NDIS: SD bus driver Fast-Path is available but failed to enable\n"));
+			DBGLOG2(INIT, TRACE,
+			       "MT6620 NDIS: SD bus driver Fast-Path is available but failed to enable\n");
 		} else {
-			DBGLOG(INIT, TRACE,
-			       ("MT6620 NDIS: SD bus driver Fast-Path is available and enabled\n"));
+			DBGLOG1(INIT, TRACE, "MT6620 NDIS: SD bus driver Fast-Path is available and enabled\n");
 #if CFG_SDIO_PATHRU_MODE
 			/* Fast-path is enabled */
 			pDevice->fgSDIOFastPathEnable = TRUE;
@@ -1381,8 +1319,7 @@ SD_API_STATUS sdioSetupCardFeature(P_GL_HIF_INFO_T pDevice)
 **  Notes:
 *******************************************************************************/
 TODO WLAN_STATUS
-sdioSetBlockSize(IN PVOID pvAdapter,
-		 IN PVOID setBuffer_p, IN UINT_32 setBufferLen, OUT PUINT_32 setInfoLen_p)
+sdioSetBlockSize(IN PVOID pvAdapter, IN PVOID setBuffer_p, IN UINT_32 setBufferLen, OUT PUINT_32 setInfoLen_p)
 {
 	P_GLUE_INFO_T prGlueInfo = wlanGetAdapterPrivate(pvAdapter);
 	P_GL_HIF_INFO_T prSdInfo = &prGlueInfo->rHifInfo;
@@ -1392,19 +1329,16 @@ sdioSetBlockSize(IN PVOID pvAdapter,
 
 	/* query the card interface */
 	status = SDCardInfoQuery(prSdInfo->hDevice,
-				 SD_INFO_HOST_BLOCK_CAPABILITY,
-				 &sdHostBlockCap, sizeof(sdHostBlockCap));
+				 SD_INFO_HOST_BLOCK_CAPABILITY, &sdHostBlockCap, sizeof(sdHostBlockCap));
 	KdPrint(("Set sdHostBlockCap : %d\n", sdHostBlockCap.WriteBlockSize));
 
 	prSdInfo->sdHostBlockCap.ReadBlockSize = (USHORT) u4blocksize;
 	prSdInfo->sdHostBlockCap.WriteBlockSize = (USHORT) u4blocksize;
 
 	/* set the block length for this function */
-	status = SDSetCardFeature(prSdInfo->hDevice,
-				  SD_IO_FUNCTION_SET_BLOCK_SIZE, &u4blocksize, sizeof(u4blocksize));
+	status = SDSetCardFeature(prSdInfo->hDevice, SD_IO_FUNCTION_SET_BLOCK_SIZE, &u4blocksize, sizeof(u4blocksize));
 	if (!SD_API_SUCCESS(status)) {
-		DbgPrintZo(SDCARD_ZONE_ERROR,
-			   (TEXT("IPN2128 NDIS: Failed to set Block Length ! 0x%08X \n"), status));
+		DbgPrintZo(SDCARD_ZONE_ERROR, (TEXT("IPN2128 NDIS: Failed to set Block Length ! 0x%08X\n"), status));
 		KdPrint(("sdiosetBlockSize set to %d failed\n", u4blocksize));
 
 		return FALSE;
@@ -1460,16 +1394,13 @@ NDIS_STATUS windowsRegisterIsrt(IN P_GLUE_INFO_T prGlueInfo)
 
 	/* connect the interrupt callback */
 #if CFG_SDIO_PATHRU_MODE
-	sdStatus = SDIO_CONNECT_INTERRUPT(&prGlueInfo->rHifInfo,
-					  (PSD_INTERRUPT_CALLBACK) sdioInterruptCallback);
+	sdStatus = SDIO_CONNECT_INTERRUPT(&prGlueInfo->rHifInfo, (PSD_INTERRUPT_CALLBACK) sdioInterruptCallback);
 #else
-	sdStatus = SDIOConnectInterrupt(prGlueInfo->rHifInfo.hDevice,
-					(PSD_INTERRUPT_CALLBACK) sdioInterruptCallback);
+	sdStatus = SDIOConnectInterrupt(prGlueInfo->rHifInfo.hDevice, (PSD_INTERRUPT_CALLBACK) sdioInterruptCallback);
 #endif
 
 	if (!SD_API_SUCCESS(sdStatus)) {
-		DbgPrintZo(SDCARD_ZONE_ERROR,
-			   (TEXT("SDNDIS: Failed to connect interrupt: 0x%08X\n"), sdStatus));
+		DbgPrintZo(SDCARD_ZONE_ERROR, (TEXT("SDNDIS: Failed to connect interrupt: 0x%08X\n"), sdStatus));
 		status = NDIS_STATUS_FAILURE;
 		return status;
 	}
@@ -1504,7 +1435,6 @@ NDIS_STATUS windowsUnregisterIsrt(IN P_GLUE_INFO_T prGlueInfo)
 	return NDIS_STATUS_SUCCESS;
 }				/* windowsUnregisterIsrt */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is to initialize adapter members.
@@ -1515,8 +1445,7 @@ NDIS_STATUS windowsUnregisterIsrt(IN P_GLUE_INFO_T prGlueInfo)
 * \return NDIS_STATUS code
 */
 /*----------------------------------------------------------------------------*/
-NDIS_STATUS
-windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigurationContext)
+NDIS_STATUS windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigurationContext)
 {
 	NDIS_STATUS NdisStatus;	/* intermediate status */
 	NDIS_STATUS status;
@@ -1529,9 +1458,8 @@ windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigura
 	DEBUGFUNC("windowsFindAdapter");
 
 	status = sdioGetDeviceHandle(prGlueInfo, rWrapperConfigurationContext);
-	if (status != NDIS_STATUS_SUCCESS) {
+	if (status != NDIS_STATUS_SUCCESS)
 		return status;
-	}
 
 	fgBusInit = platformBusInit(prGlueInfo);
 	if (FALSE == fgBusInit) {
@@ -1547,7 +1475,7 @@ windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigura
 	sdioInitPathruMode(prGlueInfo);
 #endif
 
-	DBGLOG(INIT, TRACE, ("SDNdis: SDNdisInitializeAdapter\n"));
+	DBGLOG1(INIT, TRACE, "SDNdis: SDNdisInitializeAdapter\n");
 
 	NdisStatus = NDIS_STATUS_FAILURE;
 
@@ -1563,28 +1491,25 @@ windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigura
 		sdStatus = SDRegisterClient(pDevice->hDevice, prGlueInfo, &clientInfo);
 
 		if (!SD_API_SUCCESS(sdStatus)) {
-			DBGLOG(INIT, ERROR,
-			       ("SDNDIS: Failed to register client : 0x%08X\n", sdStatus));
+			DBGLOG1(INIT, ERROR, "SDNDIS: Failed to register client : 0x%08X\n", sdStatus);
 			return NdisStatus;
 		}
 
 		/* set up card */
 		sdStatus = sdioSetupCardFeature(pDevice);
 		if (!SD_API_SUCCESS(sdStatus)) {
-			DBGLOG(INIT, ERROR,
-			       ("SDNDIS: sdioSetUpCardFeature return failed :0x%08X", sdStatus));
+			DBGLOG1(INIT, ERROR, "SDNDIS: sdioSetUpCardFeature return failed :0x%08X", sdStatus);
 			return NdisStatus;
 		}
-		DBGLOG(INIT, TRACE, ("SDNDIS : Card ready\n"));
+		DBGLOG1(INIT, TRACE, "SDNDIS : Card ready\n");
 
 #if CFG_SDIO_PATHRU_MODE
 		if (FALSE != pDevice->fgSDIOFastPathEnable) {
 			/* enable PATHRU mode if fast-path is enabled */
-			if (FALSE != sdioEnablePathruMode(prGlueInfo, TRUE)) {
-				DBGLOG(INIT, TRACE, ("SDNDIS : PATHRU enabled\n"));
-			} else {
-				DBGLOG(INIT, WARN, ("SDNDIS : Failed to enable PATHRU\n"));
-			}
+			if (FALSE != sdioEnablePathruMode(prGlueInfo, TRUE))
+				DBGLOG1(INIT, TRACE, "SDNDIS : PATHRU enabled\n");
+			else
+				DBGLOG1(INIT, WARN, "SDNDIS : Failed to enable PATHRU\n");
 		}
 #endif
 
@@ -1594,7 +1519,6 @@ windowsFindAdapter(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE rWrapperConfigura
 
 	return NDIS_STATUS_SUCCESS;
 }				/* windowsFindAdapter */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1615,19 +1539,18 @@ BOOL kalDevRegRead(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT
 	DWORD argument;		/* argument */
 	SD_COMMAND_RESPONSE response;	/* IO response status */
 
-
-
 	argument = BUILD_IO_RW_EXTENDED_ARG(SD_IO_OP_READ,
 					    SD_IO_BYTE_MODE,
-					    prSdInfo->Function,
-					    u4Register, SD_IO_INCREMENT_ADDRESS, 4);
+					    prSdInfo->Function, u4Register, SD_IO_INCREMENT_ADDRESS, 4);
 
 #if CFG_SDIO_PATHRU_MODE
-	status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_READ, ResponseR5, &response, 1,	/* block number */
+	status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_READ,
+				 ResponseR5, &response, 1,	/* block number */
 				 4,	/* block size */
 				 (PUCHAR) pu4Value, 0);
 #else
-	status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED, argument, SD_READ, ResponseR5, &response, 1,	/* block number */
+	status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED, argument,
+					 SD_READ, ResponseR5, &response, 1,	/* block number */
 					 4,	/* block size */
 					 (PUCHAR) pu4Value, 0);
 #endif
@@ -1655,21 +1578,21 @@ BOOL kalDevRegWrite(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_
 
 	argument = BUILD_IO_RW_EXTENDED_ARG(SD_IO_OP_WRITE,
 					    SD_IO_BYTE_MODE,
-					    prSdInfo->Function,
-					    u4Register, SD_IO_INCREMENT_ADDRESS, 4);
+					    prSdInfo->Function, u4Register, SD_IO_INCREMENT_ADDRESS, 4);
 
 #if CFG_SDIO_PATHRU_MODE
-	status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_WRITE, ResponseR5, &response, 1,	/* block number */
+	status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_WRITE,
+				 ResponseR5, &response, 1,	/* block number */
 				 4,	/* block size */
 				 (PUCHAR) & u4Value, 0);
 #else
-	status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED, argument, SD_WRITE, ResponseR5, &response, 1,	/* block number */
+	status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED, argument,
+					 SD_WRITE, ResponseR5, &response, 1,	/* block number */
 					 4,	/* block size */
 					 (PUCHAR) & u4Value, 0);
 #endif
 	return SD_API_SUCCESS(status) ? TRUE : FALSE;
 }				/* kalDevRegWrite */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1687,8 +1610,7 @@ BOOL kalDevRegWrite(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_
 /*----------------------------------------------------------------------------*/
 BOOL
 kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
-	       IN UINT_32 u4Port,
-	       IN UINT_32 u4Len, OUT PUINT_8 pucBuf, IN UINT_32 u4ValidOutBufSize)
+	       IN UINT_32 u4Port, IN UINT_32 u4Len, OUT PUINT_8 pucBuf, IN UINT_32 u4ValidOutBufSize)
 {
 	P_GL_HIF_INFO_T prSdInfo = &prGlueInfo->rHifInfo;
 	SD_API_STATUS status = SD_API_STATUS_SUCCESS;	/* intermediate status */
@@ -1711,28 +1633,27 @@ kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
 
 	/* Only use block mode to read all data */
 	if (u4BlockNum != 0 && u4ByteNum != 0) {
-		if (u4ValidOutBufSize >=
-		    ((u4BlockNum + 1) * prSdInfo->sdHostBlockCap.ReadBlockSize)) {
+		if (u4ValidOutBufSize >= ((u4BlockNum + 1) * prSdInfo->sdHostBlockCap.ReadBlockSize)) {
 			u4BlockNum++;
 			u4ByteNum = 0;
 		}
 	}
 
-	ASSERT(u4ValidOutBufSize >=
-	       u4BlockNum * prSdInfo->sdHostBlockCap.ReadBlockSize + u4ByteNum);
+	ASSERT(u4ValidOutBufSize >= u4BlockNum * prSdInfo->sdHostBlockCap.ReadBlockSize + u4ByteNum);
 
 	if (u4BlockNum > 0) {
 		argument = BUILD_IO_RW_EXTENDED_ARG(SD_IO_OP_READ,
 						    SD_IO_BLOCK_MODE,
-						    prSdInfo->Function,
-						    u4Port, SD_IO_FIXED_ADDRESS, u4BlockNum);
+						    prSdInfo->Function, u4Port, SD_IO_FIXED_ADDRESS, u4BlockNum);
 
 #if CFG_SDIO_PATHRU_MODE
-		status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_READ, ResponseR5, &response, u4BlockNum,	/* block number */
+		status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_READ,
+					 ResponseR5, &response, u4BlockNum,	/* block number */
 					 prSdInfo->sdHostBlockCap.ReadBlockSize,	/* block size */
 					 pucBuf, 0);
 #else
-		status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED, argument, SD_READ, ResponseR5, &response, u4BlockNum,	/* block number */
+		status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED, argument,
+						 SD_READ, ResponseR5, &response, u4BlockNum,	/* block number */
 						 prSdInfo->sdHostBlockCap.ReadBlockSize,	/* block size */
 						 pucBuf, 0);
 #endif
@@ -1743,15 +1664,16 @@ kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
 		u4Bytes = (u4ByteNum > MAX_SD_RW_BYTES) ? MAX_SD_RW_BYTES : u4ByteNum;
 		argument = BUILD_IO_RW_EXTENDED_ARG(SD_IO_OP_READ,
 						    SD_IO_BYTE_MODE,
-						    prSdInfo->Function,
-						    u4Port, SD_IO_FIXED_ADDRESS, u4Bytes);
+						    prSdInfo->Function, u4Port, SD_IO_FIXED_ADDRESS, u4Bytes);
 
 #if CFG_SDIO_PATHRU_MODE
-		status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_READ, ResponseR5, &response, 1,	/* block number */
+		status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_READ,
+					 ResponseR5, &response, 1,	/* block number */
 					 u4Bytes,	/* block size */
 					 (PUCHAR) pucBuf, 0);
 #else
-		status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED, argument, SD_READ, ResponseR5, &response, 1,	/* block number */
+		status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED,
+						 argument, SD_READ, ResponseR5, &response, 1,	/* block number */
 						 u4Bytes,	/* block size */
 						 (PUCHAR) pucBuf, 0);
 #endif
@@ -1761,9 +1683,8 @@ kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
 
 #ifdef X86_CPU
 	/* use a non-used register to avoid the ENE bug */
-	if (u4BlockNum && u4ByteNum == 0) {
+	if (u4BlockNum && u4ByteNum == 0)
 		kalDevRegWrite(prGlueInfo, SDIO_X86_WORKAROUND_WRITE_MCR, 0x0);
-	}
 #endif
 
 	return SD_API_SUCCESS(status) ? TRUE : FALSE;
@@ -1794,7 +1715,6 @@ kalDevPortWrite(IN P_GLUE_INFO_T prGlueInfo,
 	UINT_32 u4BlockNum, u4ByteNum;
 	UINT_32 u4Bytes;
 
-
 	ASSERT(u4ValidInBufSize >= u4Len);
 
 	/* Check if we apply block mode to transfer data */
@@ -1809,28 +1729,27 @@ kalDevPortWrite(IN P_GLUE_INFO_T prGlueInfo,
 
 	/* Only use block mode to write all data */
 	if (u4BlockNum != 0 && u4ByteNum != 0) {
-		if (u4ValidInBufSize >=
-		    ((u4BlockNum + 1) * prSdInfo->sdHostBlockCap.WriteBlockSize)) {
+		if (u4ValidInBufSize >= ((u4BlockNum + 1) * prSdInfo->sdHostBlockCap.WriteBlockSize)) {
 			u4BlockNum++;
 			u4ByteNum = 0;
 		}
 	}
 
-	ASSERT(u4ValidInBufSize >=
-	       u4BlockNum * prSdInfo->sdHostBlockCap.WriteBlockSize + u4ByteNum);
+	ASSERT(u4ValidInBufSize >= u4BlockNum * prSdInfo->sdHostBlockCap.WriteBlockSize + u4ByteNum);
 
 	if (u4BlockNum > 0) {
 		argument = BUILD_IO_RW_EXTENDED_ARG(SD_IO_OP_WRITE,
 						    SD_IO_BLOCK_MODE,
-						    prSdInfo->Function,
-						    u4Port, SD_IO_FIXED_ADDRESS, u4BlockNum);
+						    prSdInfo->Function, u4Port, SD_IO_FIXED_ADDRESS, u4BlockNum);
 
 #if CFG_SDIO_PATHRU_MODE
-		status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_WRITE, ResponseR5, &response, u4BlockNum,	/* block number */
+		status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument,
+					 SD_WRITE, ResponseR5, &response, u4BlockNum,	/* block number */
 					 prSdInfo->sdHostBlockCap.WriteBlockSize,	/* block size */
 					 pucBuf, 0);
 #else
-		status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED, argument, SD_WRITE, ResponseR5, &response, u4BlockNum,	/* block number */
+		status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED, argument,
+						 SD_WRITE, ResponseR5, &response, u4BlockNum,	/* block number */
 						 prSdInfo->sdHostBlockCap.WriteBlockSize,	/* block size */
 						 pucBuf, 0);
 #endif
@@ -1841,15 +1760,16 @@ kalDevPortWrite(IN P_GLUE_INFO_T prGlueInfo,
 		u4Bytes = (u4ByteNum > MAX_SD_RW_BYTES) ? MAX_SD_RW_BYTES : u4ByteNum;
 		argument = BUILD_IO_RW_EXTENDED_ARG(SD_IO_OP_WRITE,
 						    SD_IO_BYTE_MODE,
-						    prSdInfo->Function,
-						    u4Port, SD_IO_FIXED_ADDRESS, u4Bytes);
+						    prSdInfo->Function, u4Port, SD_IO_FIXED_ADDRESS, u4Bytes);
 
 #if CFG_SDIO_PATHRU_MODE
-		status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_WRITE, ResponseR5, &response, 1,	/* block number */
+		status = SD_SYNC_BUS_REQ(prSdInfo, SD_CMD_IO_RW_EXTENDED, argument, SD_WRITE,
+					 ResponseR5, &response, 1,	/* block number */
 					 u4Bytes,	/* block size */
 					 (PUCHAR) pucBuf, 0);
 #else
-		status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED, argument, SD_WRITE, ResponseR5, &response, 1,	/* block number */
+		status = SDSynchronousBusRequest(prSdInfo->hDevice, SD_CMD_IO_RW_EXTENDED,
+						 argument, SD_WRITE, ResponseR5, &response, 1,	/* block number */
 						 u4Bytes,	/* block size */
 						 (PUCHAR) pucBuf, 0);
 #endif
@@ -1859,14 +1779,12 @@ kalDevPortWrite(IN P_GLUE_INFO_T prGlueInfo,
 
 #ifdef X86_CPU
 	/* use a non-used register to avoid the ENE bug */
-	if (u4BlockNum && u4ByteNum == 0) {
+	if (u4BlockNum && u4ByteNum == 0)
 		kalDevRegWrite(prGlueInfo, SDIO_X86_WORKAROUND_WRITE_MCR, 0x0);
-	}
 #endif
 
 	return SD_API_SUCCESS(status) ? TRUE : FALSE;
 }				/* kalDevPortWrite */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1887,13 +1805,10 @@ BOOL kalDevWriteWithSdioCmd52(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Addr, IN
 	UINT_8 ucRwBuffer = ucData;
 
 	status = SDReadWriteRegistersDirect(prSdInfo->hDevice,
-					    SD_WRITE,
-					    prSdInfo->Function,
-					    u4Addr, TRUE, &ucRwBuffer, sizeof(UINT_8));
+					    SD_WRITE, prSdInfo->Function, u4Addr, TRUE, &ucRwBuffer, sizeof(UINT_8));
 
 	return SD_API_SUCCESS(status) ? TRUE : FALSE;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1911,16 +1826,13 @@ BOOL kalDevWriteWithSdioCmd52(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Addr, IN
 /*----------------------------------------------------------------------------*/
 BOOL
 kalDevReadAfterWriteWithSdioCmd52(IN P_GLUE_INFO_T prGlueInfo,
-				  IN UINT_32 u4Addr,
-				  IN OUT PUINT_8 pucRwBuffer, IN UINT_32 u4RwBufLen)
+				  IN UINT_32 u4Addr, IN OUT PUINT_8 pucRwBuffer, IN UINT_32 u4RwBufLen)
 {
 	P_GL_HIF_INFO_T prSdInfo = &prGlueInfo->rHifInfo;
 	SD_API_STATUS status = SD_API_STATUS_SUCCESS;	/* intermediate status */
 
 	status = SDReadWriteRegistersDirect(prSdInfo->hDevice,
-					    SD_WRITE,
-					    prSdInfo->Function,
-					    u4Addr, TRUE, pucRwBuffer, u4RwBufLen);
+					    SD_WRITE, prSdInfo->Function, u4Addr, TRUE, pucRwBuffer, u4RwBufLen);
 
 	return SD_API_SUCCESS(status) ? TRUE : FALSE;
 }

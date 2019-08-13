@@ -28,13 +28,13 @@ void __iomem *spm_i2c0_base;
 void __iomem *spm_i2c1_base;
 void __iomem *spm_i2c2_base;
 void __iomem *spm_i2c3_base;
+void __iomem *spm_i2c4_base;
 void __iomem *spm_cksys_base;
 void __iomem *spm_ddrphy0_base;
 void __iomem *spm_ddrphy1_base;
 void __iomem *spm_pericfg_base;
 void __iomem *spm_mcucfg;
 void __iomem *spm_md32_base;
-void __iomem *spm_eint_base;
 extern void __iomem *toprgu_base_t;
 
 u32 spm_irq_0 = 195;
@@ -106,7 +106,7 @@ static irqreturn_t spm_irq0_handler(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static irqreturn_t spm_irq_aux_handler(u32 irq_id)
+static irqreturn_t spm_irq_handler(u32 irq_id)
 {
 	u32 isr;
 	unsigned long flags;
@@ -123,37 +123,37 @@ static irqreturn_t spm_irq_aux_handler(u32 irq_id)
 
 static irqreturn_t spm_irq1_handler(int irq, void *dev_id)
 {
-	return spm_irq_aux_handler(1);
+	return spm_irq_handler(1);
 }
 
 static irqreturn_t spm_irq2_handler(int irq, void *dev_id)
 {
-	return spm_irq_aux_handler(2);
+	return spm_irq_handler(2);
 }
 
 static irqreturn_t spm_irq3_handler(int irq, void *dev_id)
 {
-	return spm_irq_aux_handler(3);
+	return spm_irq_handler(3);
 }
 
 static irqreturn_t spm_irq4_handler(int irq, void *dev_id)
 {
-	return spm_irq_aux_handler(4);
+	return spm_irq_handler(4);
 }
 
 static irqreturn_t spm_irq5_handler(int irq, void *dev_id)
 {
-	return spm_irq_aux_handler(5);
+	return spm_irq_handler(5);
 }
 
 static irqreturn_t spm_irq6_handler(int irq, void *dev_id)
 {
-	return spm_irq_aux_handler(6);
+	return spm_irq_handler(6);
 }
 
 static irqreturn_t spm_irq7_handler(int irq, void *dev_id)
 {
-	return spm_irq_aux_handler(7);
+	return spm_irq_handler(7);
 }
 
 static int spm_irq_register(void)
@@ -161,26 +161,26 @@ static int spm_irq_register(void)
 	int i, err, r = 0;
 #ifdef CONFIG_OF
 struct spm_irq_desc irqdesc[] = {
-                { .irq = 0, .handler = spm_irq0_handler, },
-                { .irq = 0, .handler = spm_irq1_handler, },
-                { .irq = 0, .handler = spm_irq2_handler, },
-                { .irq = 0, .handler = spm_irq3_handler, },
-                { .irq = 0, .handler = spm_irq4_handler, },
-                { .irq = 0, .handler = spm_irq5_handler, },
-                { .irq = 0, .handler = spm_irq6_handler, },
-                { .irq = 0, .handler = spm_irq7_handler, }
-        };
+		{ .irq = 0, .handler = spm_irq0_handler, },
+		{ .irq = 0, .handler = spm_irq1_handler, },
+		{ .irq = 0, .handler = spm_irq2_handler, },
+		{ .irq = 0, .handler = spm_irq3_handler, },
+		{ .irq = 0, .handler = spm_irq4_handler, },
+		{ .irq = 0, .handler = spm_irq5_handler, },
+		{ .irq = 0, .handler = spm_irq6_handler, },
+		{ .irq = 0, .handler = spm_irq7_handler, }
+	};
 
-    irqdesc[0].irq = SPM_IRQ0_ID;
-    irqdesc[1].irq = SPM_IRQ1_ID;
-    irqdesc[2].irq = SPM_IRQ2_ID;
-    irqdesc[3].irq = SPM_IRQ3_ID;
-    irqdesc[4].irq = SPM_IRQ4_ID;
-    irqdesc[5].irq = SPM_IRQ5_ID;
-    irqdesc[6].irq = SPM_IRQ6_ID;
-    irqdesc[7].irq = SPM_IRQ7_ID;
+	irqdesc[0].irq = SPM_IRQ0_ID;
+	irqdesc[1].irq = SPM_IRQ1_ID;
+	irqdesc[2].irq = SPM_IRQ2_ID;
+	irqdesc[3].irq = SPM_IRQ3_ID;
+	irqdesc[4].irq = SPM_IRQ4_ID;
+	irqdesc[5].irq = SPM_IRQ5_ID;
+	irqdesc[6].irq = SPM_IRQ6_ID;
+	irqdesc[7].irq = SPM_IRQ7_ID;
 #else
-	struct spm_irq_desc irqdesc[] = {
+struct spm_irq_desc irqdesc[] = {
 		{ .irq = SPM_IRQ0_ID, .handler = spm_irq0_handler, },
 		{ .irq = SPM_IRQ1_ID, .handler = spm_irq1_handler, },
 		{ .irq = SPM_IRQ2_ID, .handler = spm_irq2_handler, },
@@ -192,6 +192,7 @@ struct spm_irq_desc irqdesc[] = {
 	};
 #endif
 	for (i = 0; i < ARRAY_SIZE(irqdesc); i++) {
+		if (i !=3)
 		err = request_irq(irqdesc[i].irq, irqdesc[i].handler,
 				  IRQF_TRIGGER_LOW | IRQF_NO_SUSPEND,
 				  "SPM", NULL);
@@ -287,6 +288,14 @@ static void spm_register_init(void)
     if (!spm_i2c3_base)
         spm_err("base i2c3_base failed\n");
 
+	node = of_find_compatible_node(NULL, NULL, "mediatek,I2C4");
+    if (!node) {
+        spm_err("find I2C4 node failed\n");
+    }
+    spm_i2c4_base = of_iomap(node, 0);
+    if (!spm_i2c4_base)
+        spm_err("base i2c4_base failed\n");
+
     //cksys_base
     node = of_find_compatible_node(NULL, NULL, "mediatek,CKSYS");
     if (!node) {
@@ -340,15 +349,7 @@ static void spm_register_init(void)
     if (!spm_md32_base)
         spm_err("[MD32] SCP_CFGREG base failed\n");
 
-	//EINT
-	node = of_find_compatible_node(NULL, NULL, "mediatek,EINTC");
-	if(!node)
-		spm_err("eintc find node failed\n");
-	spm_eint_base = of_iomap(node, 0);
-	if (!spm_eint_base)
-		spm_err("get eint_base failed\n");
-
-    spm_err("spm_base = %p, i2c0_base = %p, i2c1_base = %p, i2c2_base = %p, i2c3_base = %p\n", spm_base, spm_i2c0_base, spm_i2c1_base, spm_i2c2_base, spm_i2c3_base);
+    spm_err("spm_base = %p, i2c0_base = %p, i2c1_base = %p, i2c2_base = %p, i2c3_base = %p, i2c4_base = %p\n", spm_base, spm_i2c0_base, spm_i2c1_base, spm_i2c2_base, spm_i2c3_base, spm_i2c4_base);
     spm_err("spm_irq_0 = %d, spm_irq_1 = %d, spm_irq_2 = %d, spm_irq_3 = %d\n", spm_irq_0, spm_irq_1, spm_irq_2, spm_irq_3);
     spm_err("spm_irq_4 = %d, spm_irq_5 = %d, spm_irq_6 = %d, spm_irq_7 = %d\n", spm_irq_4, spm_irq_5, spm_irq_6, spm_irq_7);
     spm_err("mcucfg = %p, md32 = %p, cksys = %p\n", spm_mcucfg, spm_md32_base, spm_cksys_base);

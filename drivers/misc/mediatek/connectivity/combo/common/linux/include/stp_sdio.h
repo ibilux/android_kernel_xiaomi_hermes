@@ -59,6 +59,7 @@
 #define CTFSR        (0x0020)
 #define CRPLR        (0x0024)
 #define CSR        (0x00D8) //MT6630 only for the moment
+#define SWPCDBGR	(0x0154)
 
 /* Common HIF register bit field address */
 /* CHLPCR */
@@ -84,7 +85,7 @@
 
 /* hardware settings */
 #define STP_SDIO_TX_FIFO_SIZE (2080UL)
-#define STP_SDIO_RX_FIFO_SIZE (2304UL)	/* 256*9 */
+#define STP_SDIO_RX_FIFO_SIZE (2304UL) /* 256*9 */
 #define STP_SDIO_TX_PKT_MAX_CNT (7)	/* Max outstanding tx pkt count, as defined in TX_COMPLETE_COUNT */
 #define STP_SDIO_HDR_SIZE (4)	/* hw,fw,sw follow the same format: 2 bytes length + 2 bytes reserved */
 
@@ -96,6 +97,11 @@
 #define STP_SDIO_TX_BUF_CNT_MASK (STP_SDIO_TX_BUF_CNT - 1)
 #define STP_SDIO_TX_PKT_LIST_SIZE (STP_SDIO_TX_BUF_CNT)	/* must be 2^x now... */
 #define STP_SDIO_TX_PKT_LIST_SIZE_MASK (STP_SDIO_TX_PKT_LIST_SIZE - 1)
+
+#define STP_SDIO_FW_CPUPCR_POLLING_CNT (5)
+
+#define STP_SDIO_RETRY_LIMIT (5)
+#define STP_SDIO_MAX_RETRY_NUM (100)
 
 /* tx buffer size for a single entry */
 /* George: SHALL BE a multiple of the used BLK_SIZE!! */
@@ -128,6 +134,17 @@
 *                             D A T A   T Y P E S
 ********************************************************************************
 */
+
+typedef enum _ENUM_STP_SDIO_HIF_TYPE_T {
+	HIF_TYPE_READB = 0,
+	HIF_TYPE_READL = HIF_TYPE_READB + 1,
+	HIF_TYPE_READ_BUF = HIF_TYPE_READL + 1,
+	HIF_TYPE_WRITEB = HIF_TYPE_READ_BUF + 1,
+	HIF_TYPE_WRITEL = HIF_TYPE_WRITEB + 1,
+	HIF_TYPE_WRITE_BUF = HIF_TYPE_WRITEL + 1,
+	HIF_TYEP_MAX
+} ENUM_STP_SDIO_HIF_TYPE_T, *P_ENUM_STP_SDIO_HIF_TYPE_T;
+
 /* HIF's local packet buffer variables for Tx/Rx */
 typedef struct _MTK_WCN_STP_SDIO_PKT_BUF {
 	/* Tx entry ring buffer. Entry size is aligned to SDIO block size. */
@@ -211,6 +228,7 @@ typedef struct _MTK_WCN_STP_SDIO_HIF_INFO {
 *                            P U B L I C   D A T A
 ********************************************************************************
 */
+extern MTK_WCN_STP_SDIO_HIF_INFO g_stp_sdio_host_info;
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A

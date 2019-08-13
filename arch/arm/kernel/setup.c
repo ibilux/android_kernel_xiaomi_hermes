@@ -922,40 +922,6 @@ static const char *hwcap_str[] = {
 	NULL
 };
 
-static void c_show_features(struct seq_file *m, u32 cpuid)
-{
-	int j;
-
-        /* dump out the processor features */
-        seq_puts(m, "Features\t: ");
-
-        for (j = 0; hwcap_str[j]; j++)
-                if (elf_hwcap & (1 << j))
-                        seq_printf(m, "%s ", hwcap_str[j]);
-
-        seq_printf(m, "\nCPU implementer\t: 0x%02x\n", cpuid >> 24);
-        seq_printf(m, "CPU architecture: %s\n",
-                   proc_arch[cpu_architecture()]);
-
-        if ((cpuid & 0x0008f000) == 0x00000000) {
-                /* pre-ARM7 */
-                seq_printf(m, "CPU part\t: %07x\n", cpuid >> 4);
-        } else {
-                if ((cpuid & 0x0008f000) == 0x00007000) {
-                        /* ARM7 */
-                        seq_printf(m, "CPU variant\t: 0x%02x\n",
-                                   (cpuid >> 16) & 127);
-                } else {
-                        /* post-ARM7 */
-                        seq_printf(m, "CPU variant\t: 0x%x\n",
-                                   (cpuid >> 20) & 15);
-                }
-                seq_printf(m, "CPU part\t: 0x%03x\n",
-                           (cpuid >> 4) & 0xfff);
-        }
-        seq_printf(m, "CPU revision\t: %d\n\n", cpuid & 15);
-}
-
 static int c_show(struct seq_file *m, void *v)
 {
 	int i;
@@ -1001,6 +967,40 @@ static int c_show(struct seq_file *m, void *v)
 		   system_serial_high, system_serial_low);
 
 	return 0;
+}
+
+static void c_show_features(struct seq_file *m, u32 cpuid)
+{
+	int j;
+
+        /* dump out the processor features */
+        seq_puts(m, "Features\t: ");
+
+        for (j = 0; hwcap_str[j]; j++)
+                if (elf_hwcap & (1 << j))
+                        seq_printf(m, "%s ", hwcap_str[j]);
+
+        seq_printf(m, "\nCPU implementer\t: 0x%02x\n", cpuid >> 24);
+        seq_printf(m, "CPU architecture: %s\n",
+                   proc_arch[cpu_architecture()]);
+
+        if ((cpuid & 0x0008f000) == 0x00000000) {
+                /* pre-ARM7 */
+                seq_printf(m, "CPU part\t: %07x\n", cpuid >> 4);
+        } else {
+                if ((cpuid & 0x0008f000) == 0x00007000) {
+                        /* ARM7 */
+                        seq_printf(m, "CPU variant\t: 0x%02x\n",
+                                   (cpuid >> 16) & 127);
+                } else {
+                        /* post-ARM7 */
+                        seq_printf(m, "CPU variant\t: 0x%x\n",
+                                   (cpuid >> 20) & 15);
+                }
+                seq_printf(m, "CPU part\t: 0x%03x\n",
+                           (cpuid >> 4) & 0xfff);
+        }
+        seq_printf(m, "CPU revision\t: %d\n\n", cpuid & 15);
 }
 
 static void *c_start(struct seq_file *m, loff_t *pos)

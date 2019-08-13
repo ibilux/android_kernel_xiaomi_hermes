@@ -17,7 +17,6 @@
 #include <linux/delay.h>
 #include <linux/platform_device.h>
 #include <linux/aee.h>
-#include <linux/xlog.h>
 #include <linux/proc_fs.h>
 #include <linux/syscalls.h>
 #include <linux/sched.h>
@@ -25,7 +24,7 @@
 #include <linux/earlysuspend.h>
 #include <linux/seq_file.h>
 #include <linux/time.h>
-    
+
 #include <asm/uaccess.h>
 
 #include <mach/upmu_common.h>
@@ -42,6 +41,8 @@
 #include <mach/pmic_mt6331_6332_sw.h>
 #include <cust_pmic.h>
 #include <cust_battery_meter.h>
+#include <mach/charging.h>
+
 //////////////////////////////////////////
 // DVT enable
 //////////////////////////////////////////
@@ -66,7 +67,7 @@
 //AUXADC
 #define AUXADC_DVT_ENABLE
 //////////////////////////////////////////
-// extern 
+// extern
 //////////////////////////////////////////
 extern kal_uint32 upmu_get_reg_value(kal_uint32 reg);
 extern void upmu_set_reg_value(kal_uint32 reg, kal_uint32 reg_val);
@@ -104,81 +105,81 @@ void read_adc_value(int index)
 
     //mdelay(50);
     mdelay(500);
-    
+
     #if 0
-    ret = PMIC_IMM_GetOneChannelValue(ADC_ADCVIN0_AP,1,0);
-    ret = (ret*4)/3; // from Ricky    
+    ret = PMIC_IMM_GetOneChannelValue(AUX_ADCVIN0_AP,1,0);
+    ret = (ret*4)/3; // from Ricky
     #else
-    ret = PMIC_IMM_GetOneChannelValue(ADC_VUSB_AP,1,0);    
+    ret = PMIC_IMM_GetOneChannelValue(AUX_VUSB_AP,1,0);
     #endif
 
-    printk("[read_auxadc_value] ret = %d\n", ret);
+	battery_log(BAT_LOG_CRTI, "[read_auxadc_value] ret = %d\n", ret);
 
     //------------------------------------------------------------
     if(index == 0) {
-        printk("mt6331_upmu_get_qi_vdvfs11_en=%d\n", mt6331_upmu_get_qi_vdvfs11_en());
-        printk("mt6331_upmu_get_ni_vdvfs11_vosel=%d\n", mt6331_upmu_get_ni_vdvfs11_vosel());
-    } 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vdvfs11_en=%d\n", mt6331_upmu_get_qi_vdvfs11_en());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_ni_vdvfs11_vosel=%d\n", mt6331_upmu_get_ni_vdvfs11_vosel());
+    }
     else if(index == 1) {
-        printk("mt6331_upmu_get_qi_vdvfs12_en=%d\n", mt6331_upmu_get_qi_vdvfs12_en());
-        printk("mt6331_upmu_get_ni_vdvfs12_vosel=%d\n", mt6331_upmu_get_ni_vdvfs12_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vdvfs12_en=%d\n", mt6331_upmu_get_qi_vdvfs12_en());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_ni_vdvfs12_vosel=%d\n", mt6331_upmu_get_ni_vdvfs12_vosel());
     }
     else if(index == 2) {
-        printk("mt6331_upmu_get_qi_vdvfs13_en=%d\n", mt6331_upmu_get_qi_vdvfs13_en());
-        printk("mt6331_upmu_get_ni_vdvfs13_vosel=%d\n", mt6331_upmu_get_ni_vdvfs13_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vdvfs13_en=%d\n", mt6331_upmu_get_qi_vdvfs13_en());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_ni_vdvfs13_vosel=%d\n", mt6331_upmu_get_ni_vdvfs13_vosel());
     }
     else if(index == 3) {
-        printk("mt6331_upmu_get_qi_vdvfs14_en=%d\n", mt6331_upmu_get_qi_vdvfs14_en());
-        printk("mt6331_upmu_get_ni_vdvfs14_vosel=%d\n", mt6331_upmu_get_ni_vdvfs14_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vdvfs14_en=%d\n", mt6331_upmu_get_qi_vdvfs14_en());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_ni_vdvfs14_vosel=%d\n", mt6331_upmu_get_ni_vdvfs14_vosel());
     }
     else if(index == 4) {
-        printk("mt6331_upmu_get_qi_vgpu_en=%d\n", mt6331_upmu_get_qi_vgpu_en());
-        printk("mt6331_upmu_get_ni_vgpu_vosel=%d\n", mt6331_upmu_get_ni_vgpu_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgpu_en=%d\n", mt6331_upmu_get_qi_vgpu_en());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_ni_vgpu_vosel=%d\n", mt6331_upmu_get_ni_vgpu_vosel());
     }
     else if(index == 5) {
-        printk("mt6331_upmu_get_qi_vcore1_en=%d\n", mt6331_upmu_get_qi_vcore1_en());
-        printk("mt6331_upmu_get_ni_vcore1_vosel=%d\n", mt6331_upmu_get_ni_vcore1_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcore1_en=%d\n", mt6331_upmu_get_qi_vcore1_en());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_ni_vcore1_vosel=%d\n", mt6331_upmu_get_ni_vcore1_vosel());
     }
     else if(index == 6) {
-        printk("mt6331_upmu_get_qi_vcore2_en=%d\n", mt6331_upmu_get_qi_vcore2_en());
-        printk("mt6331_upmu_get_ni_vcore2_vosel=%d\n", mt6331_upmu_get_ni_vcore2_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcore2_en=%d\n", mt6331_upmu_get_qi_vcore2_en());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_ni_vcore2_vosel=%d\n", mt6331_upmu_get_ni_vcore2_vosel());
     }
     else if(index == 7) {
-        printk("mt6331_upmu_get_qi_vio18_en=%d\n", mt6331_upmu_get_qi_vio18_en());
-        printk("mt6331_upmu_get_ni_vio18_vosel=%d\n", mt6331_upmu_get_ni_vio18_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vio18_en=%d\n", mt6331_upmu_get_qi_vio18_en());
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_ni_vio18_vosel=%d\n", mt6331_upmu_get_ni_vio18_vosel());
     }
     else if(index == 8) {
-        printk("mt6332_upmu_get_qi_vdram_en=%d\n", mt6332_upmu_get_qi_vdram_en());
-        printk("mt6332_upmu_get_ni_vdram_vosel=%d\n", mt6332_upmu_get_ni_vdram_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vdram_en=%d\n", mt6332_upmu_get_qi_vdram_en());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_ni_vdram_vosel=%d\n", mt6332_upmu_get_ni_vdram_vosel());
     }
     else if(index == 9) {
-        printk("mt6332_upmu_get_qi_vdvfs2_en=%d\n", mt6332_upmu_get_qi_vdvfs2_en());
-        printk("mt6332_upmu_get_ni_vdvfs2_vosel=%d\n", mt6332_upmu_get_ni_vdvfs2_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vdvfs2_en=%d\n", mt6332_upmu_get_qi_vdvfs2_en());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_ni_vdvfs2_vosel=%d\n", mt6332_upmu_get_ni_vdvfs2_vosel());
     }
     else if(index == 10) {
-        printk("mt6332_upmu_get_qi_vrf1_en=%d\n", mt6332_upmu_get_qi_vrf1_en());
-        printk("mt6332_upmu_get_ni_vrf1_vosel=%d\n", mt6332_upmu_get_ni_vrf1_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vrf1_en=%d\n", mt6332_upmu_get_qi_vrf1_en());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_ni_vrf1_vosel=%d\n", mt6332_upmu_get_ni_vrf1_vosel());
     }
     else if(index == 11) {
-        printk("mt6332_upmu_get_qi_vrf2_en=%d\n", mt6332_upmu_get_qi_vrf2_en());
-        printk("mt6332_upmu_get_ni_vrf2_vosel=%d\n", mt6332_upmu_get_ni_vrf2_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vrf2_en=%d\n", mt6332_upmu_get_qi_vrf2_en());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_ni_vrf2_vosel=%d\n", mt6332_upmu_get_ni_vrf2_vosel());
     }
     else if(index == 12) {
-        printk("mt6332_upmu_get_qi_vpa_en=%d\n", mt6332_upmu_get_qi_vpa_en());
-        printk("mt6332_upmu_get_ni_vpa_vosel=%d\n", mt6332_upmu_get_ni_vpa_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vpa_en=%d\n", mt6332_upmu_get_qi_vpa_en());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_ni_vpa_vosel=%d\n", mt6332_upmu_get_ni_vpa_vosel());
     }
     else if(index == 13) {
-        printk("mt6332_upmu_get_qi_vsbst_en=%d\n", mt6332_upmu_get_qi_vsbst_en());
-        printk("mt6332_upmu_get_ni_vsbst_vosel=%d\n", mt6332_upmu_get_ni_vsbst_vosel());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vsbst_en=%d\n", mt6332_upmu_get_qi_vsbst_en());
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_ni_vsbst_vosel=%d\n", mt6332_upmu_get_ni_vsbst_vosel());
     }
     else if(index == 99) {
-        dump_ldo_status_read_debug();    
+        dump_ldo_status_read_debug();
     }
     else
-    {        
+    {
     }
 
-    printk("\n");
+	battery_log(BAT_LOG_CRTI, "\n");
 }
 
 void set_srclken_sw_mode(void)
@@ -186,15 +187,15 @@ void set_srclken_sw_mode(void)
     //SRCLKEN SW mode
     //0:SW mode
     //1:HW mode
-    
+
 #if 1 // For 31 DVT
     mt6331_upmu_set_rg_srclken_in1_hw_mode(0);
     mt6331_upmu_set_rg_srclken_in2_hw_mode(0);
-    printk("[31 SRCLKEN] Reg[0x%x]=0x%x, [5:4]\n", MT6331_TOP_CON, upmu_get_reg_value(MT6331_TOP_CON));
+	battery_log(BAT_LOG_CRTI, "[31 SRCLKEN] Reg[0x%x]=0x%x, [5:4]\n", MT6331_TOP_CON, upmu_get_reg_value(MT6331_TOP_CON));
 #else // For 32 DVT
     mt6332_upmu_set_rg_srclken_in1_hw_mode(0);
     mt6332_upmu_set_rg_srclken_in2_hw_mode(0);
-    printk("[32 SRCLKEN] Reg[0x%x]=0x%x, [5:4]\n", MT6332_TOP_CON, upmu_get_reg_value(MT6332_TOP_CON));
+	battery_log(BAT_LOG_CRTI, "[32 SRCLKEN] Reg[0x%x]=0x%x, [5:4]\n", MT6332_TOP_CON, upmu_get_reg_value(MT6332_TOP_CON));
 #endif
 }
 
@@ -202,55 +203,55 @@ void set_srclken_1_val(int val)
 {
     //0:sleep mode
     //1:normal mode
-    
-#if 1 // For 31 DVT   
-    #if 0 
+
+#if 1 // For 31 DVT
+    #if 0
     mt6331_upmu_set_rg_srclken_in1_en(val);
-    printk("[31 SRCLKEN=%d] Reg[0x%x]=0x%x, [bit 0]\n", val, MT6331_TOP_CON, upmu_get_reg_value(MT6331_TOP_CON));
-    #else //only for E1 
+	battery_log(BAT_LOG_CRTI, "[31 SRCLKEN=%d] Reg[0x%x]=0x%x, [bit 0]\n", val, MT6331_TOP_CON, upmu_get_reg_value(MT6331_TOP_CON));
+    #else //only for E1
     mt6331_upmu_set_rg_srclken_in1_en(1);
-    printk("[31 SRCLKEN=keep 1 on E1] Reg[0x%x]=0x%x, [bit 0]\n", MT6331_TOP_CON, upmu_get_reg_value(MT6331_TOP_CON));
+	battery_log(BAT_LOG_CRTI, "[31 SRCLKEN=keep 1 on E1] Reg[0x%x]=0x%x, [bit 0]\n", MT6331_TOP_CON, upmu_get_reg_value(MT6331_TOP_CON));
     #endif
 #else // For 32 DVT
-    #if 0 
+    #if 0
     mt6332_upmu_set_rg_srclken_in1_en(val);
-    printk("[32 SRCLKEN=%d] Reg[0x%x]=0x%x, [bit 0]\n", val, MT6332_TOP_CON, upmu_get_reg_value(MT6332_TOP_CON));
-    #else //only for E1 
+	battery_log(BAT_LOG_CRTI, "[32 SRCLKEN=%d] Reg[0x%x]=0x%x, [bit 0]\n", val, MT6332_TOP_CON, upmu_get_reg_value(MT6332_TOP_CON));
+    #else //only for E1
     mt6332_upmu_set_rg_srclken_in1_en(1);
-    printk("[32 SRCLKEN=keep 1 on E1] Reg[0x%x]=0x%x, [bit 0]\n", MT6332_TOP_CON, upmu_get_reg_value(MT6332_TOP_CON));
+	battery_log(BAT_LOG_CRTI, "[32 SRCLKEN=keep 1 on E1] Reg[0x%x]=0x%x, [bit 0]\n", MT6332_TOP_CON, upmu_get_reg_value(MT6332_TOP_CON));
     #endif
-#endif    
+#endif
 }
 
 void set_srclken_2_val(int val)
 {
     //0:sleep mode
     //1:normal mode
-    
-#if 1 // For 31 DVT   
+
+#if 1 // For 31 DVT
     mt6331_upmu_set_rg_srclken_in2_en(val);
-    printk("[31 SRCLKEN=%d] Reg[0x%x]=0x%x, [bit 1]\n", val, MT6331_TOP_CON, upmu_get_reg_value(MT6331_TOP_CON));
+	battery_log(BAT_LOG_CRTI, "[31 SRCLKEN=%d] Reg[0x%x]=0x%x, [bit 1]\n", val, MT6331_TOP_CON, upmu_get_reg_value(MT6331_TOP_CON));
 #else // For 32 DVT
     mt6332_upmu_set_rg_srclken_in2_en(val);
-    printk("[32 SRCLKEN=%d] Reg[0x%x]=0x%x, [bit 1]\n", val, MT6332_TOP_CON, upmu_get_reg_value(MT6332_TOP_CON));
-#endif    
+	battery_log(BAT_LOG_CRTI, "[32 SRCLKEN=%d] Reg[0x%x]=0x%x, [bit 1]\n", val, MT6332_TOP_CON, upmu_get_reg_value(MT6332_TOP_CON));
+#endif
 }
 
 void exec_scrxxx_map(int buck_index)
 {
     set_srclken_sw_mode();
 
-    printk("[exec_scrxxx_map] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_scrxxx_map] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); read_adc_value(buck_index);
 
-    printk("[exec_scrxxx_map] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_scrxxx_map] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); read_adc_value(buck_index);
 
-    printk("[exec_scrxxx_map] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_scrxxx_map] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); read_adc_value(buck_index);
 
-    printk("[exec_scrxxx_map] set_srclken_1_val(1); set_srclken_2_val(1);\n");
-                              set_srclken_1_val(1); set_srclken_2_val(1); read_adc_value(buck_index);    
+	battery_log(BAT_LOG_CRTI, "[exec_scrxxx_map] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+                              set_srclken_1_val(1); set_srclken_2_val(1); read_adc_value(buck_index);
 }
 
 #ifdef BUCK_ON_OFF_DVT_ENABLE
@@ -260,40 +261,40 @@ void exec_vdvfs11_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vdvfs11_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_en_ctrl] %d\n", i);
         mt6331_upmu_set_vdvfs11_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6331_upmu_set_vdvfs11_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_en(0)]\n");
                 mt6331_upmu_set_vdvfs11_en(0);
                 read_adc_value(VDVFS11_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs11_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_en(1)]\n");
                 mt6331_upmu_set_vdvfs11_en(1);
                 read_adc_value(VDVFS11_INDEX);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vdvfs11_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_en_sel(0)]\n");
                 mt6331_upmu_set_vdvfs11_en_sel(0);
-                exec_scrxxx_map(VDVFS11_INDEX);                       
+                exec_scrxxx_map(VDVFS11_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs11_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_en_sel(1)]\n");
                 mt6331_upmu_set_vdvfs11_en_sel(1);
                 exec_scrxxx_map(VDVFS11_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs11_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_en_sel(2)]\n");
                 mt6331_upmu_set_vdvfs11_en_sel(2);
                 exec_scrxxx_map(VDVFS11_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs11_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_en_sel(3)]\n");
                 mt6331_upmu_set_vdvfs11_en_sel(3);
                 exec_scrxxx_map(VDVFS11_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -305,40 +306,40 @@ void exec_vdvfs12_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vdvfs12_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_en_ctrl] %d\n", i);
         mt6331_upmu_set_vdvfs12_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6331_upmu_set_vdvfs12_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_en(0)]\n");
                 mt6331_upmu_set_vdvfs12_en(0);
                 read_adc_value(VDVFS12_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs12_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_en(1)]\n");
                 mt6331_upmu_set_vdvfs12_en(1);
                 read_adc_value(VDVFS12_INDEX);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vdvfs12_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_en_sel(0)]\n");
                 mt6331_upmu_set_vdvfs12_en_sel(0);
-                exec_scrxxx_map(VDVFS12_INDEX);                       
+                exec_scrxxx_map(VDVFS12_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs12_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_en_sel(1)]\n");
                 mt6331_upmu_set_vdvfs12_en_sel(1);
                 exec_scrxxx_map(VDVFS12_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs12_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_en_sel(2)]\n");
                 mt6331_upmu_set_vdvfs12_en_sel(2);
                 exec_scrxxx_map(VDVFS12_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs12_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_en_sel(3)]\n");
                 mt6331_upmu_set_vdvfs12_en_sel(3);
                 exec_scrxxx_map(VDVFS12_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -350,40 +351,40 @@ void exec_vdvfs13_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vdvfs13_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_en_ctrl] %d\n", i);
         mt6331_upmu_set_vdvfs13_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6331_upmu_set_vdvfs13_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_en(0)]\n");
                 mt6331_upmu_set_vdvfs13_en(0);
                 read_adc_value(VDVFS13_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs13_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_en(1)]\n");
                 mt6331_upmu_set_vdvfs13_en(1);
                 read_adc_value(VDVFS13_INDEX);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vdvfs13_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_en_sel(0)]\n");
                 mt6331_upmu_set_vdvfs13_en_sel(0);
-                exec_scrxxx_map(VDVFS13_INDEX);                       
+                exec_scrxxx_map(VDVFS13_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs13_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_en_sel(1)]\n");
                 mt6331_upmu_set_vdvfs13_en_sel(1);
                 exec_scrxxx_map(VDVFS13_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs13_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_en_sel(2)]\n");
                 mt6331_upmu_set_vdvfs13_en_sel(2);
                 exec_scrxxx_map(VDVFS13_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs13_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_en_sel(3)]\n");
                 mt6331_upmu_set_vdvfs13_en_sel(3);
                 exec_scrxxx_map(VDVFS13_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -395,40 +396,40 @@ void exec_vdvfs14_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vdvfs14_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_en_ctrl] %d\n", i);
         mt6331_upmu_set_vdvfs14_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6331_upmu_set_vdvfs14_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_en(0)]\n");
                 mt6331_upmu_set_vdvfs14_en(0);
                 read_adc_value(VDVFS14_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs14_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_en(1)]\n");
                 mt6331_upmu_set_vdvfs14_en(1);
                 read_adc_value(VDVFS14_INDEX);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vdvfs14_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_en_sel(0)]\n");
                 mt6331_upmu_set_vdvfs14_en_sel(0);
-                exec_scrxxx_map(VDVFS14_INDEX);                       
+                exec_scrxxx_map(VDVFS14_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs14_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_en_sel(1)]\n");
                 mt6331_upmu_set_vdvfs14_en_sel(1);
                 exec_scrxxx_map(VDVFS14_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs14_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_en_sel(2)]\n");
                 mt6331_upmu_set_vdvfs14_en_sel(2);
                 exec_scrxxx_map(VDVFS14_INDEX);
 
-                printk("[mt6331_upmu_set_vdvfs14_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_en_sel(3)]\n");
                 mt6331_upmu_set_vdvfs14_en_sel(3);
                 exec_scrxxx_map(VDVFS14_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -440,40 +441,40 @@ void exec_vgpu_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vgpu_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_en_ctrl] %d\n", i);
         mt6331_upmu_set_vgpu_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6331_upmu_set_vgpu_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_en(0)]\n");
                 mt6331_upmu_set_vgpu_en(0);
                 read_adc_value(VGPU_INDEX);
 
-                printk("[mt6331_upmu_set_vgpu_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_en(1)]\n");
                 mt6331_upmu_set_vgpu_en(1);
                 read_adc_value(VGPU_INDEX);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vgpu_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_en_sel(0)]\n");
                 mt6331_upmu_set_vgpu_en_sel(0);
-                exec_scrxxx_map(VGPU_INDEX);                       
+                exec_scrxxx_map(VGPU_INDEX);
 
-                printk("[mt6331_upmu_set_vgpu_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_en_sel(1)]\n");
                 mt6331_upmu_set_vgpu_en_sel(1);
                 exec_scrxxx_map(VGPU_INDEX);
 
-                printk("[mt6331_upmu_set_vgpu_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_en_sel(2)]\n");
                 mt6331_upmu_set_vgpu_en_sel(2);
                 exec_scrxxx_map(VGPU_INDEX);
 
-                printk("[mt6331_upmu_set_vgpu_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_en_sel(3)]\n");
                 mt6331_upmu_set_vgpu_en_sel(3);
                 exec_scrxxx_map(VGPU_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -485,40 +486,40 @@ void exec_vcore1_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vcore1_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_en_ctrl] %d\n", i);
         mt6331_upmu_set_vcore1_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6331_upmu_set_vcore1_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_en(0)]\n");
                 mt6331_upmu_set_vcore1_en(0);
                 read_adc_value(VCORE1_INDEX);
 
-                printk("[mt6331_upmu_set_vcore1_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_en(1)]\n");
                 mt6331_upmu_set_vcore1_en(1);
                 read_adc_value(VCORE1_INDEX);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vcore1_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_en_sel(0)]\n");
                 mt6331_upmu_set_vcore1_en_sel(0);
-                exec_scrxxx_map(VCORE1_INDEX);                       
+                exec_scrxxx_map(VCORE1_INDEX);
 
-                printk("[mt6331_upmu_set_vcore1_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_en_sel(1)]\n");
                 mt6331_upmu_set_vcore1_en_sel(1);
                 exec_scrxxx_map(VCORE1_INDEX);
 
-                printk("[mt6331_upmu_set_vcore1_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_en_sel(2)]\n");
                 mt6331_upmu_set_vcore1_en_sel(2);
                 exec_scrxxx_map(VCORE1_INDEX);
 
-                printk("[mt6331_upmu_set_vcore1_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_en_sel(3)]\n");
                 mt6331_upmu_set_vcore1_en_sel(3);
                 exec_scrxxx_map(VCORE1_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -530,40 +531,40 @@ void exec_vcore2_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vcore2_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_en_ctrl] %d\n", i);
         mt6331_upmu_set_vcore2_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6331_upmu_set_vcore2_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_en(0)]\n");
                 mt6331_upmu_set_vcore2_en(0);
                 read_adc_value(VCORE2_INDEX);
 
-                printk("[mt6331_upmu_set_vcore2_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_en(1)]\n");
                 mt6331_upmu_set_vcore2_en(1);
                 read_adc_value(VCORE2_INDEX);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vcore2_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_en_sel(0)]\n");
                 mt6331_upmu_set_vcore2_en_sel(0);
-                exec_scrxxx_map(VCORE2_INDEX);                       
+                exec_scrxxx_map(VCORE2_INDEX);
 
-                printk("[mt6331_upmu_set_vcore2_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_en_sel(1)]\n");
                 mt6331_upmu_set_vcore2_en_sel(1);
                 exec_scrxxx_map(VCORE2_INDEX);
 
-                printk("[mt6331_upmu_set_vcore2_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_en_sel(2)]\n");
                 mt6331_upmu_set_vcore2_en_sel(2);
                 exec_scrxxx_map(VCORE2_INDEX);
 
-                printk("[mt6331_upmu_set_vcore2_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_en_sel(3)]\n");
                 mt6331_upmu_set_vcore2_en_sel(3);
                 exec_scrxxx_map(VCORE2_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -575,40 +576,40 @@ void exec_vio18_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vio18_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_en_ctrl] %d\n", i);
         mt6331_upmu_set_vio18_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6331_upmu_set_vio18_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_en(0)]\n");
                 mt6331_upmu_set_vio18_en(0);
                 read_adc_value(VIO18_INDEX);
 
-                printk("[mt6331_upmu_set_vio18_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_en(1)]\n");
                 mt6331_upmu_set_vio18_en(1);
                 read_adc_value(VIO18_INDEX);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vio18_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_en_sel(0)]\n");
                 mt6331_upmu_set_vio18_en_sel(0);
-                exec_scrxxx_map(VIO18_INDEX);                       
+                exec_scrxxx_map(VIO18_INDEX);
 
-                printk("[mt6331_upmu_set_vio18_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_en_sel(1)]\n");
                 mt6331_upmu_set_vio18_en_sel(1);
                 exec_scrxxx_map(VIO18_INDEX);
 
-                printk("[mt6331_upmu_set_vio18_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_en_sel(2)]\n");
                 mt6331_upmu_set_vio18_en_sel(2);
                 exec_scrxxx_map(VIO18_INDEX);
 
-                printk("[mt6331_upmu_set_vio18_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_en_sel(3)]\n");
                 mt6331_upmu_set_vio18_en_sel(3);
                 exec_scrxxx_map(VIO18_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -620,40 +621,40 @@ void exec_vdram_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vdram_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_en_ctrl] %d\n", i);
         mt6332_upmu_set_vdram_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6332_upmu_set_vdram_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_en(0)]\n");
                 mt6332_upmu_set_vdram_en(0);
                 read_adc_value(VDRAM_INDEX);
 
-                printk("[mt6332_upmu_set_vdram_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_en(1)]\n");
                 mt6332_upmu_set_vdram_en(1);
                 read_adc_value(VDRAM_INDEX);
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vdram_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_en_sel(0)]\n");
                 mt6332_upmu_set_vdram_en_sel(0);
-                exec_scrxxx_map(VDRAM_INDEX);                       
+                exec_scrxxx_map(VDRAM_INDEX);
 
-                printk("[mt6332_upmu_set_vdram_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_en_sel(1)]\n");
                 mt6332_upmu_set_vdram_en_sel(1);
                 exec_scrxxx_map(VDRAM_INDEX);
 
-                printk("[mt6332_upmu_set_vdram_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_en_sel(2)]\n");
                 mt6332_upmu_set_vdram_en_sel(2);
                 exec_scrxxx_map(VDRAM_INDEX);
 
-                printk("[mt6332_upmu_set_vdram_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_en_sel(3)]\n");
                 mt6332_upmu_set_vdram_en_sel(3);
                 exec_scrxxx_map(VDRAM_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -665,40 +666,40 @@ void exec_vdvfs2_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vdvfs2_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_en_ctrl] %d\n", i);
         mt6332_upmu_set_vdvfs2_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6332_upmu_set_vdvfs2_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_en(0)]\n");
                 mt6332_upmu_set_vdvfs2_en(0);
                 read_adc_value(VDVFS2_INDEX);
 
-                printk("[mt6332_upmu_set_vdvfs2_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_en(1)]\n");
                 mt6332_upmu_set_vdvfs2_en(1);
                 read_adc_value(VDVFS2_INDEX);
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vdvfs2_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_en_sel(0)]\n");
                 mt6332_upmu_set_vdvfs2_en_sel(0);
-                exec_scrxxx_map(VDVFS2_INDEX);                       
+                exec_scrxxx_map(VDVFS2_INDEX);
 
-                printk("[mt6332_upmu_set_vdvfs2_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_en_sel(1)]\n");
                 mt6332_upmu_set_vdvfs2_en_sel(1);
                 exec_scrxxx_map(VDVFS2_INDEX);
 
-                printk("[mt6332_upmu_set_vdvfs2_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_en_sel(2)]\n");
                 mt6332_upmu_set_vdvfs2_en_sel(2);
                 exec_scrxxx_map(VDVFS2_INDEX);
 
-                printk("[mt6332_upmu_set_vdvfs2_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_en_sel(3)]\n");
                 mt6332_upmu_set_vdvfs2_en_sel(3);
                 exec_scrxxx_map(VDVFS2_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -710,40 +711,40 @@ void exec_vrf1_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vrf1_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_en_ctrl] %d\n", i);
         mt6332_upmu_set_vrf1_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6332_upmu_set_vrf1_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_en(0)]\n");
                 mt6332_upmu_set_vrf1_en(0);
                 read_adc_value(VRF1_INDEX);
 
-                printk("[mt6332_upmu_set_vrf1_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_en(1)]\n");
                 mt6332_upmu_set_vrf1_en(1);
                 read_adc_value(VRF1_INDEX);
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vrf1_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_en_sel(0)]\n");
                 mt6332_upmu_set_vrf1_en_sel(0);
-                exec_scrxxx_map(VRF1_INDEX);                       
+                exec_scrxxx_map(VRF1_INDEX);
 
-                printk("[mt6332_upmu_set_vrf1_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_en_sel(1)]\n");
                 mt6332_upmu_set_vrf1_en_sel(1);
                 exec_scrxxx_map(VRF1_INDEX);
 
-                printk("[mt6332_upmu_set_vrf1_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_en_sel(2)]\n");
                 mt6332_upmu_set_vrf1_en_sel(2);
                 exec_scrxxx_map(VRF1_INDEX);
 
-                printk("[mt6332_upmu_set_vrf1_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_en_sel(3)]\n");
                 mt6332_upmu_set_vrf1_en_sel(3);
                 exec_scrxxx_map(VRF1_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -755,40 +756,40 @@ void exec_vrf2_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vrf2_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_en_ctrl] %d\n", i);
         mt6332_upmu_set_vrf2_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6332_upmu_set_vrf2_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_en(0)]\n");
                 mt6332_upmu_set_vrf2_en(0);
                 read_adc_value(VRF2_INDEX);
 
-                printk("[mt6332_upmu_set_vrf2_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_en(1)]\n");
                 mt6332_upmu_set_vrf2_en(1);
                 read_adc_value(VRF2_INDEX);
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vrf2_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_en_sel(0)]\n");
                 mt6332_upmu_set_vrf2_en_sel(0);
-                exec_scrxxx_map(VRF2_INDEX);                       
+                exec_scrxxx_map(VRF2_INDEX);
 
-                printk("[mt6332_upmu_set_vrf2_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_en_sel(1)]\n");
                 mt6332_upmu_set_vrf2_en_sel(1);
                 exec_scrxxx_map(VRF2_INDEX);
 
-                printk("[mt6332_upmu_set_vrf2_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_en_sel(2)]\n");
                 mt6332_upmu_set_vrf2_en_sel(2);
                 exec_scrxxx_map(VRF2_INDEX);
 
-                printk("[mt6332_upmu_set_vrf2_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_en_sel(3)]\n");
                 mt6332_upmu_set_vrf2_en_sel(3);
                 exec_scrxxx_map(VRF2_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -800,40 +801,40 @@ void exec_vpa_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vpa_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_en_ctrl] %d\n", i);
         mt6332_upmu_set_vpa_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6332_upmu_set_vpa_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_en(0)]\n");
                 mt6332_upmu_set_vpa_en(0);
                 read_adc_value(VPA_INDEX);
 
-                printk("[mt6332_upmu_set_vpa_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_en(1)]\n");
                 mt6332_upmu_set_vpa_en(1);
                 read_adc_value(VPA_INDEX);
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vpa_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_en_sel(0)]\n");
                 mt6332_upmu_set_vpa_en_sel(0);
-                exec_scrxxx_map(VPA_INDEX);                       
+                exec_scrxxx_map(VPA_INDEX);
 
-                printk("[mt6332_upmu_set_vpa_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_en_sel(1)]\n");
                 mt6332_upmu_set_vpa_en_sel(1);
                 exec_scrxxx_map(VPA_INDEX);
 
-                printk("[mt6332_upmu_set_vpa_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_en_sel(2)]\n");
                 mt6332_upmu_set_vpa_en_sel(2);
                 exec_scrxxx_map(VPA_INDEX);
 
-                printk("[mt6332_upmu_set_vpa_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_en_sel(3)]\n");
                 mt6332_upmu_set_vpa_en_sel(3);
                 exec_scrxxx_map(VPA_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -843,45 +844,45 @@ void exec_vsbst_en_test(void)
 {
     int i=0;
 
-    printk("[exec_vsbst_en_test] mt6332_upmu_set_rg_vsbst_3m_ck_pdn(0);\n");
-    mt6332_upmu_set_rg_vsbst_3m_ck_pdn(0);    
+	battery_log(BAT_LOG_CRTI, "[exec_vsbst_en_test] mt6332_upmu_set_rg_vsbst_3m_ck_pdn(0);\n");
+    mt6332_upmu_set_rg_vsbst_3m_ck_pdn(0);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vsbst_en_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_en_ctrl] %d\n", i);
         mt6332_upmu_set_vsbst_en_ctrl(i);
 
         switch(i){
             case 0:
-                printk("[mt6332_upmu_set_vsbst_en(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_en(0)]\n");
                 mt6332_upmu_set_vsbst_en(0);
                 read_adc_value(VSBST_INDEX);
 
-                printk("[mt6332_upmu_set_vsbst_en(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_en(1)]\n");
                 mt6332_upmu_set_vsbst_en(1);
                 read_adc_value(VSBST_INDEX);
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vsbst_en_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_en_sel(0)]\n");
                 mt6332_upmu_set_vsbst_en_sel(0);
-                exec_scrxxx_map(VSBST_INDEX);                       
+                exec_scrxxx_map(VSBST_INDEX);
 
-                printk("[mt6332_upmu_set_vsbst_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_en_sel(1)]\n");
                 mt6332_upmu_set_vsbst_en_sel(1);
                 exec_scrxxx_map(VSBST_INDEX);
 
-                printk("[mt6332_upmu_set_vsbst_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_en_sel(2)]\n");
                 mt6332_upmu_set_vsbst_en_sel(2);
                 exec_scrxxx_map(VSBST_INDEX);
 
-                printk("[mt6332_upmu_set_vsbst_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_en_sel(3)]\n");
                 mt6332_upmu_set_vsbst_en_sel(3);
                 exec_scrxxx_map(VSBST_INDEX);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -889,8 +890,8 @@ void exec_vsbst_en_test(void)
 
 void PMIC_BUCK_ON_OFF(int index_val)
 {
-    printk("[PMIC_BUCK_ON_OFF] start....\n");
-    
+	battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_ON_OFF] start....\n");
+
     set_srclken_sw_mode();
 
     switch(index_val){
@@ -909,16 +910,16 @@ void PMIC_BUCK_ON_OFF(int index_val)
       case 9 : exec_vdvfs2_en_test();      break;
       case 10: exec_vrf1_en_test();        break;
       case 11: exec_vrf2_en_test();        break;
-      case 12: exec_vpa_en_test();         break;      
+      case 12: exec_vpa_en_test();         break;
       case 13: exec_vsbst_en_test();       break;
 
       default:
-        printk("[PMIC_BUCK_ON_OFF] Invalid channel value(%d)\n", index_val);
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_ON_OFF] Invalid channel value(%d)\n", index_val);
         break;
 
     }
 
-    printk("[PMIC_BUCK_ON_OFF] end....\n");
+	battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_ON_OFF] end....\n");
 }
 #endif
 
@@ -926,14 +927,16 @@ void PMIC_BUCK_ON_OFF(int index_val)
 void exec_vdvfs11_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VDVFS11_VOSEL_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vdvfs11_vosel_sleep(k); printk("[mt6331_upmu_set_vdvfs11_vosel_sleep] k=%d, ",k);
+		mt6331_upmu_set_vdvfs11_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDVFS11_INDEX);
     }
     for(k=0;k<=MT6331_PMIC_VDVFS11_VOSEL_ON_MASK;k++) {
-        mt6331_upmu_set_vdvfs11_vosel_on(k); printk("[mt6331_upmu_set_vdvfs11_vosel_on] k=%d, ",k);
+		mt6331_upmu_set_vdvfs11_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDVFS11_INDEX);
     }
@@ -941,16 +944,16 @@ void exec_vdvfs11_vosel_test_sub_vosel(void)
 
 void exec_vdvfs11_vosel_test_sub(void)
 {
-    printk("[exec_vdvfs11_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs11_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vdvfs11_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs11_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs11_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vdvfs11_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs11_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs11_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vdvfs11_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs11_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs11_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vdvfs11_vosel_test_sub_vosel();
 }
 
@@ -960,38 +963,39 @@ void exec_vdvfs11_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vdvfs11_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_vosel_ctrl] %d\n", i);
         mt6331_upmu_set_vdvfs11_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VDVFS11_VOSEL_MASK;k++) {
-                    mt6331_upmu_set_vdvfs11_vosel(k); printk("[mt6331_upmu_set_vdvfs11_vosel] k=%d, ",k);
+					mt6331_upmu_set_vdvfs11_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VDVFS11_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vdvfs11_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_vosel_sel(0)]\n");
                 mt6331_upmu_set_vdvfs11_vosel_sel(0);
-                exec_vdvfs11_vosel_test_sub(); 
-
-                printk("[mt6331_upmu_set_vdvfs11_vosel_sel(1)]\n");
-                mt6331_upmu_set_vdvfs11_vosel_sel(1);                
                 exec_vdvfs11_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vdvfs11_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_vosel_sel(1)]\n");
+                mt6331_upmu_set_vdvfs11_vosel_sel(1);
+                exec_vdvfs11_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_vosel_sel(2)]\n");
                 mt6331_upmu_set_vdvfs11_vosel_sel(2);
                 exec_vdvfs11_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vdvfs11_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs11_vosel_sel(3)]\n");
                 mt6331_upmu_set_vdvfs11_vosel_sel(3);
                 exec_vdvfs11_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1000,14 +1004,16 @@ void exec_vdvfs11_vosel_test(void)
 void exec_vdvfs12_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VDVFS12_VOSEL_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vdvfs12_vosel_sleep(k); printk("[mt6331_upmu_set_vdvfs12_vosel_sleep] k=%d, ",k);
+		mt6331_upmu_set_vdvfs12_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDVFS12_INDEX);
     }
     for(k=0;k<=MT6331_PMIC_VDVFS12_VOSEL_ON_MASK;k++) {
-        mt6331_upmu_set_vdvfs12_vosel_on(k); printk("[mt6331_upmu_set_vdvfs12_vosel_on] k=%d, ",k);
+		mt6331_upmu_set_vdvfs12_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDVFS12_INDEX);
     }
@@ -1015,16 +1021,16 @@ void exec_vdvfs12_vosel_test_sub_vosel(void)
 
 void exec_vdvfs12_vosel_test_sub(void)
 {
-    printk("[exec_vdvfs12_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs12_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vdvfs12_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs12_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs12_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vdvfs12_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs12_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs12_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vdvfs12_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs12_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs12_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vdvfs12_vosel_test_sub_vosel();
 }
 
@@ -1034,38 +1040,39 @@ void exec_vdvfs12_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vdvfs12_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_vosel_ctrl] %d\n", i);
         mt6331_upmu_set_vdvfs12_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VDVFS12_VOSEL_MASK;k++) {
-                    mt6331_upmu_set_vdvfs12_vosel(k); printk("[mt6331_upmu_set_vdvfs12_vosel] k=%d, ",k);
+					mt6331_upmu_set_vdvfs12_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VDVFS12_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vdvfs12_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_vosel_sel(0)]\n");
                 mt6331_upmu_set_vdvfs12_vosel_sel(0);
-                exec_vdvfs12_vosel_test_sub(); 
-
-                printk("[mt6331_upmu_set_vdvfs12_vosel_sel(1)]\n");
-                mt6331_upmu_set_vdvfs12_vosel_sel(1);                
                 exec_vdvfs12_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vdvfs12_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_vosel_sel(1)]\n");
+                mt6331_upmu_set_vdvfs12_vosel_sel(1);
+                exec_vdvfs12_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_vosel_sel(2)]\n");
                 mt6331_upmu_set_vdvfs12_vosel_sel(2);
                 exec_vdvfs12_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vdvfs12_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs12_vosel_sel(3)]\n");
                 mt6331_upmu_set_vdvfs12_vosel_sel(3);
                 exec_vdvfs12_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1074,14 +1081,16 @@ void exec_vdvfs12_vosel_test(void)
 void exec_vdvfs13_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VDVFS13_VOSEL_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vdvfs13_vosel_sleep(k); printk("[mt6331_upmu_set_vdvfs13_vosel_sleep] k=%d, ",k);
+		mt6331_upmu_set_vdvfs13_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDVFS13_INDEX);
     }
     for(k=0;k<=MT6331_PMIC_VDVFS13_VOSEL_ON_MASK;k++) {
-        mt6331_upmu_set_vdvfs13_vosel_on(k); printk("[mt6331_upmu_set_vdvfs13_vosel_on] k=%d, ",k);
+		mt6331_upmu_set_vdvfs13_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDVFS13_INDEX);
     }
@@ -1089,16 +1098,16 @@ void exec_vdvfs13_vosel_test_sub_vosel(void)
 
 void exec_vdvfs13_vosel_test_sub(void)
 {
-    printk("[exec_vdvfs13_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs13_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vdvfs13_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs13_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs13_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vdvfs13_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs13_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs13_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vdvfs13_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs13_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs13_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vdvfs13_vosel_test_sub_vosel();
 }
 
@@ -1108,38 +1117,39 @@ void exec_vdvfs13_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vdvfs13_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_vosel_ctrl] %d\n", i);
         mt6331_upmu_set_vdvfs13_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VDVFS13_VOSEL_MASK;k++) {
-                    mt6331_upmu_set_vdvfs13_vosel(k); printk("[mt6331_upmu_set_vdvfs13_vosel] k=%d, ",k);
+					mt6331_upmu_set_vdvfs13_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VDVFS13_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vdvfs13_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_vosel_sel(0)]\n");
                 mt6331_upmu_set_vdvfs13_vosel_sel(0);
-                exec_vdvfs13_vosel_test_sub(); 
-
-                printk("[mt6331_upmu_set_vdvfs13_vosel_sel(1)]\n");
-                mt6331_upmu_set_vdvfs13_vosel_sel(1);                
                 exec_vdvfs13_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vdvfs13_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_vosel_sel(1)]\n");
+                mt6331_upmu_set_vdvfs13_vosel_sel(1);
+                exec_vdvfs13_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_vosel_sel(2)]\n");
                 mt6331_upmu_set_vdvfs13_vosel_sel(2);
                 exec_vdvfs13_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vdvfs13_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs13_vosel_sel(3)]\n");
                 mt6331_upmu_set_vdvfs13_vosel_sel(3);
                 exec_vdvfs13_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1148,14 +1158,16 @@ void exec_vdvfs13_vosel_test(void)
 void exec_vdvfs14_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VDVFS14_VOSEL_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vdvfs14_vosel_sleep(k); printk("[mt6331_upmu_set_vdvfs14_vosel_sleep] k=%d, ",k);
+		mt6331_upmu_set_vdvfs14_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDVFS14_INDEX);
     }
     for(k=0;k<=MT6331_PMIC_VDVFS14_VOSEL_ON_MASK;k++) {
-        mt6331_upmu_set_vdvfs14_vosel_on(k); printk("[mt6331_upmu_set_vdvfs14_vosel_on] k=%d, ",k);
+		mt6331_upmu_set_vdvfs14_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDVFS14_INDEX);
     }
@@ -1163,16 +1175,16 @@ void exec_vdvfs14_vosel_test_sub_vosel(void)
 
 void exec_vdvfs14_vosel_test_sub(void)
 {
-    printk("[exec_vdvfs14_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs14_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vdvfs14_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs14_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs14_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vdvfs14_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs14_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs14_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vdvfs14_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs14_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs14_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vdvfs14_vosel_test_sub_vosel();
 }
 
@@ -1182,38 +1194,39 @@ void exec_vdvfs14_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vdvfs14_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_vosel_ctrl] %d\n", i);
         mt6331_upmu_set_vdvfs14_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VDVFS14_VOSEL_MASK;k++) {
-                    mt6331_upmu_set_vdvfs14_vosel(k); printk("[mt6331_upmu_set_vdvfs14_vosel] k=%d, ",k);
+					mt6331_upmu_set_vdvfs14_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VDVFS14_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vdvfs14_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_vosel_sel(0)]\n");
                 mt6331_upmu_set_vdvfs14_vosel_sel(0);
-                exec_vdvfs14_vosel_test_sub(); 
-
-                printk("[mt6331_upmu_set_vdvfs14_vosel_sel(1)]\n");
-                mt6331_upmu_set_vdvfs14_vosel_sel(1);                
                 exec_vdvfs14_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vdvfs14_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_vosel_sel(1)]\n");
+                mt6331_upmu_set_vdvfs14_vosel_sel(1);
+                exec_vdvfs14_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_vosel_sel(2)]\n");
                 mt6331_upmu_set_vdvfs14_vosel_sel(2);
                 exec_vdvfs14_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vdvfs14_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vdvfs14_vosel_sel(3)]\n");
                 mt6331_upmu_set_vdvfs14_vosel_sel(3);
                 exec_vdvfs14_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1222,14 +1235,16 @@ void exec_vdvfs14_vosel_test(void)
 void exec_vcore1_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VCORE1_VOSEL_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vcore1_vosel_sleep(k); printk("[mt6331_upmu_set_vcore1_vosel_sleep] k=%d, ",k);
+		mt6331_upmu_set_vcore1_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VCORE1_INDEX);
     }
     for(k=0;k<=MT6331_PMIC_VCORE1_VOSEL_ON_MASK;k++) {
-        mt6331_upmu_set_vcore1_vosel_on(k); printk("[mt6331_upmu_set_vcore1_vosel_on] k=%d, ",k);
+		mt6331_upmu_set_vcore1_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VCORE1_INDEX);
     }
@@ -1237,16 +1252,16 @@ void exec_vcore1_vosel_test_sub_vosel(void)
 
 void exec_vcore1_vosel_test_sub(void)
 {
-    printk("[exec_vcore1_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vcore1_vosel_test_sub_vosel();
 
-    printk("[exec_vcore1_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vcore1_vosel_test_sub_vosel();
 
-    printk("[exec_vcore1_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vcore1_vosel_test_sub_vosel();
 
-    printk("[exec_vcore1_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vcore1_vosel_test_sub_vosel();
 }
 
@@ -1256,38 +1271,39 @@ void exec_vcore1_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vcore1_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_vosel_ctrl] %d\n", i);
         mt6331_upmu_set_vcore1_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VCORE1_VOSEL_MASK;k++) {
-                    mt6331_upmu_set_vcore1_vosel(k); printk("[mt6331_upmu_set_vcore1_vosel] k=%d, ",k);
+					mt6331_upmu_set_vcore1_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VCORE1_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vcore1_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_vosel_sel(0)]\n");
                 mt6331_upmu_set_vcore1_vosel_sel(0);
-                exec_vcore1_vosel_test_sub(); 
-
-                printk("[mt6331_upmu_set_vcore1_vosel_sel(1)]\n");
-                mt6331_upmu_set_vcore1_vosel_sel(1);                
                 exec_vcore1_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vcore1_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_vosel_sel(1)]\n");
+                mt6331_upmu_set_vcore1_vosel_sel(1);
+                exec_vcore1_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_vosel_sel(2)]\n");
                 mt6331_upmu_set_vcore1_vosel_sel(2);
                 exec_vcore1_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vcore1_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_vosel_sel(3)]\n");
                 mt6331_upmu_set_vcore1_vosel_sel(3);
                 exec_vcore1_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1296,14 +1312,16 @@ void exec_vcore1_vosel_test(void)
 void exec_vcore2_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VCORE2_VOSEL_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vcore2_vosel_sleep(k); printk("[mt6331_upmu_set_vcore2_vosel_sleep] k=%d, ",k);
+		mt6331_upmu_set_vcore2_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VCORE2_INDEX);
     }
     for(k=0;k<=MT6331_PMIC_VCORE2_VOSEL_ON_MASK;k++) {
-        mt6331_upmu_set_vcore2_vosel_on(k); printk("[mt6331_upmu_set_vcore2_vosel_on] k=%d, ",k);
+		mt6331_upmu_set_vcore2_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VCORE2_INDEX);
     }
@@ -1311,16 +1329,16 @@ void exec_vcore2_vosel_test_sub_vosel(void)
 
 void exec_vcore2_vosel_test_sub(void)
 {
-    printk("[exec_vcore2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vcore2_vosel_test_sub_vosel();
 
-    printk("[exec_vcore2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vcore2_vosel_test_sub_vosel();
 
-    printk("[exec_vcore2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vcore2_vosel_test_sub_vosel();
 
-    printk("[exec_vcore2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vcore2_vosel_test_sub_vosel();
 }
 
@@ -1330,38 +1348,39 @@ void exec_vcore2_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vcore2_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_vosel_ctrl] %d\n", i);
         mt6331_upmu_set_vcore2_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VCORE2_VOSEL_MASK;k++) {
-                    mt6331_upmu_set_vcore2_vosel(k); printk("[mt6331_upmu_set_vcore2_vosel] k=%d, ",k);
+					mt6331_upmu_set_vcore2_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VCORE2_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vcore2_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_vosel_sel(0)]\n");
                 mt6331_upmu_set_vcore2_vosel_sel(0);
-                exec_vcore2_vosel_test_sub(); 
-
-                printk("[mt6331_upmu_set_vcore2_vosel_sel(1)]\n");
-                mt6331_upmu_set_vcore2_vosel_sel(1);                
                 exec_vcore2_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vcore2_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_vosel_sel(1)]\n");
+                mt6331_upmu_set_vcore2_vosel_sel(1);
+                exec_vcore2_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_vosel_sel(2)]\n");
                 mt6331_upmu_set_vcore2_vosel_sel(2);
                 exec_vcore2_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vcore2_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_vosel_sel(3)]\n");
                 mt6331_upmu_set_vcore2_vosel_sel(3);
                 exec_vcore2_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1370,14 +1389,16 @@ void exec_vcore2_vosel_test(void)
 void exec_vgpu_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VGPU_VOSEL_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vgpu_vosel_sleep(k); printk("[mt6331_upmu_set_vgpu_vosel_sleep] k=%d, ",k);
+		mt6331_upmu_set_vgpu_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VGPU_INDEX);
     }
     for(k=0;k<=MT6331_PMIC_VGPU_VOSEL_ON_MASK;k++) {
-        mt6331_upmu_set_vgpu_vosel_on(k); printk("[mt6331_upmu_set_vgpu_vosel_on] k=%d, ",k);
+		mt6331_upmu_set_vgpu_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VGPU_INDEX);
     }
@@ -1385,16 +1406,16 @@ void exec_vgpu_vosel_test_sub_vosel(void)
 
 void exec_vgpu_vosel_test_sub(void)
 {
-    printk("[exec_vgpu_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vgpu_vosel_test_sub_vosel();
 
-    printk("[exec_vgpu_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vgpu_vosel_test_sub_vosel();
 
-    printk("[exec_vgpu_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vgpu_vosel_test_sub_vosel();
 
-    printk("[exec_vgpu_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vgpu_vosel_test_sub_vosel();
 }
 
@@ -1404,38 +1425,39 @@ void exec_vgpu_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vgpu_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_vosel_ctrl] %d\n", i);
         mt6331_upmu_set_vgpu_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VGPU_VOSEL_MASK;k++) {
-                    mt6331_upmu_set_vgpu_vosel(k); printk("[mt6331_upmu_set_vgpu_vosel] k=%d, ",k);
+					mt6331_upmu_set_vgpu_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VGPU_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vgpu_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_vosel_sel(0)]\n");
                 mt6331_upmu_set_vgpu_vosel_sel(0);
-                exec_vgpu_vosel_test_sub(); 
-
-                printk("[mt6331_upmu_set_vgpu_vosel_sel(1)]\n");
-                mt6331_upmu_set_vgpu_vosel_sel(1);                
                 exec_vgpu_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vgpu_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_vosel_sel(1)]\n");
+                mt6331_upmu_set_vgpu_vosel_sel(1);
+                exec_vgpu_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_vosel_sel(2)]\n");
                 mt6331_upmu_set_vgpu_vosel_sel(2);
                 exec_vgpu_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vgpu_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_vosel_sel(3)]\n");
                 mt6331_upmu_set_vgpu_vosel_sel(3);
                 exec_vgpu_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1444,14 +1466,16 @@ void exec_vgpu_vosel_test(void)
 void exec_vio18_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VIO18_VOSEL_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vio18_vosel_sleep(k); printk("[mt6331_upmu_set_vio18_vosel_sleep] k=%d, ",k);
+		mt6331_upmu_set_vio18_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VIO18_INDEX);
     }
     for(k=0;k<=MT6331_PMIC_VIO18_VOSEL_ON_MASK;k++) {
-        mt6331_upmu_set_vio18_vosel_on(k); printk("[mt6331_upmu_set_vio18_vosel_on] k=%d, ",k);
+		mt6331_upmu_set_vio18_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VIO18_INDEX);
     }
@@ -1459,16 +1483,16 @@ void exec_vio18_vosel_test_sub_vosel(void)
 
 void exec_vio18_vosel_test_sub(void)
 {
-    printk("[exec_vio18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vio18_vosel_test_sub_vosel();
 
-    printk("[exec_vio18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vio18_vosel_test_sub_vosel();
 
-    printk("[exec_vio18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vio18_vosel_test_sub_vosel();
 
-    printk("[exec_vio18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vio18_vosel_test_sub_vosel();
 }
 
@@ -1478,38 +1502,39 @@ void exec_vio18_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vio18_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_vosel_ctrl] %d\n", i);
         mt6331_upmu_set_vio18_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VIO18_VOSEL_MASK;k++) {
-                    mt6331_upmu_set_vio18_vosel(k); printk("[mt6331_upmu_set_vio18_vosel] k=%d, ",k);
+					mt6331_upmu_set_vio18_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VIO18_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vio18_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_vosel_sel(0)]\n");
                 mt6331_upmu_set_vio18_vosel_sel(0);
-                exec_vio18_vosel_test_sub(); 
-
-                printk("[mt6331_upmu_set_vio18_vosel_sel(1)]\n");
-                mt6331_upmu_set_vio18_vosel_sel(1);                
                 exec_vio18_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vio18_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_vosel_sel(1)]\n");
+                mt6331_upmu_set_vio18_vosel_sel(1);
+                exec_vio18_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_vosel_sel(2)]\n");
                 mt6331_upmu_set_vio18_vosel_sel(2);
                 exec_vio18_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_vio18_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_vosel_sel(3)]\n");
                 mt6331_upmu_set_vio18_vosel_sel(3);
                 exec_vio18_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1518,14 +1543,16 @@ void exec_vio18_vosel_test(void)
 void exec_vdram_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VDRAM_VOSEL_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vdram_vosel_sleep(k); printk("[mt6332_upmu_set_vdram_vosel_sleep] k=%d, ",k);
+		mt6332_upmu_set_vdram_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDRAM_INDEX);
     }
     for(k=0;k<=MT6332_PMIC_VDRAM_VOSEL_ON_MASK;k++) {
-        mt6332_upmu_set_vdram_vosel_on(k); printk("[mt6332_upmu_set_vdram_vosel_on] k=%d, ",k);
+		mt6332_upmu_set_vdram_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDRAM_INDEX);
     }
@@ -1533,16 +1560,16 @@ void exec_vdram_vosel_test_sub_vosel(void)
 
 void exec_vdram_vosel_test_sub(void)
 {
-    printk("[exec_vdram_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vdram_vosel_test_sub_vosel();
 
-    printk("[exec_vdram_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vdram_vosel_test_sub_vosel();
 
-    printk("[exec_vdram_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vdram_vosel_test_sub_vosel();
 
-    printk("[exec_vdram_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vdram_vosel_test_sub_vosel();
 }
 
@@ -1552,38 +1579,39 @@ void exec_vdram_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vdram_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_vosel_ctrl] %d\n", i);
         mt6332_upmu_set_vdram_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VDRAM_VOSEL_MASK;k++) {
-                    mt6332_upmu_set_vdram_vosel(k); printk("[mt6332_upmu_set_vdram_vosel] k=%d, ",k);
+					mt6332_upmu_set_vdram_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VDRAM_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vdram_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_vosel_sel(0)]\n");
                 mt6332_upmu_set_vdram_vosel_sel(0);
-                exec_vdram_vosel_test_sub(); 
-
-                printk("[mt6332_upmu_set_vdram_vosel_sel(1)]\n");
-                mt6332_upmu_set_vdram_vosel_sel(1);                
                 exec_vdram_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vdram_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_vosel_sel(1)]\n");
+                mt6332_upmu_set_vdram_vosel_sel(1);
+                exec_vdram_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_vosel_sel(2)]\n");
                 mt6332_upmu_set_vdram_vosel_sel(2);
                 exec_vdram_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vdram_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_vosel_sel(3)]\n");
                 mt6332_upmu_set_vdram_vosel_sel(3);
                 exec_vdram_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1592,34 +1620,36 @@ void exec_vdram_vosel_test(void)
 void exec_vdvfs2_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VDVFS2_VOSEL_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vdvfs2_vosel_sleep(k); printk("[mt6332_upmu_set_vdvfs2_vosel_sleep] k=%d, ",k);
+		mt6332_upmu_set_vdvfs2_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDVFS2_INDEX);
     }
 
-    printk("[exec_vdvfs2_vosel_test_sub_vosel] mt6332_upmu_set_vdvfs2_track_on_ctrl(0);\n"); mt6332_upmu_set_vdvfs2_track_on_ctrl(0);    
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_vosel_test_sub_vosel] mt6332_upmu_set_vdvfs2_track_on_ctrl(0);\n"); mt6332_upmu_set_vdvfs2_track_on_ctrl(0);
 
     for(k=0;k<=MT6332_PMIC_VDVFS2_VOSEL_ON_MASK;k++) {
-        mt6332_upmu_set_vdvfs2_vosel_on(k); printk("[mt6332_upmu_set_vdvfs2_vosel_on] k=%d, ",k);
+		mt6332_upmu_set_vdvfs2_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VDVFS2_INDEX);
-    }    
+    }
 }
 
 void exec_vdvfs2_vosel_test_sub(void)
 {
-    printk("[exec_vdvfs2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vdvfs2_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vdvfs2_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vdvfs2_vosel_test_sub_vosel();
 
-    printk("[exec_vdvfs2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vdvfs2_vosel_test_sub_vosel();
 }
 
@@ -1629,38 +1659,39 @@ void exec_vdvfs2_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vdvfs2_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_vosel_ctrl] %d\n", i);
         mt6332_upmu_set_vdvfs2_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VDVFS2_VOSEL_MASK;k++) {
-                    mt6332_upmu_set_vdvfs2_vosel(k); printk("[mt6332_upmu_set_vdvfs2_vosel] k=%d, ",k);
+					mt6332_upmu_set_vdvfs2_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VDVFS2_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vdvfs2_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_vosel_sel(0)]\n");
                 mt6332_upmu_set_vdvfs2_vosel_sel(0);
-                exec_vdvfs2_vosel_test_sub(); 
-
-                printk("[mt6332_upmu_set_vdvfs2_vosel_sel(1)]\n");
-                mt6332_upmu_set_vdvfs2_vosel_sel(1);                
                 exec_vdvfs2_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vdvfs2_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_vosel_sel(1)]\n");
+                mt6332_upmu_set_vdvfs2_vosel_sel(1);
+                exec_vdvfs2_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_vosel_sel(2)]\n");
                 mt6332_upmu_set_vdvfs2_vosel_sel(2);
                 exec_vdvfs2_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vdvfs2_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_vosel_sel(3)]\n");
                 mt6332_upmu_set_vdvfs2_vosel_sel(3);
                 exec_vdvfs2_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1670,14 +1701,16 @@ void exec_vdvfs2_vosel_test(void)
 void exec_vrf1_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VRF1_VOSEL_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vrf1_vosel_sleep(k); printk("[mt6332_upmu_set_vrf1_vosel_sleep] k=%d, ",k);
+		mt6332_upmu_set_vrf1_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VRF1_INDEX);
     }
     for(k=0;k<=MT6332_PMIC_VRF1_VOSEL_ON_MASK;k++) {
-        mt6332_upmu_set_vrf1_vosel_on(k); printk("[mt6332_upmu_set_vrf1_vosel_on] k=%d, ",k);
+		mt6332_upmu_set_vrf1_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VRF1_INDEX);
     }
@@ -1685,16 +1718,16 @@ void exec_vrf1_vosel_test_sub_vosel(void)
 
 void exec_vrf1_vosel_test_sub(void)
 {
-    printk("[exec_vrf1_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vrf1_vosel_test_sub_vosel();
 
-    printk("[exec_vrf1_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vrf1_vosel_test_sub_vosel();
 
-    printk("[exec_vrf1_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vrf1_vosel_test_sub_vosel();
 
-    printk("[exec_vrf1_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vrf1_vosel_test_sub_vosel();
 }
 
@@ -1704,38 +1737,39 @@ void exec_vrf1_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vrf1_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_vosel_ctrl] %d\n", i);
         mt6332_upmu_set_vrf1_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VRF1_VOSEL_MASK;k++) {
-                    mt6332_upmu_set_vrf1_vosel(k); printk("[mt6332_upmu_set_vrf1_vosel] k=%d, ",k);
+					mt6332_upmu_set_vrf1_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VRF1_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vrf1_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_vosel_sel(0)]\n");
                 mt6332_upmu_set_vrf1_vosel_sel(0);
-                exec_vrf1_vosel_test_sub(); 
-
-                printk("[mt6332_upmu_set_vrf1_vosel_sel(1)]\n");
-                mt6332_upmu_set_vrf1_vosel_sel(1);                
                 exec_vrf1_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vrf1_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_vosel_sel(1)]\n");
+                mt6332_upmu_set_vrf1_vosel_sel(1);
+                exec_vrf1_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_vosel_sel(2)]\n");
                 mt6332_upmu_set_vrf1_vosel_sel(2);
                 exec_vrf1_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vrf1_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_vosel_sel(3)]\n");
                 mt6332_upmu_set_vrf1_vosel_sel(3);
                 exec_vrf1_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1744,14 +1778,16 @@ void exec_vrf1_vosel_test(void)
 void exec_vrf2_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VRF2_VOSEL_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vrf2_vosel_sleep(k); printk("[mt6332_upmu_set_vrf2_vosel_sleep] k=%d, ",k);
+		mt6332_upmu_set_vrf2_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VRF2_INDEX);
     }
     for(k=0;k<=MT6332_PMIC_VRF2_VOSEL_ON_MASK;k++) {
-        mt6332_upmu_set_vrf2_vosel_on(k); printk("[mt6332_upmu_set_vrf2_vosel_on] k=%d, ",k);
+		mt6332_upmu_set_vrf2_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VRF2_INDEX);
     }
@@ -1759,16 +1795,16 @@ void exec_vrf2_vosel_test_sub_vosel(void)
 
 void exec_vrf2_vosel_test_sub(void)
 {
-    printk("[exec_vrf2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vrf2_vosel_test_sub_vosel();
 
-    printk("[exec_vrf2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vrf2_vosel_test_sub_vosel();
 
-    printk("[exec_vrf2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vrf2_vosel_test_sub_vosel();
 
-    printk("[exec_vrf2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vrf2_vosel_test_sub_vosel();
 }
 
@@ -1778,38 +1814,39 @@ void exec_vrf2_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vrf2_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_vosel_ctrl] %d\n", i);
         mt6332_upmu_set_vrf2_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VRF2_VOSEL_MASK;k++) {
-                    mt6332_upmu_set_vrf2_vosel(k); printk("[mt6332_upmu_set_vrf2_vosel] k=%d, ",k);
+					mt6332_upmu_set_vrf2_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VRF2_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vrf2_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_vosel_sel(0)]\n");
                 mt6332_upmu_set_vrf2_vosel_sel(0);
-                exec_vrf2_vosel_test_sub(); 
-
-                printk("[mt6332_upmu_set_vrf2_vosel_sel(1)]\n");
-                mt6332_upmu_set_vrf2_vosel_sel(1);                
                 exec_vrf2_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vrf2_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_vosel_sel(1)]\n");
+                mt6332_upmu_set_vrf2_vosel_sel(1);
+                exec_vrf2_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_vosel_sel(2)]\n");
                 mt6332_upmu_set_vrf2_vosel_sel(2);
                 exec_vrf2_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vrf2_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_vosel_sel(3)]\n");
                 mt6332_upmu_set_vrf2_vosel_sel(3);
                 exec_vrf2_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1818,14 +1855,16 @@ void exec_vrf2_vosel_test(void)
 void exec_vpa_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VPA_VOSEL_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vpa_vosel_sleep(k); printk("[mt6332_upmu_set_vpa_vosel_sleep] k=%d, ",k);
+		mt6332_upmu_set_vpa_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VPA_INDEX);
     }
     for(k=0;k<=MT6332_PMIC_VPA_VOSEL_ON_MASK;k++) {
-        mt6332_upmu_set_vpa_vosel_on(k); printk("[mt6332_upmu_set_vpa_vosel_on] k=%d, ",k);
+		mt6332_upmu_set_vpa_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VPA_INDEX);
     }
@@ -1833,16 +1872,16 @@ void exec_vpa_vosel_test_sub_vosel(void)
 
 void exec_vpa_vosel_test_sub(void)
 {
-    printk("[exec_vpa_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vpa_vosel_test_sub_vosel();
 
-    printk("[exec_vpa_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vpa_vosel_test_sub_vosel();
 
-    printk("[exec_vpa_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vpa_vosel_test_sub_vosel();
 
-    printk("[exec_vpa_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vpa_vosel_test_sub_vosel();
 }
 
@@ -1852,38 +1891,39 @@ void exec_vpa_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vpa_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_vosel_ctrl] %d\n", i);
         mt6332_upmu_set_vpa_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VPA_VOSEL_MASK;k++) {
-                    mt6332_upmu_set_vpa_vosel(k); printk("[mt6332_upmu_set_vpa_vosel] k=%d, ",k);
+					mt6332_upmu_set_vpa_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VPA_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vpa_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_vosel_sel(0)]\n");
                 mt6332_upmu_set_vpa_vosel_sel(0);
-                exec_vpa_vosel_test_sub(); 
-
-                printk("[mt6332_upmu_set_vpa_vosel_sel(1)]\n");
-                mt6332_upmu_set_vpa_vosel_sel(1);                
                 exec_vpa_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vpa_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_vosel_sel(1)]\n");
+                mt6332_upmu_set_vpa_vosel_sel(1);
+                exec_vpa_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_vosel_sel(2)]\n");
                 mt6332_upmu_set_vpa_vosel_sel(2);
                 exec_vpa_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vpa_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_vosel_sel(3)]\n");
                 mt6332_upmu_set_vpa_vosel_sel(3);
                 exec_vpa_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1892,14 +1932,16 @@ void exec_vpa_vosel_test(void)
 void exec_vsbst_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VSBST_VOSEL_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vsbst_vosel_sleep(k); printk("[mt6332_upmu_set_vsbst_vosel_sleep] k=%d, ",k);
+		mt6332_upmu_set_vsbst_vosel_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_vosel_sleep] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VSBST_INDEX);
     }
     for(k=0;k<=MT6332_PMIC_VSBST_VOSEL_ON_MASK;k++) {
-        mt6332_upmu_set_vsbst_vosel_on(k); printk("[mt6332_upmu_set_vsbst_vosel_on] k=%d, ",k);
+		mt6332_upmu_set_vsbst_vosel_on(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_vosel_on] k=%d, ", k);
         if(k==0) mdelay(500);
         read_adc_value(VSBST_INDEX);
     }
@@ -1907,16 +1949,16 @@ void exec_vsbst_vosel_test_sub_vosel(void)
 
 void exec_vsbst_vosel_test_sub(void)
 {
-    printk("[exec_vsbst_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vsbst_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vsbst_vosel_test_sub_vosel();
 
-    printk("[exec_vsbst_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vsbst_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vsbst_vosel_test_sub_vosel();
 
-    printk("[exec_vsbst_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vsbst_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vsbst_vosel_test_sub_vosel();
 
-    printk("[exec_vsbst_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vsbst_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vsbst_vosel_test_sub_vosel();
 }
 
@@ -1926,38 +1968,39 @@ void exec_vsbst_vosel_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vsbst_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_vosel_ctrl] %d\n", i);
         mt6332_upmu_set_vsbst_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VSBST_VOSEL_MASK;k++) {
-                    mt6332_upmu_set_vsbst_vosel(k); printk("[mt6332_upmu_set_vsbst_vosel] k=%d, ",k);
+					mt6332_upmu_set_vsbst_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_vosel] k=%d, ", k);
                     if(k==0) mdelay(500);
                     read_adc_value(VSBST_INDEX);
                 }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vsbst_vosel_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_vosel_sel(0)]\n");
                 mt6332_upmu_set_vsbst_vosel_sel(0);
-                exec_vsbst_vosel_test_sub(); 
-
-                printk("[mt6332_upmu_set_vsbst_vosel_sel(1)]\n");
-                mt6332_upmu_set_vsbst_vosel_sel(1);                
                 exec_vsbst_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vsbst_vosel_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_vosel_sel(1)]\n");
+                mt6332_upmu_set_vsbst_vosel_sel(1);
+                exec_vsbst_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_vosel_sel(2)]\n");
                 mt6332_upmu_set_vsbst_vosel_sel(2);
                 exec_vsbst_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_vsbst_vosel_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_vosel_sel(3)]\n");
                 mt6332_upmu_set_vsbst_vosel_sel(3);
                 exec_vsbst_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -1965,9 +2008,9 @@ void exec_vsbst_vosel_test(void)
 
 void PMIC_BUCK_VOSEL(int index_val)
 {
-    printk("[PMIC_BUCK_VOSEL] start....\n");
+	battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_VOSEL] start....\n");
 
-    set_srclken_1_val(1); 
+    set_srclken_1_val(1);
     set_srclken_2_val(1);
     set_srclken_sw_mode();
 
@@ -2005,15 +2048,15 @@ void PMIC_BUCK_VOSEL(int index_val)
       case 9 : mt6332_upmu_set_vdvfs2_en(1);  exec_vdvfs2_vosel_test();      break;
       case 10: mt6332_upmu_set_vrf1_en(1);    exec_vrf1_vosel_test();        break;
       case 11: mt6332_upmu_set_vrf2_en(1);    exec_vrf2_vosel_test();        break;
-      case 12: mt6332_upmu_set_vpa_en(1);     exec_vpa_vosel_test();         break;      
+      case 12: mt6332_upmu_set_vpa_en(1);     exec_vpa_vosel_test();         break;
       case 13: mt6332_upmu_set_vsbst_en(1);   exec_vsbst_vosel_test();       break;
 
       default:
-        printk("[PMIC_BUCK_VOSEL] Invalid channel value(%d)\n", index_val);
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_VOSEL] Invalid channel value(%d)\n", index_val);
         break;
     }
 
-    printk("[PMIC_BUCK_VOSEL] end....\n");
+	battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_VOSEL] end....\n");
 }
 #endif
 
@@ -2021,36 +2064,36 @@ void PMIC_BUCK_VOSEL(int index_val)
 void exec_vgpu_dlc_test_sub_dlc(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VGPU_DLC_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vgpu_dlc_sleep(k); 
+        mt6331_upmu_set_vgpu_dlc_sleep(k);
         mt6331_upmu_set_vgpu_dlc_n_sleep(k);
-        
-        printk("[exec_vgpu_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vgpu_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6331_upmu_get_qi_vgpu_dlc(), mt6331_upmu_get_qi_vgpu_dlc_n());
     }
-    
+
     for(k=0;k<=MT6331_PMIC_VGPU_DLC_ON_MASK;k++) {
-        mt6331_upmu_set_vgpu_dlc_on(k); 
+        mt6331_upmu_set_vgpu_dlc_on(k);
         mt6331_upmu_set_vgpu_dlc_n_on(k);
-        
-        printk("[exec_vgpu_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vgpu_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6331_upmu_get_qi_vgpu_dlc(), mt6331_upmu_get_qi_vgpu_dlc_n());
     }
 }
 
 void exec_vgpu_dlc_test_sub(void)
 {
-    printk("[exec_vgpu_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vgpu_dlc_test_sub_dlc();
 
-    printk("[exec_vgpu_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vgpu_dlc_test_sub_dlc();
 
-    printk("[exec_vgpu_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vgpu_dlc_test_sub_dlc();
 
-    printk("[exec_vgpu_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vgpu_dlc_test_sub_dlc();
 }
 
@@ -2060,40 +2103,40 @@ void exec_vgpu_dlc_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vgpu_dlc_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_dlc_ctrl] %d\n", i);
         mt6331_upmu_set_vgpu_dlc_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VGPU_DLC_MASK;k++) {
-                    mt6331_upmu_set_vgpu_dlc(k); 
+                    mt6331_upmu_set_vgpu_dlc(k);
                     mt6331_upmu_set_vgpu_dlc_n(k);
-                    
-                    printk("[exec_vgpu_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+					battery_log(BAT_LOG_CRTI, "[exec_vgpu_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n",
                         k, k, mt6331_upmu_get_qi_vgpu_dlc(), mt6331_upmu_get_qi_vgpu_dlc_n());
-                }                    
+                }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vgpu_dlc_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_dlc_sel(0)]\n");
                 mt6331_upmu_set_vgpu_dlc_sel(0);
-                exec_vgpu_dlc_test_sub(); 
-
-                printk("[mt6331_upmu_set_vgpu_dlc_sel(1)]\n");
-                mt6331_upmu_set_vgpu_dlc_sel(1);                
                 exec_vgpu_dlc_test_sub();
 
-                printk("[mt6331_upmu_set_vgpu_dlc_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_dlc_sel(1)]\n");
+                mt6331_upmu_set_vgpu_dlc_sel(1);
+                exec_vgpu_dlc_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_dlc_sel(2)]\n");
                 mt6331_upmu_set_vgpu_dlc_sel(2);
                 exec_vgpu_dlc_test_sub();
 
-                printk("[mt6331_upmu_set_vgpu_dlc_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_dlc_sel(3)]\n");
                 mt6331_upmu_set_vgpu_dlc_sel(3);
                 exec_vgpu_dlc_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -2102,36 +2145,36 @@ void exec_vgpu_dlc_test(void)
 void exec_vcore1_dlc_test_sub_dlc(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VCORE1_DLC_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vcore1_dlc_sleep(k); 
+        mt6331_upmu_set_vcore1_dlc_sleep(k);
         mt6331_upmu_set_vcore1_dlc_n_sleep(k);
-        
-        printk("[exec_vcore1_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vcore1_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6331_upmu_get_qi_vcore1_dlc(), mt6331_upmu_get_qi_vcore1_dlc_n());
     }
-    
+
     for(k=0;k<=MT6331_PMIC_VCORE1_DLC_ON_MASK;k++) {
-        mt6331_upmu_set_vcore1_dlc_on(k); 
+        mt6331_upmu_set_vcore1_dlc_on(k);
         mt6331_upmu_set_vcore1_dlc_n_on(k);
-        
-        printk("[exec_vcore1_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vcore1_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6331_upmu_get_qi_vcore1_dlc(), mt6331_upmu_get_qi_vcore1_dlc_n());
     }
 }
 
 void exec_vcore1_dlc_test_sub(void)
 {
-    printk("[exec_vcore1_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vcore1_dlc_test_sub_dlc();
 
-    printk("[exec_vcore1_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vcore1_dlc_test_sub_dlc();
 
-    printk("[exec_vcore1_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vcore1_dlc_test_sub_dlc();
 
-    printk("[exec_vcore1_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vcore1_dlc_test_sub_dlc();
 }
 
@@ -2141,40 +2184,40 @@ void exec_vcore1_dlc_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vcore1_dlc_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_dlc_ctrl] %d\n", i);
         mt6331_upmu_set_vcore1_dlc_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VCORE1_DLC_MASK;k++) {
-                    mt6331_upmu_set_vcore1_dlc(k); 
+                    mt6331_upmu_set_vcore1_dlc(k);
                     mt6331_upmu_set_vcore1_dlc_n(k);
-                    
-                    printk("[exec_vcore1_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+					battery_log(BAT_LOG_CRTI, "[exec_vcore1_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n",
                         k, k, mt6331_upmu_get_qi_vcore1_dlc(), mt6331_upmu_get_qi_vcore1_dlc_n());
-                }                    
+                }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vcore1_dlc_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_dlc_sel(0)]\n");
                 mt6331_upmu_set_vcore1_dlc_sel(0);
-                exec_vcore1_dlc_test_sub(); 
-
-                printk("[mt6331_upmu_set_vcore1_dlc_sel(1)]\n");
-                mt6331_upmu_set_vcore1_dlc_sel(1);                
                 exec_vcore1_dlc_test_sub();
 
-                printk("[mt6331_upmu_set_vcore1_dlc_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_dlc_sel(1)]\n");
+                mt6331_upmu_set_vcore1_dlc_sel(1);
+                exec_vcore1_dlc_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_dlc_sel(2)]\n");
                 mt6331_upmu_set_vcore1_dlc_sel(2);
                 exec_vcore1_dlc_test_sub();
 
-                printk("[mt6331_upmu_set_vcore1_dlc_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_dlc_sel(3)]\n");
                 mt6331_upmu_set_vcore1_dlc_sel(3);
                 exec_vcore1_dlc_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -2183,36 +2226,36 @@ void exec_vcore1_dlc_test(void)
 void exec_vcore2_dlc_test_sub_dlc(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VCORE2_DLC_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vcore2_dlc_sleep(k); 
+        mt6331_upmu_set_vcore2_dlc_sleep(k);
         mt6331_upmu_set_vcore2_dlc_n_sleep(k);
-        
-        printk("[exec_vcore2_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vcore2_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6331_upmu_get_qi_vcore2_dlc(), mt6331_upmu_get_qi_vcore2_dlc_n());
     }
-    
+
     for(k=0;k<=MT6331_PMIC_VCORE2_DLC_ON_MASK;k++) {
-        mt6331_upmu_set_vcore2_dlc_on(k); 
+        mt6331_upmu_set_vcore2_dlc_on(k);
         mt6331_upmu_set_vcore2_dlc_n_on(k);
-        
-        printk("[exec_vcore2_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vcore2_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6331_upmu_get_qi_vcore2_dlc(), mt6331_upmu_get_qi_vcore2_dlc_n());
     }
 }
 
 void exec_vcore2_dlc_test_sub(void)
 {
-    printk("[exec_vcore2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vcore2_dlc_test_sub_dlc();
 
-    printk("[exec_vcore2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vcore2_dlc_test_sub_dlc();
 
-    printk("[exec_vcore2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vcore2_dlc_test_sub_dlc();
 
-    printk("[exec_vcore2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vcore2_dlc_test_sub_dlc();
 }
 
@@ -2222,40 +2265,40 @@ void exec_vcore2_dlc_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vcore2_dlc_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_dlc_ctrl] %d\n", i);
         mt6331_upmu_set_vcore2_dlc_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VCORE2_DLC_MASK;k++) {
-                    mt6331_upmu_set_vcore2_dlc(k); 
+                    mt6331_upmu_set_vcore2_dlc(k);
                     mt6331_upmu_set_vcore2_dlc_n(k);
-                    
-                    printk("[exec_vcore2_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+					battery_log(BAT_LOG_CRTI, "[exec_vcore2_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n",
                         k, k, mt6331_upmu_get_qi_vcore2_dlc(), mt6331_upmu_get_qi_vcore2_dlc_n());
-                }                    
+                }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vcore2_dlc_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_dlc_sel(0)]\n");
                 mt6331_upmu_set_vcore2_dlc_sel(0);
-                exec_vcore2_dlc_test_sub(); 
-
-                printk("[mt6331_upmu_set_vcore2_dlc_sel(1)]\n");
-                mt6331_upmu_set_vcore2_dlc_sel(1);                
                 exec_vcore2_dlc_test_sub();
 
-                printk("[mt6331_upmu_set_vcore2_dlc_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_dlc_sel(1)]\n");
+                mt6331_upmu_set_vcore2_dlc_sel(1);
+                exec_vcore2_dlc_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_dlc_sel(2)]\n");
                 mt6331_upmu_set_vcore2_dlc_sel(2);
                 exec_vcore2_dlc_test_sub();
 
-                printk("[mt6331_upmu_set_vcore2_dlc_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_dlc_sel(3)]\n");
                 mt6331_upmu_set_vcore2_dlc_sel(3);
                 exec_vcore2_dlc_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -2264,36 +2307,36 @@ void exec_vcore2_dlc_test(void)
 void exec_vio18_dlc_test_sub_dlc(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VIO18_DLC_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vio18_dlc_sleep(k); 
+        mt6331_upmu_set_vio18_dlc_sleep(k);
         mt6331_upmu_set_vio18_dlc_n_sleep(k);
-        
-        printk("[exec_vio18_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vio18_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6331_upmu_get_qi_vio18_dlc(), mt6331_upmu_get_qi_vio18_dlc_n());
     }
-    
+
     for(k=0;k<=MT6331_PMIC_VIO18_DLC_ON_MASK;k++) {
-        mt6331_upmu_set_vio18_dlc_on(k); 
+        mt6331_upmu_set_vio18_dlc_on(k);
         mt6331_upmu_set_vio18_dlc_n_on(k);
-        
-        printk("[exec_vio18_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vio18_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6331_upmu_get_qi_vio18_dlc(), mt6331_upmu_get_qi_vio18_dlc_n());
     }
 }
 
 void exec_vio18_dlc_test_sub(void)
 {
-    printk("[exec_vio18_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vio18_dlc_test_sub_dlc();
 
-    printk("[exec_vio18_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vio18_dlc_test_sub_dlc();
 
-    printk("[exec_vio18_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vio18_dlc_test_sub_dlc();
 
-    printk("[exec_vio18_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vio18_dlc_test_sub_dlc();
 }
 
@@ -2303,40 +2346,40 @@ void exec_vio18_dlc_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vio18_dlc_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_dlc_ctrl] %d\n", i);
         mt6331_upmu_set_vio18_dlc_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VIO18_DLC_MASK;k++) {
-                    mt6331_upmu_set_vio18_dlc(k); 
+                    mt6331_upmu_set_vio18_dlc(k);
                     mt6331_upmu_set_vio18_dlc_n(k);
-                    
-                    printk("[exec_vio18_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+					battery_log(BAT_LOG_CRTI, "[exec_vio18_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n",
                         k, k, mt6331_upmu_get_qi_vio18_dlc(), mt6331_upmu_get_qi_vio18_dlc_n());
-                }                    
+                }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vio18_dlc_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_dlc_sel(0)]\n");
                 mt6331_upmu_set_vio18_dlc_sel(0);
-                exec_vio18_dlc_test_sub(); 
-
-                printk("[mt6331_upmu_set_vio18_dlc_sel(1)]\n");
-                mt6331_upmu_set_vio18_dlc_sel(1);                
                 exec_vio18_dlc_test_sub();
 
-                printk("[mt6331_upmu_set_vio18_dlc_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_dlc_sel(1)]\n");
+                mt6331_upmu_set_vio18_dlc_sel(1);
+                exec_vio18_dlc_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_dlc_sel(2)]\n");
                 mt6331_upmu_set_vio18_dlc_sel(2);
                 exec_vio18_dlc_test_sub();
 
-                printk("[mt6331_upmu_set_vio18_dlc_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_dlc_sel(3)]\n");
                 mt6331_upmu_set_vio18_dlc_sel(3);
                 exec_vio18_dlc_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -2345,36 +2388,36 @@ void exec_vio18_dlc_test(void)
 void exec_vdram_dlc_test_sub_dlc(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VDRAM_DLC_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vdram_dlc_sleep(k); 
+        mt6332_upmu_set_vdram_dlc_sleep(k);
         mt6332_upmu_set_vdram_dlc_n_sleep(k);
-        
-        printk("[exec_vdram_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vdram_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6332_upmu_get_qi_vdram_dlc(), mt6332_upmu_get_qi_vdram_dlc_n());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VDRAM_DLC_ON_MASK;k++) {
-        mt6332_upmu_set_vdram_dlc_on(k); 
+        mt6332_upmu_set_vdram_dlc_on(k);
         mt6332_upmu_set_vdram_dlc_n_on(k);
-        
-        printk("[exec_vdram_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vdram_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6332_upmu_get_qi_vdram_dlc(), mt6332_upmu_get_qi_vdram_dlc_n());
     }
 }
 
 void exec_vdram_dlc_test_sub(void)
 {
-    printk("[exec_vdram_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vdram_dlc_test_sub_dlc();
 
-    printk("[exec_vdram_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vdram_dlc_test_sub_dlc();
 
-    printk("[exec_vdram_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vdram_dlc_test_sub_dlc();
 
-    printk("[exec_vdram_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vdram_dlc_test_sub_dlc();
 }
 
@@ -2384,40 +2427,40 @@ void exec_vdram_dlc_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vdram_dlc_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_dlc_ctrl] %d\n", i);
         mt6332_upmu_set_vdram_dlc_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VDRAM_DLC_MASK;k++) {
-                    mt6332_upmu_set_vdram_dlc(k); 
+                    mt6332_upmu_set_vdram_dlc(k);
                     mt6332_upmu_set_vdram_dlc_n(k);
-                    
-                    printk("[exec_vdram_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+					battery_log(BAT_LOG_CRTI, "[exec_vdram_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n",
                         k, k, mt6332_upmu_get_qi_vdram_dlc(), mt6332_upmu_get_qi_vdram_dlc_n());
-                }                    
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vdram_dlc_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_dlc_sel(0)]\n");
                 mt6332_upmu_set_vdram_dlc_sel(0);
-                exec_vdram_dlc_test_sub(); 
-
-                printk("[mt6332_upmu_set_vdram_dlc_sel(1)]\n");
-                mt6332_upmu_set_vdram_dlc_sel(1);                
                 exec_vdram_dlc_test_sub();
 
-                printk("[mt6332_upmu_set_vdram_dlc_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_dlc_sel(1)]\n");
+                mt6332_upmu_set_vdram_dlc_sel(1);
+                exec_vdram_dlc_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_dlc_sel(2)]\n");
                 mt6332_upmu_set_vdram_dlc_sel(2);
                 exec_vdram_dlc_test_sub();
 
-                printk("[mt6332_upmu_set_vdram_dlc_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_dlc_sel(3)]\n");
                 mt6332_upmu_set_vdram_dlc_sel(3);
                 exec_vdram_dlc_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -2426,36 +2469,36 @@ void exec_vdram_dlc_test(void)
 void exec_vdvfs2_dlc_test_sub_dlc(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VDVFS2_DLC_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vdvfs2_dlc_sleep(k); 
+        mt6332_upmu_set_vdvfs2_dlc_sleep(k);
         mt6332_upmu_set_vdvfs2_dlc_n_sleep(k);
-        
-        printk("[exec_vdvfs2_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6332_upmu_get_qi_vdvfs2_dlc(), mt6332_upmu_get_qi_vdvfs2_dlc_n());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VDVFS2_DLC_ON_MASK;k++) {
-        mt6332_upmu_set_vdvfs2_dlc_on(k); 
+        mt6332_upmu_set_vdvfs2_dlc_on(k);
         mt6332_upmu_set_vdvfs2_dlc_n_on(k);
-        
-        printk("[exec_vdvfs2_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6332_upmu_get_qi_vdvfs2_dlc(), mt6332_upmu_get_qi_vdvfs2_dlc_n());
     }
 }
 
 void exec_vdvfs2_dlc_test_sub(void)
 {
-    printk("[exec_vdvfs2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vdvfs2_dlc_test_sub_dlc();
 
-    printk("[exec_vdvfs2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vdvfs2_dlc_test_sub_dlc();
 
-    printk("[exec_vdvfs2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vdvfs2_dlc_test_sub_dlc();
 
-    printk("[exec_vdvfs2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vdvfs2_dlc_test_sub_dlc();
 }
 
@@ -2465,40 +2508,40 @@ void exec_vdvfs2_dlc_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vdvfs2_dlc_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_dlc_ctrl] %d\n", i);
         mt6332_upmu_set_vdvfs2_dlc_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VDVFS2_DLC_MASK;k++) {
-                    mt6332_upmu_set_vdvfs2_dlc(k); 
+                    mt6332_upmu_set_vdvfs2_dlc(k);
                     mt6332_upmu_set_vdvfs2_dlc_n(k);
-                    
-                    printk("[exec_vdvfs2_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+					battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n",
                         k, k, mt6332_upmu_get_qi_vdvfs2_dlc(), mt6332_upmu_get_qi_vdvfs2_dlc_n());
-                }                    
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vdvfs2_dlc_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_dlc_sel(0)]\n");
                 mt6332_upmu_set_vdvfs2_dlc_sel(0);
-                exec_vdvfs2_dlc_test_sub(); 
-
-                printk("[mt6332_upmu_set_vdvfs2_dlc_sel(1)]\n");
-                mt6332_upmu_set_vdvfs2_dlc_sel(1);                
                 exec_vdvfs2_dlc_test_sub();
 
-                printk("[mt6332_upmu_set_vdvfs2_dlc_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_dlc_sel(1)]\n");
+                mt6332_upmu_set_vdvfs2_dlc_sel(1);
+                exec_vdvfs2_dlc_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_dlc_sel(2)]\n");
                 mt6332_upmu_set_vdvfs2_dlc_sel(2);
                 exec_vdvfs2_dlc_test_sub();
 
-                printk("[mt6332_upmu_set_vdvfs2_dlc_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_dlc_sel(3)]\n");
                 mt6332_upmu_set_vdvfs2_dlc_sel(3);
                 exec_vdvfs2_dlc_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -2507,36 +2550,36 @@ void exec_vdvfs2_dlc_test(void)
 void exec_vrf1_dlc_test_sub_dlc(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VRF1_DLC_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vrf1_dlc_sleep(k); 
+        mt6332_upmu_set_vrf1_dlc_sleep(k);
         mt6332_upmu_set_vrf1_dlc_n_sleep(k);
-        
-        printk("[exec_vrf1_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vrf1_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6332_upmu_get_qi_vrf1_dlc(), mt6332_upmu_get_qi_vrf1_dlc_n());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VRF1_DLC_ON_MASK;k++) {
-        mt6332_upmu_set_vrf1_dlc_on(k); 
+        mt6332_upmu_set_vrf1_dlc_on(k);
         mt6332_upmu_set_vrf1_dlc_n_on(k);
-        
-        printk("[exec_vrf1_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vrf1_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6332_upmu_get_qi_vrf1_dlc(), mt6332_upmu_get_qi_vrf1_dlc_n());
     }
 }
 
 void exec_vrf1_dlc_test_sub(void)
 {
-    printk("[exec_vrf1_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vrf1_dlc_test_sub_dlc();
 
-    printk("[exec_vrf1_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vrf1_dlc_test_sub_dlc();
 
-    printk("[exec_vrf1_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vrf1_dlc_test_sub_dlc();
 
-    printk("[exec_vrf1_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vrf1_dlc_test_sub_dlc();
 }
 
@@ -2546,40 +2589,40 @@ void exec_vrf1_dlc_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vrf1_dlc_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_dlc_ctrl] %d\n", i);
         mt6332_upmu_set_vrf1_dlc_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VRF1_DLC_MASK;k++) {
-                    mt6332_upmu_set_vrf1_dlc(k); 
+                    mt6332_upmu_set_vrf1_dlc(k);
                     mt6332_upmu_set_vrf1_dlc_n(k);
-                    
-                    printk("[exec_vrf1_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+					battery_log(BAT_LOG_CRTI, "[exec_vrf1_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n",
                         k, k, mt6332_upmu_get_qi_vrf1_dlc(), mt6332_upmu_get_qi_vrf1_dlc_n());
-                }                    
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vrf1_dlc_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_dlc_sel(0)]\n");
                 mt6332_upmu_set_vrf1_dlc_sel(0);
-                exec_vrf1_dlc_test_sub(); 
-
-                printk("[mt6332_upmu_set_vrf1_dlc_sel(1)]\n");
-                mt6332_upmu_set_vrf1_dlc_sel(1);                
                 exec_vrf1_dlc_test_sub();
 
-                printk("[mt6332_upmu_set_vrf1_dlc_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_dlc_sel(1)]\n");
+                mt6332_upmu_set_vrf1_dlc_sel(1);
+                exec_vrf1_dlc_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_dlc_sel(2)]\n");
                 mt6332_upmu_set_vrf1_dlc_sel(2);
                 exec_vrf1_dlc_test_sub();
 
-                printk("[mt6332_upmu_set_vrf1_dlc_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_dlc_sel(3)]\n");
                 mt6332_upmu_set_vrf1_dlc_sel(3);
                 exec_vrf1_dlc_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -2588,36 +2631,36 @@ void exec_vrf1_dlc_test(void)
 void exec_vrf2_dlc_test_sub_dlc(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VRF2_DLC_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vrf2_dlc_sleep(k); 
+        mt6332_upmu_set_vrf2_dlc_sleep(k);
         mt6332_upmu_set_vrf2_dlc_n_sleep(k);
-        
-        printk("[exec_vrf2_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vrf2_dlc_test_sub_dlc] dlc_sleep=%d, dlc_n_sleep=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6332_upmu_get_qi_vrf2_dlc(), mt6332_upmu_get_qi_vrf2_dlc_n());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VRF2_DLC_ON_MASK;k++) {
-        mt6332_upmu_set_vrf2_dlc_on(k); 
+        mt6332_upmu_set_vrf2_dlc_on(k);
         mt6332_upmu_set_vrf2_dlc_n_on(k);
-        
-        printk("[exec_vrf2_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vrf2_dlc_test_sub_dlc] dlc_on=%d, dlc_n_on=%d, qi_dlc=%d, qi_dlc_n=%d\n",
             k, k, mt6332_upmu_get_qi_vrf2_dlc(), mt6332_upmu_get_qi_vrf2_dlc_n());
     }
 }
 
 void exec_vrf2_dlc_test_sub(void)
 {
-    printk("[exec_vrf2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vrf2_dlc_test_sub_dlc();
 
-    printk("[exec_vrf2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vrf2_dlc_test_sub_dlc();
 
-    printk("[exec_vrf2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vrf2_dlc_test_sub_dlc();
 
-    printk("[exec_vrf2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vrf2_dlc_test_sub_dlc();
 }
 
@@ -2627,40 +2670,40 @@ void exec_vrf2_dlc_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vrf2_dlc_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_dlc_ctrl] %d\n", i);
         mt6332_upmu_set_vrf2_dlc_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VRF2_DLC_MASK;k++) {
-                    mt6332_upmu_set_vrf2_dlc(k); 
+                    mt6332_upmu_set_vrf2_dlc(k);
                     mt6332_upmu_set_vrf2_dlc_n(k);
-                    
-                    printk("[exec_vrf2_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n", 
+
+					battery_log(BAT_LOG_CRTI, "[exec_vrf2_dlc_test] dlc=%d, dlc_n=%d, qi_dlc=%d, qi_dlc_n=%d\n",
                         k, k, mt6332_upmu_get_qi_vrf2_dlc(), mt6332_upmu_get_qi_vrf2_dlc_n());
-                }                    
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vrf2_dlc_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_dlc_sel(0)]\n");
                 mt6332_upmu_set_vrf2_dlc_sel(0);
-                exec_vrf2_dlc_test_sub(); 
-
-                printk("[mt6332_upmu_set_vrf2_dlc_sel(1)]\n");
-                mt6332_upmu_set_vrf2_dlc_sel(1);                
                 exec_vrf2_dlc_test_sub();
 
-                printk("[mt6332_upmu_set_vrf2_dlc_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_dlc_sel(1)]\n");
+                mt6332_upmu_set_vrf2_dlc_sel(1);
+                exec_vrf2_dlc_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_dlc_sel(2)]\n");
                 mt6332_upmu_set_vrf2_dlc_sel(2);
                 exec_vrf2_dlc_test_sub();
 
-                printk("[mt6332_upmu_set_vrf2_dlc_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_dlc_sel(3)]\n");
                 mt6332_upmu_set_vrf2_dlc_sel(3);
                 exec_vrf2_dlc_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -2669,30 +2712,30 @@ void exec_vrf2_dlc_test(void)
 void exec_vpa_dlc_test_sub_dlc(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VPA_DLC_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vpa_dlc_sleep(k);         
-        printk("[exec_vpa_dlc_test_sub_dlc] dlc_sleep=%d, qi_dlc=%d\n", k, mt6332_upmu_get_qi_vpa_dlc());
+        mt6332_upmu_set_vpa_dlc_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test_sub_dlc] dlc_sleep=%d, qi_dlc=%d\n", k, mt6332_upmu_get_qi_vpa_dlc());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VPA_DLC_ON_MASK;k++) {
-        mt6332_upmu_set_vpa_dlc_on(k);         
-        printk("[exec_vpa_dlc_test_sub_dlc] dlc_on=%d, qi_dlc=%d\n", k, mt6332_upmu_get_qi_vpa_dlc());
+        mt6332_upmu_set_vpa_dlc_on(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test_sub_dlc] dlc_on=%d, qi_dlc=%d\n", k, mt6332_upmu_get_qi_vpa_dlc());
     }
 }
 
 void exec_vpa_dlc_test_sub(void)
 {
-    printk("[exec_vpa_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vpa_dlc_test_sub_dlc();
 
-    printk("[exec_vpa_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vpa_dlc_test_sub_dlc();
 
-    printk("[exec_vpa_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vpa_dlc_test_sub_dlc();
 
-    printk("[exec_vpa_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vpa_dlc_test_sub_dlc();
 }
 
@@ -2701,65 +2744,65 @@ void exec_vpa_dlc_test(void)
     int i=0, k=0;
 
 //-----------------------------------------------------------------
-    printk("[exec_vpa_dlc_test] mt6332_upmu_set_vpa_dlc_map_en(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test] mt6332_upmu_set_vpa_dlc_map_en(0);\n");
     mt6332_upmu_set_vpa_dlc_map_en(0);
 //-----------------------------------------------------------------
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vpa_dlc_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_dlc_ctrl] %d\n", i);
         mt6332_upmu_set_vpa_dlc_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VPA_DLC_MASK;k++) {
-                    mt6332_upmu_set_vpa_dlc(k);                     
-                    printk("[exec_vpa_dlc_test] dlc=%d, qi_dlc=%d\n", k, mt6332_upmu_get_qi_vpa_dlc());
-                }                    
+                    mt6332_upmu_set_vpa_dlc(k);
+					battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test] dlc=%d, qi_dlc=%d\n", k, mt6332_upmu_get_qi_vpa_dlc());
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vpa_dlc_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_dlc_sel(0)]\n");
                 mt6332_upmu_set_vpa_dlc_sel(0);
-                exec_vpa_dlc_test_sub(); 
-
-                printk("[mt6332_upmu_set_vpa_dlc_sel(1)]\n");
-                mt6332_upmu_set_vpa_dlc_sel(1);                
                 exec_vpa_dlc_test_sub();
 
-                printk("[mt6332_upmu_set_vpa_dlc_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_dlc_sel(1)]\n");
+                mt6332_upmu_set_vpa_dlc_sel(1);
+                exec_vpa_dlc_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_dlc_sel(2)]\n");
                 mt6332_upmu_set_vpa_dlc_sel(2);
                 exec_vpa_dlc_test_sub();
 
-                printk("[mt6332_upmu_set_vpa_dlc_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_dlc_sel(3)]\n");
                 mt6332_upmu_set_vpa_dlc_sel(3);
                 exec_vpa_dlc_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 //-----------------------------------------------------------------
-    printk("[exec_vpa_dlc_test] mt6332_upmu_set_vpa_dlc_map_en(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test] mt6332_upmu_set_vpa_dlc_map_en(1);\n");
     mt6332_upmu_set_vpa_dlc_map_en(1);
 //-----------------------------------------------------------------
-    printk("[exec_vpa_dlc_test] mt6332_upmu_set_vpa_vosel_dlc001(20);\n");
-    printk("[exec_vpa_dlc_test] mt6332_upmu_set_vpa_vosel_dlc011(30);\n");
-    printk("[exec_vpa_dlc_test] mt6332_upmu_set_vpa_vosel_dlc111(50);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test] mt6332_upmu_set_vpa_vosel_dlc001(20);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test] mt6332_upmu_set_vpa_vosel_dlc011(30);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test] mt6332_upmu_set_vpa_vosel_dlc111(50);\n");
     mt6332_upmu_set_vpa_vosel_dlc001(20);
     mt6332_upmu_set_vpa_vosel_dlc011(30);
     mt6332_upmu_set_vpa_vosel_dlc111(50);
 
-    printk("[exec_vpa_dlc_test] mt6332_upmu_set_vpa_vosel_ctrl(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test] mt6332_upmu_set_vpa_vosel_ctrl(0);\n");
     mt6332_upmu_set_vpa_vosel_ctrl(0);
-    
+
     for(k=0;k<=MT6332_PMIC_VPA_VOSEL_MASK;k++) {
-        mt6332_upmu_set_vpa_vosel(k); 
-        printk("[exec_vpa_dlc_test] ni_vosel=%d, qi_dlc=%d\n", mt6332_upmu_get_ni_vpa_vosel(), mt6332_upmu_get_qi_vpa_dlc());
+        mt6332_upmu_set_vpa_vosel(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test] ni_vosel=%d, qi_dlc=%d\n", mt6332_upmu_get_ni_vpa_vosel(), mt6332_upmu_get_qi_vpa_dlc());
     }
 //-----------------------------------------------------------------
-    printk("[exec_vpa_dlc_test] mt6332_upmu_set_vpa_dlc_map_en(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_dlc_test] mt6332_upmu_set_vpa_dlc_map_en(0);\n");
     mt6332_upmu_set_vpa_dlc_map_en(0);
 //-----------------------------------------------------------------
 
@@ -2767,9 +2810,9 @@ void exec_vpa_dlc_test(void)
 
 void PMIC_BUCK_DLC(int index_val)
 {
-    printk("[PMIC_BUCK_DLC] start....\n");
+	battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_DLC] start....\n");
 
-    set_srclken_1_val(1); 
+    set_srclken_1_val(1);
     set_srclken_2_val(1);
     set_srclken_sw_mode();
 
@@ -2791,31 +2834,66 @@ void PMIC_BUCK_DLC(int index_val)
     mt6332_upmu_set_vpa_en_ctrl(0);
     mt6332_upmu_set_vsbst_en_ctrl(0);
 
-    switch(index_val){
+	switch (index_val) {
       //MT6331
-      case 0 : printk("[PMIC_BUCK_DLC] no DLC function\n");                break;
-      case 1 : printk("[PMIC_BUCK_DLC] no DLC function\n");                break;
-      case 2 : printk("[PMIC_BUCK_DLC] no DLC function\n");                break;
-      case 3 : printk("[PMIC_BUCK_DLC] no DLC function\n");                break;
-      case 4 : mt6331_upmu_set_vgpu_en(1);    exec_vgpu_dlc_test();        break;
-      case 5 : mt6331_upmu_set_vcore1_en(1);  exec_vcore1_dlc_test();      break;
-      case 6 : mt6331_upmu_set_vcore2_en(1);  exec_vcore2_dlc_test();      break;
-      case 7 : mt6331_upmu_set_vio18_en(1);   exec_vio18_dlc_test();       break;
-
+	case 0:
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_DLC] no DLC function\n");
+		break;
+	case 1:
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_DLC] no DLC function\n");
+		break;
+	case 2:
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_DLC] no DLC function\n");
+		break;
+	case 3:
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_DLC] no DLC function\n");
+		break;
+	case 4:
+		mt6331_upmu_set_vgpu_en(1);
+		exec_vgpu_dlc_test();
+		break;
+	case 5:
+		mt6331_upmu_set_vcore1_en(1);
+		exec_vcore1_dlc_test();
+		break;
+	case 6:
+		mt6331_upmu_set_vcore2_en(1);
+		exec_vcore2_dlc_test();
+		break;
+	case 7:
+		mt6331_upmu_set_vio18_en(1);
+		exec_vio18_dlc_test();
+		break;
       //MT6331
-      case 8 : mt6332_upmu_set_vdram_en(1);   exec_vdram_dlc_test();       break;
-      case 9 : mt6332_upmu_set_vdvfs2_en(1);  exec_vdvfs2_dlc_test();      break;
-      case 10: mt6332_upmu_set_vrf1_en(1);    exec_vrf1_dlc_test();        break;
-      case 11: mt6332_upmu_set_vrf2_en(1);    exec_vrf2_dlc_test();        break;
-      case 12: mt6332_upmu_set_vpa_en(1);     exec_vpa_dlc_test();         break;      
-      case 13: printk("[PMIC_BUCK_DLC] no DLC function\n");                break;
-
-      default:
-        printk("[PMIC_BUCK_DLC] Invalid channel value(%d)\n", index_val);
+	case 8:
+		mt6332_upmu_set_vdram_en(1);
+		exec_vdram_dlc_test();
+		break;
+	case 9:
+		mt6332_upmu_set_vdvfs2_en(1);
+		exec_vdvfs2_dlc_test();
+		break;
+	case 10:
+		mt6332_upmu_set_vrf1_en(1);
+		exec_vrf1_dlc_test();
+		break;
+	case 11:
+		mt6332_upmu_set_vrf2_en(1);
+		exec_vrf2_dlc_test();
+		break;
+	case 12:
+		mt6332_upmu_set_vpa_en(1);
+		exec_vpa_dlc_test();
+		break;
+	case 13:
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_DLC] no DLC function\n");
+		break;
+	default:
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_DLC] Invalid channel value(%d)\n", index_val);
         break;
     }
 
-    printk("[PMIC_BUCK_DLC] end....\n");
+	battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_DLC] end....\n");
 }
 #endif
 
@@ -2823,30 +2901,30 @@ void PMIC_BUCK_DLC(int index_val)
 void exec_vgpu_burst_test_sub_burst(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VGPU_BURST_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vgpu_burst_sleep(k);         
-        printk("[exec_vgpu_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vgpu_burst());
+        mt6331_upmu_set_vgpu_burst_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vgpu_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vgpu_burst());
     }
-    
+
     for(k=0;k<=MT6331_PMIC_VGPU_BURST_ON_MASK;k++) {
-        mt6331_upmu_set_vgpu_burst_on(k);        
-        printk("[exec_vgpu_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vgpu_burst());
+        mt6331_upmu_set_vgpu_burst_on(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vgpu_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vgpu_burst());
     }
 }
 
 void exec_vgpu_burst_test_sub(void)
 {
-    printk("[exec_vgpu_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vgpu_burst_test_sub_burst();
 
-    printk("[exec_vgpu_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vgpu_burst_test_sub_burst();
 
-    printk("[exec_vgpu_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vgpu_burst_test_sub_burst();
 
-    printk("[exec_vgpu_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vgpu_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vgpu_burst_test_sub_burst();
 }
 
@@ -2856,37 +2934,37 @@ void exec_vgpu_burst_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vgpu_burst_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_burst_ctrl] %d\n", i);
         mt6331_upmu_set_vgpu_burst_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VGPU_BURST_MASK;k++) {
-                    mt6331_upmu_set_vgpu_burst(k);                     
-                    printk("[exec_vgpu_burst_test] burst=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vgpu_burst());
-                }                    
+                    mt6331_upmu_set_vgpu_burst(k);
+					battery_log(BAT_LOG_CRTI, "[exec_vgpu_burst_test] burst=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vgpu_burst());
+                }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vgpu_burst_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_burst_sel(0)]\n");
                 mt6331_upmu_set_vgpu_burst_sel(0);
-                exec_vgpu_burst_test_sub(); 
-
-                printk("[mt6331_upmu_set_vgpu_burst_sel(1)]\n");
-                mt6331_upmu_set_vgpu_burst_sel(1);                
                 exec_vgpu_burst_test_sub();
 
-                printk("[mt6331_upmu_set_vgpu_burst_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_burst_sel(1)]\n");
+                mt6331_upmu_set_vgpu_burst_sel(1);
+                exec_vgpu_burst_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_burst_sel(2)]\n");
                 mt6331_upmu_set_vgpu_burst_sel(2);
                 exec_vgpu_burst_test_sub();
 
-                printk("[mt6331_upmu_set_vgpu_burst_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vgpu_burst_sel(3)]\n");
                 mt6331_upmu_set_vgpu_burst_sel(3);
                 exec_vgpu_burst_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -2895,30 +2973,30 @@ void exec_vgpu_burst_test(void)
 void exec_vcore1_burst_test_sub_burst(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VCORE1_BURST_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vcore1_burst_sleep(k);         
-        printk("[exec_vcore1_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore1_burst());
+        mt6331_upmu_set_vcore1_burst_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vcore1_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore1_burst());
     }
-    
+
     for(k=0;k<=MT6331_PMIC_VCORE1_BURST_ON_MASK;k++) {
-        mt6331_upmu_set_vcore1_burst_on(k);        
-        printk("[exec_vcore1_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore1_burst());
+        mt6331_upmu_set_vcore1_burst_on(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vcore1_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore1_burst());
     }
 }
 
 void exec_vcore1_burst_test_sub(void)
 {
-    printk("[exec_vcore1_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vcore1_burst_test_sub_burst();
 
-    printk("[exec_vcore1_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vcore1_burst_test_sub_burst();
 
-    printk("[exec_vcore1_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vcore1_burst_test_sub_burst();
 
-    printk("[exec_vcore1_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore1_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vcore1_burst_test_sub_burst();
 }
 
@@ -2928,37 +3006,37 @@ void exec_vcore1_burst_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vcore1_burst_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_burst_ctrl] %d\n", i);
         mt6331_upmu_set_vcore1_burst_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VCORE1_BURST_MASK;k++) {
-                    mt6331_upmu_set_vcore1_burst(k);                     
-                    printk("[exec_vcore1_burst_test] burst=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore1_burst());
-                }                    
+                    mt6331_upmu_set_vcore1_burst(k);
+					battery_log(BAT_LOG_CRTI, "[exec_vcore1_burst_test] burst=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore1_burst());
+                }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vcore1_burst_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_burst_sel(0)]\n");
                 mt6331_upmu_set_vcore1_burst_sel(0);
-                exec_vcore1_burst_test_sub(); 
-
-                printk("[mt6331_upmu_set_vcore1_burst_sel(1)]\n");
-                mt6331_upmu_set_vcore1_burst_sel(1);                
                 exec_vcore1_burst_test_sub();
 
-                printk("[mt6331_upmu_set_vcore1_burst_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_burst_sel(1)]\n");
+                mt6331_upmu_set_vcore1_burst_sel(1);
+                exec_vcore1_burst_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_burst_sel(2)]\n");
                 mt6331_upmu_set_vcore1_burst_sel(2);
                 exec_vcore1_burst_test_sub();
 
-                printk("[mt6331_upmu_set_vcore1_burst_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore1_burst_sel(3)]\n");
                 mt6331_upmu_set_vcore1_burst_sel(3);
                 exec_vcore1_burst_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -2967,30 +3045,30 @@ void exec_vcore1_burst_test(void)
 void exec_vcore2_burst_test_sub_burst(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VCORE2_BURST_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vcore2_burst_sleep(k);         
-        printk("[exec_vcore2_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore2_burst());
+        mt6331_upmu_set_vcore2_burst_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vcore2_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore2_burst());
     }
-    
+
     for(k=0;k<=MT6331_PMIC_VCORE2_BURST_ON_MASK;k++) {
-        mt6331_upmu_set_vcore2_burst_on(k);        
-        printk("[exec_vcore2_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore2_burst());
+        mt6331_upmu_set_vcore2_burst_on(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vcore2_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore2_burst());
     }
 }
 
 void exec_vcore2_burst_test_sub(void)
 {
-    printk("[exec_vcore2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vcore2_burst_test_sub_burst();
 
-    printk("[exec_vcore2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vcore2_burst_test_sub_burst();
 
-    printk("[exec_vcore2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vcore2_burst_test_sub_burst();
 
-    printk("[exec_vcore2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vcore2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vcore2_burst_test_sub_burst();
 }
 
@@ -3000,37 +3078,37 @@ void exec_vcore2_burst_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vcore2_burst_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_burst_ctrl] %d\n", i);
         mt6331_upmu_set_vcore2_burst_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VCORE2_BURST_MASK;k++) {
-                    mt6331_upmu_set_vcore2_burst(k);                     
-                    printk("[exec_vcore2_burst_test] burst=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore2_burst());
-                }                    
+                    mt6331_upmu_set_vcore2_burst(k);
+					battery_log(BAT_LOG_CRTI, "[exec_vcore2_burst_test] burst=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vcore2_burst());
+                }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vcore2_burst_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_burst_sel(0)]\n");
                 mt6331_upmu_set_vcore2_burst_sel(0);
-                exec_vcore2_burst_test_sub(); 
-
-                printk("[mt6331_upmu_set_vcore2_burst_sel(1)]\n");
-                mt6331_upmu_set_vcore2_burst_sel(1);                
                 exec_vcore2_burst_test_sub();
 
-                printk("[mt6331_upmu_set_vcore2_burst_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_burst_sel(1)]\n");
+                mt6331_upmu_set_vcore2_burst_sel(1);
+                exec_vcore2_burst_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_burst_sel(2)]\n");
                 mt6331_upmu_set_vcore2_burst_sel(2);
                 exec_vcore2_burst_test_sub();
 
-                printk("[mt6331_upmu_set_vcore2_burst_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vcore2_burst_sel(3)]\n");
                 mt6331_upmu_set_vcore2_burst_sel(3);
                 exec_vcore2_burst_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -3039,30 +3117,30 @@ void exec_vcore2_burst_test(void)
 void exec_vio18_burst_test_sub_burst(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_VCORE2_BURST_SLEEP_MASK;k++) {
-        mt6331_upmu_set_vio18_burst_sleep(k);         
-        printk("[exec_vio18_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vio18_burst());
+        mt6331_upmu_set_vio18_burst_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vio18_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vio18_burst());
     }
-    
+
     for(k=0;k<=MT6331_PMIC_VCORE2_BURST_ON_MASK;k++) {
-        mt6331_upmu_set_vio18_burst_on(k);        
-        printk("[exec_vio18_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vio18_burst());
+        mt6331_upmu_set_vio18_burst_on(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vio18_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vio18_burst());
     }
 }
 
 void exec_vio18_burst_test_sub(void)
 {
-    printk("[exec_vio18_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vio18_burst_test_sub_burst();
 
-    printk("[exec_vio18_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vio18_burst_test_sub_burst();
 
-    printk("[exec_vio18_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vio18_burst_test_sub_burst();
 
-    printk("[exec_vio18_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vio18_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vio18_burst_test_sub_burst();
 }
 
@@ -3072,37 +3150,37 @@ void exec_vio18_burst_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_vio18_burst_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_burst_ctrl] %d\n", i);
         mt6331_upmu_set_vio18_burst_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_VCORE2_BURST_MASK;k++) {
-                    mt6331_upmu_set_vio18_burst(k);                     
-                    printk("[exec_vio18_burst_test] burst=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vio18_burst());
-                }                    
+                    mt6331_upmu_set_vio18_burst(k);
+					battery_log(BAT_LOG_CRTI, "[exec_vio18_burst_test] burst=%d, qi_burst=%d\n", k, mt6331_upmu_get_qi_vio18_burst());
+                }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_vio18_burst_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_burst_sel(0)]\n");
                 mt6331_upmu_set_vio18_burst_sel(0);
-                exec_vio18_burst_test_sub(); 
-
-                printk("[mt6331_upmu_set_vio18_burst_sel(1)]\n");
-                mt6331_upmu_set_vio18_burst_sel(1);                
                 exec_vio18_burst_test_sub();
 
-                printk("[mt6331_upmu_set_vio18_burst_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_burst_sel(1)]\n");
+                mt6331_upmu_set_vio18_burst_sel(1);
+                exec_vio18_burst_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_burst_sel(2)]\n");
                 mt6331_upmu_set_vio18_burst_sel(2);
                 exec_vio18_burst_test_sub();
 
-                printk("[mt6331_upmu_set_vio18_burst_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_vio18_burst_sel(3)]\n");
                 mt6331_upmu_set_vio18_burst_sel(3);
                 exec_vio18_burst_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -3111,30 +3189,30 @@ void exec_vio18_burst_test(void)
 void exec_vdram_burst_test_sub_burst(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VDRAM_BURST_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vdram_burst_sleep(k);         
-        printk("[exec_vdram_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdram_burst());
+        mt6332_upmu_set_vdram_burst_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vdram_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdram_burst());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VDRAM_BURST_ON_MASK;k++) {
-        mt6332_upmu_set_vdram_burst_on(k);        
-        printk("[exec_vdram_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdram_burst());
+        mt6332_upmu_set_vdram_burst_on(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vdram_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdram_burst());
     }
 }
 
 void exec_vdram_burst_test_sub(void)
 {
-    printk("[exec_vdram_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vdram_burst_test_sub_burst();
 
-    printk("[exec_vdram_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vdram_burst_test_sub_burst();
 
-    printk("[exec_vdram_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vdram_burst_test_sub_burst();
 
-    printk("[exec_vdram_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdram_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vdram_burst_test_sub_burst();
 }
 
@@ -3144,37 +3222,37 @@ void exec_vdram_burst_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vdram_burst_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_burst_ctrl] %d\n", i);
         mt6332_upmu_set_vdram_burst_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VDRAM_BURST_MASK;k++) {
-                    mt6332_upmu_set_vdram_burst(k);                     
-                    printk("[exec_vdram_burst_test] burst=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdram_burst());
-                }                    
+                    mt6332_upmu_set_vdram_burst(k);
+					battery_log(BAT_LOG_CRTI, "[exec_vdram_burst_test] burst=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdram_burst());
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vdram_burst_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_burst_sel(0)]\n");
                 mt6332_upmu_set_vdram_burst_sel(0);
-                exec_vdram_burst_test_sub(); 
-
-                printk("[mt6332_upmu_set_vdram_burst_sel(1)]\n");
-                mt6332_upmu_set_vdram_burst_sel(1);                
                 exec_vdram_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vdram_burst_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_burst_sel(1)]\n");
+                mt6332_upmu_set_vdram_burst_sel(1);
+                exec_vdram_burst_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_burst_sel(2)]\n");
                 mt6332_upmu_set_vdram_burst_sel(2);
                 exec_vdram_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vdram_burst_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdram_burst_sel(3)]\n");
                 mt6332_upmu_set_vdram_burst_sel(3);
                 exec_vdram_burst_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -3183,30 +3261,30 @@ void exec_vdram_burst_test(void)
 void exec_vdvfs2_burst_test_sub_burst(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VDVFS2_BURST_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vdvfs2_burst_sleep(k);         
-        printk("[exec_vdvfs2_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdvfs2_burst());
+        mt6332_upmu_set_vdvfs2_burst_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdvfs2_burst());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VDVFS2_BURST_ON_MASK;k++) {
-        mt6332_upmu_set_vdvfs2_burst_on(k);        
-        printk("[exec_vdvfs2_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdvfs2_burst());
+        mt6332_upmu_set_vdvfs2_burst_on(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdvfs2_burst());
     }
 }
 
 void exec_vdvfs2_burst_test_sub(void)
 {
-    printk("[exec_vdvfs2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vdvfs2_burst_test_sub_burst();
 
-    printk("[exec_vdvfs2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vdvfs2_burst_test_sub_burst();
 
-    printk("[exec_vdvfs2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vdvfs2_burst_test_sub_burst();
 
-    printk("[exec_vdvfs2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vdvfs2_burst_test_sub_burst();
 }
 
@@ -3216,37 +3294,37 @@ void exec_vdvfs2_burst_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vdvfs2_burst_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_burst_ctrl] %d\n", i);
         mt6332_upmu_set_vdvfs2_burst_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VDVFS2_BURST_MASK;k++) {
-                    mt6332_upmu_set_vdvfs2_burst(k);                     
-                    printk("[exec_vdvfs2_burst_test] burst=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdvfs2_burst());
-                }                    
+                    mt6332_upmu_set_vdvfs2_burst(k);
+					battery_log(BAT_LOG_CRTI, "[exec_vdvfs2_burst_test] burst=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vdvfs2_burst());
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vdvfs2_burst_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_burst_sel(0)]\n");
                 mt6332_upmu_set_vdvfs2_burst_sel(0);
-                exec_vdvfs2_burst_test_sub(); 
-
-                printk("[mt6332_upmu_set_vdvfs2_burst_sel(1)]\n");
-                mt6332_upmu_set_vdvfs2_burst_sel(1);                
                 exec_vdvfs2_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vdvfs2_burst_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_burst_sel(1)]\n");
+                mt6332_upmu_set_vdvfs2_burst_sel(1);
+                exec_vdvfs2_burst_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_burst_sel(2)]\n");
                 mt6332_upmu_set_vdvfs2_burst_sel(2);
                 exec_vdvfs2_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vdvfs2_burst_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vdvfs2_burst_sel(3)]\n");
                 mt6332_upmu_set_vdvfs2_burst_sel(3);
                 exec_vdvfs2_burst_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -3255,30 +3333,30 @@ void exec_vdvfs2_burst_test(void)
 void exec_vrf1_burst_test_sub_burst(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VRF1_BURST_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vrf1_burst_sleep(k);         
-        printk("[exec_vrf1_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf1_burst());
+        mt6332_upmu_set_vrf1_burst_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vrf1_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf1_burst());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VRF1_BURST_ON_MASK;k++) {
-        mt6332_upmu_set_vrf1_burst_on(k);        
-        printk("[exec_vrf1_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf1_burst());
+        mt6332_upmu_set_vrf1_burst_on(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vrf1_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf1_burst());
     }
 }
 
 void exec_vrf1_burst_test_sub(void)
 {
-    printk("[exec_vrf1_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vrf1_burst_test_sub_burst();
 
-    printk("[exec_vrf1_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vrf1_burst_test_sub_burst();
 
-    printk("[exec_vrf1_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vrf1_burst_test_sub_burst();
 
-    printk("[exec_vrf1_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf1_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vrf1_burst_test_sub_burst();
 }
 
@@ -3288,37 +3366,37 @@ void exec_vrf1_burst_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vrf1_burst_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_burst_ctrl] %d\n", i);
         mt6332_upmu_set_vrf1_burst_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VRF1_BURST_MASK;k++) {
-                    mt6332_upmu_set_vrf1_burst(k);                     
-                    printk("[exec_vrf1_burst_test] burst=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf1_burst());
-                }                    
+                    mt6332_upmu_set_vrf1_burst(k);
+					battery_log(BAT_LOG_CRTI, "[exec_vrf1_burst_test] burst=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf1_burst());
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vrf1_burst_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_burst_sel(0)]\n");
                 mt6332_upmu_set_vrf1_burst_sel(0);
-                exec_vrf1_burst_test_sub(); 
-
-                printk("[mt6332_upmu_set_vrf1_burst_sel(1)]\n");
-                mt6332_upmu_set_vrf1_burst_sel(1);                
                 exec_vrf1_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vrf1_burst_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_burst_sel(1)]\n");
+                mt6332_upmu_set_vrf1_burst_sel(1);
+                exec_vrf1_burst_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_burst_sel(2)]\n");
                 mt6332_upmu_set_vrf1_burst_sel(2);
                 exec_vrf1_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vrf1_burst_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf1_burst_sel(3)]\n");
                 mt6332_upmu_set_vrf1_burst_sel(3);
                 exec_vrf1_burst_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -3327,30 +3405,30 @@ void exec_vrf1_burst_test(void)
 void exec_vrf2_burst_test_sub_burst(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VRF2_BURST_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vrf2_burst_sleep(k);         
-        printk("[exec_vrf2_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf2_burst());
+        mt6332_upmu_set_vrf2_burst_sleep(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vrf2_burst_test_sub_burst] burst_sleep=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf2_burst());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VRF2_BURST_ON_MASK;k++) {
-        mt6332_upmu_set_vrf2_burst_on(k);        
-        printk("[exec_vrf2_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf2_burst());
+        mt6332_upmu_set_vrf2_burst_on(k);
+		battery_log(BAT_LOG_CRTI, "[exec_vrf2_burst_test_sub_burst] burst_on=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf2_burst());
     }
 }
 
 void exec_vrf2_burst_test_sub(void)
 {
-    printk("[exec_vrf2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vrf2_burst_test_sub_burst();
 
-    printk("[exec_vrf2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vrf2_burst_test_sub_burst();
 
-    printk("[exec_vrf2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vrf2_burst_test_sub_burst();
 
-    printk("[exec_vrf2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vrf2_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vrf2_burst_test_sub_burst();
 }
 
@@ -3360,37 +3438,37 @@ void exec_vrf2_burst_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vrf2_burst_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_burst_ctrl] %d\n", i);
         mt6332_upmu_set_vrf2_burst_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VRF2_BURST_MASK;k++) {
-                    mt6332_upmu_set_vrf2_burst(k);                     
-                    printk("[exec_vrf2_burst_test] burst=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf2_burst());
-                }                    
+                    mt6332_upmu_set_vrf2_burst(k);
+					battery_log(BAT_LOG_CRTI, "[exec_vrf2_burst_test] burst=%d, qi_burst=%d\n", k, mt6332_upmu_get_qi_vrf2_burst());
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vrf2_burst_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_burst_sel(0)]\n");
                 mt6332_upmu_set_vrf2_burst_sel(0);
-                exec_vrf2_burst_test_sub(); 
-
-                printk("[mt6332_upmu_set_vrf2_burst_sel(1)]\n");
-                mt6332_upmu_set_vrf2_burst_sel(1);                
                 exec_vrf2_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vrf2_burst_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_burst_sel(1)]\n");
+                mt6332_upmu_set_vrf2_burst_sel(1);
+                exec_vrf2_burst_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_burst_sel(2)]\n");
                 mt6332_upmu_set_vrf2_burst_sel(2);
                 exec_vrf2_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vrf2_burst_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vrf2_burst_sel(3)]\n");
                 mt6332_upmu_set_vrf2_burst_sel(3);
                 exec_vrf2_burst_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -3399,36 +3477,36 @@ void exec_vrf2_burst_test(void)
 void exec_vpa_burst_test_sub_burst(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VPA_BURSTH_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vpa_bursth_sleep(k);         
+        mt6332_upmu_set_vpa_bursth_sleep(k);
         mt6332_upmu_set_vpa_burstl_sleep(k);
-        
-        printk("[exec_vpa_burst_test_sub_burst] bursth_sleep=%d, burstl_sleep=%d, qi_bursth=%d, qi_burstl=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vpa_burst_test_sub_burst] bursth_sleep=%d, burstl_sleep=%d, qi_bursth=%d, qi_burstl=%d\n",
             k, k, mt6332_upmu_get_qi_vpa_bursth(), mt6332_upmu_get_qi_vpa_burstl());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VPA_BURSTH_ON_MASK;k++) {
-        mt6332_upmu_set_vpa_bursth_on(k);        
-        mt6332_upmu_set_vpa_burstl_on(k);        
-        
-        printk("[exec_vpa_burst_test_sub_burst] bursth_on=%d, burstl_on=%d, qi_bursth=%d, qi_burstl=%d\n", 
+        mt6332_upmu_set_vpa_bursth_on(k);
+        mt6332_upmu_set_vpa_burstl_on(k);
+
+		battery_log(BAT_LOG_CRTI, "[exec_vpa_burst_test_sub_burst] bursth_on=%d, burstl_on=%d, qi_bursth=%d, qi_burstl=%d\n",
             k, k, mt6332_upmu_get_qi_vpa_bursth(), mt6332_upmu_get_qi_vpa_burstl());
     }
 }
 
 void exec_vpa_burst_test_sub(void)
 {
-    printk("[exec_vpa_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vpa_burst_test_sub_burst();
 
-    printk("[exec_vpa_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vpa_burst_test_sub_burst();
 
-    printk("[exec_vpa_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vpa_burst_test_sub_burst();
 
-    printk("[exec_vpa_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vpa_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vpa_burst_test_sub_burst();
 }
 
@@ -3438,40 +3516,40 @@ void exec_vpa_burst_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vpa_burst_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_burst_ctrl] %d\n", i);
         mt6332_upmu_set_vpa_burst_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VPA_BURSTH_MASK;k++) {
-                    mt6332_upmu_set_vpa_bursth(k);                     
-                    mt6332_upmu_set_vpa_burstl(k);                     
-                    
-                    printk("[exec_vpa_burst_test] bursth=%d, burstl=%d, qi_bursth=%d, qi_burstl=%d\n", 
+                    mt6332_upmu_set_vpa_bursth(k);
+                    mt6332_upmu_set_vpa_burstl(k);
+
+					battery_log(BAT_LOG_CRTI, "[exec_vpa_burst_test] bursth=%d, burstl=%d, qi_bursth=%d, qi_burstl=%d\n",
                         k, k, mt6332_upmu_get_qi_vpa_bursth(), mt6332_upmu_get_qi_vpa_burstl());
-                }                    
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vpa_burst_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_burst_sel(0)]\n");
                 mt6332_upmu_set_vpa_burst_sel(0);
-                exec_vpa_burst_test_sub(); 
-
-                printk("[mt6332_upmu_set_vpa_burst_sel(1)]\n");
-                mt6332_upmu_set_vpa_burst_sel(1);                
                 exec_vpa_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vpa_burst_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_burst_sel(1)]\n");
+                mt6332_upmu_set_vpa_burst_sel(1);
+                exec_vpa_burst_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_burst_sel(2)]\n");
                 mt6332_upmu_set_vpa_burst_sel(2);
                 exec_vpa_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vpa_burst_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vpa_burst_sel(3)]\n");
                 mt6332_upmu_set_vpa_burst_sel(3);
                 exec_vpa_burst_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -3480,36 +3558,36 @@ void exec_vpa_burst_test(void)
 void exec_vsbst_burst_test_sub_burst(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_VSBST_BURSTH_SLEEP_MASK;k++) {
-        mt6332_upmu_set_vsbst_bursth_sleep(k);         
+        mt6332_upmu_set_vsbst_bursth_sleep(k);
         mt6332_upmu_set_vsbst_burstl_sleep(k);
-        
-        printk("[exec_vsbst_burst_test_sub_burst] bursth_sleep=%d, burstl_sleep=%d, qi_bursth=%d, qi_burstl=%d\n", 
+
+		battery_log(BAT_LOG_CRTI, "[exec_vsbst_burst_test_sub_burst] bursth_sleep=%d, burstl_sleep=%d, qi_bursth=%d, qi_burstl=%d\n",
             k, k, mt6332_upmu_get_qi_vsbst_bursth(), mt6332_upmu_get_qi_vsbst_burstl());
     }
-    
+
     for(k=0;k<=MT6332_PMIC_VSBST_BURSTH_ON_MASK;k++) {
-        mt6332_upmu_set_vsbst_bursth_on(k);        
-        mt6332_upmu_set_vsbst_burstl_on(k);        
-        
-        printk("[exec_vsbst_burst_test_sub_burst] bursth_on=%d, burstl_on=%d, qi_bursth=%d, qi_burstl=%d\n", 
+        mt6332_upmu_set_vsbst_bursth_on(k);
+        mt6332_upmu_set_vsbst_burstl_on(k);
+
+		battery_log(BAT_LOG_CRTI, "[exec_vsbst_burst_test_sub_burst] bursth_on=%d, burstl_on=%d, qi_bursth=%d, qi_burstl=%d\n",
             k, k, mt6332_upmu_get_qi_vsbst_bursth(), mt6332_upmu_get_qi_vsbst_burstl());
     }
 }
 
 void exec_vsbst_burst_test_sub(void)
 {
-    printk("[exec_vsbst_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vsbst_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_vsbst_burst_test_sub_burst();
 
-    printk("[exec_vsbst_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vsbst_burst_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_vsbst_burst_test_sub_burst();
 
-    printk("[exec_vsbst_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vsbst_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_vsbst_burst_test_sub_burst();
 
-    printk("[exec_vsbst_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_vsbst_burst_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_vsbst_burst_test_sub_burst();
 }
 
@@ -3519,40 +3597,40 @@ void exec_vsbst_burst_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_vsbst_burst_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_burst_ctrl] %d\n", i);
         mt6332_upmu_set_vsbst_burst_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_VSBST_BURSTH_MASK;k++) {
-                    mt6332_upmu_set_vsbst_bursth(k);                     
-                    mt6332_upmu_set_vsbst_burstl(k);                     
-                    
-                    printk("[exec_vsbst_burst_test] bursth=%d, burstl=%d, qi_bursth=%d, qi_burstl=%d\n", 
+                    mt6332_upmu_set_vsbst_bursth(k);
+                    mt6332_upmu_set_vsbst_burstl(k);
+
+					battery_log(BAT_LOG_CRTI, "[exec_vsbst_burst_test] bursth=%d, burstl=%d, qi_bursth=%d, qi_burstl=%d\n",
                         k, k, mt6332_upmu_get_qi_vsbst_bursth(), mt6332_upmu_get_qi_vsbst_burstl());
-                }                    
+                }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_vsbst_burst_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_burst_sel(0)]\n");
                 mt6332_upmu_set_vsbst_burst_sel(0);
-                exec_vsbst_burst_test_sub(); 
-
-                printk("[mt6332_upmu_set_vsbst_burst_sel(1)]\n");
-                mt6332_upmu_set_vsbst_burst_sel(1);                
                 exec_vsbst_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vsbst_burst_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_burst_sel(1)]\n");
+                mt6332_upmu_set_vsbst_burst_sel(1);
+                exec_vsbst_burst_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_burst_sel(2)]\n");
                 mt6332_upmu_set_vsbst_burst_sel(2);
                 exec_vsbst_burst_test_sub();
 
-                printk("[mt6332_upmu_set_vsbst_burst_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_vsbst_burst_sel(3)]\n");
                 mt6332_upmu_set_vsbst_burst_sel(3);
                 exec_vsbst_burst_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -3560,9 +3638,9 @@ void exec_vsbst_burst_test(void)
 
 void PMIC_BUCK_BURST(int index_val)
 {
-    printk("[PMIC_BUCK_BURST] start....\n");
+	battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_BURST] start....\n");
 
-    set_srclken_1_val(1); 
+    set_srclken_1_val(1);
     set_srclken_2_val(1);
     set_srclken_sw_mode();
 
@@ -3584,31 +3662,67 @@ void PMIC_BUCK_BURST(int index_val)
     mt6332_upmu_set_vpa_en_ctrl(0);
     mt6332_upmu_set_vsbst_en_ctrl(0);
 
-    switch(index_val){
-      //MT6331
-      case 0 : printk("[PMIC_BUCK_BURST] no BURST function\n");              break;
-      case 1 : printk("[PMIC_BUCK_BURST] no BURST function\n");              break;
-      case 2 : printk("[PMIC_BUCK_BURST] no BURST function\n");              break;
-      case 3 : printk("[PMIC_BUCK_BURST] no BURST function\n");              break;
-      case 4 : mt6331_upmu_set_vgpu_en(1);    exec_vgpu_burst_test();      break;
-      case 5 : mt6331_upmu_set_vcore1_en(1);  exec_vcore1_burst_test();    break;
-      case 6 : mt6331_upmu_set_vcore2_en(1);  exec_vcore2_burst_test();    break;
-      case 7 : mt6331_upmu_set_vio18_en(1);   exec_vio18_burst_test();     break;
-
-      //MT6331
-      case 8 : mt6332_upmu_set_vdram_en(1);   exec_vdram_burst_test();     break;
-      case 9 : mt6332_upmu_set_vdvfs2_en(1);  exec_vdvfs2_burst_test();    break;
-      case 10: mt6332_upmu_set_vrf1_en(1);    exec_vrf1_burst_test();      break;
-      case 11: mt6332_upmu_set_vrf2_en(1);    exec_vrf2_burst_test();      break;
-      case 12: mt6332_upmu_set_vpa_en(1);     exec_vpa_burst_test();       break;      
-      case 13: mt6332_upmu_set_vpa_en(1);     exec_vsbst_burst_test();     break;
-
+	switch (index_val) {
+	/*MT6331*/
+	case 0:
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_BURST] no BURST function\n");
+		break;
+	case 1:
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_BURST] no BURST function\n");
+		break;
+	case 2:
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_BURST] no BURST function\n");
+		break;
+	case 3:
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_BURST] no BURST function\n");
+		break;
+	case 4:
+		mt6331_upmu_set_vgpu_en(1);
+		exec_vgpu_burst_test();
+		break;
+	case 5:
+		mt6331_upmu_set_vcore1_en(1);
+		exec_vcore1_burst_test();
+		break;
+	case 6:
+		mt6331_upmu_set_vcore2_en(1);
+		exec_vcore2_burst_test();
+		break;
+	case 7:
+		mt6331_upmu_set_vio18_en(1);
+		exec_vio18_burst_test();
+		break;
+	/*MT6331*/
+	case 8:
+		mt6332_upmu_set_vdram_en(1);
+		exec_vdram_burst_test();
+		break;
+	case 9:
+		mt6332_upmu_set_vdvfs2_en(1);
+		exec_vdvfs2_burst_test();
+		break;
+	case 10:
+		mt6332_upmu_set_vrf1_en(1);
+		exec_vrf1_burst_test();
+		break;
+	case 11:
+		mt6332_upmu_set_vrf2_en(1);
+		exec_vrf2_burst_test();
+		break;
+	case 12:
+		mt6332_upmu_set_vpa_en(1);
+		exec_vpa_burst_test();
+		break;
+	case 13:
+		mt6332_upmu_set_vpa_en(1);
+		exec_vsbst_burst_test();
+		break;
       default:
-        printk("[PMIC_BUCK_BURST] Invalid channel value(%d)\n", index_val);
+		battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_BURST] Invalid channel value(%d)\n", index_val);
         break;
     }
 
-    printk("[PMIC_BUCK_BURST] end....\n");
+	battery_log(BAT_LOG_CRTI, "[PMIC_BUCK_BURST] end....\n");
 }
 #endif
 
@@ -3622,45 +3736,45 @@ void exec_6331_ldo_vtcxo1_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vtcxo1_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo1_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vtcxo1_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VTCXO1]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VTCXO1]\n");
                         hwPowerOn(MT6331_POWER_LDO_VTCXO1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VTCXO1]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VTCXO1]\n");
                         hwPowerDown(MT6331_POWER_LDO_VTCXO1, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VTCXO1]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VTCXO1]\n");
                         hwPowerOn(MT6331_POWER_LDO_VTCXO1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VTCXO1]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VTCXO1, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VTCXO1]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VTCXO1, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vtcxo1_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vtcxo1_on_ctrl(0);\n"); mt6331_upmu_set_rg_vtcxo1_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vtcxo1_on_ctrl(0);\n"); mt6331_upmu_set_rg_vtcxo1_on_ctrl(0);
 }
 
 void exec_6331_ldo_vtcxo2_en_test(void)
@@ -3669,45 +3783,45 @@ void exec_6331_ldo_vtcxo2_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vtcxo2_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo2_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vtcxo2_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VTCXO2]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VTCXO2]\n");
                         hwPowerOn(MT6331_POWER_LDO_VTCXO2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VTCXO2]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VTCXO2]\n");
                         hwPowerDown(MT6331_POWER_LDO_VTCXO2, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VTCXO2]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VTCXO2]\n");
                         hwPowerOn(MT6331_POWER_LDO_VTCXO2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VTCXO2]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VTCXO2, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VTCXO2]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VTCXO2, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vtcxo2_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vtcxo2_on_ctrl(0);\n"); mt6331_upmu_set_rg_vtcxo2_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vtcxo2_on_ctrl(0);\n"); mt6331_upmu_set_rg_vtcxo2_on_ctrl(0);
 }
 
 void exec_6331_ldo_vaud32_en_test(void)
@@ -3716,45 +3830,45 @@ void exec_6331_ldo_vaud32_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vaud32_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vaud32_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vaud32_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VAUD32]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUD32]\n");
                         hwPowerOn(MT6331_POWER_LDO_VAUD32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
                         hwPowerDown(MT6331_POWER_LDO_VAUD32, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VAUD32]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUD32]\n");
                         hwPowerOn(MT6331_POWER_LDO_VAUD32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VAUD32, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VAUD32, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vaud32_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vaud32_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vaud32_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vaud32_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vaud32_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vaud32_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vaud32_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vaud32_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vaud32_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vaud32_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vaud32_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vaud32_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vaud32_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vaud32_on_ctrl(0);\n"); mt6331_upmu_set_rg_vaud32_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vaud32_on_ctrl(0);\n"); mt6331_upmu_set_rg_vaud32_on_ctrl(0);
 }
 
 void exec_6331_ldo_vauxa32_en_test(void)
@@ -3763,90 +3877,90 @@ void exec_6331_ldo_vauxa32_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vauxa32_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vauxa32_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vauxa32_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VAUXA32]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUXA32]\n");
                         hwPowerOn(MT6331_POWER_LDO_VAUXA32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
                         hwPowerDown(MT6331_POWER_LDO_VAUXA32, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VAUXA32]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUXA32]\n");
                         hwPowerOn(MT6331_POWER_LDO_VAUXA32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VAUXA32, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VAUXA32, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vauxa32_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vauxa32_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vauxa32_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vauxa32_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vauxa32_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vauxa32_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vauxa32_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vauxa32_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vauxa32_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vauxa32_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vauxa32_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vauxa32_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vauxa32_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vauxa32_on_ctrl(0);\n"); mt6331_upmu_set_rg_vauxa32_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vauxa32_on_ctrl(0);\n"); mt6331_upmu_set_rg_vauxa32_on_ctrl(0);
 }
 
 void exec_6331_ldo_vcama_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMA]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMA]\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMA, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAMA, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMA]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMA]\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMA, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAMA, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAMA, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vio28_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VIO28]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIO28]\n");
             hwPowerOn(MT6331_POWER_LDO_VIO28, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VIO28]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIO28]\n");
             hwPowerDown(MT6331_POWER_LDO_VIO28, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VIO28]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIO28]\n");
             hwPowerOn(MT6331_POWER_LDO_VIO28, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VIO28]\n");
-            hwPowerDown(MT6331_POWER_LDO_VIO28, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIO28]\n");
+            hwPowerDown(MT6331_POWER_LDO_VIO28, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vcam_af_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF]\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF]\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vmc_en_test(void)
@@ -3855,45 +3969,45 @@ void exec_6331_ldo_vmc_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vmc_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmc_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vmc_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VMC]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMC]\n");
                         hwPowerOn(MT6331_POWER_LDO_VMC, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VMC]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMC]\n");
                         hwPowerDown(MT6331_POWER_LDO_VMC, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VMC]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMC]\n");
                         hwPowerOn(MT6331_POWER_LDO_VMC, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VMC]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VMC, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMC]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VMC, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vmc_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vmc_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmc_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vmc_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vmc_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmc_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vmc_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vmc_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmc_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vmc_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vmc_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmc_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vmc_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vmc_on_ctrl(0);\n"); mt6331_upmu_set_rg_vmc_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vmc_on_ctrl(0);\n"); mt6331_upmu_set_rg_vmc_on_ctrl(0);
 }
 
 void exec_6331_ldo_vmch_en_test(void)
@@ -3902,45 +4016,45 @@ void exec_6331_ldo_vmch_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vmch_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmch_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vmch_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VMCH]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMCH]\n");
                         hwPowerOn(MT6331_POWER_LDO_VMCH, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VMCH]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMCH]\n");
                         hwPowerDown(MT6331_POWER_LDO_VMCH, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VMCH]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMCH]\n");
                         hwPowerOn(MT6331_POWER_LDO_VMCH, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VMCH]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VMCH, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMCH]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VMCH, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vmch_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vmch_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmch_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vmch_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vmch_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmch_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vmch_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vmch_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmch_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vmch_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vmch_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmch_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vmch_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vmch_on_ctrl(0);\n"); mt6331_upmu_set_rg_vmch_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vmch_on_ctrl(0);\n"); mt6331_upmu_set_rg_vmch_on_ctrl(0);
 }
 
 void exec_6331_ldo_vemc33_en_test(void)
@@ -3949,75 +4063,75 @@ void exec_6331_ldo_vemc33_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vemc33_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vemc33_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vemc33_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VEMC33]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VEMC33]\n");
                         hwPowerOn(MT6331_POWER_LDO_VEMC33, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VEMC33]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VEMC33]\n");
                         hwPowerDown(MT6331_POWER_LDO_VEMC33, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VEMC33]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VEMC33]\n");
                         hwPowerOn(MT6331_POWER_LDO_VEMC33, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VEMC33]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VEMC33, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VEMC33]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VEMC33, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vemc33_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vemc33_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vemc33_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vemc33_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vemc33_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vemc33_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vemc33_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vemc33_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vemc33_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vemc33_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vemc33_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vemc33_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vemc33_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vemc33_on_ctrl(0);\n"); mt6331_upmu_set_rg_vemc33_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vemc33_on_ctrl(0);\n"); mt6331_upmu_set_rg_vemc33_on_ctrl(0);
 }
 
 void exec_6331_ldo_vgp1_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1]\n");
             hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1]\n");
             hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
-            hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+            hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vgp4_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP4]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4]\n");
             hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP4]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4]\n");
             hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
-            hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+            hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vsim1_en_test(void)
@@ -4026,45 +4140,45 @@ void exec_6331_ldo_vsim1_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vsim1_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim1_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vsim1_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VSIM1]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1]\n");
                         hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
                         hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VSIM1]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1]\n");
                         hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vsim1_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vsim1_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim1_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vsim1_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vsim1_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim1_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vsim1_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vsim1_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim1_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vsim1_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vsim1_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim1_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vsim1_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vsim1_on_ctrl(0);\n"); mt6331_upmu_set_rg_vsim1_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vsim1_on_ctrl(0);\n"); mt6331_upmu_set_rg_vsim1_on_ctrl(0);
 }
 
 void exec_6331_ldo_vsim2_en_test(void)
@@ -4073,97 +4187,97 @@ void exec_6331_ldo_vsim2_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vsim2_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim2_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vsim2_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VSIM2]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2]\n");
                         hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
                         hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VSIM2]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2]\n");
                         hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vsim2_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vsim2_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim2_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vsim2_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vsim2_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim2_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vsim2_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vsim2_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim2_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vsim2_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vsim2_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim2_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vsim2_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vsim2_on_ctrl(0);\n"); mt6331_upmu_set_rg_vsim2_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vsim2_on_ctrl(0);\n"); mt6331_upmu_set_rg_vsim2_on_ctrl(0);
 }
 
 void exec_6331_ldo_vfbb_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VFBB]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VFBB]\n");
             hwPowerOn(MT6331_POWER_LDO_VFBB, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VFBB]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VFBB]\n");
             hwPowerDown(MT6331_POWER_LDO_VFBB, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VFBB]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VFBB]\n");
             hwPowerOn(MT6331_POWER_LDO_VFBB, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VFBB]\n");
-            hwPowerDown(MT6331_POWER_LDO_VFBB, "ldo_dvt"); read_adc_value(LDO_ONLY);                       
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VFBB]\n");
+            hwPowerDown(MT6331_POWER_LDO_VFBB, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vibr_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR]\n");
             hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
             hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR]\n");
             hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
-            hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+            hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vrtc_en_test(void)
 {
     mt6331_upmu_set_rg_vrtc_force_on(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VRTC]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VRTC]\n");
             hwPowerOn(MT6331_POWER_LDO_VRTC, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VRTC]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VRTC]\n");
             hwPowerDown(MT6331_POWER_LDO_VRTC, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VRTC]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VRTC]\n");
             hwPowerOn(MT6331_POWER_LDO_VRTC, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VRTC]\n");
-            hwPowerDown(MT6331_POWER_LDO_VRTC, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VRTC]\n");
+            hwPowerDown(MT6331_POWER_LDO_VRTC, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vdig18_en_test(void)
 {
-    printk("exec_6331_ldo_vdig18_en_test : HW no en bit\n");                      
+	battery_log(BAT_LOG_CRTI, "exec_6331_ldo_vdig18_en_test : HW no en bit\n");
 }
 
 void exec_6331_ldo_vmipi_en_test(void)
@@ -4172,90 +4286,90 @@ void exec_6331_ldo_vmipi_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vmipi_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmipi_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vmipi_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VMIPI\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI\n");
                         hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
                         hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VMIPI]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI]\n");
                         hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vmipi_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vmipi_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmipi_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vmipi_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vmipi_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmipi_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vmipi_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vmipi_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmipi_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vmipi_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vmipi_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmipi_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vmipi_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vmipi_on_ctrl(0);\n"); mt6331_upmu_set_rg_vmipi_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vmipi_on_ctrl(0);\n"); mt6331_upmu_set_rg_vmipi_on_ctrl(0);
 }
 
 void exec_6331_ldo_vcamd_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMD]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMD]\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMD]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMD]\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vusb10_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VUSB10]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VUSB10]\n");
             hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
             hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VUSB10]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VUSB10]\n");
             hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
-            hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
+            hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vcam_io_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_IO]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_IO]\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_IO, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAM_IO, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_IO]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_IO]\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_IO, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAM_IO, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAM_IO, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vsram_dvfs1_en_test(void)
@@ -4264,90 +4378,90 @@ void exec_6331_ldo_vsram_dvfs1_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vsram_dvfs1_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsram_dvfs1_on_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vsram_dvfs1_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6331_POWER_LDO_VSRAM_DVFS1]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSRAM_DVFS1]\n");
                         hwPowerOn(MT6331_POWER_LDO_VSRAM_DVFS1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VSRAM_DVFS1]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSRAM_DVFS1]\n");
                         hwPowerDown(MT6331_POWER_LDO_VSRAM_DVFS1, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6331_POWER_LDO_VSRAM_DVFS1]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSRAM_DVFS1]\n");
                         hwPowerOn(MT6331_POWER_LDO_VSRAM_DVFS1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6331_POWER_LDO_VSRAM_DVFS1]\n");
-                        hwPowerDown(MT6331_POWER_LDO_VSRAM_DVFS1, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSRAM_DVFS1]\n");
+                        hwPowerDown(MT6331_POWER_LDO_VSRAM_DVFS1, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(0)]\n");
-                         mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(0)]\n");
+                         mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(1)]\n");
                          mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(2)]\n");
                          mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(3)]\n");
                          mt6331_upmu_set_rg_vsram_dvfs1_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vsram_dvfs1_on_ctrl(0);\n"); mt6331_upmu_set_rg_vsram_dvfs1_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vsram_dvfs1_on_ctrl(0);\n"); mt6331_upmu_set_rg_vsram_dvfs1_on_ctrl(0);
 }
 
 void exec_6331_ldo_vgp2_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP2]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2]\n");
             hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP2]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2]\n");
             hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
-            hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+            hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vgp3_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP3]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP3]\n");
             hwPowerOn(MT6331_POWER_LDO_VGP3, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP3, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP3]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP3]\n");
             hwPowerOn(MT6331_POWER_LDO_VGP3, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
-            hwPowerDown(MT6331_POWER_LDO_VGP3, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
+            hwPowerDown(MT6331_POWER_LDO_VGP3, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vbiasn_en_test(void)
 {
-    printk("hwPowerOn(MT6331_POWER_LDO_VBIASN]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VBIASN]\n");
             hwPowerOn(MT6331_POWER_LDO_VBIASN, VOL_0500, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VBIASN]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VBIASN]\n");
             hwPowerDown(MT6331_POWER_LDO_VBIASN, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VBIASN]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VBIASN]\n");
             hwPowerOn(MT6331_POWER_LDO_VBIASN, VOL_0500, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6331_POWER_LDO_VBIASN]\n");
-            hwPowerDown(MT6331_POWER_LDO_VBIASN, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VBIASN]\n");
+            hwPowerDown(MT6331_POWER_LDO_VBIASN, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6332_ldo_vauxb32_en_test(void)
@@ -4356,45 +4470,45 @@ void exec_6332_ldo_vauxb32_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_rg_vauxb32_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vauxb32_on_ctrl] %d\n", i);
         mt6332_upmu_set_rg_vauxb32_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6332_POWER_LDO_VAUXB32]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VAUXB32]\n");
                         hwPowerOn(MT6332_POWER_LDO_VAUXB32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
                         hwPowerDown(MT6332_POWER_LDO_VAUXB32, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6332_POWER_LDO_VAUXB32]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VAUXB32]\n");
                         hwPowerOn(MT6332_POWER_LDO_VAUXB32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
-                        hwPowerDown(MT6332_POWER_LDO_VAUXB32, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
+                        hwPowerDown(MT6332_POWER_LDO_VAUXB32, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_rg_vauxb32_srclk_en_sel(0)]\n");
-                         mt6332_upmu_set_rg_vauxb32_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vauxb32_srclk_en_sel(0)]\n");
+                         mt6332_upmu_set_rg_vauxb32_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6332_upmu_set_rg_vauxb32_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vauxb32_srclk_en_sel(1)]\n");
                          mt6332_upmu_set_rg_vauxb32_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6332_upmu_set_rg_vauxb32_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vauxb32_srclk_en_sel(2)]\n");
                          mt6332_upmu_set_rg_vauxb32_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6332_upmu_set_rg_vauxb32_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vauxb32_srclk_en_sel(3)]\n");
                          mt6332_upmu_set_rg_vauxb32_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6332_upmu_set_rg_vauxb32_on_ctrl(0);\n"); mt6332_upmu_set_rg_vauxb32_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6332_upmu_set_rg_vauxb32_on_ctrl(0);\n"); mt6332_upmu_set_rg_vauxb32_on_ctrl(0);
 }
 
 void exec_6332_ldo_vbif28_en_test(void)
@@ -4403,65 +4517,65 @@ void exec_6332_ldo_vbif28_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_rg_vbif28_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vbif28_on_ctrl] %d\n", i);
         mt6332_upmu_set_rg_vbif28_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6332_POWER_LDO_VBIF28]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VBIF28]\n");
                         hwPowerOn(MT6332_POWER_LDO_VBIF28, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6332_POWER_LDO_VBIF28]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VBIF28]\n");
                         hwPowerDown(MT6332_POWER_LDO_VBIF28, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6332_POWER_LDO_VBIF28]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VBIF28]\n");
                         hwPowerOn(MT6332_POWER_LDO_VBIF28, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6332_POWER_LDO_VBIF28]\n");
-                        hwPowerDown(MT6332_POWER_LDO_VBIF28, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VBIF28]\n");
+                        hwPowerDown(MT6332_POWER_LDO_VBIF28, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_rg_vbif28_srclk_en_sel(0)]\n");
-                         mt6332_upmu_set_rg_vbif28_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vbif28_srclk_en_sel(0)]\n");
+                         mt6332_upmu_set_rg_vbif28_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6332_upmu_set_rg_vbif28_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vbif28_srclk_en_sel(1)]\n");
                          mt6332_upmu_set_rg_vbif28_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6332_upmu_set_rg_vbif28_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vbif28_srclk_en_sel(2)]\n");
                          mt6332_upmu_set_rg_vbif28_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6332_upmu_set_rg_vbif28_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vbif28_srclk_en_sel(3)]\n");
                          mt6332_upmu_set_rg_vbif28_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6332_upmu_set_rg_vbif28_on_ctrl(0);\n"); mt6332_upmu_set_rg_vbif28_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6332_upmu_set_rg_vbif28_on_ctrl(0);\n"); mt6332_upmu_set_rg_vbif28_on_ctrl(0);
 }
 
 void exec_6332_ldo_vusb33_en_test(void)
 {
-    printk("hwPowerOn(MT6332_POWER_LDO_VUSB33]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VUSB33]\n");
             hwPowerOn(MT6332_POWER_LDO_VUSB33, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6332_POWER_LDO_VUSB33]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VUSB33]\n");
             hwPowerDown(MT6332_POWER_LDO_VUSB33, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6332_POWER_LDO_VUSB33]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VUSB33]\n");
             hwPowerOn(MT6332_POWER_LDO_VUSB33, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerDown(MT6332_POWER_LDO_VUSB33]\n");
-            hwPowerDown(MT6332_POWER_LDO_VUSB33, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VUSB33]\n");
+            hwPowerDown(MT6332_POWER_LDO_VUSB33, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6332_ldo_vdig18_en_test(void)
 {
-    printk("exec_6332_ldo_vdig18_en_test : HW no en bit\n");                        
+	battery_log(BAT_LOG_CRTI, "exec_6332_ldo_vdig18_en_test : HW no en bit\n");
 }
 
 void exec_6332_ldo_vsram_dvfs2_en_test(void)
@@ -4470,45 +4584,45 @@ void exec_6332_ldo_vsram_dvfs2_en_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_rg_vsram_dvfs2_on_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vsram_dvfs2_on_ctrl] %d\n", i);
         mt6332_upmu_set_rg_vsram_dvfs2_on_ctrl(i);
 
         switch(i){
             case 0:
-                printk("hwPowerOn(MT6332_POWER_LDO_VSRAM_DVFS2]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VSRAM_DVFS2]\n");
                         hwPowerOn(MT6332_POWER_LDO_VSRAM_DVFS2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6332_POWER_LDO_VSRAM_DVFS2]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VSRAM_DVFS2]\n");
                         hwPowerDown(MT6332_POWER_LDO_VSRAM_DVFS2, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerOn(MT6332_POWER_LDO_VSRAM_DVFS2]\n");
+				battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VSRAM_DVFS2]\n");
                         hwPowerOn(MT6332_POWER_LDO_VSRAM_DVFS2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-                printk("hwPowerDown(MT6332_POWER_LDO_VSRAM_DVFS2]\n");
-                        hwPowerDown(MT6332_POWER_LDO_VSRAM_DVFS2, "ldo_dvt"); read_adc_value(LDO_ONLY);                        
+				battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VSRAM_DVFS2]\n");
+                        hwPowerDown(MT6332_POWER_LDO_VSRAM_DVFS2, "ldo_dvt"); read_adc_value(LDO_ONLY);
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(0)]\n");
-                         mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);                       
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(0)]\n");
+                         mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(0); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(1)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(1)]\n");
                          mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(1); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(2)]\n");
                          mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(2); exec_scrxxx_map(LDO_ONLY);
 
-                printk("[mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(3)]\n");
                          mt6332_upmu_set_rg_vsram_dvfs2_srclk_en_sel(3); exec_scrxxx_map(LDO_ONLY);
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6332_upmu_set_rg_vsram_dvfs2_on_ctrl(0);\n"); mt6332_upmu_set_rg_vsram_dvfs2_on_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6332_upmu_set_rg_vsram_dvfs2_on_ctrl(0);\n"); mt6332_upmu_set_rg_vsram_dvfs2_on_ctrl(0);
 }
 #endif
 
@@ -4516,19 +4630,19 @@ void exec_6332_ldo_vsram_dvfs2_en_test(void)
 void exec_6331_ldo_vtcxo1_vosel_test(void)
 {
     int i=0;
-    
+
     mt6331_upmu_set_rg_vtcxo1_on_ctrl(0);
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VTCXO1] 2800\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VTCXO1] 2800\n");
             hwPowerOn(MT6331_POWER_LDO_VTCXO1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VTCXO1]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VTCXO1]\n");
             hwPowerDown(MT6331_POWER_LDO_VTCXO1, "ldo_dvt"); read_adc_value(ADC_ONLY);
     //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vtcxo1_en(1);
     for(i=0;i<=3;i++)
     {
-        printk("mt6331_upmu_set_rg_vtcxo1_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vtcxo1_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vtcxo1_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vtcxo1_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
@@ -4536,49 +4650,49 @@ void exec_6331_ldo_vtcxo1_vosel_test(void)
 void exec_6331_ldo_vtcxo2_vosel_test(void)
 {
     int i=0;
-        
+
     mt6331_upmu_set_rg_vtcxo2_on_ctrl(0);
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VTCXO2] 2800\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VTCXO2] 2800\n");
             hwPowerOn(MT6331_POWER_LDO_VTCXO2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VTCXO2]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VTCXO2]\n");
             hwPowerDown(MT6331_POWER_LDO_VTCXO2, "ldo_dvt"); read_adc_value(ADC_ONLY);
     //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vtcxo2_en(1);
     for(i=0;i<=3;i++)
     {
-        printk("mt6331_upmu_set_rg_vtcxo2_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vtcxo2_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vtcxo2_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vtcxo2_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
 
 void exec_6331_ldo_vaud32_vosel_test(void)
 {
-    int i=0; 
-    
+    int i=0;
+
     mt6331_upmu_set_rg_vaud32_on_ctrl(0);
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VAUD32] VOL_2800\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUD32] VOL_2800\n");
             hwPowerOn(MT6331_POWER_LDO_VAUD32, VOL_2800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
             hwPowerDown(MT6331_POWER_LDO_VAUD32, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VAUD32] VOL_3000\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUD32] VOL_3000\n");
             hwPowerOn(MT6331_POWER_LDO_VAUD32, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
             hwPowerDown(MT6331_POWER_LDO_VAUD32, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VAUD32] VOL_3200\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUD32] VOL_3200\n");
             hwPowerOn(MT6331_POWER_LDO_VAUD32, VOL_3200, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
             hwPowerDown(MT6331_POWER_LDO_VAUD32, "ldo_dvt"); read_adc_value(ADC_ONLY);
     //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vaud32_en(1);
     for(i=0;i<=3;i++)
     {
-        printk("mt6331_upmu_set_rg_vaud32_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vaud32_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vaud32_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vaud32_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
@@ -4586,150 +4700,150 @@ void exec_6331_ldo_vaud32_vosel_test(void)
 void exec_6331_ldo_vauxa32_vosel_test(void)
 {
     int i=0;
-    
+
     mt6331_upmu_set_rg_vauxa32_on_ctrl(0);
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VAUXA32] VOL_2800\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUXA32] VOL_2800\n");
             hwPowerOn(MT6331_POWER_LDO_VAUXA32, VOL_2800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
             hwPowerDown(MT6331_POWER_LDO_VAUXA32, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VAUXA32] VOL_3000\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUXA32] VOL_3000\n");
             hwPowerOn(MT6331_POWER_LDO_VAUXA32, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
             hwPowerDown(MT6331_POWER_LDO_VAUXA32, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VAUXA32] VOL_3200\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUXA32] VOL_3200\n");
             hwPowerOn(MT6331_POWER_LDO_VAUXA32, VOL_3200, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
-            hwPowerDown(MT6331_POWER_LDO_VAUXA32, "ldo_dvt"); read_adc_value(ADC_ONLY);        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
+            hwPowerDown(MT6331_POWER_LDO_VAUXA32, "ldo_dvt"); read_adc_value(ADC_ONLY);
     //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vauxa32_en(1);
     for(i=0;i<=3;i++)
     {
-        printk("mt6331_upmu_set_rg_vauxa32_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vauxa32_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vauxa32_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vauxa32_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
 
 void exec_6331_ldo_vcama_vosel_test(void)
-{   
+{
     int i=0;
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMA] VOL_1500\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMA] VOL_1500\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMA, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAMA, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMA] VOL_1800\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMA] VOL_1800\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMA, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAMA, "ldo_dvt"); read_adc_value(ADC_ONLY);  
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAMA, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMA] VOL_2500\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMA] VOL_2500\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMA, VOL_2500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAMA, "ldo_dvt"); read_adc_value(ADC_ONLY);  
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMA] VOL_2800\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAMA, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMA] VOL_2800\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMA, VOL_2800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAMA, "ldo_dvt"); read_adc_value(ADC_ONLY);
     //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vcama_en(1);
     for(i=0;i<=7;i++)
     {
-        printk("mt6331_upmu_set_rg_vcama_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vcama_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcama_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vcama_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
 
 void exec_6331_ldo_vio28_vosel_test(void)
-{   
+{
     int i=0;
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VIO28] VOL_DEFAULT\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIO28] VOL_DEFAULT\n");
             hwPowerOn(MT6331_POWER_LDO_VIO28, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VIO28]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIO28]\n");
             hwPowerDown(MT6331_POWER_LDO_VIO28, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    //---------------------------------------------------------------------------        
+    //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vio28_en(1);
     for(i=0;i<=7;i++)
     {
-        printk("mt6331_upmu_set_rg_vio28_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vio28_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vio28_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vio28_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
 
 void exec_6331_ldo_vcam_af_vosel_test(void)
-{   
+{
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_1200\n");
-            hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_1200\n");
+            hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_1300\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_1300\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_1500\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_1500\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_1800\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_1800\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_2000\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_2000\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_2000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_2800\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_2800\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_2800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);  
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_3000\n");
-            hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_3300\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_3000\n");
+            hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF] VOL_3300\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_3300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    //---------------------------------------------------------------------------        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);
+    //---------------------------------------------------------------------------
 }
 
 void exec_6331_ldo_vmc_vosel_test(void)
 {
     int i=0;
-    
+
     mt6331_upmu_set_rg_vmc_on_ctrl(0);
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VMC] VOL_1800\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMC] VOL_1800\n");
             hwPowerOn(MT6331_POWER_LDO_VMC, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMC]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMC]\n");
             hwPowerDown(MT6331_POWER_LDO_VMC, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VMC] VOL_3300\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMC] VOL_3300\n");
             hwPowerOn(MT6331_POWER_LDO_VMC, VOL_3300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMC]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMC]\n");
             hwPowerDown(MT6331_POWER_LDO_VMC, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    //---------------------------------------------------------------------------        
+    //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vmc_en(1);
     for(i=0;i<=7;i++)
     {
-        printk("mt6331_upmu_set_rg_vmc_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vmc_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmc_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vmc_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
@@ -4737,170 +4851,170 @@ void exec_6331_ldo_vmc_vosel_test(void)
 void exec_6331_ldo_vmch_vosel_test(void)
 {
     mt6331_upmu_set_rg_vmch_on_ctrl(0);
-    
-    printk("hwPowerOn(MT6331_POWER_LDO_VMCH] VOL_3000\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMCH] VOL_3000\n");
             hwPowerOn(MT6331_POWER_LDO_VMCH, VOL_3000, "ldo_dvt"); read_adc_value(LDO_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMCH]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMCH]\n");
             hwPowerDown(MT6331_POWER_LDO_VMCH, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VMCH] VOL_3300\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMCH] VOL_3300\n");
             hwPowerOn(MT6331_POWER_LDO_VMCH, VOL_3300, "ldo_dvt"); read_adc_value(LDO_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMCH]\n");
-            hwPowerDown(MT6331_POWER_LDO_VMCH, "ldo_dvt"); read_adc_value(LDO_ONLY);        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMCH]\n");
+            hwPowerDown(MT6331_POWER_LDO_VMCH, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vemc33_vosel_test(void)
 {
     mt6331_upmu_set_rg_vemc33_on_ctrl(0);
-    
-    printk("hwPowerOn(MT6331_POWER_LDO_VEMC33] VOL_3000\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VEMC33] VOL_3000\n");
             hwPowerOn(MT6331_POWER_LDO_VEMC33, VOL_3000, "ldo_dvt"); read_adc_value(LDO_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VEMC33]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VEMC33]\n");
             hwPowerDown(MT6331_POWER_LDO_VEMC33, "ldo_dvt"); read_adc_value(LDO_ONLY);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VEMC33] VOL_3300\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VEMC33] VOL_3300\n");
             hwPowerOn(MT6331_POWER_LDO_VEMC33, VOL_3300, "ldo_dvt"); read_adc_value(LDO_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VEMC33]\n");
-            hwPowerDown(MT6331_POWER_LDO_VEMC33, "ldo_dvt"); read_adc_value(LDO_ONLY);        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VEMC33]\n");
+            hwPowerDown(MT6331_POWER_LDO_VEMC33, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_ldo_vgp1_vosel_test(void)
-{   
+{
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_1200\n");
-            hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_1200\n");
+            hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_1300\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_1300\n");
             hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
-            hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_1500\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+            hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_1500\n");
             hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_1800\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_1800\n");
             hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
-            hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_2000\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+            hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_2000\n");
             hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_2000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_2800\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_2800\n");
             hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_2800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
-            hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);  
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_3000\n");
-            hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_3300\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_3000\n");
+            hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+            hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1] VOL_3300\n");
             hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_3300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
-            hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    //---------------------------------------------------------------------------        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+            hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);
+    //---------------------------------------------------------------------------
 }
 
 void exec_6331_ldo_vgp4_vosel_test(void)
-{   
+{
     if(get_pmic_mt6331_cid()==PMIC6331_E1_CID_CODE)
     {
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] MT6331==E1\n");
-        
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] MT6331==E1\n");
+
         //---------------------------------------------------------------------------
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1200\n");
-                hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1200\n");
+                hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1300\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1300\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1500\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1500\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1800\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1800\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_2000\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_2000\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_2000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_2800\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_2800\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_2800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);  
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_3000\n");
-                hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_3300\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_3000\n");
+                hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_3300\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_3300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);            
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
         //---------------------------------------------------------------------------
     }
     else
     {
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] MT6331>=E2\n");
-        
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] MT6331>=E2\n");
+
         //---------------------------------------------------------------------------
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1200\n");
-                hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1200\n");
+                hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1600\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1600\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1600, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1700\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1700\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1700, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1800\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1800\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1900\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_1900\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_1900, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_2000\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_2000\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_2000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);  
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_2100\n");
-                hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_2100, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_2200\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_2100\n");
+                hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_2100, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4] VOL_2200\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_2200, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);            
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
         //---------------------------------------------------------------------------
     }
 }
@@ -4913,62 +5027,62 @@ void exec_6331_ldo_vsim1_vosel_test(void)
 
     if(get_pmic_mt6331_cid()==PMIC6331_E1_CID_CODE)
     {
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM1] MT6331==E1\n");        
-        
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1] MT6331==E1\n");
+
         //---------------------------------------------------------------------------
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_1800\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_1800\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_3000\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_3000\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        //---------------------------------------------------------------------------        
+        //---------------------------------------------------------------------------
     }
     else
     {
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM1] MT6331>=E2\n");
-        
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1] MT6331>=E2\n");
+
         //---------------------------------------------------------------------------
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_1700\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_1700\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_1700, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_1800\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_1800\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_1860\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_1860\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_1860, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
-                hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(ADC_ONLY);        
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+                hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_2760\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_2760\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_2760, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_3000\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_3000\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_3100\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1] VOL_3100\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_3100, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        //---------------------------------------------------------------------------        
+        //---------------------------------------------------------------------------
     }
 
     mt6331_upmu_set_rg_vsim1_en(1);
     for(i=0;i<=7;i++)
     {
-        printk("mt6331_upmu_set_rg_vsim1_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vsim1_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsim1_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vsim1_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
@@ -4976,67 +5090,67 @@ void exec_6331_ldo_vsim1_vosel_test(void)
 void exec_6331_ldo_vsim2_vosel_test(void)
 {
     int i=0;
-    
+
     mt6331_upmu_set_rg_vsim2_on_ctrl(0);
 
     if(get_pmic_mt6331_cid()==PMIC6331_E1_CID_CODE)
     {
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM2] MT6331==E1\n");
-        
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2] MT6331==E1\n");
+
         //---------------------------------------------------------------------------
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_1800\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_1800\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_3000\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_3000\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        //---------------------------------------------------------------------------        
+        //---------------------------------------------------------------------------
     }
     else
     {
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM2] MT6331>=E2\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2] MT6331>=E2\n");
 
         //---------------------------------------------------------------------------
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_1700\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_1700\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_1700, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_1800\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_1800\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
-                hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_1860\n");
-                hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_1860, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
-                hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);                
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_2760\n");
-                hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_2760, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_3000\n");
-                hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_1860\n");
+                hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_1860, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
                 hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_3100\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_2760\n");
+                hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_2760, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+                hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_3000\n");
+                hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+                hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2] VOL_3100\n");
                 hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_3100, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
-                hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);                                
-        //---------------------------------------------------------------------------    
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+                hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);
+        //---------------------------------------------------------------------------
     }
-    
+
     mt6331_upmu_set_rg_vsim2_en(1);
     for(i=0;i<=7;i++)
     {
-        printk("mt6331_upmu_set_rg_vsim2_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vsim2_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsim2_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vsim2_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
@@ -5044,95 +5158,97 @@ void exec_6331_ldo_vsim2_vosel_test(void)
 void exec_6331_ldo_vfbb_vosel_test(void)
 {
     int i=0;
-    
+
     mt6331_upmu_set_rg_vfbb_en(1);
     for(i=0;i<=7;i++)
     {
-        printk("mt6331_upmu_set_rg_vfbb_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vfbb_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vfbb_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vfbb_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
 
 void exec_6331_ldo_vibr_vosel_test(void)
-{   
+{
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_1200\n");
-            hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_1200\n");
+            hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
             hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_1300\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_1300\n");
             hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
-            hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_1500\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+            hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_1500\n");
             hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
             hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_1800\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_1800\n");
             hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
-            hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_2000\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+            hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_2000\n");
             hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_2000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
             hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_2800\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_2800\n");
             hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_2800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
-            hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);  
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_3000\n");
-            hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
             hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_3300\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_3000\n");
+            hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+            hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR] VOL_3300\n");
             hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_3300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
-            hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    //---------------------------------------------------------------------------        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+            hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);
+    //---------------------------------------------------------------------------
 }
 
 void exec_6331_ldo_vrtc_vosel_test(void)
-{   
-    printk("hwPowerOn(MT6331_POWER_LDO_VRTC] VOL_DEFAULT\n");
+{
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VRTC] VOL_DEFAULT\n");
             hwPowerOn(MT6331_POWER_LDO_VRTC, VOL_DEFAULT, "ldo_dvt"); read_adc_value(LDO_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VRTC]\n");
-            hwPowerDown(MT6331_POWER_LDO_VRTC, "ldo_dvt"); read_adc_value(LDO_ONLY);     
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VRTC]\n");
+            hwPowerDown(MT6331_POWER_LDO_VRTC, "ldo_dvt"); read_adc_value(LDO_ONLY);
 }
 
 void exec_6331_vdig18_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6331_PMIC_RG_VDIG18_VOSEL_MASK;k++) {
-        mt6331_upmu_set_rg_vdig18_vosel(k); printk("[mt6331_upmu_set_rg_vdig18_vosel] k=%d, ",k);
+		mt6331_upmu_set_rg_vdig18_vosel(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vdig18_vosel] k=%d, ", k);
         read_adc_value(LDO_ONLY);
     }
     for(k=0;k<=MT6331_PMIC_RG_VDIG18_SLEEP_VOSEL_MASK;k++) {
-        mt6331_upmu_set_rg_vdig18_sleep_vosel(k); printk("[mt6331_upmu_set_rg_vdig18_sleep_vosel] k=%d, ",k);
+		mt6331_upmu_set_rg_vdig18_sleep_vosel(k);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vdig18_sleep_vosel] k=%d, ", k);
         read_adc_value(LDO_ONLY);
     }
 }
 
 void exec_6331_vdig18_vosel_test_sub(void)
 {
-    printk("[exec_6331_vdig18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_6331_vdig18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_6331_vdig18_vosel_test_sub_vosel();
 
-    printk("[exec_6331_vdig18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_6331_vdig18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_6331_vdig18_vosel_test_sub_vosel();
 
-    printk("[exec_6331_vdig18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_6331_vdig18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_6331_vdig18_vosel_test_sub_vosel();
 
-    printk("[exec_6331_vdig18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_6331_vdig18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_6331_vdig18_vosel_test_sub_vosel();
 }
 
@@ -5142,252 +5258,253 @@ void exec_6331_ldo_vdig18_vosel_test(void)
 
     mt6331_upmu_set_rg_vdig18_vosel_ctrl(0);
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1200\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1200\n");
             hwPowerOn(MT6331_POWER_LDO_VDIG18, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6331_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1300\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1300\n");
             hwPowerOn(MT6331_POWER_LDO_VDIG18, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
-            hwPowerDown(MT6331_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-    printk("hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1400\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
+            hwPowerDown(MT6331_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1400\n");
             hwPowerOn(MT6331_POWER_LDO_VDIG18, VOL_1400, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6331_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1500\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1500\n");
             hwPowerOn(MT6331_POWER_LDO_VDIG18, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6331_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1600\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1600\n");
             hwPowerOn(MT6331_POWER_LDO_VDIG18, VOL_1600, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6331_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1700\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1700\n");
             hwPowerOn(MT6331_POWER_LDO_VDIG18, VOL_1700, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6331_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1800\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VDIG18] VOL_1800\n");
             hwPowerOn(MT6331_POWER_LDO_VDIG18, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6331_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    //---------------------------------------------------------------------------        
+    //---------------------------------------------------------------------------
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vdig18_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vdig18_vosel_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vdig18_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6331_PMIC_RG_VDIG18_VOSEL_MASK;k++) {
-                    mt6331_upmu_set_rg_vdig18_vosel(k); printk("[mt6331_upmu_set_rg_vdig18_vosel] k=%d, ",k);
+					mt6331_upmu_set_rg_vdig18_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vdig18_vosel] k=%d, ", k);
                     read_adc_value(ADC_ONLY);
                 }
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vdig18_srclken_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vdig18_srclken_sel(0)]\n");
                 mt6331_upmu_set_rg_vdig18_srclken_sel(0);
-                exec_6331_vdig18_vosel_test_sub(); 
-
-                printk("[mt6331_upmu_set_rg_vdig18_srclken_sel(1)]\n");
-                mt6331_upmu_set_rg_vdig18_srclken_sel(1);                
                 exec_6331_vdig18_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_rg_vdig18_srclken_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vdig18_srclken_sel(1)]\n");
+                mt6331_upmu_set_rg_vdig18_srclken_sel(1);
+                exec_6331_vdig18_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vdig18_srclken_sel(2)]\n");
                 mt6331_upmu_set_rg_vdig18_srclken_sel(2);
                 exec_6331_vdig18_vosel_test_sub();
 
-                printk("[mt6331_upmu_set_rg_vdig18_srclken_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vdig18_srclken_sel(3)]\n");
                 mt6331_upmu_set_rg_vdig18_srclken_sel(3);
                 exec_6331_vdig18_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 }
 
 void exec_6331_ldo_vmipi_vosel_test(void)
-{   
+{
     int i=0;
-    
+
     mt6331_upmu_set_rg_vmipi_on_ctrl(0);
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_1200\n");
-            hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_1200\n");
+            hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
             hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_1300\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_1300\n");
             hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
-            hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_1500\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+            hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_1500\n");
             hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
             hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_1800\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_1800\n");
             hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
-            hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_2000\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+            hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_2000\n");
             hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_2000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
             hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_2800\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_2800\n");
             hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_2800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
-            hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);  
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_3000\n");
-            hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
             hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_3300\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_3000\n");
+            hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+            hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI] VOL_3300\n");
             hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_3300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
-            hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    //---------------------------------------------------------------------------        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+            hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);
+    //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vmipi_en(1);
     for(i=0;i<=15;i++)
     {
-        printk("mt6331_upmu_set_rg_vmipi_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vmipi_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmipi_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vmipi_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
 
 void exec_6331_ldo_vcamd_vosel_test(void)
-{   
+{
     int i=0;
-    
+
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_0900\n");
-            hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_0900, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_0900\n");
+            hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_0900, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_1000\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_1000\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_1000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_1100\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_1100\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_1100, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_1220\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_1220\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_1220, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_1300\n");
-            hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_1500\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_1300\n");
+            hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMD] VOL_1500\n");
             hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(ADC_ONLY);             
-    //---------------------------------------------------------------------------        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(ADC_ONLY);
+    //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vcamd_en(1);
     for(i=0;i<=7;i++)
     {
-        printk("mt6331_upmu_set_rg_vcamd_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vcamd_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcamd_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vcamd_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
 
 void exec_6331_ldo_vusb10_vosel_test(void)
-{   
+{
     int i=0;
-    
+
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1000\n");
-            hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1000, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    printk("hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1000\n");
+            hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1000, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
             hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1050\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1050\n");
             hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1050, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
-            hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1100\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
+            hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1100\n");
             hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1100, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
             hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1150\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1150\n");
             hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1150, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
-            hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1200\n");
-            hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
             hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1250\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1200\n");
+            hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
+            hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1250\n");
             hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1250, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
-            hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);  
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1300\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
+            hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VUSB10] VOL_1300\n");
             hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
-            hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    //---------------------------------------------------------------------------        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
+            hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);
+    //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vusb10_en(1);
     for(i=0;i<=15;i++)
     {
-        printk("mt6331_upmu_set_rg_vusb10_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vusb10_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vusb10_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vusb10_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
 
 void exec_6331_ldo_vcam_io_vosel_test(void)
-{   
+{
     int i=0;
-    
+
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_IO] VOL_1200\n");
-            hwPowerOn(MT6331_POWER_LDO_VCAM_IO, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_IO] VOL_1200\n");
+            hwPowerOn(MT6331_POWER_LDO_VCAM_IO, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAM_IO, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_IO] VOL_1300\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_IO] VOL_1300\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_IO, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAM_IO, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_IO] VOL_1500\n");
-            hwPowerOn(MT6331_POWER_LDO_VCAM_IO, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAM_IO, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_IO] VOL_1800\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_IO] VOL_1500\n");
+            hwPowerOn(MT6331_POWER_LDO_VCAM_IO, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAM_IO, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_IO] VOL_1800\n");
             hwPowerOn(MT6331_POWER_LDO_VCAM_IO, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
-            hwPowerDown(MT6331_POWER_LDO_VCAM_IO, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-    //---------------------------------------------------------------------------        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
+            hwPowerDown(MT6331_POWER_LDO_VCAM_IO, "ldo_dvt"); read_adc_value(ADC_ONLY);
+    //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vcam_io_en(1);
     for(i=0;i<=15;i++)
     {
-        printk("mt6331_upmu_set_rg_vcam_io_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vcam_io_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcam_io_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vcam_io_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
@@ -5400,108 +5517,108 @@ void exec_6331_ldo_vsram_dvfs1_vosel_test(void)
     mt6331_upmu_set_rg_vsram_dvfs1_en(1);
     for(i=0;i<=0x7F;i++)
     {
-        printk("mt6331_upmu_set_rg_vsram_dvfs1_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vsram_dvfs1_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsram_dvfs1_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vsram_dvfs1_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
 
 void exec_6331_ldo_vgp2_vosel_test(void)
-{   
+{
     int i=0;
 
     if(get_pmic_mt6331_cid()==PMIC6331_E1_CID_CODE)
     {
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP2] MT6331==E1\n");
-        
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2] MT6331==E1\n");
+
         //---------------------------------------------------------------------------
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1200\n");
-                hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1200\n");
+                hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1300\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1300\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1500\n");
-                hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1800\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1500\n");
+                hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1800\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-        //---------------------------------------------------------------------------        
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);
+        //---------------------------------------------------------------------------
     }
     else
     {
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP2] MT6331>=E2\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2] MT6331>=E2\n");
 
         //---------------------------------------------------------------------------
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1200\n");
-                hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1200\n");
+                hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1360\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1360\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1360, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1500\n");
-                hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
                 hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);
-                
-        printk("hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1100\n");
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1500\n");
+                hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+		battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2] VOL_1100\n");
                 hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_1100, "ldo_dvt"); read_adc_value(ADC_ONLY);
-        printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
-                hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
+		battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+                hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);
         //---------------------------------------------------------------------------
     }
-    
+
     mt6331_upmu_set_rg_vgp2_en(1);
     for(i=0;i<=15;i++)
     {
-        printk("mt6331_upmu_set_rg_vgp2_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vgp2_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp2_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vgp2_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
 
 void exec_6331_ldo_vgp3_vosel_test(void)
-{   
+{
     int i=0;
-    
+
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP3] VOL_1200\n");
-            hwPowerOn(MT6331_POWER_LDO_VGP3, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);            
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP3] VOL_1200\n");
+            hwPowerOn(MT6331_POWER_LDO_VGP3, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP3, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP3] VOL_1300\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP3] VOL_1300\n");
             hwPowerOn(MT6331_POWER_LDO_VGP3, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
-            hwPowerDown(MT6331_POWER_LDO_VGP3, "ldo_dvt"); read_adc_value(ADC_ONLY);                   
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP3] VOL_1500\n");
-            hwPowerOn(MT6331_POWER_LDO_VGP3, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP3, "ldo_dvt"); read_adc_value(ADC_ONLY);
-            
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP3] VOL_1800\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP3] VOL_1500\n");
+            hwPowerOn(MT6331_POWER_LDO_VGP3, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
+            hwPowerDown(MT6331_POWER_LDO_VGP3, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP3] VOL_1800\n");
             hwPowerOn(MT6331_POWER_LDO_VGP3, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
-            hwPowerDown(MT6331_POWER_LDO_VGP3, "ldo_dvt"); read_adc_value(ADC_ONLY);                        
-    //---------------------------------------------------------------------------        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
+            hwPowerDown(MT6331_POWER_LDO_VGP3, "ldo_dvt"); read_adc_value(ADC_ONLY);
+    //---------------------------------------------------------------------------
     mt6331_upmu_set_rg_vgp3_en(1);
     for(i=0;i<=15;i++)
     {
-        printk("mt6331_upmu_set_rg_vgp3_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vgp3_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp3_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vgp3_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
@@ -5509,12 +5626,12 @@ void exec_6331_ldo_vgp3_vosel_test(void)
 void exec_6331_ldo_vbiasn_vosel_test(void)
 {
     int i=0;
-    
+
     mt6331_upmu_set_rg_vbiasn_en(1);
     for(i=0;i<=31;i++)
     {
-        printk("mt6331_upmu_set_rg_vbiasn_vosel=%d\n", i);
-        mt6331_upmu_set_rg_vbiasn_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vbiasn_vosel=%d\n", i);
+        mt6331_upmu_set_rg_vbiasn_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
@@ -5522,29 +5639,29 @@ void exec_6331_ldo_vbiasn_vosel_test(void)
 void exec_6332_ldo_vauxb32_vosel_test(void)
 {
     int i=0;
-    
+
     mt6332_upmu_set_rg_vauxb32_on_ctrl(0);
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6332_POWER_LDO_VAUXB32] VOL_2800\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VAUXB32] VOL_2800\n");
             hwPowerOn(MT6332_POWER_LDO_VAUXB32, VOL_2800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
             hwPowerDown(MT6332_POWER_LDO_VAUXB32, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-    printk("hwPowerOn(MT6332_POWER_LDO_VAUXB32] VOL_3000\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VAUXB32] VOL_3000\n");
             hwPowerOn(MT6332_POWER_LDO_VAUXB32, VOL_3000, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
             hwPowerDown(MT6332_POWER_LDO_VAUXB32, "ldo_dvt"); read_adc_value(ADC_ONLY);
 
-    printk("hwPowerOn(MT6332_POWER_LDO_VAUXB32] VOL_3200\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VAUXB32] VOL_3200\n");
             hwPowerOn(MT6332_POWER_LDO_VAUXB32, VOL_3200, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
-            hwPowerDown(MT6332_POWER_LDO_VAUXB32, "ldo_dvt"); read_adc_value(ADC_ONLY);        
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
+            hwPowerDown(MT6332_POWER_LDO_VAUXB32, "ldo_dvt"); read_adc_value(ADC_ONLY);
     //---------------------------------------------------------------------------
     mt6332_upmu_set_rg_vauxb32_en(1);
     for(i=0;i<=3;i++)
     {
-        printk("mt6332_upmu_set_rg_vauxb32_vosel=%d\n", i);
-        mt6332_upmu_set_rg_vauxb32_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vauxb32_vosel=%d\n", i);
+        mt6332_upmu_set_rg_vauxb32_vosel(i);
         read_adc_value(ADC_ONLY);
     }
 }
@@ -5553,9 +5670,9 @@ void exec_6332_ldo_vbif28_vosel_test(void)
 {
     mt6332_upmu_set_rg_vbif28_on_ctrl(0);
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6332_POWER_LDO_VBIF28] VOL_DEFAULT\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VBIF28] VOL_DEFAULT\n");
             hwPowerOn(MT6332_POWER_LDO_VBIF28, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VBIF28]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VBIF28]\n");
             hwPowerDown(MT6332_POWER_LDO_VBIF28, "ldo_dvt"); read_adc_value(ADC_ONLY);
     //---------------------------------------------------------------------------
 }
@@ -5563,9 +5680,9 @@ void exec_6332_ldo_vbif28_vosel_test(void)
 void exec_6332_ldo_vusb33_vosel_test(void)
 {
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6332_POWER_LDO_VUSB33] VOL_DEFAULT\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VUSB33] VOL_DEFAULT\n");
             hwPowerOn(MT6332_POWER_LDO_VUSB33, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VUSB33]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VUSB33]\n");
             hwPowerDown(MT6332_POWER_LDO_VUSB33, "ldo_dvt"); read_adc_value(ADC_ONLY);
     //---------------------------------------------------------------------------
 }
@@ -5573,29 +5690,31 @@ void exec_6332_ldo_vusb33_vosel_test(void)
 void exec_6332_vdig18_vosel_test_sub_vosel(void)
 {
     int k=0;
-        
+
     for(k=0;k<=MT6332_PMIC_RG_VDIG18_VOSEL_MASK;k++) {
-        mt6332_upmu_set_rg_vdig18_vosel(k); printk("[mt6332_upmu_set_rg_vdig18_vosel] k=%d, ",k);
+		mt6332_upmu_set_rg_vdig18_vosel(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vdig18_vosel] k=%d, ", k);
         read_adc_value(LDO_ONLY);
     }
     for(k=0;k<=MT6332_PMIC_RG_VDIG18_SLEEP_VOSEL_MASK;k++) {
-        mt6332_upmu_set_rg_vdig18_sleep_vosel(k); printk("[mt6332_upmu_set_rg_vdig18_sleep_vosel] k=%d, ",k);
+		mt6332_upmu_set_rg_vdig18_sleep_vosel(k);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vdig18_sleep_vosel] k=%d, ", k);
         read_adc_value(LDO_ONLY);
     }
 }
 
 void exec_6332_vdig18_vosel_test_sub(void)
 {
-    printk("[exec_6332_vdig18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_6332_vdig18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(0);\n");
                               set_srclken_1_val(0); set_srclken_2_val(0); exec_6332_vdig18_vosel_test_sub_vosel();
 
-    printk("[exec_6332_vdig18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_6332_vdig18_vosel_test_sub] set_srclken_1_val(0); set_srclken_2_val(1);\n");
                               set_srclken_1_val(0); set_srclken_2_val(1); exec_6332_vdig18_vosel_test_sub_vosel();
 
-    printk("[exec_6332_vdig18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_6332_vdig18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(0);\n");
                               set_srclken_1_val(1); set_srclken_2_val(0); exec_6332_vdig18_vosel_test_sub_vosel();
 
-    printk("[exec_6332_vdig18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
+	battery_log(BAT_LOG_CRTI, "[exec_6332_vdig18_vosel_test_sub] set_srclken_1_val(1); set_srclken_2_val(1);\n");
                               set_srclken_1_val(1); set_srclken_2_val(1); exec_6332_vdig18_vosel_test_sub_vosel();
 }
 
@@ -5605,69 +5724,70 @@ void exec_6332_ldo_vdig18_vosel_test(void)
 
     mt6332_upmu_set_rg_vdig18_vosel_ctrl(0);
     //---------------------------------------------------------------------------
-    printk("hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1200\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1200\n");
             hwPowerOn(MT6332_POWER_LDO_VDIG18, VOL_1200, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
-            hwPowerDown(MT6332_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);           
-    printk("hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1300\n");
-            hwPowerOn(MT6332_POWER_LDO_VDIG18, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-    printk("hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6332_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1400\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1300\n");
+            hwPowerOn(MT6332_POWER_LDO_VDIG18, VOL_1300, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
+            hwPowerDown(MT6332_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1400\n");
             hwPowerOn(MT6332_POWER_LDO_VDIG18, VOL_1400, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6332_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1500\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1500\n");
             hwPowerOn(MT6332_POWER_LDO_VDIG18, VOL_1500, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6332_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1600\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1600\n");
             hwPowerOn(MT6332_POWER_LDO_VDIG18, VOL_1600, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6332_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1700\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1700\n");
             hwPowerOn(MT6332_POWER_LDO_VDIG18, VOL_1700, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6332_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1800\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VDIG18] VOL_1800\n");
             hwPowerOn(MT6332_POWER_LDO_VDIG18, VOL_1800, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    printk("hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VDIG18]\n");
             hwPowerDown(MT6332_POWER_LDO_VDIG18, "ldo_dvt"); read_adc_value(ADC_ONLY);
-    //---------------------------------------------------------------------------        
+    //---------------------------------------------------------------------------
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_rg_vdig18_vosel_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vdig18_vosel_ctrl] %d\n", i);
         mt6332_upmu_set_rg_vdig18_vosel_ctrl(i);
 
         switch(i){
             case 0:
                 for(k=0;k<=MT6332_PMIC_RG_VDIG18_VOSEL_MASK;k++) {
-                    mt6332_upmu_set_rg_vdig18_vosel(k); printk("[mt6332_upmu_set_rg_vdig18_vosel] k=%d, ",k);
+					mt6332_upmu_set_rg_vdig18_vosel(k);
+					battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vdig18_vosel] k=%d, ", k);
                     read_adc_value(ADC_ONLY);
                 }
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_rg_vdig18_srclken_sel(0)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vdig18_srclken_sel(0)]\n");
                 mt6332_upmu_set_rg_vdig18_srclken_sel(0);
-                exec_6332_vdig18_vosel_test_sub(); 
-
-                printk("[mt6332_upmu_set_rg_vdig18_srclken_sel(1)]\n");
-                mt6332_upmu_set_rg_vdig18_srclken_sel(1);                
                 exec_6332_vdig18_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_rg_vdig18_srclken_sel(2)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vdig18_srclken_sel(1)]\n");
+                mt6332_upmu_set_rg_vdig18_srclken_sel(1);
+                exec_6332_vdig18_vosel_test_sub();
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vdig18_srclken_sel(2)]\n");
                 mt6332_upmu_set_rg_vdig18_srclken_sel(2);
                 exec_6332_vdig18_vosel_test_sub();
 
-                printk("[mt6332_upmu_set_rg_vdig18_srclken_sel(3)]\n");
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vdig18_srclken_sel(3)]\n");
                 mt6332_upmu_set_rg_vdig18_srclken_sel(3);
                 exec_6332_vdig18_vosel_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
@@ -5679,13 +5799,13 @@ void exec_6332_ldo_vsram_dvfs2_vosel_test(void)
 
     mt6332_upmu_set_rg_vsram_dvfs2_on_ctrl(0);
     mt6332_upmu_set_rg_vsram_dvfs2_en(1);
-    
+
     for(i=0;i<=0x7F;i++)
     //for(i=1;i<=0x7F;i++)
     //for(i=0x32;i<=0x7F;i++)
     {
-        printk("mt6332_upmu_set_rg_vsram_dvfs2_vosel=%d\n", i);
-        mt6332_upmu_set_rg_vsram_dvfs2_vosel(i); 
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vsram_dvfs2_vosel=%d\n", i);
+        mt6332_upmu_set_rg_vsram_dvfs2_vosel(i);
         mdelay(500);
         read_adc_value(ADC_ONLY);
     }
@@ -5695,507 +5815,507 @@ void exec_6332_ldo_vsram_dvfs2_vosel_test(void)
 #ifdef LDO_CAL_DVT_ENABLE
 void exec_6331_ldo_vtcxo1_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6331_upmu_set_rg_vtcxo1_on_ctrl(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VTCXO1]\n");
-            hwPowerOn(MT6331_POWER_LDO_VTCXO1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VTCXO1]\n");
+            hwPowerOn(MT6331_POWER_LDO_VTCXO1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VTCXO1_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vtcxo1_cal=%d, ", i);
-        mt6331_upmu_set_rg_vtcxo1_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vtcxo1_cal=%d, ", i);
+        mt6331_upmu_set_rg_vtcxo1_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VTCXO1]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VTCXO1]\n");
             hwPowerDown(MT6331_POWER_LDO_VTCXO1, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vtcxo2_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6331_upmu_set_rg_vtcxo2_on_ctrl(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VTCXO2]\n");
-            hwPowerOn(MT6331_POWER_LDO_VTCXO2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VTCXO2]\n");
+            hwPowerOn(MT6331_POWER_LDO_VTCXO2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VTCXO2_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vtcxo2_cal=%d, ", i);
-        mt6331_upmu_set_rg_vtcxo2_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vtcxo2_cal=%d, ", i);
+        mt6331_upmu_set_rg_vtcxo2_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VTCXO2]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VTCXO2]\n");
             hwPowerDown(MT6331_POWER_LDO_VTCXO2, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vauxa32_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6331_upmu_set_rg_vauxa32_on_ctrl(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VAUXA32]\n");
-            hwPowerOn(MT6331_POWER_LDO_VAUXA32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUXA32]\n");
+            hwPowerOn(MT6331_POWER_LDO_VAUXA32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VAUXA32_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vauxa32_cal=%d, ", i);
-        mt6331_upmu_set_rg_vauxa32_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vauxa32_cal=%d, ", i);
+        mt6331_upmu_set_rg_vauxa32_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUXA32]\n");
             hwPowerDown(MT6331_POWER_LDO_VAUXA32, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vaud32_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6331_upmu_set_rg_vaud32_on_ctrl(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VAUD32]\n");
-            hwPowerOn(MT6331_POWER_LDO_VAUD32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VAUD32]\n");
+            hwPowerOn(MT6331_POWER_LDO_VAUD32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VAUD32_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vaud32_cal=%d, ", i);
-        mt6331_upmu_set_rg_vaud32_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vaud32_cal=%d, ", i);
+        mt6331_upmu_set_rg_vaud32_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VAUD32]\n");
             hwPowerDown(MT6331_POWER_LDO_VAUD32, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vcama_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMA]\n");
-            hwPowerOn(MT6331_POWER_LDO_VCAMA, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMA]\n");
+            hwPowerOn(MT6331_POWER_LDO_VCAMA, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VCAMA_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vcama_cal=%d, ", i);
-        mt6331_upmu_set_rg_vcama_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcama_cal=%d, ", i);
+        mt6331_upmu_set_rg_vcama_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMA]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAMA, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vio28_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VIO28]\n");
-            hwPowerOn(MT6331_POWER_LDO_VIO28, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIO28]\n");
+            hwPowerOn(MT6331_POWER_LDO_VIO28, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VIO28_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vio28_cal=%d, ", i);
-        mt6331_upmu_set_rg_vio28_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vio28_cal=%d, ", i);
+        mt6331_upmu_set_rg_vio28_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VIO28]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIO28]\n");
             hwPowerDown(MT6331_POWER_LDO_VIO28, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vcam_af_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_AF]\n");
-            hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_AF]\n");
+            hwPowerOn(MT6331_POWER_LDO_VCAM_AF, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VCAM_AF_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vcam_af_cal=%d, ", i);
-        mt6331_upmu_set_rg_vcam_af_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcam_af_cal=%d, ", i);
+        mt6331_upmu_set_rg_vcam_af_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_AF]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAM_AF, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vmc_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6331_upmu_set_rg_vmc_on_ctrl(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VMC]\n");
-            hwPowerOn(MT6331_POWER_LDO_VMC, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMC]\n");
+            hwPowerOn(MT6331_POWER_LDO_VMC, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VMC_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vmc_cal=%d, ", i);
-        mt6331_upmu_set_rg_vmc_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmc_cal=%d, ", i);
+        mt6331_upmu_set_rg_vmc_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VMC]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMC]\n");
             hwPowerDown(MT6331_POWER_LDO_VMC, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vmch_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6331_upmu_set_rg_vmch_on_ctrl(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VMCH]\n");
-            hwPowerOn(MT6331_POWER_LDO_VMCH, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMCH]\n");
+            hwPowerOn(MT6331_POWER_LDO_VMCH, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VMCH_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vmch_cal=%d, ", i);
-        mt6331_upmu_set_rg_vmch_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmch_cal=%d, ", i);
+        mt6331_upmu_set_rg_vmch_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VMCH]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMCH]\n");
             hwPowerDown(MT6331_POWER_LDO_VMCH, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vemc33_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6331_upmu_set_rg_vemc33_on_ctrl(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VEMC33]\n");
-            hwPowerOn(MT6331_POWER_LDO_VEMC33, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VEMC33]\n");
+            hwPowerOn(MT6331_POWER_LDO_VEMC33, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VEMC33_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vemc33_cal=%d, ", i);
-        mt6331_upmu_set_rg_vemc33_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vemc33_cal=%d, ", i);
+        mt6331_upmu_set_rg_vemc33_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VEMC33]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VEMC33]\n");
             hwPowerDown(MT6331_POWER_LDO_VEMC33, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vgp1_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP1]\n");
-            hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP1]\n");
+            hwPowerOn(MT6331_POWER_LDO_VGP1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VGP1_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vgp1_cal=%d, ", i);
-        mt6331_upmu_set_rg_vgp1_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp1_cal=%d, ", i);
+        mt6331_upmu_set_rg_vgp1_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP1]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP1, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vgp4_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP4]\n");
-            hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP4]\n");
+            hwPowerOn(MT6331_POWER_LDO_VGP4, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VGP4_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vgp4_cal=%d, ", i);
-        mt6331_upmu_set_rg_vgp4_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp4_cal=%d, ", i);
+        mt6331_upmu_set_rg_vgp4_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP4]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP4, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vsim1_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6331_upmu_set_rg_vsim1_on_ctrl(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VSIM1]\n");
-            hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM1]\n");
+            hwPowerOn(MT6331_POWER_LDO_VSIM1, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VSIM1_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vsim1_cal=%d, ", i);
-        mt6331_upmu_set_rg_vsim1_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsim1_cal=%d, ", i);
+        mt6331_upmu_set_rg_vsim1_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM1]\n");
             hwPowerDown(MT6331_POWER_LDO_VSIM1, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vsim2_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6331_upmu_set_rg_vsim2_on_ctrl(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VSIM2]\n");
-            hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VSIM2]\n");
+            hwPowerOn(MT6331_POWER_LDO_VSIM2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VSIM2_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vsim2_cal=%d, ", i);
-        mt6331_upmu_set_rg_vsim2_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsim2_cal=%d, ", i);
+        mt6331_upmu_set_rg_vsim2_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VSIM2]\n");
             hwPowerDown(MT6331_POWER_LDO_VSIM2, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vibr_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VIBR]\n");
-            hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VIBR]\n");
+            hwPowerOn(MT6331_POWER_LDO_VIBR, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VIBR_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vibr_cal=%d, ", i);
-        mt6331_upmu_set_rg_vibr_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vibr_cal=%d, ", i);
+        mt6331_upmu_set_rg_vibr_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VIBR]\n");
             hwPowerDown(MT6331_POWER_LDO_VIBR, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vcamd_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAMD]\n");
-            hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAMD]\n");
+            hwPowerOn(MT6331_POWER_LDO_VCAMD, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VCAMD_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vcamd_cal=%d, ", i);
-        mt6331_upmu_set_rg_vcamd_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcamd_cal=%d, ", i);
+        mt6331_upmu_set_rg_vcamd_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAMD]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAMD, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vusb10_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VUSB10]\n");
-            hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VUSB10]\n");
+            hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VUSB10_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vusb10_cal=%d, ", i);
-        mt6331_upmu_set_rg_vusb10_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vusb10_cal=%d, ", i);
+        mt6331_upmu_set_rg_vusb10_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VUSB10]\n");
             hwPowerDown(MT6331_POWER_LDO_VUSB10, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vcam_io_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VCAM_IO]\n");
-            hwPowerOn(MT6331_POWER_LDO_VCAM_IO, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VCAM_IO]\n");
+            hwPowerOn(MT6331_POWER_LDO_VCAM_IO, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VCAM_IO_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vcam_io_cal=%d, ", i);
-        mt6331_upmu_set_rg_vcam_io_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcam_io_cal=%d, ", i);
+        mt6331_upmu_set_rg_vcam_io_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VCAM_IO]\n");
             hwPowerDown(MT6331_POWER_LDO_VCAM_IO, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vgp2_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP2]\n");
-            hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP2]\n");
+            hwPowerOn(MT6331_POWER_LDO_VGP2, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VGP2_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vgp2_cal=%d, ", i);
-        mt6331_upmu_set_rg_vgp2_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp2_cal=%d, ", i);
+        mt6331_upmu_set_rg_vgp2_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP2]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP2, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vgp3_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VGP3]\n");
-            hwPowerOn(MT6331_POWER_LDO_VGP3, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VGP3]\n");
+            hwPowerOn(MT6331_POWER_LDO_VGP3, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VGP3_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vgp3_cal=%d, ", i);
-        mt6331_upmu_set_rg_vgp3_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp3_cal=%d, ", i);
+        mt6331_upmu_set_rg_vgp3_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VGP3]\n");
             hwPowerDown(MT6331_POWER_LDO_VGP3, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vbiasn_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VBIASN]\n");
-            hwPowerOn(MT6331_POWER_LDO_VBIASN, VOL_0500, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VBIASN]\n");
+            hwPowerOn(MT6331_POWER_LDO_VBIASN, VOL_0500, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VBIASN_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vbiasn_cal=%d, ", i);
-        mt6331_upmu_set_rg_vbiasn_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vbiasn_cal=%d, ", i);
+        mt6331_upmu_set_rg_vbiasn_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VBIASN]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VBIASN]\n");
             hwPowerDown(MT6331_POWER_LDO_VBIASN, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vmipi_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6331_upmu_set_rg_vmipi_on_ctrl(0);
 
-    printk("hwPowerOn(MT6331_POWER_LDO_VMIPI]\n");
-            hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6331_POWER_LDO_VMIPI]\n");
+            hwPowerOn(MT6331_POWER_LDO_VMIPI, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6331_PMIC_RG_VMIPI_CAL_MASK;i++)
     {
-        printk("mt6331_upmu_set_rg_vmipi_cal=%d, ", i);
-        mt6331_upmu_set_rg_vmipi_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmipi_cal=%d, ", i);
+        mt6331_upmu_set_rg_vmipi_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6331_POWER_LDO_VMIPI]\n");
             hwPowerDown(MT6331_POWER_LDO_VMIPI, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6331_ldo_vsram_dvfs1_cal_test(void)
 {
-    printk("no exec_6331_ldo_vsram_dvfs1_cal_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6331_ldo_vsram_dvfs1_cal_test\n");
 }
 
 void exec_6331_ldo_vfbb_cal_test(void)
 {
-    printk("no exec_6331_ldo_vfbb_cal_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6331_ldo_vfbb_cal_test\n");
 }
 
 void exec_6331_ldo_vrtc_cal_test(void)
 {
-    printk("no exec_6331_ldo_vrtc_cal_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6331_ldo_vrtc_cal_test\n");
 }
 
 void exec_6331_ldo_vdig18_cal_test(void)
 {
-    printk("no exec_6331_ldo_vdig18_cal_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6331_ldo_vdig18_cal_test\n");
 }
 
 void exec_6332_ldo_vauxb32_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6332_upmu_set_rg_vauxb32_on_ctrl(0);
 
-    printk("hwPowerOn(MT6332_POWER_LDO_VAUXB32]\n");
-            hwPowerOn(MT6332_POWER_LDO_VAUXB32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VAUXB32]\n");
+            hwPowerOn(MT6332_POWER_LDO_VAUXB32, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6332_PMIC_RG_VAUXB32_CAL_MASK;i++)
     {
-        printk("mt6332_upmu_set_rg_vauxb32_cal=%d, ", i);
-        mt6332_upmu_set_rg_vauxb32_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vauxb32_cal=%d, ", i);
+        mt6332_upmu_set_rg_vauxb32_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VAUXB32]\n");
             hwPowerDown(MT6332_POWER_LDO_VAUXB32, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6332_ldo_vusb33_cal_test(void)
 {
-    int i=0;    
+    int i=0;
 
 
-    printk("hwPowerOn(MT6332_POWER_LDO_VUSB33]\n");
-            hwPowerOn(MT6332_POWER_LDO_VUSB33, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VUSB33]\n");
+            hwPowerOn(MT6332_POWER_LDO_VUSB33, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6332_PMIC_RG_VUSB33_CAL_MASK;i++)
     {
-        printk("mt6332_upmu_set_rg_vusb33_cal=%d, ", i);
-        mt6332_upmu_set_rg_vusb33_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vusb33_cal=%d, ", i);
+        mt6332_upmu_set_rg_vusb33_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6332_POWER_LDO_VUSB33]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VUSB33]\n");
             hwPowerDown(MT6332_POWER_LDO_VUSB33, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6332_ldo_vbif28_cal_test(void)
 {
-    int i=0;    
+    int i=0;
     mt6332_upmu_set_rg_vbif28_on_ctrl(0);
 
-    printk("hwPowerOn(MT6332_POWER_LDO_VBIF28]\n");
-            hwPowerOn(MT6332_POWER_LDO_VBIF28, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);        
-            
+	battery_log(BAT_LOG_CRTI, "hwPowerOn(MT6332_POWER_LDO_VBIF28]\n");
+            hwPowerOn(MT6332_POWER_LDO_VBIF28, VOL_DEFAULT, "ldo_dvt"); read_adc_value(ADC_ONLY);
+
     for(i=0;i<=MT6332_PMIC_RG_VBIF28_CAL_MASK;i++)
     {
-        printk("mt6332_upmu_set_rg_vbif28_cal=%d, ", i);
-        mt6332_upmu_set_rg_vbif28_cal(i); 
+		battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vbif28_cal=%d, ", i);
+        mt6332_upmu_set_rg_vbif28_cal(i);
         read_adc_value(ADC_ONLY);
     }
-    
-    printk("hwPowerDown(MT6332_POWER_LDO_VBIF28]\n");
+
+	battery_log(BAT_LOG_CRTI, "hwPowerDown(MT6332_POWER_LDO_VBIF28]\n");
             hwPowerDown(MT6332_POWER_LDO_VBIF28, "ldo_dvt"); read_adc_value(ADC_ONLY);
 }
 
 void exec_6332_ldo_vsram_dvfs2_cal_test(void)
 {
-    printk("no exec_6332_ldo_vsram_dvfs2_cal_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6332_ldo_vsram_dvfs2_cal_test\n");
 }
 
 void exec_6332_ldo_vdig18_cal_test(void)
 {
-    printk("no exec_6332_ldo_vdig18_cal_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6332_ldo_vdig18_cal_test\n");
 }
 #endif
 
@@ -6204,78 +6324,78 @@ void exec_6331_ldo_vtcxo1_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode());
 }
 
 void exec_6331_ldo_vtcxo1_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vtcxo1_on_ctrl(0);
     mt6331_upmu_set_rg_vtcxo1_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vtcxo1_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo1_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vtcxo1_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vtcxo1_lp_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vtcxo1_lp_set(0);\n");
                         mt6331_upmu_set_rg_vtcxo1_lp_set(0);
-                printk("mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode());
 
-                printk("mt6331_upmu_set_rg_vtcxo1_lp_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vtcxo1_lp_set(1);\n");
                         mt6331_upmu_set_rg_vtcxo1_lp_set(1);
-                printk("mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo1_mode = %d\n", mt6331_upmu_get_qi_vtcxo1_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(0);
                 exec_6331_ldo_vtcxo1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(1);
                 exec_6331_ldo_vtcxo1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(2);
                 exec_6331_ldo_vtcxo1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vtcxo1_srclk_mode_sel(3);
-                exec_6331_ldo_vtcxo1_mode_test_sub();  
+                exec_6331_ldo_vtcxo1_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vtcxo1_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vtcxo1_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vtcxo1_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vtcxo1_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vtcxo2_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode());
 }
 
 void exec_6331_ldo_vtcxo2_mode_test(void)
@@ -6287,1351 +6407,1351 @@ void exec_6331_ldo_vtcxo2_mode_test(void)
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vtcxo2_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo2_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vtcxo2_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vtcxo2_lp_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vtcxo2_lp_set(0);\n");
                         mt6331_upmu_set_rg_vtcxo2_lp_set(0);
-                printk("mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode());
 
-                printk("mt6331_upmu_set_rg_vtcxo2_lp_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vtcxo2_lp_set(1);\n");
                         mt6331_upmu_set_rg_vtcxo2_lp_set(1);
-                printk("mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vtcxo2_mode = %d\n", mt6331_upmu_get_qi_vtcxo2_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(0);
                 exec_6331_ldo_vtcxo2_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(1);
                 exec_6331_ldo_vtcxo2_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(2);
                 exec_6331_ldo_vtcxo2_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vtcxo2_srclk_mode_sel(3);
-                exec_6331_ldo_vtcxo2_mode_test_sub();  
+                exec_6331_ldo_vtcxo2_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vtcxo2_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vtcxo2_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vtcxo2_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vtcxo2_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vaud32_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode());
 }
 
 void exec_6331_ldo_vaud32_mode_test(void)
 {
-    int i=0;   
+    int i=0;
 
     mt6331_upmu_set_rg_vaud32_on_ctrl(0);
     mt6331_upmu_set_rg_vaud32_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vaud32_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vaud32_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vaud32_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vaud32_lp_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vaud32_lp_set(0);\n");
                         mt6331_upmu_set_rg_vaud32_lp_set(0);
-                printk("mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode());
 
-                printk("mt6331_upmu_set_rg_vaud32_lp_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vaud32_lp_set(1);\n");
                         mt6331_upmu_set_rg_vaud32_lp_set(1);
-                printk("mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vaud32_mode = %d\n", mt6331_upmu_get_qi_vaud32_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vaud32_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vaud32_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vaud32_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vaud32_srclk_mode_sel(0);
                 exec_6331_ldo_vaud32_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vaud32_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vaud32_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vaud32_srclk_mode_sel(1);
                 exec_6331_ldo_vaud32_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vaud32_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vaud32_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vaud32_srclk_mode_sel(2);
                 exec_6331_ldo_vaud32_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vaud32_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vaud32_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vaud32_srclk_mode_sel(3);
-                exec_6331_ldo_vaud32_mode_test_sub();  
+                exec_6331_ldo_vaud32_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vaud32_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vaud32_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vaud32_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vaud32_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vauxa32_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode());
 }
 
 void exec_6331_ldo_vauxa32_mode_test(void)
 {
-    int i=0;   
+    int i=0;
 
     mt6331_upmu_set_rg_vauxa32_on_ctrl(0);
     mt6331_upmu_set_rg_vauxa32_en(1);
 
-    printk("mt6331_upmu_set_rg_vauxa32_auxadc_pwdb_en(1);\n");
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vauxa32_auxadc_pwdb_en(1);\n");
             mt6331_upmu_set_rg_vauxa32_auxadc_pwdb_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vauxa32_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vauxa32_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vauxa32_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vauxa32_lp_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vauxa32_lp_set(0);\n");
                         mt6331_upmu_set_rg_vauxa32_lp_set(0);
-                printk("mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode());
 
-                printk("mt6331_upmu_set_rg_vauxa32_lp_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vauxa32_lp_set(1);\n");
                         mt6331_upmu_set_rg_vauxa32_lp_set(1);
-                printk("mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vauxa32_mode = %d\n", mt6331_upmu_get_qi_vauxa32_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(0);
                 exec_6331_ldo_vauxa32_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(1);
                 exec_6331_ldo_vauxa32_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(2);
                 exec_6331_ldo_vauxa32_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vauxa32_srclk_mode_sel(3);
-                exec_6331_ldo_vauxa32_mode_test_sub();  
+                exec_6331_ldo_vauxa32_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vauxa32_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vauxa32_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vauxa32_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vauxa32_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vcama_mode_test(void)
 {
-    printk("no exec_6331_ldo_vcama_mode_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6331_ldo_vcama_mode_test\n");
 }
 
 void exec_6331_ldo_vio28_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode());
 }
 
 void exec_6331_ldo_vio28_mode_test(void)
 {
-    int i=0;   
+    int i=0;
 
     mt6331_upmu_set_rg_vio28_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vio28_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vio28_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vio28_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vio28_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vio28_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vio28_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode());
 
-                printk("mt6331_upmu_set_rg_vio28_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vio28_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vio28_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vio28_mode = %d\n", mt6331_upmu_get_qi_vio28_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vio28_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vio28_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vio28_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vio28_srclk_mode_sel(0);
                 exec_6331_ldo_vio28_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vio28_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vio28_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vio28_srclk_mode_sel(1);
                 exec_6331_ldo_vio28_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vio28_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vio28_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vio28_srclk_mode_sel(2);
                 exec_6331_ldo_vio28_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vio28_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vio28_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vio28_srclk_mode_sel(3);
-                exec_6331_ldo_vio28_mode_test_sub();  
+                exec_6331_ldo_vio28_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vio28_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vio28_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vio28_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vio28_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vcam_af_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode());
 }
 
 void exec_6331_ldo_vcam_af_mode_test(void)
 {
-    int i=0;  
+    int i=0;
 
     mt6331_upmu_set_rg_vcam_af_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vcam_af_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcam_af_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vcam_af_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vcam_af_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcam_af_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vcam_af_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode());
 
-                printk("mt6331_upmu_set_rg_vcam_af_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcam_af_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vcam_af_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_af_mode = %d\n", mt6331_upmu_get_qi_vcam_af_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(0);
                 exec_6331_ldo_vcam_af_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(1);
                 exec_6331_ldo_vcam_af_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(2);
                 exec_6331_ldo_vcam_af_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vcam_af_srclk_mode_sel(3);
-                exec_6331_ldo_vcam_af_mode_test_sub();  
+                exec_6331_ldo_vcam_af_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vcam_af_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vcam_af_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vcam_af_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vcam_af_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vmc_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode());
 }
 
 void exec_6331_ldo_vmc_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vmc_on_ctrl(0);
     mt6331_upmu_set_rg_vmc_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vmc_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmc_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vmc_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vmc_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmc_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vmc_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode());
 
-                printk("mt6331_upmu_set_rg_vmc_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmc_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vmc_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmc_mode = %d\n", mt6331_upmu_get_qi_vmc_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vmc_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vmc_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmc_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vmc_srclk_mode_sel(0);
                 exec_6331_ldo_vmc_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vmc_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmc_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vmc_srclk_mode_sel(1);
                 exec_6331_ldo_vmc_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vmc_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmc_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vmc_srclk_mode_sel(2);
                 exec_6331_ldo_vmc_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vmc_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmc_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vmc_srclk_mode_sel(3);
-                exec_6331_ldo_vmc_mode_test_sub();  
+                exec_6331_ldo_vmc_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vmc_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vmc_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vmc_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vmc_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vmch_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode());
 }
 
 void exec_6331_ldo_vmch_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vmch_on_ctrl(0);
     mt6331_upmu_set_rg_vmch_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vmch_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmch_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vmch_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vmch_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmch_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vmch_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode());
 
-                printk("mt6331_upmu_set_rg_vmch_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmch_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vmch_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmch_mode = %d\n", mt6331_upmu_get_qi_vmch_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vmch_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vmch_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmch_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vmch_srclk_mode_sel(0);
                 exec_6331_ldo_vmch_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vmch_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmch_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vmch_srclk_mode_sel(1);
                 exec_6331_ldo_vmch_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vmch_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmch_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vmch_srclk_mode_sel(2);
                 exec_6331_ldo_vmch_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vmch_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmch_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vmch_srclk_mode_sel(3);
-                exec_6331_ldo_vmch_mode_test_sub();  
+                exec_6331_ldo_vmch_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vmch_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vmch_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vmch_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vmch_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vemc33_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode());
 }
 
 void exec_6331_ldo_vemc33_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vemc33_on_ctrl(0);
     mt6331_upmu_set_rg_vemc33_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vemc33_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vemc33_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vemc33_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vemc33_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vemc33_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vemc33_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode());
 
-                printk("mt6331_upmu_set_rg_vemc33_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vemc33_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vemc33_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vemc33_mode = %d\n", mt6331_upmu_get_qi_vemc33_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vemc33_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vemc33_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vemc33_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vemc33_srclk_mode_sel(0);
                 exec_6331_ldo_vemc33_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vemc33_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vemc33_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vemc33_srclk_mode_sel(1);
                 exec_6331_ldo_vemc33_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vemc33_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vemc33_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vemc33_srclk_mode_sel(2);
                 exec_6331_ldo_vemc33_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vemc33_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vemc33_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vemc33_srclk_mode_sel(3);
-                exec_6331_ldo_vemc33_mode_test_sub();  
+                exec_6331_ldo_vemc33_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vemc33_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vemc33_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vemc33_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vemc33_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vgp1_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode());
 }
 
 void exec_6331_ldo_vgp1_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vgp1_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vgp1_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp1_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vgp1_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vgp1_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp1_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vgp1_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode());
 
-                printk("mt6331_upmu_set_rg_vgp1_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp1_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vgp1_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp1_mode = %d\n", mt6331_upmu_get_qi_vgp1_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vgp1_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vgp1_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp1_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vgp1_srclk_mode_sel(0);
                 exec_6331_ldo_vgp1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp1_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp1_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vgp1_srclk_mode_sel(1);
                 exec_6331_ldo_vgp1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp1_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp1_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vgp1_srclk_mode_sel(2);
                 exec_6331_ldo_vgp1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp1_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp1_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vgp1_srclk_mode_sel(3);
-                exec_6331_ldo_vgp1_mode_test_sub();  
+                exec_6331_ldo_vgp1_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vgp1_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vgp1_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vgp1_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vgp1_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vgp4_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode());
 }
 
 void exec_6331_ldo_vgp4_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vgp4_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vgp4_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp4_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vgp4_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vgp4_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp4_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vgp4_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode());
 
-                printk("mt6331_upmu_set_rg_vgp4_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp4_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vgp4_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp4_mode = %d\n", mt6331_upmu_get_qi_vgp4_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vgp4_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vgp4_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp4_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vgp4_srclk_mode_sel(0);
                 exec_6331_ldo_vgp4_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp4_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp4_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vgp4_srclk_mode_sel(1);
                 exec_6331_ldo_vgp4_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp4_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp4_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vgp4_srclk_mode_sel(2);
                 exec_6331_ldo_vgp4_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp4_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp4_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vgp4_srclk_mode_sel(3);
-                exec_6331_ldo_vgp4_mode_test_sub();  
+                exec_6331_ldo_vgp4_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vgp4_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vgp4_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vgp4_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vgp4_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vsim1_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode());
 }
 
 void exec_6331_ldo_vsim1_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vsim1_on_ctrl(0);
     mt6331_upmu_set_rg_vsim1_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vsim1_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim1_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vsim1_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vsim1_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsim1_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vsim1_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode());
 
-                printk("mt6331_upmu_set_rg_vsim1_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsim1_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vsim1_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim1_mode = %d\n", mt6331_upmu_get_qi_vsim1_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vsim1_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vsim1_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim1_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vsim1_srclk_mode_sel(0);
                 exec_6331_ldo_vsim1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vsim1_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim1_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vsim1_srclk_mode_sel(1);
                 exec_6331_ldo_vsim1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vsim1_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim1_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vsim1_srclk_mode_sel(2);
                 exec_6331_ldo_vsim1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vsim1_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim1_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vsim1_srclk_mode_sel(3);
-                exec_6331_ldo_vsim1_mode_test_sub();  
+                exec_6331_ldo_vsim1_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vsim1_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vsim1_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vsim1_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vsim1_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vsim2_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode());
 }
 
 void exec_6331_ldo_vsim2_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vsim2_on_ctrl(0);
     mt6331_upmu_set_rg_vsim2_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vsim2_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim2_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vsim2_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vsim2_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsim2_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vsim2_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode());
 
-                printk("mt6331_upmu_set_rg_vsim2_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsim2_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vsim2_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsim2_mode = %d\n", mt6331_upmu_get_qi_vsim2_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vsim2_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vsim2_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim2_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vsim2_srclk_mode_sel(0);
                 exec_6331_ldo_vsim2_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vsim2_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim2_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vsim2_srclk_mode_sel(1);
                 exec_6331_ldo_vsim2_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vsim2_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim2_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vsim2_srclk_mode_sel(2);
                 exec_6331_ldo_vsim2_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vsim2_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsim2_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vsim2_srclk_mode_sel(3);
-                exec_6331_ldo_vsim2_mode_test_sub();  
+                exec_6331_ldo_vsim2_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vsim2_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vsim2_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vsim2_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vsim2_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vfbb_mode_test(void)
 {
-    printk("no exec_6331_ldo_vfbb_mode_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6331_ldo_vfbb_mode_test\n");
 }
 
 void exec_6331_ldo_vibr_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode());
 }
 
 void exec_6331_ldo_vibr_mode_test(void)
 {
-    int i=0;  
+    int i=0;
 
     mt6331_upmu_set_rg_vibr_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vibr_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vibr_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vibr_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vibr_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vibr_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vibr_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode());
 
-                printk("mt6331_upmu_set_rg_vibr_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vibr_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vibr_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vibr_mode = %d\n", mt6331_upmu_get_qi_vibr_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vibr_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vibr_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vibr_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vibr_srclk_mode_sel(0);
                 exec_6331_ldo_vibr_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vibr_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vibr_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vibr_srclk_mode_sel(1);
                 exec_6331_ldo_vibr_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vibr_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vibr_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vibr_srclk_mode_sel(2);
                 exec_6331_ldo_vibr_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vibr_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vibr_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vibr_srclk_mode_sel(3);
-                exec_6331_ldo_vibr_mode_test_sub();  
+                exec_6331_ldo_vibr_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vibr_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vibr_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vibr_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vibr_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vrtc_mode_test(void)
 {
-    printk("no exec_6331_ldo_vrtc_mode_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6331_ldo_vrtc_mode_test\n");
 }
 
 void exec_6331_ldo_vdig18_mode_test(void)
 {
-    printk("no exec_6331_ldo_vdig18_mode_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6331_ldo_vdig18_mode_test\n");
 }
 
 void exec_6331_ldo_vmipi_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode());
 }
 
 void exec_6331_ldo_vmipi_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vmipi_on_ctrl(0);
     mt6331_upmu_set_rg_vmipi_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vmipi_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmipi_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vmipi_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vmipi_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmipi_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vmipi_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode());
 
-                printk("mt6331_upmu_set_rg_vmipi_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vmipi_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vmipi_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vmipi_mode = %d\n", mt6331_upmu_get_qi_vmipi_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vmipi_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vmipi_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmipi_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vmipi_srclk_mode_sel(0);
                 exec_6331_ldo_vmipi_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vmipi_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmipi_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vmipi_srclk_mode_sel(1);
                 exec_6331_ldo_vmipi_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vmipi_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmipi_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vmipi_srclk_mode_sel(2);
                 exec_6331_ldo_vmipi_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vmipi_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vmipi_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vmipi_srclk_mode_sel(3);
-                exec_6331_ldo_vmipi_mode_test_sub();  
+                exec_6331_ldo_vmipi_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vmipi_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vmipi_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vmipi_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vmipi_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vcamd_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode());
 }
 
 void exec_6331_ldo_vcamd_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vcamd_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vcamd_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcamd_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vcamd_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vcamd_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcamd_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vcamd_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode());
 
-                printk("mt6331_upmu_set_rg_vcamd_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcamd_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vcamd_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcamd_mode = %d\n", mt6331_upmu_get_qi_vcamd_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vcamd_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vcamd_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcamd_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vcamd_srclk_mode_sel(0);
                 exec_6331_ldo_vcamd_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vcamd_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcamd_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vcamd_srclk_mode_sel(1);
                 exec_6331_ldo_vcamd_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vcamd_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcamd_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vcamd_srclk_mode_sel(2);
                 exec_6331_ldo_vcamd_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vcamd_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcamd_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vcamd_srclk_mode_sel(3);
-                exec_6331_ldo_vcamd_mode_test_sub();  
+                exec_6331_ldo_vcamd_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vcamd_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vcamd_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vcamd_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vcamd_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vusb10_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode());
 }
 
 void exec_6331_ldo_vusb10_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vusb10_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vusb10_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vusb10_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vusb10_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vusb10_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vusb10_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vusb10_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode());
 
-                printk("mt6331_upmu_set_rg_vusb10_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vusb10_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vusb10_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vusb10_mode = %d\n", mt6331_upmu_get_qi_vusb10_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vusb10_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vusb10_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vusb10_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vusb10_srclk_mode_sel(0);
                 exec_6331_ldo_vusb10_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vusb10_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vusb10_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vusb10_srclk_mode_sel(1);
                 exec_6331_ldo_vusb10_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vusb10_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vusb10_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vusb10_srclk_mode_sel(2);
                 exec_6331_ldo_vusb10_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vusb10_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vusb10_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vusb10_srclk_mode_sel(3);
-                exec_6331_ldo_vusb10_mode_test_sub();  
+                exec_6331_ldo_vusb10_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vusb10_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vusb10_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vusb10_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vusb10_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vcam_io_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode());
 }
 
 void exec_6331_ldo_vcam_io_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vcam_io_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vcam_io_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcam_io_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vcam_io_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vcam_io_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcam_io_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vcam_io_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode());
 
-                printk("mt6331_upmu_set_rg_vcam_io_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vcam_io_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vcam_io_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vcam_io_mode = %d\n", mt6331_upmu_get_qi_vcam_io_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(0);
                 exec_6331_ldo_vcam_io_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(1);
                 exec_6331_ldo_vcam_io_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(2);
                 exec_6331_ldo_vcam_io_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vcam_io_srclk_mode_sel(3);
-                exec_6331_ldo_vcam_io_mode_test_sub();  
+                exec_6331_ldo_vcam_io_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vcam_io_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vcam_io_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vcam_io_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vcam_io_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vsram_dvfs1_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode());
 }
 
 void exec_6331_ldo_vsram_dvfs1_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vsram_dvfs1_on_ctrl(0);
     mt6331_upmu_set_rg_vsram_dvfs1_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vsram_dvfs1_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsram_dvfs1_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vsram_dvfs1_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vsram_dvfs1_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsram_dvfs1_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vsram_dvfs1_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode());
 
-                printk("mt6331_upmu_set_rg_vsram_dvfs1_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vsram_dvfs1_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vsram_dvfs1_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vsram_dvfs1_mode = %d\n", mt6331_upmu_get_qi_vsram_dvfs1_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(0);
                 exec_6331_ldo_vsram_dvfs1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(1);
                 exec_6331_ldo_vsram_dvfs1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(2);
                 exec_6331_ldo_vsram_dvfs1_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vsram_dvfs1_srclk_mode_sel(3);
-                exec_6331_ldo_vsram_dvfs1_mode_test_sub();  
+                exec_6331_ldo_vsram_dvfs1_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vsram_dvfs1_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vsram_dvfs1_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vsram_dvfs1_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vsram_dvfs1_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vgp2_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode());
 }
 
 void exec_6331_ldo_vgp2_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vgp2_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vgp2_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp2_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vgp2_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vgp2_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp2_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vgp2_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode());
 
-                printk("mt6331_upmu_set_rg_vgp2_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp2_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vgp2_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp2_mode = %d\n", mt6331_upmu_get_qi_vgp2_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vgp2_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vgp2_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp2_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vgp2_srclk_mode_sel(0);
                 exec_6331_ldo_vgp2_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp2_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp2_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vgp2_srclk_mode_sel(1);
                 exec_6331_ldo_vgp2_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp2_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp2_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vgp2_srclk_mode_sel(2);
                 exec_6331_ldo_vgp2_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp2_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp2_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vgp2_srclk_mode_sel(3);
-                exec_6331_ldo_vgp2_mode_test_sub();  
+                exec_6331_ldo_vgp2_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vgp2_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vgp2_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vgp2_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vgp2_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vgp3_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode());
 }
 
 void exec_6331_ldo_vgp3_mode_test(void)
 {
-    int i=0;    
+    int i=0;
 
     mt6331_upmu_set_rg_vgp3_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vgp3_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp3_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vgp3_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vgp3_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp3_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vgp3_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode());
 
-                printk("mt6331_upmu_set_rg_vgp3_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vgp3_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vgp3_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vgp3_mode = %d\n", mt6331_upmu_get_qi_vgp3_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vgp3_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vgp3_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp3_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vgp3_srclk_mode_sel(0);
                 exec_6331_ldo_vgp3_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp3_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp3_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vgp3_srclk_mode_sel(1);
                 exec_6331_ldo_vgp3_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp3_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp3_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vgp3_srclk_mode_sel(2);
                 exec_6331_ldo_vgp3_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vgp3_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vgp3_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vgp3_srclk_mode_sel(3);
-                exec_6331_ldo_vgp3_mode_test_sub();  
+                exec_6331_ldo_vgp3_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vgp3_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vgp3_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vgp3_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vgp3_lp_ctrl(0);
 }
 
 void exec_6331_ldo_vbiasn_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode());
 }
 
 void exec_6331_ldo_vbiasn_mode_test(void)
 {
-    int i=0;   
+    int i=0;
 
     mt6331_upmu_set_rg_vbiasn_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6331_upmu_set_rg_vbiasn_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vbiasn_lp_ctrl] %d\n", i);
         mt6331_upmu_set_rg_vbiasn_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6331_upmu_set_rg_vbiasn_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vbiasn_lp_mode_set(0);\n");
                         mt6331_upmu_set_rg_vbiasn_lp_mode_set(0);
-                printk("mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode());
 
-                printk("mt6331_upmu_set_rg_vbiasn_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_set_rg_vbiasn_lp_mode_set(1);\n");
                         mt6331_upmu_set_rg_vbiasn_lp_mode_set(1);
-                printk("mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode());
+				battery_log(BAT_LOG_CRTI, "mt6331_upmu_get_qi_vbiasn_mode = %d\n", mt6331_upmu_get_qi_vbiasn_mode());
                 break;
 
             case 1:
-                printk("[mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(0)]\n"); 
-                         mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(0)]\n");
+                         mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(0);
                 exec_6331_ldo_vbiasn_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(1)]\n");
                          mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(1);
                 exec_6331_ldo_vbiasn_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(2)]\n");
                          mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(2);
                 exec_6331_ldo_vbiasn_mode_test_sub();
-                
-                printk("[mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(3)]\n");
                          mt6331_upmu_set_rg_vbiasn_srclk_mode_sel(3);
-                exec_6331_ldo_vbiasn_mode_test_sub();  
+                exec_6331_ldo_vbiasn_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6331_upmu_set_rg_vbiasn_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vbiasn_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6331_upmu_set_rg_vbiasn_lp_ctrl(0);\n"); mt6331_upmu_set_rg_vbiasn_lp_ctrl(0);
 }
 
 void exec_6332_ldo_vauxb32_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode());
 }
 
 void exec_6332_ldo_vauxb32_mode_test(void)
@@ -7641,246 +7761,246 @@ void exec_6332_ldo_vauxb32_mode_test(void)
     mt6332_upmu_set_rg_vauxb32_on_ctrl(0);
     mt6332_upmu_set_rg_vauxb32_en(1);
 
-    printk("mt6332_upmu_set_rg_vauxb32_auxadc_pwdb_en(1);\n");
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vauxb32_auxadc_pwdb_en(1);\n");
             mt6332_upmu_set_rg_vauxb32_auxadc_pwdb_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_rg_vauxb32_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vauxb32_lp_ctrl] %d\n", i);
         mt6332_upmu_set_rg_vauxb32_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6332_upmu_set_rg_vauxb32_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vauxb32_lp_mode_set(0);\n");
                         mt6332_upmu_set_rg_vauxb32_lp_mode_set(0);
-                printk("mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode());
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode());
 
-                printk("mt6332_upmu_set_rg_vauxb32_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vauxb32_lp_mode_set(1);\n");
                         mt6332_upmu_set_rg_vauxb32_lp_mode_set(1);
-                printk("mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode());
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vauxb32_mode = %d\n", mt6332_upmu_get_qi_vauxb32_mode());
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(0)]\n"); 
-                         mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(0)]\n");
+                         mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(0);
                 exec_6332_ldo_vauxb32_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(1)]\n");
                          mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(1);
                 exec_6332_ldo_vauxb32_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(2)]\n");
                          mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(2);
                 exec_6332_ldo_vauxb32_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(3)]\n");
                          mt6332_upmu_set_rg_vauxb32_srclk_mode_sel(3);
-                exec_6332_ldo_vauxb32_mode_test_sub();  
+                exec_6332_ldo_vauxb32_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6332_upmu_set_rg_vauxb32_lp_ctrl(0);\n"); mt6332_upmu_set_rg_vauxb32_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6332_upmu_set_rg_vauxb32_lp_ctrl(0);\n"); mt6332_upmu_set_rg_vauxb32_lp_ctrl(0);
 }
 
 void exec_6332_ldo_vbif28_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode());
 }
 
 void exec_6332_ldo_vbif28_mode_test(void)
 {
-    int i=0;  
+    int i=0;
 
     mt6332_upmu_set_rg_vbif28_on_ctrl(0);
     mt6332_upmu_set_rg_vbif28_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_rg_vbif28_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vbif28_lp_ctrl] %d\n", i);
         mt6332_upmu_set_rg_vbif28_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6332_upmu_set_rg_vbif28_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vbif28_lp_mode_set(0);\n");
                         mt6332_upmu_set_rg_vbif28_lp_mode_set(0);
-                printk("mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode());
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode());
 
-                printk("mt6332_upmu_set_rg_vbif28_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vbif28_lp_mode_set(1);\n");
                         mt6332_upmu_set_rg_vbif28_lp_mode_set(1);
-                printk("mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode());
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vbif28_mode = %d\n", mt6332_upmu_get_qi_vbif28_mode());
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_rg_vbif28_srclk_mode_sel(0)]\n"); 
-                         mt6332_upmu_set_rg_vbif28_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vbif28_srclk_mode_sel(0)]\n");
+                         mt6332_upmu_set_rg_vbif28_srclk_mode_sel(0);
                 exec_6332_ldo_vbif28_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vbif28_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vbif28_srclk_mode_sel(1)]\n");
                          mt6332_upmu_set_rg_vbif28_srclk_mode_sel(1);
                 exec_6332_ldo_vbif28_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vbif28_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vbif28_srclk_mode_sel(2)]\n");
                          mt6332_upmu_set_rg_vbif28_srclk_mode_sel(2);
                 exec_6332_ldo_vbif28_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vbif28_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vbif28_srclk_mode_sel(3)]\n");
                          mt6332_upmu_set_rg_vbif28_srclk_mode_sel(3);
-                exec_6332_ldo_vbif28_mode_test_sub();  
+                exec_6332_ldo_vbif28_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6332_upmu_set_rg_vbif28_lp_ctrl(0);\n"); mt6332_upmu_set_rg_vbif28_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6332_upmu_set_rg_vbif28_lp_ctrl(0);\n"); mt6332_upmu_set_rg_vbif28_lp_ctrl(0);
 }
 
 void exec_6332_ldo_vusb33_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode());
 }
 
 void exec_6332_ldo_vusb33_mode_test(void)
 {
-    int i=0;   
+    int i=0;
 
     mt6332_upmu_set_rg_vusb33_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_rg_vusb33_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vusb33_lp_ctrl] %d\n", i);
         mt6332_upmu_set_rg_vusb33_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6332_upmu_set_rg_vusb33_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vusb33_lp_mode_set(0);\n");
                         mt6332_upmu_set_rg_vusb33_lp_mode_set(0);
-                printk("mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode());
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode());
 
-                printk("mt6332_upmu_set_rg_vusb33_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vusb33_lp_mode_set(1);\n");
                         mt6332_upmu_set_rg_vusb33_lp_mode_set(1);
-                printk("mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode());
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vusb33_mode = %d\n", mt6332_upmu_get_qi_vusb33_mode());
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_rg_vusb33_srclk_mode_sel(0)]\n"); 
-                         mt6332_upmu_set_rg_vusb33_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vusb33_srclk_mode_sel(0)]\n");
+                         mt6332_upmu_set_rg_vusb33_srclk_mode_sel(0);
                 exec_6332_ldo_vusb33_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vusb33_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vusb33_srclk_mode_sel(1)]\n");
                          mt6332_upmu_set_rg_vusb33_srclk_mode_sel(1);
                 exec_6332_ldo_vusb33_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vusb33_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vusb33_srclk_mode_sel(2)]\n");
                          mt6332_upmu_set_rg_vusb33_srclk_mode_sel(2);
                 exec_6332_ldo_vusb33_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vusb33_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vusb33_srclk_mode_sel(3)]\n");
                          mt6332_upmu_set_rg_vusb33_srclk_mode_sel(3);
-                exec_6332_ldo_vusb33_mode_test_sub();  
+                exec_6332_ldo_vusb33_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6332_upmu_set_rg_vusb33_lp_ctrl(0);\n"); mt6332_upmu_set_rg_vusb33_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6332_upmu_set_rg_vusb33_lp_ctrl(0);\n"); mt6332_upmu_set_rg_vusb33_lp_ctrl(0);
 }
 
 void exec_6332_ldo_vdig18_mode_test(void)
 {
-    printk("no exec_6332_ldo_vdig18_mode_test\n");
+	battery_log(BAT_LOG_CRTI, "no exec_6332_ldo_vdig18_mode_test\n");
 }
 
 void exec_6332_ldo_vsram_dvfs2_mode_test_sub(void)
 {
     set_srclken_sw_mode();
 
-    printk("set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
-    printk("mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode()); 
-    printk("set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
-    printk("mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0); 
-    printk("mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode()); 
-    printk("set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1); 
-    printk("mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode()); 
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(0);\n"); set_srclken_1_val(0); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(0); set_srclken_2_val(1);\n"); set_srclken_1_val(0); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(0);\n"); set_srclken_1_val(1); set_srclken_2_val(0);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode());
+	battery_log(BAT_LOG_CRTI, "set_srclken_1_val(1); set_srclken_2_val(1);\n"); set_srclken_1_val(1); set_srclken_2_val(1);
+	battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode());
 }
 
 void exec_6332_ldo_vsram_dvfs2_mode_test(void)
 {
-    int i=0;  
+    int i=0;
 
     mt6332_upmu_set_rg_vsram_dvfs2_on_ctrl(0);
     mt6332_upmu_set_rg_vsram_dvfs2_en(1);
 
     for(i=0;i<=1;i++)
     {
-        printk("[mt6332_upmu_set_rg_vsram_dvfs2_lp_ctrl] %d\n", i);
+		battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vsram_dvfs2_lp_ctrl] %d\n", i);
         mt6332_upmu_set_rg_vsram_dvfs2_lp_ctrl(i);
 
         switch(i){
             case 0:
-                printk("mt6332_upmu_set_rg_vsram_dvfs2_lp_mode_set(0);\n");
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vsram_dvfs2_lp_mode_set(0);\n");
                         mt6332_upmu_set_rg_vsram_dvfs2_lp_mode_set(0);
-                printk("mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode());
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode());
 
-                printk("mt6332_upmu_set_rg_vsram_dvfs2_lp_mode_set(1);\n");
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_set_rg_vsram_dvfs2_lp_mode_set(1);\n");
                         mt6332_upmu_set_rg_vsram_dvfs2_lp_mode_set(1);
-                printk("mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode());
+				battery_log(BAT_LOG_CRTI, "mt6332_upmu_get_qi_vsram_dvfs2_mode = %d\n", mt6332_upmu_get_qi_vsram_dvfs2_mode());
                 break;
 
             case 1:
-                printk("[mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(0)]\n"); 
-                         mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(0); 
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(0)]\n");
+                         mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(0);
                 exec_6332_ldo_vsram_dvfs2_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(1)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(1)]\n");
                          mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(1);
                 exec_6332_ldo_vsram_dvfs2_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(2)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(2)]\n");
                          mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(2);
                 exec_6332_ldo_vsram_dvfs2_mode_test_sub();
-                
-                printk("[mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(3)]\n");
+
+				battery_log(BAT_LOG_CRTI, "[mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(3)]\n");
                          mt6332_upmu_set_rg_vsram_dvfs2_srclk_mode_sel(3);
-                exec_6332_ldo_vsram_dvfs2_mode_test_sub();  
+                exec_6332_ldo_vsram_dvfs2_mode_test_sub();
                 break;
 
             default:
-                printk("Invalid channel value(%d)\n", i);
+				battery_log(BAT_LOG_CRTI, "Invalid channel value(%d)\n", i);
                 break;
         }
     }
 
-    printk("Final reset to 0: mt6332_upmu_set_rg_vsram_dvfs2_lp_ctrl(0);\n"); mt6332_upmu_set_rg_vsram_dvfs2_lp_ctrl(0);
+	battery_log(BAT_LOG_CRTI, "Final reset to 0: mt6332_upmu_set_rg_vsram_dvfs2_lp_ctrl(0);\n"); mt6332_upmu_set_rg_vsram_dvfs2_lp_ctrl(0);
 }
 #endif
 
@@ -7895,21 +8015,21 @@ void reset_bif_irq(void)
     U32 ret=0;
     U32 reg_val=0;
     int loop_i=0;
-    
-    printk("reset BIF_IRQ : BIF_IRQ_CLR=1\n");
+
+	battery_log(BAT_LOG_CRTI, "reset BIF_IRQ : BIF_IRQ_CLR=1\n");
     ret=pmic_config_interface(MT6332_BIF_CON31, 0x1, 0x1, 1);
-    
+
     reg_val=0;
     while(reg_val != 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
-    printk("When BIF_IRQ=0 : BIF_IRQ_CLR =0\n");
-    ret=pmic_config_interface(MT6332_BIF_CON31, 0x0, 0x1, 1); 
+
+	battery_log(BAT_LOG_CRTI, "When BIF_IRQ=0 : BIF_IRQ_CLR =0\n");
+    ret=pmic_config_interface(MT6332_BIF_CON31, 0x0, 0x1, 1);
 }
 
 void set_bif_cmd(int bif_cmd[], int bif_cmd_len)
@@ -7917,15 +8037,15 @@ void set_bif_cmd(int bif_cmd[], int bif_cmd_len)
     int i=0;
     int con_index=0;
     U32 ret=0;
-    
+
     for(i=0;i<bif_cmd_len;i++)
     {
         ret=pmic_config_interface(MT6332_BIF_CON0+con_index, bif_cmd[i], 0x07FF, 0);
         con_index += 0x2;
     }
-    
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "\n Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x \n Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x \n Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "\n Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x \n Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x \n Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON0, upmu_get_reg_value(MT6332_BIF_CON0),
         MT6332_BIF_CON1, upmu_get_reg_value(MT6332_BIF_CON1),
         MT6332_BIF_CON2, upmu_get_reg_value(MT6332_BIF_CON2),
@@ -7945,27 +8065,27 @@ void check_bat_lost(void)
 {
     U32 ret=0;
     U32 reg_val=0;
-        
+
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 13);
-    printk("[check_bat_lost] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[check_bat_lost] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
 }
 
 void bif_debug(void)
 {
-    U32 ret=0;    
+    U32 ret=0;
     U32 qi_bif_tx_en=0;
     U32 qi_bif_tx_data=0;
     U32 qi_bif_rx_en=0;
     U32 qi_bif_rx_data=0;
     U32 bif_tx_state=0;
-    U32 bif_flow_ctl_state=0;    
+    U32 bif_flow_ctl_state=0;
     U32 bif_rx_state=0;
     U32 bif_data_num=0;
     U32 rgs_baton_ht=0;
     U32 repeat=10;
     int i=0;
 
-    printk("[bif_debug] qi_bif_tx_en, qi_bif_tx_data, qi_bif_rx_en, qi_bif_rx_data, bif_tx_state, bif_flow_ctl_state, bif_rx_state, bif_data_num, rgs_baton_ht\n");
+	battery_log(BAT_LOG_CRTI, "[bif_debug] qi_bif_tx_en, qi_bif_tx_data, qi_bif_rx_en, qi_bif_rx_data, bif_tx_state, bif_flow_ctl_state, bif_rx_state, bif_data_num, rgs_baton_ht\n");
 
     for(i=0;i<repeat;i++)
     {
@@ -7974,14 +8094,14 @@ void bif_debug(void)
         ret=pmic_read_interface(MT6332_BIF_CON33, &qi_bif_rx_en, 0x1, 13);
         ret=pmic_read_interface(MT6332_BIF_CON33, &qi_bif_rx_data, 0x1, 12);
         ret=pmic_read_interface(MT6332_BIF_CON33, &bif_tx_state, 0x3, 10);
-        ret=pmic_read_interface(MT6332_BIF_CON33, &bif_flow_ctl_state, 0x3, 8);        
+        ret=pmic_read_interface(MT6332_BIF_CON33, &bif_flow_ctl_state, 0x3, 8);
         ret=pmic_read_interface(MT6332_BIF_CON33, &bif_rx_state, 0x7, 5);
         ret=pmic_read_interface(MT6332_BIF_CON19, &bif_data_num, 0xF, 0);
         ret=pmic_read_interface(MT6332_STA_CON1,  &rgs_baton_ht, 0x1, 10);
 
-        printk("[bif_debug] %d,%d,%d,%d,%d,%d,%d,%d,%d\n", 
-            qi_bif_tx_en, qi_bif_tx_data, qi_bif_rx_en, qi_bif_rx_data, bif_tx_state, bif_flow_ctl_state, bif_rx_state, bif_data_num, rgs_baton_ht);        
-    }    
+		battery_log(BAT_LOG_CRTI, "[bif_debug] %d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+            qi_bif_tx_en, qi_bif_tx_data, qi_bif_rx_en, qi_bif_rx_data, bif_tx_state, bif_flow_ctl_state, bif_rx_state, bif_data_num, rgs_baton_ht);
+    }
 }
 
 void tc_bif_reset_slave(void)
@@ -7990,42 +8110,42 @@ void tc_bif_reset_slave(void)
     U32 reg_val=0;
     int bif_cmd[1]={0};
     int loop_i=0;
-    
-    //1. set command sequence    
-    printk("[tc_bif_reset_slave] 1. set command sequence\n");
+
+    //1. set command sequence
+	battery_log(BAT_LOG_CRTI, "[tc_bif_reset_slave] 1. set command sequence\n");
     bif_cmd[0]=0x0400;
     set_bif_cmd(bif_cmd,1);
 
     //2. parameter setting
-    printk("[tc_bif_reset_slave] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_reset_slave] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x0, 0x3, 8);
-    
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_reset_slave] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0); 
+	battery_log(BAT_LOG_CRTI, "[tc_bif_reset_slave] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_reset_slave] 4. polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_reset_slave] 4. polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //disable BIF module
-    printk("[tc_bif_reset_slave] 5. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0); 
+	battery_log(BAT_LOG_CRTI, "[tc_bif_reset_slave] 5. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
 
     check_bat_lost();
 
@@ -8037,21 +8157,21 @@ void debug_dump_reg(void)
 {
     U32 ret=0;
     U32 reg_val=0;
-    
+
     ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xFFFF, 0);
-    printk("[debug_dump_reg] Reg[0x%x]=0x%x\n", MT6332_BIF_CON19, reg_val);
+	battery_log(BAT_LOG_CRTI, "[debug_dump_reg] Reg[0x%x]=0x%x\n", MT6332_BIF_CON19, reg_val);
 
     ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFFFF, 0);
-    printk("[debug_dump_reg] Reg[0x%x]=0x%x\n", MT6332_BIF_CON20, reg_val);
+	battery_log(BAT_LOG_CRTI, "[debug_dump_reg] Reg[0x%x]=0x%x\n", MT6332_BIF_CON20, reg_val);
 
     ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0xFFFF, 0);
-    printk("[debug_dump_reg] Reg[0x%x]=0x%x\n", MT6332_BIF_CON21, reg_val);
+	battery_log(BAT_LOG_CRTI, "[debug_dump_reg] Reg[0x%x]=0x%x\n", MT6332_BIF_CON21, reg_val);
 
     ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0xFFFF, 0);
-    printk("[debug_dump_reg] Reg[0x%x]=0x%x\n", MT6332_BIF_CON22, reg_val);
+	battery_log(BAT_LOG_CRTI, "[debug_dump_reg] Reg[0x%x]=0x%x\n", MT6332_BIF_CON22, reg_val);
 
     ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0xFFFF, 0);
-    printk("[debug_dump_reg] Reg[0x%x]=0x%x\n", MT6332_BIF_CON23, reg_val);
+	battery_log(BAT_LOG_CRTI, "[debug_dump_reg] Reg[0x%x]=0x%x\n", MT6332_BIF_CON23, reg_val);
 }
 
 #if 1 // tc_bif_1000
@@ -8060,41 +8180,41 @@ void tc_bif_1000_step_0(void)
     U32 ret=0;
     U32 reg_val=0;
     int loop_i=0;
-    
-    printk("[tc_bif_1000_step_0]-----------------------------------\n");
 
-    printk("[tc_bif_1000_step_0] 1. set power up regiser\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_0]-----------------------------------\n");
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_0] 1. set power up regiser\n");
     ret=pmic_config_interface(MT6332_BIF_CON32, 0x1, 0x1, 15);
 
-    printk("[tc_bif_1000_step_0] 2. trigger BIF module\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_0] 2. trigger BIF module\n");
     ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON32,upmu_get_reg_value(MT6332_BIF_CON32),
         MT6332_BIF_CON18,upmu_get_reg_value(MT6332_BIF_CON18)
         );
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1000_step_0] 3. polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_0] 3. polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
-    printk("[tc_bif_1000_step_0] 4. disable BIF module\n");
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_0] 4. disable BIF module\n");
     ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
 
-    printk("[tc_bif_1000_step_0] 5. to disable power up mode\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_0] 5. to disable power up mode\n");
     ret=pmic_config_interface(MT6332_BIF_CON32, 0x0, 0x1, 15);
 
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON32,upmu_get_reg_value(MT6332_BIF_CON32),
         MT6332_BIF_CON18,upmu_get_reg_value(MT6332_BIF_CON18)
         );
@@ -8106,9 +8226,9 @@ void tc_bif_1000_step_0(void)
 
 void tc_bif_1000_step_1(void)
 {
-    printk("[tc_bif_1000_step_1]-----------------------------------\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_1]-----------------------------------\n");
 
-    tc_bif_reset_slave();    
+    tc_bif_reset_slave();
 }
 
 void tc_bif_1000_step_2(void)
@@ -8117,76 +8237,76 @@ void tc_bif_1000_step_2(void)
     U32 reg_val=0;
     int bif_cmd[3]={0,0,0};
     int loop_i=0;
-    
-    printk("[tc_bif_1000_step_2]-----------------------------------\n");
 
-    //1. set command sequence    
-    printk("[tc_bif_1000_step_2] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2]-----------------------------------\n");
+
+    //1. set command sequence
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x0100;
     bif_cmd[2]=0x0300;
     set_bif_cmd(bif_cmd,3);
 
     //2. parameter setting
-    printk("[tc_bif_1000_step_2] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x3, 0xF, 12);
-    ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);    
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
 
     //3. trigger BIF module
-    printk("[tc_bif_1000_step_2] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1000_step_2] 4. polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] 4. polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //disable BIF module
-    printk("[tc_bif_1000_step_2] 5. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] 5. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
 
     //data valid check
-    printk("[tc_bif_1000_step_2] 6. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] 6. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1000_step_2] BIF_CON31[14:12]=0x%x\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] BIF_CON31[14:12]=0x%x\n", reg_val);
 
     if(reg_val == 0)
     {
         //read the number of read back data package
-        printk("[tc_bif_1000_step_2] 7. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] 7. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1000_step_2] BIF_DATA_NUM (1) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] BIF_DATA_NUM (1) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //read data back
-        printk("[tc_bif_1000_step_2] 8. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] 8. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1000_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1000_step_2] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1000_step_2] BIF_DATA_0 (10H) : BIF_CON20[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] BIF_DATA_0 (10H) : BIF_CON20[7:0]=0x%x\n", reg_val);
     }
     else
     {
-        printk("[tc_bif_1000_step_2] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1000_step_2] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
 
         debug_dump_reg();
     }
- 
+
     //reset BIF_IRQ
     reset_bif_irq();
 }
@@ -8204,101 +8324,101 @@ void tc_bif_1001_step_1(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-    printk("[tc_bif_1001_step_1]-----------------------------------\n");
-    
-    //1. set command sequence    
-    printk("[tc_bif_1001_step_1] 1. set command sequence\n");
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1]-----------------------------------\n");
+
+    //1. set command sequence
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x0424;
     bif_cmd[2]=0x0100;
     bif_cmd[3]=0x030A;
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1001_step_1] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
     //ret=pmic_config_interface(MT6332_BIF_CON15, 0x7F, 0x7F, 0);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x4, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x4, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1001_step_1] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1001_step_1] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1001_step_1] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //5. data valid check
-    printk("[tc_bif_1001_step_1] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1001_step_1] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1001_step_1] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1001_step_1] BIF_DATA_NUM (4) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_DATA_NUM (4) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1001_step_1] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1001_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1001_step_1] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1001_step_1] BIF_DATA_0 (01H) : BIF_CON20[7:0]=0x%x\n", reg_val);
-    
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_DATA_0 (01H) : BIF_CON20[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 15);
-        printk("[tc_bif_1001_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 8);
-        printk("[tc_bif_1001_step_1] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1001_step_1] BIF_DATA_0 (01H) : BIF_CON21[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_DATA_0 (01H) : BIF_CON21[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0x1, 15);
-        printk("[tc_bif_1001_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON22[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON22[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0x1, 8);
-        printk("[tc_bif_1001_step_1] BIF_ACK_0 (1) : BIF_CON22[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_ACK_0 (1) : BIF_CON22[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1001_step_1] BIF_DATA_0 (pcap[15:8]=01H) : BIF_CON22[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_DATA_0 (pcap[15:8]=01H) : BIF_CON22[7:0]=0x%x\n", reg_val);
         pcap_15_8=reg_val;
-    
+
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0x1, 15);
-        printk("[tc_bif_1001_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON23[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON23[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0x1, 8);
-        printk("[tc_bif_1001_step_1] BIF_ACK_0 (1) : BIF_CON23[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_ACK_0 (1) : BIF_CON23[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1001_step_1] BIF_DATA_0 (pcap[7:0]=00H) : BIF_CON23[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] BIF_DATA_0 (pcap[7:0]=00H) : BIF_CON23[7:0]=0x%x\n", reg_val);
         pcap_7_0=reg_val;
     }
     else
     {
-        printk("[tc_bif_1001_step_1] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_1] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
 
         debug_dump_reg();
     }
- 
+
     //8. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -8309,86 +8429,86 @@ void tc_bif_1001_step_2(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-    printk("[tc_bif_1001_step_2]-----------------------------------\n");
-    
-    //1. set command sequence    
-    printk("[tc_bif_1001_step_2] 1. set command sequence\n");
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2]-----------------------------------\n");
+
+    //1. set command sequence
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x0422;
     bif_cmd[2]=(0x0100|pcap_15_8);
     bif_cmd[3]=(0x0300|pcap_7_0);
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1001_step_2] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x2, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x2, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1001_step_2] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1001_step_2] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1001_step_2] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //5. data valid check
-    printk("[tc_bif_1001_step_2] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1001_step_2] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1001_step_2] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1001_step_2] BIF_DATA_NUM (2) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] BIF_DATA_NUM (2) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1001_step_2] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1001_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1001_step_2] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1001_step_2] BIF_DATA_0 (0A) : BIF_CON20[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] BIF_DATA_0 (0A) : BIF_CON20[7:0]=0x%x\n", reg_val);
         pcreg_15_8=reg_val;
-    
+
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 15);
-        printk("[tc_bif_1001_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 8);
-        printk("[tc_bif_1001_step_2] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1001_step_2] BIF_DATA_0 (00) : BIF_CON21[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] BIF_DATA_0 (00) : BIF_CON21[7:0]=0x%x\n", reg_val);
         pcreg_7_0=reg_val;
     }
     else
     {
-        printk("[tc_bif_1001_step_2] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_2] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
 
         debug_dump_reg();
     }
- 
+
     //8. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -8400,49 +8520,49 @@ void tc_bif_1001_step_3(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-    printk("[tc_bif_1001_step_3]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_3]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1001_step_3] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_3] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=(0x0100|pcreg_15_8);
     bif_cmd[2]=(0x0200|pcreg_7_0);
     bif_cmd[3]=0x0000;
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1001_step_3] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_3] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
-    ret=pmic_config_interface(MT6332_BIF_CON15, 0x0, 0x3, 8);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON15, 0x0, 0x3, 8);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15)
         );
-        
+
     //3. trigger BIF module
-    printk("[tc_bif_1001_step_3] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_3] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
+
     reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1001_step_3] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_3] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1001_step_3] 4. disable BIF module\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_3] 4. disable BIF module\n");
     ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
 
     check_bat_lost();
-    
+
     //5. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -8453,78 +8573,78 @@ void tc_bif_1001_step_4(void)
     U32 reg_val=0;
     int bif_cmd[3]={0,0,0};
     int loop_i=0;
-    
-      printk("[tc_bif_1001_step_4]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1001_step_4] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] 1. set command sequence\n");
     bif_cmd[0]=0x0600;
     bif_cmd[1]=(0x0100|pcreg_15_8);
-    bif_cmd[2]=(0x0300|pcreg_7_0);    
-    set_bif_cmd(bif_cmd,3);       
-        
+    bif_cmd[2]=(0x0300|pcreg_7_0);
+    set_bif_cmd(bif_cmd,3);
+
     //2. parameter setting
-    printk("[tc_bif_1001_step_4] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x3, 0xF, 12);
-    ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);    
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-        
+
     //3. trigger BIF module
-    printk("[tc_bif_1001_step_4] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1001_step_4] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1001_step_4] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //5. data valid check
-    printk("[tc_bif_1001_step_4] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1001_step_4] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1001_step_4] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1001_step_4] BIF_DATA_NUM (1) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] BIF_DATA_NUM (1) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1001_step_4] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1001_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1001_step_4] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1001_step_4] BIF_DATA_0 (00H) : BIF_CON20[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] BIF_DATA_0 (00H) : BIF_CON20[7:0]=0x%x\n", reg_val);
     }
     else
     {
-        printk("[tc_bif_1001_step_4] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_4] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
 
         debug_dump_reg();
     }
- 
+
     //8. reset BIF_IRQ
-    reset_bif_irq(); 
+    reset_bif_irq();
 }
 
 void tc_bif_1001_step_5(void)
@@ -8533,78 +8653,78 @@ void tc_bif_1001_step_5(void)
     U32 reg_val=0;
     int bif_cmd[5]={0,0,0,0,0};
     int loop_i=0;
-    
-      printk("[tc_bif_1001_step_5]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1001_step_5] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] 1. set command sequence\n");
     bif_cmd[0]=0x0600;
     bif_cmd[1]=(0x0100|pcreg_15_8);
     bif_cmd[2]=(0x0200|pcreg_7_0);
     bif_cmd[3]=0x0001;
     bif_cmd[4]=0x04C2;
     set_bif_cmd(bif_cmd,5);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1001_step_5] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x5, 0xF, 12);
-    ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);    
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-        
+
     //3. trigger BIF module
-    printk("[tc_bif_1001_step_5] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1001_step_5] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1001_step_5] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //5. data valid check
-    printk("[tc_bif_1001_step_5] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1001_step_5] BIF_CON31[14:12]=0x%x\n", reg_val); 
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1001_step_5] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1001_step_5] BIF_DATA_NUM (1) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] BIF_DATA_NUM (1) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1001_step_5] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1001_step_5] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1001_step_5] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1001_step_5] BIF_DATA_0 (04h) : BIF_CON20[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] BIF_DATA_0 (04h) : BIF_CON20[7:0]=0x%x\n", reg_val);
     }
     else
     {
-        printk("[tc_bif_1001_step_5] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1001_step_5] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
 
         debug_dump_reg();
     }
-    
+
     //8. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -8622,100 +8742,100 @@ void tc_bif_1002_step_1(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-      printk("[tc_bif_1002_step_1]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1002_step_1] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x0424;
     bif_cmd[2]=0x0100;
-    bif_cmd[3]=0x0316;    
+    bif_cmd[3]=0x0316;
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1002_step_1] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x4, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x4, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1002_step_1] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1002_step_1] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1002_step_1] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //5. data valid check
-    printk("[tc_bif_1002_step_1] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1002_step_1] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1002_step_1] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1002_step_1] BIF_DATA_NUM (4) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_DATA_NUM (4) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1002_step_1] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_1] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_1] BIF_DATA_0 (04H) : BIF_CON20[7:0]=0x%x\n", reg_val);
-    
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_DATA_0 (04H) : BIF_CON20[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_1] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_1] BIF_DATA_0 (01H) : BIF_CON21[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_DATA_0 (01H) : BIF_CON21[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON22[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON22[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_1] BIF_ACK_0 (1) : BIF_CON22[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_ACK_0 (1) : BIF_CON22[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_1] BIF_DATA_0 (pcap[15:8]=04H) : BIF_CON22[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_DATA_0 (pcap[15:8]=04H) : BIF_CON22[7:0]=0x%x\n", reg_val);
         nvmcap_15_8=reg_val;
-    
+
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON23[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_DATA_ERROR_0 (0) : BIF_CON23[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_1] BIF_ACK_0 (1) : BIF_CON23[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_ACK_0 (1) : BIF_CON23[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_1] BIF_DATA_0 (pcap[7:0]=00H) : BIF_CON23[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] BIF_DATA_0 (pcap[7:0]=00H) : BIF_CON23[7:0]=0x%x\n", reg_val);
         nvmcap_7_0=reg_val;
     }
     else
     {
-        printk("[tc_bif_1002_step_1] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_1] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
     }
- 
+
     //8. reset BIF_IRQ
-    reset_bif_irq(); 
+    reset_bif_irq();
 }
 
 void tc_bif_1002_step_2(void)
@@ -8724,84 +8844,84 @@ void tc_bif_1002_step_2(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-      printk("[tc_bif_1002_step_2]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1002_step_2] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x0422;
     bif_cmd[2]=(0x0100|nvmcap_15_8);
-    bif_cmd[3]=(0x0300|nvmcap_7_0);    
+    bif_cmd[3]=(0x0300|nvmcap_7_0);
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1002_step_2] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x2, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x2, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1002_step_2] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1002_step_2] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1002_step_2] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //5. data valid check
-    printk("[tc_bif_1002_step_2] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1002_step_2] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1002_step_2] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1002_step_2] BIF_DATA_NUM (2) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] BIF_DATA_NUM (2) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1002_step_2] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_2] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_2] BIF_DATA_0 (nvmreg[15:8]=0FH) : BIF_CON20[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] BIF_DATA_0 (nvmreg[15:8]=0FH) : BIF_CON20[7:0]=0x%x\n", reg_val);
         nvmreg_15_8=reg_val;
-    
+
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_2] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_2] BIF_DATA_0 (nvmreg[7:0]=00H) : BIF_CON21[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] BIF_DATA_0 (nvmreg[7:0]=00H) : BIF_CON21[7:0]=0x%x\n", reg_val);
         nvmreg_7_0=reg_val;
     }
     else
     {
-        printk("[tc_bif_1002_step_2] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_2] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
     }
- 
+
     //8. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -8812,11 +8932,11 @@ void tc_bif_1002_step_3(void)
     U32 reg_val=0;
     int bif_cmd[11]={0,0,0,0,0,0,0,0,0,0,0};
     int loop_i=0;
-    
-      printk("[tc_bif_1002_step_3]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1002_step_3] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=(0x0100|nvmreg_15_8);
     bif_cmd[2]=(0x0200|nvmcap_7_0) + 0x09;
@@ -8829,65 +8949,65 @@ void tc_bif_1002_step_3(void)
     bif_cmd[9]=0x0006;
     bif_cmd[10]=0x04C2;
     set_bif_cmd(bif_cmd,11);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1002_step_3] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0xB, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1002_step_3] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1002_step_3] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1002_step_3] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //5. data valid check
-    printk("[tc_bif_1002_step_3] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1002_step_3] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1002_step_3] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1002_step_3] BIF_DATA_NUM (1) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] BIF_DATA_NUM (1) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1002_step_3] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_3] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_3] BIF_ACK_0 (0/1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] BIF_ACK_0 (0/1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_3] BIF_DATA_0 (0Ah) : BIF_CON20[7:0]=0x%x\n", reg_val);        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] BIF_DATA_0 (0Ah) : BIF_CON20[7:0]=0x%x\n", reg_val);
     }
     else
     {
-        printk("[tc_bif_1002_step_3] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_3] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
     }
- 
+
     //8. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -8898,119 +9018,119 @@ void tc_bif_1002_step_4(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-      printk("[tc_bif_1002_step_4]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1002_step_4] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x0427;
     bif_cmd[2]=(0x0100|nvmreg_15_8);
     bif_cmd[3]=(0x0300|nvmcap_7_0) + 0x09;
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1002_step_4] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x7, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x7, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1002_step_4] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1002_step_4] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1002_step_4] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //5. data valid check
-    printk("[tc_bif_1002_step_4] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1002_step_4] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1002_step_4] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1002_step_4] BIF_DATA_NUM (7) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_NUM (7) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1002_step_4] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_4] BIF_DATA_0 (00h) : BIF_CON20[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_0 (00h) : BIF_CON20[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_4] BIF_DATA_0 (01h) : BIF_CON21[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_0 (01h) : BIF_CON21[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON22[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON22[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON22[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON22[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_4] BIF_DATA_0 (02h) : BIF_CON22[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_0 (02h) : BIF_CON22[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON23[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON23[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON23[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON23[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_4] BIF_DATA_0 (03h) : BIF_CON23[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_0 (03h) : BIF_CON23[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON24, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON24[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON24[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON24, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON24[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON24[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON24, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_4] BIF_DATA_0 (04h) : BIF_CON24[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_0 (04h) : BIF_CON24[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON25, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON25[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON25[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON25, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON25[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON25[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON25, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_4] BIF_DATA_0 (05h) : BIF_CON25[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_0 (05h) : BIF_CON25[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON26, &reg_val, 0x1, 15);
-        printk("[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON26[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON26[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON26, &reg_val, 0x1, 8);
-        printk("[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON26[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_ACK_0 (1) : BIF_CON26[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON26, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1002_step_4] BIF_DATA_0 (06h) : BIF_CON26[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] BIF_DATA_0 (06h) : BIF_CON26[7:0]=0x%x\n", reg_val);
     }
     else
     {
-        printk("[tc_bif_1002_step_4] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1002_step_4] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
     }
- 
+
     //8. reset BIF_IRQ
-    reset_bif_irq(); 
+    reset_bif_irq();
 }
 
 #endif
@@ -9027,98 +9147,98 @@ void tc_bif_1003_step_2(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-      printk("[tc_bif_1003_step_2]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1003_step_2] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x0424;
     bif_cmd[2]=0x0100;
     bif_cmd[3]=0x030E;
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1003_step_2] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x4, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x4, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1003_step_2] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1003_step_2] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1003_step_2] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //5. data valid check
-    printk("[tc_bif_1003_step_2] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1003_step_2] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1003_step_2] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1003_step_2] BIF_DATA_NUM (4) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_DATA_NUM (4) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1003_step_2] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1003_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1003_step_2] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1003_step_2] BIF_DATA_0 (02H) : BIF_CON20[7:0]=0x%x\n", reg_val);
-    
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_DATA_0 (02H) : BIF_CON20[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 15);
-        printk("[tc_bif_1003_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 8);
-        printk("[tc_bif_1003_step_2] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1003_step_2] BIF_DATA_0 (01H) : BIF_CON21[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_DATA_0 (01H) : BIF_CON21[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0x1, 15);
-        printk("[tc_bif_1003_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON22[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON22[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0x1, 8);
-        printk("[tc_bif_1003_step_2] BIF_ACK_0 (1) : BIF_CON22[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_ACK_0 (1) : BIF_CON22[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1003_step_2] BIF_DATA_0 (sccap[15:8]=02H) : BIF_CON22[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_DATA_0 (sccap[15:8]=02H) : BIF_CON22[7:0]=0x%x\n", reg_val);
         sccap_15_8=reg_val;
-    
+
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0x1, 15);
-        printk("[tc_bif_1003_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON23[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON23[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0x1, 8);
-        printk("[tc_bif_1003_step_2] BIF_ACK_0 (1) : BIF_CON23[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_ACK_0 (1) : BIF_CON23[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1003_step_2] BIF_DATA_0 (sccap[7:0]=00H) : BIF_CON23[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] BIF_DATA_0 (sccap[7:0]=00H) : BIF_CON23[7:0]=0x%x\n", reg_val);
         sccap_7_0=reg_val;
     }
     else
     {
-        printk("[tc_bif_1003_step_2] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_2] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
     }
- 
+
     //8. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -9129,84 +9249,84 @@ void tc_bif_1003_step_3(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-      printk("[tc_bif_1003_step_3]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1003_step_3] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x0422;
     bif_cmd[2]=(0x0100|sccap_15_8);
     bif_cmd[3]=(0x0300|sccap_7_0);
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1003_step_3] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x2, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x2, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1003_step_3] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1003_step_3] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1003_step_3] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //5. data valid check
-    printk("[tc_bif_1003_step_3] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1003_step_3] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1003_step_3] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1003_step_3] BIF_DATA_NUM (2) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] BIF_DATA_NUM (2) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1003_step_3] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1003_step_3] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1003_step_3] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1003_step_3] BIF_DATA_0 (screg[15:8]=0CH) : BIF_CON20[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] BIF_DATA_0 (screg[15:8]=0CH) : BIF_CON20[7:0]=0x%x\n", reg_val);
         screg_15_8=reg_val;
-    
+
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 15);
-        printk("[tc_bif_1003_step_3] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 8);
-        printk("[tc_bif_1003_step_3] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1003_step_3] BIF_DATA_0 (screg[7:0]=00H) : BIF_CON21[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] BIF_DATA_0 (screg[7:0]=00H) : BIF_CON21[7:0]=0x%x\n", reg_val);
         screg_7_0=reg_val;
     }
     else
     {
-        printk("[tc_bif_1003_step_3] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_3] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
     }
- 
+
     //8. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -9217,53 +9337,53 @@ void tc_bif_1003_step_4(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-      printk("[tc_bif_1003_step_4]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_4]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1003_step_4] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_4] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=(0x0100|screg_15_8);
     bif_cmd[2]=(0x0200|screg_7_0);
     bif_cmd[3]=0x00FF;
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1003_step_4] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_4] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x0, 0x3, 8);
-    //ret=pmic_config_interface(MT6332_BIF_CON17, 0x0, 0xF, 12);    
-    
+    //ret=pmic_config_interface(MT6332_BIF_CON17, 0x0, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1003_step_4] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_4] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1003_step_4] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_4] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1003_step_4] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_4] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
 
     check_bat_lost();
-     
+
     //5. reset BIF_IRQ
-    reset_bif_irq(); 
+    reset_bif_irq();
 }
 
 void tc_bif_1003_step_5(void)
@@ -9272,54 +9392,54 @@ void tc_bif_1003_step_5(void)
     U32 reg_val=0;
     int bif_cmd[1]={0};
     int loop_i=0;
-    
-      printk("[tc_bif_1003_step_5]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1003_step_5] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5] 1. set command sequence\n");
     bif_cmd[0]=0x0411;
-    set_bif_cmd(bif_cmd,1);      
-        
+    set_bif_cmd(bif_cmd,1);
+
     //2. parameter setting
-    printk("[tc_bif_1003_step_5] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x2, 0x3, 8);
-        
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1003_step_5] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1003_step_5] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1003_step_5] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
 
     //5. data valid check
-    printk("[tc_bif_1003_step_5] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 13);
-    printk("[tc_bif_1003_step_5] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 12);
-    printk("[tc_bif_1003_step_5] BIF_TIMEOUT : BIF_CON31[12]=0x%x - positive(0)/negative(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5] BIF_TIMEOUT : BIF_CON31[12]=0x%x - positive(0)/negative(1)\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0x1, 12);
-    printk("[tc_bif_1003_step_5] BIF_RESPONSE : BIF_CON19[12]=0x%x - positive(1)/negative(0)\n", reg_val);
-     
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5] BIF_RESPONSE : BIF_CON19[12]=0x%x - positive(1)/negative(0)\n", reg_val);
+
     //6. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -9330,19 +9450,19 @@ void tc_bif_1003_step_5_positive(void)
     U32 reg_val=0;
     int bif_cmd[1]={0};
     int loop_i=0;
-    
-    printk("[tc_bif_1003_step_5_positive]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1003_step_5_positive] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive] 1. set command sequence\n");
     bif_cmd[0]=0x0411;
-    set_bif_cmd(bif_cmd,1);      
-        
+    set_bif_cmd(bif_cmd,1);
+
     //2. parameter setting
-    printk("[tc_bif_1003_step_5_positive] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x2, 0x3, 8);
-    
+
     //new
     ret=pmic_config_interface(MT6332_BIF_CON15,0x7F, 0x7F,0);
 
@@ -9351,18 +9471,18 @@ void tc_bif_1003_step_5_positive(void)
 
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 12);
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 4);
-        
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17),
         MT6332_BIF_CON30,upmu_get_reg_value(MT6332_BIF_CON30),
         MT6332_BIF_CON37,upmu_get_reg_value(MT6332_BIF_CON37)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1003_step_5_positive] 5. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive] 5. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
@@ -9371,35 +9491,35 @@ void tc_bif_1003_step_5_positive(void)
     mdelay(10);
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x0, 0x1, 12);
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "BIF_RX_DATA_SW=0 : Reg[0x%x]=0x%x\n",         
+	battery_log(BAT_LOG_CRTI,  "BIF_RX_DATA_SW=0 : Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON30,upmu_get_reg_value(MT6332_BIF_CON30)
         );
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1003_step_5_positive] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
-    //disable BIF module
-    printk("[tc_bif_1003_step_5_positive] disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0); 
 
-    printk("[tc_bif_1003_step_5_positive] disable SW control\n");
+    //disable BIF module
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive] disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive] disable SW control\n");
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x0, 0x1, 4);
 
     //data valid check
-    printk("[tc_bif_1003_step_5_positive] 8. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive] 8. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 13);
-    printk("[tc_bif_1003_step_5_positive] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 12);
-    printk("[tc_bif_1003_step_5_positive] BIF_TIMEOUT : BIF_CON31[12]=0x%x - positive(0)/negative(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive] BIF_TIMEOUT : BIF_CON31[12]=0x%x - positive(0)/negative(1)\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0x1, 12);
-    printk("[tc_bif_1003_step_5_positive] BIF_RESPONSE : BIF_CON19[12]=0x%x - positive(1)/negative(0)\n", reg_val);
-     
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_positive] BIF_RESPONSE : BIF_CON19[12]=0x%x - positive(1)/negative(0)\n", reg_val);
+
     //6. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -9410,54 +9530,54 @@ void tc_bif_1003_step_5_negative(void)
     U32 reg_val=0;
     int bif_cmd[1]={0};
     int loop_i=0;
-    
-      printk("[tc_bif_1003_step_5_negative]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_negative]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1003_step_5_negative] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_negative] 1. set command sequence\n");
     bif_cmd[0]=0x0411;
-    set_bif_cmd(bif_cmd,1);      
-        
+    set_bif_cmd(bif_cmd,1);
+
     //2. parameter setting
-    printk("[tc_bif_1003_step_5_negative] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_negative] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x2, 0x3, 8);
-        
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1003_step_5_negative] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_negative] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1003_step_5_negative] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_negative] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //4. disable BIF module
-    printk("[tc_bif_1003_step_5_negative] 4. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_negative] 4. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
 
     //5. data valid check
-    printk("[tc_bif_1003_step_5_negative] 5. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_negative] 5. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 13);
-    printk("[tc_bif_1003_step_5_negative] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_negative] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 12);
-    printk("[tc_bif_1003_step_5_negative] BIF_TIMEOUT : BIF_CON31[12]=0x%x - positive(0)/negative(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_negative] BIF_TIMEOUT : BIF_CON31[12]=0x%x - positive(0)/negative(1)\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0x1, 12);
-    printk("[tc_bif_1003_step_5_negative] BIF_RESPONSE : BIF_CON19[12]=0x%x - positive(1)/negative(0)\n", reg_val);
-     
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003_step_5_negative] BIF_RESPONSE : BIF_CON19[12]=0x%x - positive(1)/negative(0)\n", reg_val);
+
     //6. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -9470,68 +9590,68 @@ void tc_bif_1004_step_1_positive(void)
     U32 reg_val=0;
     int bif_cmd[1]={0};
     int loop_i=0;
-    
-      printk("[tc_bif_1004_step_1_positive]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1004_step_1_positive] 1. set command sequence\n");
-    bif_cmd[0]=0x0410;    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] 1. set command sequence\n");
+    bif_cmd[0]=0x0410;
     set_bif_cmd(bif_cmd,1);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1004_step_1_positive] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x2, 0x3, 8);
-        
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1004_step_1_positive] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     //----------------------------------------------------------------
     udelay(10);
     bif_debug();
     mdelay(1000);
-    printk("[tc_bif_1004_step_1_positive] wait 1s and then\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] wait 1s and then\n");
 
     //new
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x0, 0x1, 12);
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 4);
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "after set, Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "after set, Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON30,upmu_get_reg_value(MT6332_BIF_CON30)
         );
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1004_step_1_positive] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
-    //5. disable BIF module
-    printk("[tc_bif_1004_step_1_positive] 5. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);   
 
-    printk("[tc_bif_1004_step_1_positive] disable SW control\n");
+    //5. disable BIF module
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] 5. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] disable SW control\n");
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x0, 0x1, 4);
-    
+
     //6. data valid check
-    printk("[tc_bif_1004_step_1_positive] 6. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] 6. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 13);
-    printk("[tc_bif_1004_step_1_positive] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 12);
-    printk("[tc_bif_1004_step_1_positive] BIF_TIMEOUT : BIF_CON31[12]=0x%x - positive(0)/negative(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] BIF_TIMEOUT : BIF_CON31[12]=0x%x - positive(0)/negative(1)\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0x1, 12);
-    printk("[tc_bif_1004_step_1_positive] BIF_RESPONSE : BIF_CON19[12]=0x%x - positive(1)/negative(0)\n", reg_val);
-     
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_positive] BIF_RESPONSE : BIF_CON19[12]=0x%x - positive(1)/negative(0)\n", reg_val);
+
     //6. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -9542,67 +9662,67 @@ void tc_bif_1004_step_1_negative(void)
     U32 reg_val=0;
     int bif_cmd[1]={0};
     int loop_i=0;
-    
-      printk("[tc_bif_1004_step_1_negative]-----------------------------------\n");
-    
+
+      battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1004_step_1_negative] 1. set command sequence\n");
-    bif_cmd[0]=0x0410;    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] 1. set command sequence\n");
+    bif_cmd[0]=0x0410;
     set_bif_cmd(bif_cmd,1);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1004_step_1_negative] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x2, 0x3, 8);
-        
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1004_step_1_negative] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     //----------------------------------------------------------------
     udelay(10);
     bif_debug();
     mdelay(1000);
-    printk("[tc_bif_1004_step_1_negative] wait 1s and then\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] wait 1s and then\n");
 
     //4. BIF_BACK_NORMAL = 1
-    printk("[tc_bif_1004_step_1_negative] 4. BIF_BACK_NORMAL = 1\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] 4. BIF_BACK_NORMAL = 1\n");
     ret=pmic_config_interface(MT6332_BIF_CON31, 0x1, 0x1, 0);
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON31,upmu_get_reg_value(MT6332_BIF_CON31)
         );
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1004_step_1_negative] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
-    
+
     //5. disable BIF module
-    printk("[tc_bif_1004_step_1_negative] 5. disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
-    printk("[tc_bif_1004_step_1_negative] clear rg_back_normal\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] 5. disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] clear rg_back_normal\n");
     ret=pmic_config_interface(MT6332_BIF_CON31, 0x0, 0x1, 0);
- 
+
     //6. data valid check
-    printk("[tc_bif_1004_step_1_negative] 6. data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] 6. data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 13);
-    printk("[tc_bif_1004_step_1_negative] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] BIF_BAT_LOST : BIF_CON31[13]=0x%x - battery is detected(0)/battery is undetected(1)\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 12);
-    printk("[tc_bif_1004_step_1_negative] BIF_TIMEOUT : BIF_CON31[12]=0x%x - positive(0)/negative(1)\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] BIF_TIMEOUT : BIF_CON31[12]=0x%x - positive(0)/negative(1)\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0x1, 12);
-    printk("[tc_bif_1004_step_1_negative] BIF_RESPONSE : BIF_CON19[12]=0x%x - positive(1)/negative(0)\n", reg_val);
-     
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004_step_1_negative] BIF_RESPONSE : BIF_CON19[12]=0x%x - positive(1)/negative(0)\n", reg_val);
+
     //6. reset BIF_IRQ
     reset_bif_irq();
 }
@@ -9615,19 +9735,19 @@ void tc_bif_1005_step1(void)
     U32 ret=0;
     U32 reg_val=0;
     int bif_cmd[11]={0,0,0,0,0,0,0,0,0,0,0};
-    
-    printk("[tc_bif_1005_step1]-----------------------------------\n");
 
-    printk("[tc_bif_1005_step1] 1. sw control and switch to sw mode\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1005_step1]-----------------------------------\n");
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1005_step1] 1. sw control and switch to sw mode\n");
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 11);
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 6);
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON30,upmu_get_reg_value(MT6332_BIF_CON30)
         );
-    
+
     //set command sequence
-    printk("[tc_bif_1005_step1] 2. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1005_step1] 2. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x010F;
     bif_cmd[2]=0x0209;
@@ -9640,40 +9760,40 @@ void tc_bif_1005_step1(void)
     bif_cmd[9]=0x0006;
     bif_cmd[10]=0x04C2;
     set_bif_cmd(bif_cmd,11);
-        
+
     //parameter setting
-    printk("[tc_bif_1005_step1] 3. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1005_step1] 3. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0xB, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x0, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1005_step1] 4. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1005_step1] 4. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
     mdelay(1000);
 
-    printk("[tc_bif_1005_step1] After 1s\n");
-    
-    reg_val=0;    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1005_step1] After 1s\n");
+
+    reg_val=0;
     //while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1005_step1] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
-        printk("[tc_bif_1005_step1] if bif_irq == 0, pass\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1005_step1] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1005_step1] if bif_irq == 0, pass\n");
     }
-    
+
     //disable BIF module
-    printk("[tc_bif_1005_step1] disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1005_step1] disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
 
     //reset BIF_IRQ
     reset_bif_irq();
@@ -9687,11 +9807,11 @@ void tc_bif_1006_step_1(void)
     U32 reg_val=0;
     int bif_cmd[11]={0,0,0,0,0,0,0,0,0,0,0};
     int loop_i=0;
-    
-    printk("[tc_bif_1006_step_1]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1006_step_1] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x010F;
     bif_cmd[2]=0x0209;
@@ -9704,66 +9824,66 @@ void tc_bif_1006_step_1(void)
     bif_cmd[9]=0x0006;
     bif_cmd[10]=0x04C2;
     set_bif_cmd(bif_cmd,11);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1006_step_1] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0xB, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x0, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1006_step_1] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
+
     mdelay(10);
-    printk("[tc_bif_1006_step_1] wait 10ms and then\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] wait 10ms and then\n");
 
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 11);
-    ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 6);    
+    ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 6);
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON30,upmu_get_reg_value(MT6332_BIF_CON30)
         );
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1006_step_1] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
 
-    printk("[tc_bif_1006_step_1] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x0, 0x1, 6);
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "disable sw control : Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "disable sw control : Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON30,upmu_get_reg_value(MT6332_BIF_CON30)
         );
-    
+
     //disable BIF module
-    printk("[tc_bif_1006_step_1] disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //data valid check
-    printk("[tc_bif_1006_step_1] data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 12);
-    printk("[tc_bif_1006_step_1] BIF_CON31[12]=0x%x, need 0\n", reg_val);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] BIF_CON31[12]=0x%x, need 0\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 13);
-    printk("[tc_bif_1006_step_1] BIF_CON31[13]=0x%x, need 1\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] BIF_CON31[13]=0x%x, need 1\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 14);
-    printk("[tc_bif_1006_step_1] BIF_CON31[14]=0x%x, need 0\n", reg_val);
- 
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_1] BIF_CON31[14]=0x%x, need 0\n", reg_val);
+
     //reset BIF_IRQ
     reset_bif_irq();
 }
@@ -9774,11 +9894,11 @@ void tc_bif_1006_step_2(void)
     U32 reg_val=0;
     int bif_cmd[11]={0,0,0,0,0,0,0,0,0,0,0};
     int loop_i=0;
-    
-    printk("[tc_bif_1006_step_2]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1006_step_2] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x010F;
     bif_cmd[2]=0x0209;
@@ -9791,67 +9911,67 @@ void tc_bif_1006_step_2(void)
     bif_cmd[9]=0x0006;
     bif_cmd[10]=0x04C2;
     set_bif_cmd(bif_cmd,11);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1006_step_2] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0xB, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x0, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x1, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1006_step_2] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1006_step_2] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
 
-    printk("[tc_bif_1006_step_2] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+
     //disable BIF module
-    printk("[tc_bif_1006_step_2] disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //data valid check
-    printk("[tc_bif_1006_step_2] data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1006_step_2] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1006_step_2] read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1006_step_2] BIF_DATA_NUM (1) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] BIF_DATA_NUM (1) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1006_step_2] read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1006_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1006_step_2] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1006_step_2] BIF_DATA_0 (0AH) : BIF_CON20[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] BIF_DATA_0 (0AH) : BIF_CON20[7:0]=0x%x\n", reg_val);
     }
     else
     {
-        printk("[tc_bif_1006_step_2] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_2] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
     }
- 
+
     //reset BIF_IRQ
     reset_bif_irq();
 }
@@ -9862,76 +9982,76 @@ void tc_bif_1006_step_3(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-    printk("[tc_bif_1006_step_3]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1006_step_3] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x0427;
     bif_cmd[2]=0x010F;
     bif_cmd[3]=0x0309;
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1006_step_3] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x7, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x7, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1006_step_3] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-    
+
     mdelay(10);
-    printk("[tc_bif_1006_step_3] wait 10ms and then\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] wait 10ms and then\n");
 
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 11);
-    ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 6);    
+    ret=pmic_config_interface(MT6332_BIF_CON30, 0x1, 0x1, 6);
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON30,upmu_get_reg_value(MT6332_BIF_CON30)
         );
-    
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1006_step_3] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
 
-    printk("[tc_bif_1006_step_3] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
     ret=pmic_config_interface(MT6332_BIF_CON30, 0x0, 0x1, 6);
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "disable sw control : Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "disable sw control : Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON30,upmu_get_reg_value(MT6332_BIF_CON30)
         );
-    
+
     //disable BIF module
-    printk("[tc_bif_1006_step_3] disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //data valid check
-    printk("[tc_bif_1006_step_3] data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 12);
-    printk("[tc_bif_1006_step_3] BIF_CON31[12]=0x%x, need 0\n", reg_val);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] BIF_CON31[12]=0x%x, need 0\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 13);
-    printk("[tc_bif_1006_step_3] BIF_CON31[13]=0x%x, need 1\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] BIF_CON31[13]=0x%x, need 1\n", reg_val);
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 14);
-    printk("[tc_bif_1006_step_3] BIF_CON31[14]=0x%x, need 0\n", reg_val);
- 
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_3] BIF_CON31[14]=0x%x, need 0\n", reg_val);
+
     //reset BIF_IRQ
     reset_bif_irq();
 }
@@ -9942,119 +10062,119 @@ void tc_bif_1006_step_4(void)
     U32 reg_val=0;
     int bif_cmd[4]={0,0,0,0};
     int loop_i=0;
-    
-    printk("[tc_bif_1006_step_4]-----------------------------------\n");
-    
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4]-----------------------------------\n");
+
     //1. set command sequence
-    printk("[tc_bif_1006_step_4] 1. set command sequence\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] 1. set command sequence\n");
     bif_cmd[0]=0x0601;
     bif_cmd[1]=0x0427;
     bif_cmd[2]=0x010F;
     bif_cmd[3]=0x0309;
     set_bif_cmd(bif_cmd,4);
-        
+
     //2. parameter setting
-    printk("[tc_bif_1006_step_4] 2. parameter setting\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] 2. parameter setting\n");
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x4, 0xF, 12);
     ret=pmic_config_interface(MT6332_BIF_CON15, 0x1, 0x3, 8);
-    ret=pmic_config_interface(MT6332_BIF_CON17, 0x7, 0xF, 12);    
-    
+    ret=pmic_config_interface(MT6332_BIF_CON17, 0x7, 0xF, 12);
+
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON15,upmu_get_reg_value(MT6332_BIF_CON15),
         MT6332_BIF_CON17,upmu_get_reg_value(MT6332_BIF_CON17)
         );
-    
+
     //3. trigger BIF module
-    printk("[tc_bif_1006_step_4] 3. trigger BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] 3. trigger BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     udelay(10);
     bif_debug();
-        
-    reg_val=0;    
+
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1006_step_4] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
         if(loop_i++ > g_loop_out) break;
     }
 
-    printk("[tc_bif_1006_step_4] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
 
     //disable BIF module
-    printk("[tc_bif_1006_step_4] disable BIF module\n");
-    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] disable BIF module\n");
+    ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
+
     //data valid check
-    printk("[tc_bif_1006_step_4] data valid check\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] data valid check\n");
     ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x7, 12);
-    printk("[tc_bif_1006_step_4] BIF_CON31[14:12]=0x%x\n", reg_val);    
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_CON31[14:12]=0x%x\n", reg_val);
+
     if(reg_val == 0)
     {
         //6. read the number of read back data package
-        printk("[tc_bif_1006_step_4] 6. read the number of read back data package\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] 6. read the number of read back data package\n");
         ret=pmic_read_interface(MT6332_BIF_CON19, &reg_val, 0xF, 0);
-        printk("[tc_bif_1006_step_4] BIF_DATA_NUM (7) : BIF_CON19[3:0]=0x%x\n", reg_val);        
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_NUM (7) : BIF_CON19[3:0]=0x%x\n", reg_val);
+
         //7. read data back
-        printk("[tc_bif_1006_step_4] 7. read data back\n");
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] 7. read data back\n");
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 15);
-        printk("[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON20[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0x1, 8);
-        printk("[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON20[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON20, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1006_step_4] BIF_DATA_0 (00h) : BIF_CON20[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_0 (00h) : BIF_CON20[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 15);
-        printk("[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON21[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0x1, 8);
-        printk("[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON21[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON21, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1006_step_4] BIF_DATA_0 (01h) : BIF_CON21[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_0 (01h) : BIF_CON21[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0x1, 15);
-        printk("[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON22[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON22[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0x1, 8);
-        printk("[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON22[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON22[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON22, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1006_step_4] BIF_DATA_0 (02h) : BIF_CON22[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_0 (02h) : BIF_CON22[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0x1, 15);
-        printk("[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON23[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON23[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0x1, 8);
-        printk("[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON23[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON23[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON23, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1006_step_4] BIF_DATA_0 (03h) : BIF_CON23[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_0 (03h) : BIF_CON23[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON24, &reg_val, 0x1, 15);
-        printk("[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON24[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON24[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON24, &reg_val, 0x1, 8);
-        printk("[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON24[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON24[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON24, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1006_step_4] BIF_DATA_0 (04h) : BIF_CON24[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_0 (04h) : BIF_CON24[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON25, &reg_val, 0x1, 15);
-        printk("[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON25[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON25[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON25, &reg_val, 0x1, 8);
-        printk("[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON25[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON25[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON25, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1006_step_4] BIF_DATA_0 (05h) : BIF_CON25[7:0]=0x%x\n", reg_val);
-        
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_0 (05h) : BIF_CON25[7:0]=0x%x\n", reg_val);
+
         ret=pmic_read_interface(MT6332_BIF_CON26, &reg_val, 0x1, 15);
-        printk("[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON26[15]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_ERROR_0 (0) : BIF_CON26[15]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON26, &reg_val, 0x1, 8);
-        printk("[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON26[8]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_ACK_0 (1) : BIF_CON26[8]=0x%x\n", reg_val);
         ret=pmic_read_interface(MT6332_BIF_CON26, &reg_val, 0xFF, 0);
-        printk("[tc_bif_1006_step_4] BIF_DATA_0 (06h) : BIF_CON26[7:0]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] BIF_DATA_0 (06h) : BIF_CON26[7:0]=0x%x\n", reg_val);
     }
     else
     {
-        printk("[tc_bif_1006_step_4] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1006_step_4] Fail : BIF_CON31[14:12]=0x%x\n", reg_val);
     }
- 
+
     //reset BIF_IRQ
     reset_bif_irq();
 }
@@ -10065,17 +10185,17 @@ void tc_bif_1008_step_0(void)
 {
     U32 ret=0;
 
-    
-    printk("[tc_bif_1008_step_0]-----------------------------------\n");
 
-    printk("[tc_bif_1008_step_0] 1. set power up regiser\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1008_step_0]-----------------------------------\n");
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1008_step_0] 1. set power up regiser\n");
     ret=pmic_config_interface(MT6332_BIF_CON32, 0x1, 0x1, 15);
 
-    printk("[tc_bif_1008_step_0] 2. trigger BIF module\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1008_step_0] 2. trigger BIF module\n");
     ret=pmic_config_interface(MT6332_BIF_CON18, 0x1, 0x1, 0);
 
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON32,upmu_get_reg_value(MT6332_BIF_CON32),
         MT6332_BIF_CON18,upmu_get_reg_value(MT6332_BIF_CON18)
         );
@@ -10084,32 +10204,32 @@ void tc_bif_1008_step_0(void)
     bif_debug();
 
     #if 0
-    reg_val=0;    
+    reg_val=0;
     while(reg_val == 0)
     {
         ret=pmic_read_interface(MT6332_BIF_CON31, &reg_val, 0x1, 11);
-        printk("[tc_bif_1008_step_0] 3. polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
+		battery_log(BAT_LOG_CRTI, "[tc_bif_1008_step_0] 3. polling BIF_IRQ : BIF_CON31[11]=0x%x\n", reg_val);
     }
     #else
-    printk("[tc_bif_1008_step_0] wait EINT\n");   
-    #endif    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1008_step_0] wait EINT\n");
+    #endif
 }
 
 void tc_bif_1008_step_1(void)
 {
     U32 ret=0;
 
-    
-    printk("[tc_bif_1008_step_1]-----------------------------------\n");
-    
-    printk("[tc_bif_1008_step_1] 4. disable BIF module\n");
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1008_step_1]-----------------------------------\n");
+
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1008_step_1] 4. disable BIF module\n");
     ret=pmic_config_interface(MT6332_BIF_CON18, 0x0, 0x1, 0);
 
-    printk("[tc_bif_1008_step_1] 5. to disable power up mode\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1008_step_1] 5. to disable power up mode\n");
     ret=pmic_config_interface(MT6332_BIF_CON32, 0x0, 0x1, 15);
 
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         MT6332_BIF_CON32,upmu_get_reg_value(MT6332_BIF_CON32),
         MT6332_BIF_CON18,upmu_get_reg_value(MT6332_BIF_CON18)
         );
@@ -10142,7 +10262,7 @@ void bif_init(void)
     //turn on LDO
     mt6332_upmu_set_rg_vbif28_en(1);
 
-    printk("[bif_init] done. Reg[0x%x]=0x%x, Reg[0x%x]=0x%x, Reg[0x%x]=0x%x, Reg[0x%x]=0x%x\n",
+	battery_log(BAT_LOG_CRTI, "[bif_init] done. Reg[0x%x]=0x%x, Reg[0x%x]=0x%x, Reg[0x%x]=0x%x, Reg[0x%x]=0x%x\n",
         MT6332_INT_CON2, upmu_get_reg_value(MT6332_INT_CON2),
         MT6332_TOP_CKPDN_CON0, upmu_get_reg_value(MT6332_TOP_CKPDN_CON0),
         MT6332_BATON_CON0, upmu_get_reg_value(MT6332_BATON_CON0),
@@ -10152,23 +10272,23 @@ void bif_init(void)
 
 void tc_bif_1000(void)
 {
-    printk("[tc_bif_1000] run read/write function\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1000] run read/write function\n");
 
     bif_init();
 
     tc_bif_1000_step_0();
     mdelay(10);
-    tc_bif_1000_step_1();    
+    tc_bif_1000_step_1();
     tc_bif_1000_step_2();
 }
 
 void tc_bif_1001(void)
 {
-    printk("[tc_bif_1001] run read/write function\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1001] run read/write function\n");
 
     tc_bif_reset_slave();
     mdelay(1);
-    
+
     tc_bif_1001_step_1();//read 4 data
     mdelay(500);
     tc_bif_1001_step_1();//read 4 data
@@ -10179,7 +10299,7 @@ void tc_bif_1001(void)
     mdelay(500);
     tc_bif_1001_step_1();//read 4 data
     mdelay(500);
-    
+
     tc_bif_1001_step_2();//read 2 data
     mdelay(500);
     tc_bif_1001_step_2();//read 2 data
@@ -10190,19 +10310,19 @@ void tc_bif_1001(void)
     mdelay(500);
     tc_bif_1001_step_2();//read 2 data
     mdelay(500);
-    
+
     tc_bif_1001_step_3();//write
-    tc_bif_1001_step_4();//check write is ok or not    
-    tc_bif_1001_step_5();//change back to the original device address with TQ    
+    tc_bif_1001_step_4();//check write is ok or not
+    tc_bif_1001_step_5();//change back to the original device address with TQ
 }
 
 void tc_bif_1002(void)
 {
-    printk("[tc_bif_1002] run burst write/read function\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1002] run burst write/read function\n");
 
     tc_bif_reset_slave();
     mdelay(1);
-    
+
     tc_bif_1002_step_1(); //burst read 4 data
     mdelay(500);
     tc_bif_1002_step_1(); //burst read 4 data
@@ -10213,7 +10333,7 @@ void tc_bif_1002(void)
     mdelay(500);
     tc_bif_1002_step_1(); //burst read 4 data
     mdelay(500);
-    
+
     tc_bif_1002_step_2(); //burst read 2 data
     mdelay(500);
     tc_bif_1002_step_2(); //burst read 2 data
@@ -10224,9 +10344,9 @@ void tc_bif_1002(void)
     mdelay(500);
     tc_bif_1002_step_2(); //burst read 2 data
     mdelay(500);
-    
+
     tc_bif_1002_step_3(); //burst write 8 date
-    
+
     tc_bif_1002_step_4(); //burst read 8 date
     mdelay(500);
     tc_bif_1002_step_4(); //burst read 8 date
@@ -10241,22 +10361,22 @@ void tc_bif_1002(void)
 
 void tc_bif_1003(void)
 {
-    printk("[tc_bif_1003] run bus command (ISTS)\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1003] run bus command (ISTS)\n");
 
     pmic_config_interface(MT6332_TOP_CKSEL_CON0, 0x4, MT6332_PMIC_RG_BIF_X4_CK_DIVSEL_MASK, MT6332_PMIC_RG_BIF_X4_CK_DIVSEL_SHIFT);
-    printk("[RG_BIF_X4_CK_DIVSEL] set done. Reg[0x%x]=0x%x\n",
+	battery_log(BAT_LOG_CRTI, "[RG_BIF_X4_CK_DIVSEL] set done. Reg[0x%x]=0x%x\n",
         MT6332_TOP_CKSEL_CON0, upmu_get_reg_value(MT6332_TOP_CKSEL_CON0)
         );
 
-    pmic_config_interface(MT6332_BIF_CON15,0x7F,0x7F, 0);    
-    printk("[RG_BIF_X4_CK_DIVSEL] Reg[0x%x]=0x%x\n",
+    pmic_config_interface(MT6332_BIF_CON15,0x7F,0x7F, 0);
+	battery_log(BAT_LOG_CRTI, "[RG_BIF_X4_CK_DIVSEL] Reg[0x%x]=0x%x\n",
             MT6332_BIF_CON15, upmu_get_reg_value(MT6332_BIF_CON15)
             );
 
     tc_bif_reset_slave();
     mdelay(1);
     mdelay(500);
-    
+
     tc_bif_1003_step_2(); //burst read 4 data
     mdelay(500);
     tc_bif_1003_step_2(); //burst read 4 data
@@ -10267,7 +10387,7 @@ void tc_bif_1003(void)
     mdelay(500);
     tc_bif_1003_step_2(); //burst read 4 data
     mdelay(500);
-    
+
     tc_bif_1003_step_3(); //burst read 2 data
     mdelay(500);
     tc_bif_1003_step_3(); //burst read 2 data
@@ -10278,46 +10398,46 @@ void tc_bif_1003(void)
     mdelay(500);
     tc_bif_1003_step_3(); //burst read 2 data
     mdelay(500);
-    
+
     tc_bif_1003_step_4(); //write enable irq
-    
+
     //tc_bif_1003_step_5(); //write bus command ISTS
-    mdelay(2000);    
+    mdelay(2000);
     tc_bif_1003_step_5_negative(); //write bus command ISTS : negative response
-    mdelay(1000);    
-    tc_bif_1003_step_5_positive(); //write bus command ISTS : positive response    
+    mdelay(1000);
+    tc_bif_1003_step_5_positive(); //write bus command ISTS : positive response
 }
 
 void tc_bif_1004(void)
 {
-    printk("[tc_bif_1004] run interrupt mode (EINT)\n");
-    
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1004] run interrupt mode (EINT)\n");
+
     tc_bif_1004_step_1_positive();
     tc_bif_1004_step_1_negative();
 }
 
 void tc_bif_1005(void)
 {
-    printk("[tc_bif_1005] battery lost\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1005] battery lost\n");
 
     tc_bif_1005_step1();
 }
 
 void tc_bif_1006(void)
 {
-    printk("[tc_bif_1006] battery lost test : E1 option\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1006] battery lost test : E1 option\n");
 
     tc_bif_reset_slave();
     mdelay(1);
     tc_bif_1006_step_1();
     tc_bif_1006_step_2();
     tc_bif_1006_step_3();
-    tc_bif_1006_step_4();    
+    tc_bif_1006_step_4();
 }
 
 void tc_bif_1007(void)
 {
-    printk("[tc_bif_1007] BIF EINT test\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1007] BIF EINT test\n");
 
     bif_init();
 
@@ -10326,7 +10446,7 @@ void tc_bif_1007(void)
 
 void tc_bif_1008(void)
 {
-    printk("[tc_bif_1008] BIF EINT test\n");
+	battery_log(BAT_LOG_CRTI, "[tc_bif_1008] BIF EINT test\n");
 
     bif_init();
 
@@ -11528,31 +11648,31 @@ void top_6331_read(void)
     kal_uint32 u2Cnt = 0;
     kal_uint32 default_value_mask = 0;
 
-    printk("RegNum,DefaultValue,Mask,GotValue,TestValue,Ans\n");
+	battery_log(BAT_LOG_CRTI, "RegNum,DefaultValue,Mask,GotValue,TestValue,Ans\n");
 
     for(u2Cnt = 0; u2Cnt < (sizeof(mt6331_aPMURegDef)/sizeof(*mt6331_aPMURegDef)); ++u2Cnt)
     {
        u2PMUReg = upmu_get_reg_value(    (mt6331_aPMURegDef[u2Cnt][0])  );
 
-       //printk("[Before MASK] %x,%x,%x\r\n",(mt6331_aPMURegDef[u2Cnt][0]), u2PMUReg,(mt6331_aPMURegDef[u2Cnt][1]));
+       /*battery_log(BAT_LOG_CRTI, "[Before MASK] %x,%x,%x\r\n",(mt6331_aPMURegDef[u2Cnt][0]), u2PMUReg,(mt6331_aPMURegDef[u2Cnt][1])));*/
        //only check value of mask
-       u2PMUReg &= mt6331_aPMURegDef_mask[u2Cnt];       
-       //printk("[After MASK]%x,%x,%x\r\n",(mt6331_aPMURegDef[u2Cnt][0]), u2PMUReg,(mt6331_aPMURegDef[u2Cnt][1]));
+       u2PMUReg &= mt6331_aPMURegDef_mask[u2Cnt];
+       /*battery_log(BAT_LOG_CRTI, "[After MASK]%x,%x,%x\r\n",(mt6331_aPMURegDef[u2Cnt][0]), u2PMUReg,(mt6331_aPMURegDef[u2Cnt][1])));*/
 
-       default_value_mask = ((mt6331_aPMURegDef[u2Cnt][1]) & mt6331_aPMURegDef_mask[u2Cnt]);      
+       default_value_mask = ((mt6331_aPMURegDef[u2Cnt][1]) & mt6331_aPMURegDef_mask[u2Cnt]);
 
        if(u2PMUReg != default_value_mask)
        {
-           printk("[error] %x,%x,%x,%x,%x,%x\n",
-            (mt6331_aPMURegDef[u2Cnt][0]), 
+			battery_log(BAT_LOG_CRTI, "[error] %x,%x,%x,%x,%x,%x\n",
+            (mt6331_aPMURegDef[u2Cnt][0]),
             (mt6331_aPMURegDef[u2Cnt][1]),
             mt6331_aPMURegDef_mask[u2Cnt],
-            upmu_get_reg_value(    (mt6331_aPMURegDef[u2Cnt][0])  ),              
-            u2PMUReg,            
+            upmu_get_reg_value(    (mt6331_aPMURegDef[u2Cnt][0])  ),
+            u2PMUReg,
             default_value_mask
             );
        }
-    }        
+    }
 }
 
 void top_6331_write(int test_value)
@@ -11561,32 +11681,32 @@ void top_6331_write(int test_value)
     kal_uint32 u2Cnt = 0;
     kal_uint32 default_value_mask = 0;
 
-    printk("RegNum,write_value(default_value_mask),Mask,GotValue,TestValue,Ans\n");
+	battery_log(BAT_LOG_CRTI, "RegNum,write_value(default_value_mask),Mask,GotValue,TestValue,Ans\n");
 
     for(u2Cnt = 0; u2Cnt < (sizeof(mt6331_aPMURegWr)/sizeof(*mt6331_aPMURegWr)); ++u2Cnt)
     {
        //write test value
        upmu_set_reg_value( (mt6331_aPMURegWr[u2Cnt][0]), test_value );
-    
-       //read back value 
+
+       //read back value
        u2PMUReg = upmu_get_reg_value(    (mt6331_aPMURegWr[u2Cnt][0])  );
 
-       //printk("[Before MASK] %x,%x,%x\r\n",(mt6331_aPMURegWr[u2Cnt][0]), u2PMUReg,(mt6331_aPMURegWr[u2Cnt][1]));       
+       /*battery_log(BAT_LOG_CRTI, "[Before MASK] %x,%x,%x\r\n",(mt6331_aPMURegWr[u2Cnt][0]), u2PMUReg,(mt6331_aPMURegWr[u2Cnt][1])));*/
        //only check value of mask
        u2PMUReg &= mt6331_aPMURegWr_mask[u2Cnt];
-       //printk("[After MASK]%x,%x,%x\r\n",(mt6331_aPMURegWr[u2Cnt][0]), u2PMUReg,(mt6331_aPMURegWr[u2Cnt][1]));
-       
+       /*battery_log(BAT_LOG_CRTI, "[After MASK]%x,%x,%x\r\n",(mt6331_aPMURegWr[u2Cnt][0]), u2PMUReg,(mt6331_aPMURegWr[u2Cnt][1])));*/
+
        default_value_mask = (test_value & mt6331_aPMURegWr_mask[u2Cnt]);
 
        if(u2PMUReg != default_value_mask)
-       {              
-           printk("[error] %x,%x(%x),%x,%x,%x,%x\r\n",
-            (mt6331_aPMURegWr[u2Cnt][0]),             
+       {
+			battery_log(BAT_LOG_CRTI, "[error] %x,%x(%x),%x,%x,%x,%x\r\n",
+            (mt6331_aPMURegWr[u2Cnt][0]),
             test_value,
             default_value_mask,
             mt6331_aPMURegWr_mask[u2Cnt],
-            upmu_get_reg_value(    (mt6331_aPMURegWr[u2Cnt][0])  ),              
-            u2PMUReg, 
+            upmu_get_reg_value(    (mt6331_aPMURegWr[u2Cnt][0])  ),
+            u2PMUReg,
             default_value_mask
             );
        }
@@ -11595,8 +11715,8 @@ void top_6331_write(int test_value)
     #if 0 //debug check
     for(u2Cnt = 0; u2Cnt < (sizeof(mt6331_aPMURegWr)/sizeof(*mt6331_aPMURegWr)); ++u2Cnt)
     {
-        printk("Reg[%x] %x\n", 
-            (mt6331_aPMURegWr[u2Cnt][0]), 
+		battery_log(BAT_LOG_CRTI, "Reg[%x] %x\n",
+            (mt6331_aPMURegWr[u2Cnt][0]),
             upmu_get_reg_value(    (mt6331_aPMURegWr[u2Cnt][0])  )
             );
     }
@@ -12851,31 +12971,31 @@ void top_6332_read(void)
     kal_uint32 u2Cnt = 0;
     kal_uint32 default_value_mask = 0;
 
-    printk("RegNum,DefaultValue,Mask,GotValue,TestValue,Ans\n");
+	battery_log(BAT_LOG_CRTI, "RegNum,DefaultValue,Mask,GotValue,TestValue,Ans\n");
 
     for(u2Cnt = 0; u2Cnt < (sizeof(mt6332_aPMURegDef)/sizeof(*mt6332_aPMURegDef)); ++u2Cnt)
     {
        u2PMUReg = upmu_get_reg_value(    (mt6332_aPMURegDef[u2Cnt][0])  );
 
-       //printk("[Before MASK] %x,%x,%x\r\n",(mt6332_aPMURegDef[u2Cnt][0]), u2PMUReg,(mt6332_aPMURegDef[u2Cnt][1]));
+       /*battery_log(BAT_LOG_CRTI, "[Before MASK] %x,%x,%x\r\n",(mt6332_aPMURegDef[u2Cnt][0]), u2PMUReg,(mt6332_aPMURegDef[u2Cnt][1])));*/
        //only check value of mask
-       u2PMUReg &= mt6332_aPMURegDef_mask[u2Cnt];       
-       //printk("[After MASK]%x,%x,%x\r\n",(mt6332_aPMURegDef[u2Cnt][0]), u2PMUReg,(mt6332_aPMURegDef[u2Cnt][1]));
+       u2PMUReg &= mt6332_aPMURegDef_mask[u2Cnt];
+       /*battery_log(BAT_LOG_CRTI, "[After MASK]%x,%x,%x\r\n",(mt6332_aPMURegDef[u2Cnt][0]), u2PMUReg,(mt6332_aPMURegDef[u2Cnt][1])));*/
 
-       default_value_mask = ((mt6332_aPMURegDef[u2Cnt][1]) & mt6332_aPMURegDef_mask[u2Cnt]);      
+       default_value_mask = ((mt6332_aPMURegDef[u2Cnt][1]) & mt6332_aPMURegDef_mask[u2Cnt]);
 
        if(u2PMUReg != default_value_mask)
        {
-           printk("[error] %x,%x,%x,%x,%x,%x\n",
-            (mt6332_aPMURegDef[u2Cnt][0]), 
+			battery_log(BAT_LOG_CRTI, "[error] %x,%x,%x,%x,%x,%x\n",
+            (mt6332_aPMURegDef[u2Cnt][0]),
             (mt6332_aPMURegDef[u2Cnt][1]),
             mt6332_aPMURegDef_mask[u2Cnt],
-            upmu_get_reg_value(    (mt6332_aPMURegDef[u2Cnt][0])  ),              
-            u2PMUReg,            
+            upmu_get_reg_value(    (mt6332_aPMURegDef[u2Cnt][0])  ),
+            u2PMUReg,
             default_value_mask
             );
        }
-    }        
+    }
 }
 
 void top_6332_write(int test_value)
@@ -12884,36 +13004,36 @@ void top_6332_write(int test_value)
     kal_uint32 u2Cnt = 0;
     kal_uint32 default_value_mask = 0;
 
-    printk("RegNum,write_value(default_value_mask),Mask,GotValue,TestValue,Ans\n");
+	battery_log(BAT_LOG_CRTI, "RegNum,write_value(default_value_mask),Mask,GotValue,TestValue,Ans\n");
 
     for(u2Cnt = 0; u2Cnt < (sizeof(mt6332_aPMURegWr)/sizeof(*mt6332_aPMURegWr)); ++u2Cnt)
     {
        //write test value
        upmu_set_reg_value( (mt6332_aPMURegWr[u2Cnt][0]), test_value );
-    
-       //read back value 
+
+       //read back value
        u2PMUReg = upmu_get_reg_value(    (mt6332_aPMURegWr[u2Cnt][0])  );
 
-       //printk("[Before MASK] %x,%x,%x\r\n",(mt6332_aPMURegWr[u2Cnt][0]), u2PMUReg,(mt6332_aPMURegWr[u2Cnt][1]));       
+       /*battery_log(BAT_LOG_CRTI, "[Before MASK] %x,%x,%x\r\n",(mt6332_aPMURegWr[u2Cnt][0]), u2PMUReg,(mt6332_aPMURegWr[u2Cnt][1])));*/
        //only check value of mask
        u2PMUReg &= mt6332_aPMURegWr_mask[u2Cnt];
-       //printk("[After MASK]%x,%x,%x\r\n",(mt6332_aPMURegWr[u2Cnt][0]), u2PMUReg,(mt6332_aPMURegWr[u2Cnt][1]));
-       
+       /*battery_log(BAT_LOG_CRTI, "[After MASK]%x,%x,%x\r\n",(mt6332_aPMURegWr[u2Cnt][0]), u2PMUReg,(mt6332_aPMURegWr[u2Cnt][1])));*/
+
        default_value_mask = (test_value & mt6332_aPMURegWr_mask[u2Cnt]);
 
        if(u2PMUReg != default_value_mask)
-       {              
-           printk("[error] %x,%x(%x),%x,%x,%x,%x\r\n",
-            (mt6332_aPMURegWr[u2Cnt][0]),             
+       {
+			battery_log(BAT_LOG_CRTI, "[error] %x,%x(%x),%x,%x,%x,%x\r\n",
+            (mt6332_aPMURegWr[u2Cnt][0]),
             test_value,
             default_value_mask,
             mt6332_aPMURegWr_mask[u2Cnt],
-            upmu_get_reg_value(    (mt6332_aPMURegWr[u2Cnt][0])  ),              
-            u2PMUReg, 
+            upmu_get_reg_value(    (mt6332_aPMURegWr[u2Cnt][0])  ),
+            u2PMUReg,
             default_value_mask
             );
-           
-           printk("call pwrap_init()\n");
+
+			battery_log(BAT_LOG_CRTI, "call pwrap_init()\n");
            pwrap_init();
        }
     }
@@ -12921,14 +13041,14 @@ void top_6332_write(int test_value)
     #if 0 //debug check
     for(u2Cnt = 0; u2Cnt < (sizeof(mt6332_aPMURegWr)/sizeof(*mt6332_aPMURegWr)); ++u2Cnt)
     {
-        printk("Reg[%x] %x\n", 
-            (mt6332_aPMURegWr[u2Cnt][0]), 
+		battery_log(BAT_LOG_CRTI, "Reg[%x] %x\n",
+            (mt6332_aPMURegWr[u2Cnt][0]),
             upmu_get_reg_value(    (mt6332_aPMURegWr[u2Cnt][0])  )
             );
     }
     #endif
 }
-#endif 
+#endif
 
 #ifdef EFUSE_DVT_ENABLE
 void exec_6331_efuse_test(void)
@@ -12936,8 +13056,8 @@ void exec_6331_efuse_test(void)
     U32 ret=0;
     U32 reg_val=0;
     int i=0;
-    
-    printk("[exec_6331_efuse_test] start\n");
+
+	battery_log(BAT_LOG_CRTI, "[exec_6331_efuse_test] start\n");
 
     //1. enable efuse ctrl engine clock
     ret=pmic_config_interface(0x0154, 0x0010, 0xFFFF, 0);
@@ -12947,7 +13067,7 @@ void exec_6331_efuse_test(void)
     ret=pmic_config_interface(0x0616, 0x1, 0x1, 0);
 
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         0x0150,upmu_get_reg_value(0x0150),
         0x0144,upmu_get_reg_value(0x0144),
         0x0616,upmu_get_reg_value(0x0616)
@@ -12965,15 +13085,15 @@ void exec_6331_efuse_test(void)
         else
             ret=pmic_config_interface(0x610, 0, 0x1, 0);
 
-        reg_val=1;    
+        reg_val=1;
         while(reg_val == 1)
         {
             ret=pmic_read_interface(0x61A, &reg_val, 0x1, 0);
-            //printk("5. polling Reg[0x61A][0]=0x%x\n", reg_val);
+			/*battery_log(BAT_LOG_CRTI, "5. polling Reg[0x61A][0]=0x%x\n", reg_val));*/
         }
 
         //6. read data
-        xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "i=%d,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+		battery_log(BAT_LOG_CRTI,  "i=%d,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
             i,
             0x0600,upmu_get_reg_value(0x0600),
             0x061A,upmu_get_reg_value(0x061A),
@@ -12984,11 +13104,11 @@ void exec_6331_efuse_test(void)
     //7. Disable efuse ctrl engine clock
     ret=pmic_config_interface(0x0146, 0x0004, 0xFFFF, 0);
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x\n",             
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x\n",
         0x0144,upmu_get_reg_value(0x0144)
-        );    
+        );
 
-    printk("[exec_6331_efuse_test] Done\n");
+	battery_log(BAT_LOG_CRTI, "[exec_6331_efuse_test] Done\n");
 }
 
 void exec_6332_efuse_test(void)
@@ -12996,8 +13116,8 @@ void exec_6332_efuse_test(void)
     U32 ret=0;
     U32 reg_val=0;
     int i=0;
-    
-    printk("[exec_6332_efuse_test] start\n");
+
+	battery_log(BAT_LOG_CRTI, "[exec_6332_efuse_test] start\n");
 
     //1. enable efuse ctrl engine clock
     ret=pmic_config_interface(0x80B6, 0x0010, 0xFFFF, 0);
@@ -13007,7 +13127,7 @@ void exec_6332_efuse_test(void)
     ret=pmic_config_interface(0x8C6C, 0x1, 0x1, 0);
 
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
         0x80B2,upmu_get_reg_value(0x80B2),
         0x80A0,upmu_get_reg_value(0x80A0),
         0x8C6C,upmu_get_reg_value(0x8C6C)
@@ -13025,15 +13145,15 @@ void exec_6332_efuse_test(void)
         else
             ret=pmic_config_interface(0x8C66, 0, 0x1, 0);
 
-        reg_val=1;    
+        reg_val=1;
         while(reg_val == 1)
         {
             ret=pmic_read_interface(0x8C70, &reg_val, 0x1, 0);
-            //printk("5. polling Reg[0x61A][0]=0x%x\n", reg_val);
+			/*battery_log(BAT_LOG_CRTI, "5. polling Reg[0x61A][0]=0x%x\n", reg_val));*/
         }
 
         //6. read data
-        xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "i=%d,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n", 
+		battery_log(BAT_LOG_CRTI,  "i=%d,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x,Reg[0x%x]=0x%x\n",
             i,
             0x8C56,upmu_get_reg_value(0x8C56),
             0x8C70,upmu_get_reg_value(0x8C70),
@@ -13044,11 +13164,11 @@ void exec_6332_efuse_test(void)
     //7. Disable efuse ctrl engine clock
     ret=pmic_config_interface(0x80A2, 0x0004, 0xFFFF, 0);
     //dump
-    xlog_printk(ANDROID_LOG_INFO, "Power/PMIC", "Reg[0x%x]=0x%x\n",             
+	battery_log(BAT_LOG_CRTI,  "Reg[0x%x]=0x%x\n",
         0x80A0,upmu_get_reg_value(0x80A0)
         );
 
-    printk("[exec_6332_efuse_test] Done\n");
+	battery_log(BAT_LOG_CRTI, "[exec_6332_efuse_test] Done\n");
 }
 #endif
 
@@ -13076,131 +13196,131 @@ extern upmu_adc_user_list_enum PMIC_IMM_GetUserNumber(upmu_adc_chl_list_enum dwC
 
 static upmu_adc_chl_list_enum eChannelEnumList[MAX_CHANNEL_NUM] =
 {
-    ADC_TSENSE_31_AP,
-    ADC_VACCDET_AP,
-    ADC_VISMPS_1_AP,
-    ADC_ADCVIN0_AP,
-    ADC_HP_AP,
-    ADC_BATSNS_AP,
-    ADC_ISENSE_AP,
-    ADC_VBIF_AP,
-    ADC_BATON_AP,
-    ADC_TSENSE_32_AP,
-    ADC_VCHRIN_AP,
-    ADC_VISMPS_2_AP,
-    ADC_VUSB_AP,
-    ADC_M3_REF_AP,
-    ADC_SPK_ISENSE_AP,
-    ADC_SPK_THR_V_AP,
-    ADC_SPK_THR_I_AP,
-    ADC_VADAPTOR_AP,
-    ADC_TSENSE_31_MD,
-    ADC_ADCVIN0_MD,
-    ADC_ADCVIN0_GPS,
-    ADC_TSENSE_32_MD
+    AUX_TSENSE_31_AP,
+    AUX_VACCDET_AP,
+    AUX_VISMPS_1_AP,
+    AUX_ADCVIN0_AP,
+    AUX_HP_AP,
+    AUX_BATSNS_AP,
+    AUX_ISENSE_AP,
+    AUX_VBIF_AP,
+    AUX_BATON_AP,
+    AUX_TSENSE_32_AP,
+    AUX_VCHRIN_AP,
+    AUX_VISMPS_2_AP,
+    AUX_VUSB_AP,
+    AUX_M3_REF_AP,
+    AUX_SPK_ISENSE_AP,
+    AUX_SPK_THR_V_AP,
+    AUX_SPK_THR_I_AP,
+    AUX_VADAPTOR_AP,
+    AUX_TSENSE_31_MD,
+    AUX_ADCVIN0_MD,
+    AUX_ADCVIN0_GPS,
+    AUX_TSENSE_32_MD
 };
 
 int auxadc_request_one_channel(int index) {
     int ret = 0;
     switch (index){
     case 0:
-        ret = PMIC_IMM_GetOneChannelValue(ADC_TSENSE_31_AP, 1, 0);
+        ret = PMIC_IMM_GetOneChannelValue(AUX_TSENSE_31_AP, 1, 0);
         break;
-    case 1:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_VACCDET_AP, 1, 0);
+    case 1:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_VACCDET_AP, 1, 0);
         break;
-    case 2:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_VISMPS_1_AP, 1, 0);
+    case 2:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_VISMPS_1_AP, 1, 0);
         break;
-    case 3:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_ADCVIN0_AP, 1, 0);
+    case 3:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_ADCVIN0_AP, 1, 0);
         break;
-    case 4:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_HP_AP, 1, 0);
+    case 4:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_HP_AP, 1, 0);
         break;
-    case 5:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_BATSNS_AP, 1, 0);
+    case 5:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_BATSNS_AP, 1, 0);
         break;
-    case 6:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_ISENSE_AP, 1, 0);
+    case 6:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_ISENSE_AP, 1, 0);
         break;
-    case 7:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_VBIF_AP, 1, 0);
+    case 7:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_VBIF_AP, 1, 0);
         break;
-    case 8:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_BATON_AP, 1, 0);
+    case 8:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_BATON_AP, 1, 0);
         break;
-    case 9:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_TSENSE_32_AP, 1, 0);
+    case 9:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_TSENSE_32_AP, 1, 0);
         break;
-    case 10:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_VCHRIN_AP, 1, 0);
+    case 10:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_VCHRIN_AP, 1, 0);
         break;
-    case 11:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_VISMPS_2_AP, 1, 0);
+    case 11:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_VISMPS_2_AP, 1, 0);
         break;
-    case 12:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_VUSB_AP, 1, 0);
+    case 12:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_VUSB_AP, 1, 0);
         break;
-    case 13:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_M3_REF_AP, 1, 0);
+    case 13:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_M3_REF_AP, 1, 0);
         break;
-    case 14:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_SPK_ISENSE_AP, 1, 0);
+    case 14:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_SPK_ISENSE_AP, 1, 0);
         break;
-    case 15:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_SPK_THR_V_AP, 1, 0);
+    case 15:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_SPK_THR_V_AP, 1, 0);
         break;
-    case 16:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_SPK_THR_I_AP, 1, 0);
+    case 16:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_SPK_THR_I_AP, 1, 0);
         break;
-    case 17:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_VADAPTOR_AP, 1, 0);
+    case 17:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_VADAPTOR_AP, 1, 0);
         break;
-    case 18:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_TSENSE_31_MD, 1, 0);
+    case 18:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_TSENSE_31_MD, 1, 0);
         break;
-    case 19:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_ADCVIN0_MD, 1, 0);
+    case 19:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_ADCVIN0_MD, 1, 0);
         break;
-    case 20:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_ADCVIN0_GPS, 1, 0);
+    case 20:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_ADCVIN0_GPS, 1, 0);
         break;
-    case 21:    
-        ret = PMIC_IMM_GetOneChannelValue(ADC_TSENSE_32_MD, 1, 0);
+    case 21:
+        ret = PMIC_IMM_GetOneChannelValue(AUX_TSENSE_32_MD, 1, 0);
         break;
     default :
-        printk("[auxadc_request_test] no such channel number!!\n");
+		battery_log(BAT_LOG_CRTI, "[auxadc_request_test] no such channel number!!\n");
         break;
-    }    
-    
-    return ret;    
+    }
+
+    return ret;
 }
 
 void auxadc_request_test(void)
 {
     int i;
     int ret[MAX_CHANNEL_NUM] = {0};
-    printk("[auxadc_request_test] start \n");
-    
+	battery_log(BAT_LOG_CRTI, "[auxadc_request_test] start\n");
+
     for (i= 0; i < MAX_CHANNEL_NUM; i++) {
-        
-        
+
+
     }
-    printk("[auxadc_request_test] Process Result: ");
+	battery_log(BAT_LOG_CRTI, "[auxadc_request_test] Process Result: ");
     for (i=0; i< 21; i++) {
         ret[i] = auxadc_request_one_channel(i);
-        printk("ret[%d]: %d ", i, ret[i]);
+		battery_log(BAT_LOG_CRTI, "ret[%d]: %d ", i, ret[i]);
     }
-    printk("\n[auxadc_request_test] end !! \n");
+	battery_log(BAT_LOG_CRTI, "\n[auxadc_request_test] end !!\n");
 }
 
 void auxadc_trimm_channel_test(void)
 {
     int i, j;
     int ret[MAX_CHANNEL_NUM] = {0}, ret_raw[MAX_CHANNEL_NUM] = {0};
-    printk("[auxadc_trimm_channel_test] start\n");
-    
+	battery_log(BAT_LOG_CRTI, "[auxadc_trimm_channel_test] start\n");
+
     mt6331_upmu_set_efuse_gain_ch4_trim(GAIN_CH4);
     mt6331_upmu_set_efuse_offset_ch4_trim(OFFSET_CH4);
     mt6331_upmu_set_efuse_gain_ch7_trim(GAIN_CH7);
@@ -13218,12 +13338,12 @@ void auxadc_trimm_channel_test(void)
         for (j = 0; j < 4; j++) {
             mt6331_upmu_set_auxadc_trim_ch0_sel(j);
             ret[i] = auxadc_request_one_channel(i);
-            if (i < 8) 
+            if (i < 8)
                 ret_raw[i] = mt6331_upmu_get_auxadc_adc_out_raw();
             else if (i < MAX_CHANNEL_NUM)
                 ret_raw[i] = mt6332_upmu_get_auxadc_adc_out_raw();
-            printk("ret[%d]: %d , ret_raw[%d]: %d ", i, ret[i], i, ret_raw[i]);    
-        }    
+			battery_log(BAT_LOG_CRTI, "ret[%d]: %d , ret_raw[%d]: %d ", i, ret[i], i, ret_raw[i]);
+        }
     }
 }
 kal_int32 dvtloop=50;
@@ -13235,50 +13355,50 @@ void do_auxadc_polling(int number, int chip_info, int user_info, int *channel_nu
     kal_int32 ret_data[MAX_CHANNEL_NUM];
     kal_int32 ret_order[MAX_CHANNEL_NUM];
     kal_int16 order=1;
-    
-    printk("[do_auxadc_polling] start\n");
+
+	battery_log(BAT_LOG_CRTI, "[do_auxadc_polling] start\n");
     for(i=0;i<MAX_CHANNEL_NUM;i++)
     {
         ret_data[i]=0;
         ret_order[i]=0;
     }
-    
+
     /*
         MT6331
         0 : NA
         1 : NA
-        2 : NA 
+        2 : NA
         3 : NA
         4 : TSENSE_PMIC
         5 : VACCDET
         6 : VISMPS_1
         7 : AUXADCVIN0
-        8 : NA    
+        8 : NA
         9 : HP
         11-15: Shared
-        
+
         MT6332
         0 : BATSNS
         1 : ISENSE
-        2 : VBIF 
+        2 : VBIF
         3 : BATON
         4 : TSENSE_BAT
         5 : VCHRIN
         6 : VISMPS_2
         7 : VUSB/ VADAPTOR
-        8 : M3_REF    
+        8 : M3_REF
         9 : SPK_ISENSE
         10: SPK_THR_V
         11: SPK_THR_I
-        12-15: shared 
-    */   
+        12-15: shared
+    */
     do {
         for (i=0; i < MAX_CHANNEL_NUM; i++) {
             if (chip_num[i] != chip_info || (((0x1 << user_num[i]) & (user_info)) == 0))
                 continue;
             if (ret_order[i]==0 && pmic_is_auxadc_ready(channel_num[i], chip_num[i], user_num[i]) == 1 )
             {
-                ret_data[i] = pmic_get_adc_output(channel_num[i], chip_num[i], user_num[i]);    
+                ret_data[i] = pmic_get_adc_output(channel_num[i], chip_num[i], user_num[i]);
                 ret_order[i]=order;
                 order++;
             }
@@ -13286,24 +13406,24 @@ void do_auxadc_polling(int number, int chip_info, int user_info, int *channel_nu
         if (i>dvtloop)
             break;
         for (j=0; j < MAX_CHANNEL_NUM; j++) {
-            printk("[%d] ", pmic_is_auxadc_ready(channel_num[i], chip_num[i], user_num[i]));        
+			battery_log(BAT_LOG_CRTI, "[%d] ", pmic_is_auxadc_ready(channel_num[i], chip_num[i], user_num[i]));
         }
-        printk("\n");
+		battery_log(BAT_LOG_CRTI, "\n");
     } while (order<=number);
 #if 0
-    printk("ch0:BATON2    order[%2d] val[0x%4x] [%4d]\n ", ret_order[0], ret_data[0],ret_data[0]*VOLTAGE_FULL_RANGE/ADC_PRECISE);   
-    printk("ch1:CH6        order[%2d] val[0x%4x] [%4d]\n ", ret_order[1], ret_data[1],ret_data[1]*VOLTAGE_FULL_RANGE/ADC_PRECISE); 
-    printk("ch2:THR2        order[%2d] val[0x%4x] [%4d]\n ", ret_order[2], ret_data[2],ret_data[2]*VOLTAGE_FULL_RANGE/ADC_PRECISE); 
-    printk("ch3:THR1        order[%2d] val[0x%4x] [%4d]\n ", ret_order[3], ret_data[3],ret_data[3]*VOLTAGE_FULL_RANGE/ADC_PRECISE); 
-    printk("ch4:VCDT        order[%2d] val[0x%4x] [%4d]\n ", ret_order[4], ret_data[4],ret_data[4]*VOLTAGE_FULL_RANGE/ADC_PRECISE); 
-    printk("ch5:BATON1    order[%2d] val[0x%4x] [%4d]\n ", ret_order[5], ret_data[5],ret_data[5]*4*VOLTAGE_FULL_RANGE/ADC_PRECISE); 
-    printk("ch6:ISENSE    order[%2d] val[0x%4x] [%4d]\n ", ret_order[6], ret_data[6],ret_data[6]*4*VOLTAGE_FULL_RANGE/ADC_PRECISE); 
-    printk("ch7:BATSNS    order[%2d] val[0x%4x] [%4d]\n ", ret_order[7], ret_data[7],ret_data[7]*4*VOLTAGE_FULL_RANGE/ADC_PRECISE); 
-    printk("ch8:ACCDET    order[%2d] val[0x%4x] [%4d]\n ", ret_order[8], ret_data[8],ret_data[8]*VOLTAGE_FULL_RANGE/ADC_PRECISE); 
-    printk("gps:            order[%2d] val[0x%4x] [%4d]\n ", ret_order[9], ret_data[9],ret_data[9]*VOLTAGE_FULL_RANGE/ADC_PRECISE/2); 
-       printk("md:            order[%2d] val[0x%4x] [%4d]\n ", ret_order[10], ret_data[10],ret_data[10]*VOLTAGE_FULL_RANGE/ADC_PRECISE/2); 
+	battery_log(BAT_LOG_CRTI, "ch0:BATON2    order[%2d] val[0x%4x] [%4d]\n ", ret_order[0], ret_data[0], ret_data[0]*VOLTAGE_FULL_RANGE/ADC_PRECISE);
+	battery_log(BAT_LOG_CRTI, "ch1:CH6        order[%2d] val[0x%4x] [%4d]\n ", ret_order[1], ret_data[1], ret_data[1]*VOLTAGE_FULL_RANGE/ADC_PRECISE);
+	battery_log(BAT_LOG_CRTI, "ch2:THR2        order[%2d] val[0x%4x] [%4d]\n ", ret_order[2], ret_data[2], ret_data[2]*VOLTAGE_FULL_RANGE/ADC_PRECISE);
+	battery_log(BAT_LOG_CRTI, "ch3:THR1        order[%2d] val[0x%4x] [%4d]\n ", ret_order[3], ret_data[3], ret_data[3]*VOLTAGE_FULL_RANGE/ADC_PRECISE);
+	battery_log(BAT_LOG_CRTI, "ch4:VCDT        order[%2d] val[0x%4x] [%4d]\n ", ret_order[4], ret_data[4], ret_data[4]*VOLTAGE_FULL_RANGE/ADC_PRECISE);
+	battery_log(BAT_LOG_CRTI, "ch5:BATON1    order[%2d] val[0x%4x] [%4d]\n ", ret_order[5], ret_data[5], ret_data[5]*4*VOLTAGE_FULL_RANGE/ADC_PRECISE);
+	battery_log(BAT_LOG_CRTI, "ch6:ISENSE    order[%2d] val[0x%4x] [%4d]\n ", ret_order[6], ret_data[6], ret_data[6]*4*VOLTAGE_FULL_RANGE/ADC_PRECISE);
+	battery_log(BAT_LOG_CRTI, "ch7:BATSNS    order[%2d] val[0x%4x] [%4d]\n ", ret_order[7], ret_data[7], ret_data[7]*4*VOLTAGE_FULL_RANGE/ADC_PRECISE);
+	battery_log(BAT_LOG_CRTI, "ch8:ACCDET    order[%2d] val[0x%4x] [%4d]\n ", ret_order[8], ret_data[8], ret_data[8]*VOLTAGE_FULL_RANGE/ADC_PRECISE);
+	battery_log(BAT_LOG_CRTI, "gps:            order[%2d] val[0x%4x] [%4d]\n ", ret_order[9], ret_data[9], ret_data[9]*VOLTAGE_FULL_RANGE/ADC_PRECISE/2);
+	battery_log(BAT_LOG_CRTI, "md:            order[%2d] val[0x%4x] [%4d]\n ", ret_order[10], ret_data[10], ret_data[10]*VOLTAGE_FULL_RANGE/ADC_PRECISE/2);
 
-    printk("[%d][%d][%d][%d][%d][%d][%d][%d][%d][%d][%d]\n ", 
+	battery_log(BAT_LOG_CRTI, "[%d][%d][%d][%d][%d][%d][%d][%d][%d][%d][%d]\n",
         upmu_get_rg_adc_rdy_baton2(),
         upmu_get_rg_adc_rdy_ch6(),
         upmu_get_rg_adc_rdy_thr_sense1(),
@@ -13320,11 +13440,11 @@ void do_auxadc_polling(int number, int chip_info, int user_info, int *channel_nu
 
 void auxadc_set_avg_num_max(void)
 {
-    //set SMPS CLK from external CLK 
-    //MT6332 External CLK input : PAD_PWM_IN 
-    //MT6331 External CLK input : PAD_HOMEKEY 
+    //set SMPS CLK from external CLK
+    //MT6332 External CLK input : PAD_PWM_IN
+    //MT6331 External CLK input : PAD_HOMEKEY
 
-    mt6331_upmu_set_rg_smps_ck_tstsel(1);    
+    mt6331_upmu_set_rg_smps_ck_tstsel(1);
     //Set AVG as largest setting
     mt6331_upmu_set_auxadc_avg_num_sel(0x0FFF);
     mt6331_upmu_set_auxadc_avg_num_sel_lbat(0x1);
@@ -13333,107 +13453,107 @@ void auxadc_set_avg_num_max(void)
 
 void auxadc_priority_test_6331(void)
 {
-    int i, ret = 0;     
+    int i, ret = 0;
         int channel_num[MAX_CHANNEL_NUM];
         upmu_adc_chip_list_enum chip_num[MAX_CHANNEL_NUM];
         upmu_adc_user_list_enum user_num[MAX_CHANNEL_NUM];
-        
+
         auxadc_set_avg_num_max();
         for (i=0; i < MAX_CHANNEL_NUM; i++) {
             channel_num[i] = PMIC_IMM_GetChannelNumber(eChannelEnumList[i]);
         chip_num[i] = PMIC_IMM_GetChipNumber(eChannelEnumList[i]);
         user_num[i] = PMIC_IMM_GetUserNumber(eChannelEnumList[i]);
-        }      
-        
-        ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST0_SET), 0x0FFF, 0x0FFF, 0); 
+        }
+
+        ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST0_SET), 0x0FFF, 0x0FFF, 0);
         ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST1_SET), 0x0190, 0x0190, 0);
-        
-    do_auxadc_polling(8, MT6331_CHIP, 0x111, channel_num, chip_num, user_num);               
+
+    do_auxadc_polling(8, MT6331_CHIP, 0x111, channel_num, chip_num, user_num);
 }
 
 void auxadc_priority_test_6332(void)
 {
-    int i, ret = 0;     
+    int i, ret = 0;
         int channel_num[MAX_CHANNEL_NUM];
         upmu_adc_chip_list_enum chip_num[MAX_CHANNEL_NUM];
         upmu_adc_user_list_enum user_num[MAX_CHANNEL_NUM];
-        
+
         auxadc_set_avg_num_max();
         for (i=0; i < MAX_CHANNEL_NUM; i++) {
             channel_num[i] = PMIC_IMM_GetChannelNumber(eChannelEnumList[i]);
         chip_num[i] = PMIC_IMM_GetChipNumber(eChannelEnumList[i]);
         user_num[i] = PMIC_IMM_GetUserNumber(eChannelEnumList[i]);
-        }      
-        
-        ret=pmic_config_interface( (kal_uint32)(MT6332_AUXADC_RQST0_SET), 0x0FFF, 0x0FFF, 0); 
+        }
+
+        ret=pmic_config_interface( (kal_uint32)(MT6332_AUXADC_RQST0_SET), 0x0FFF, 0x0FFF, 0);
         ret=pmic_config_interface( (kal_uint32)(MT6332_AUXADC_RQST1_SET), 0x0190, 0x0190, 0);
-        
-    do_auxadc_polling(12, MT6332_CHIP, 0x111,channel_num, chip_num, user_num);               
+
+    do_auxadc_polling(12, MT6332_CHIP, 0x111,channel_num, chip_num, user_num);
 }
 
 void auxadc_priority_test_GPSMD1_6331(void)
 {
-    int i, ret = 0;     
+    int i, ret = 0;
         int channel_num[MAX_CHANNEL_NUM];
         upmu_adc_chip_list_enum chip_num[MAX_CHANNEL_NUM];
         upmu_adc_user_list_enum user_num[MAX_CHANNEL_NUM];
-        
+
         auxadc_set_avg_num_max();
         for (i=0; i < MAX_CHANNEL_NUM; i++) {
             channel_num[i] = PMIC_IMM_GetChannelNumber(eChannelEnumList[i]);
         chip_num[i] = PMIC_IMM_GetChipNumber(eChannelEnumList[i]);
         user_num[i] = PMIC_IMM_GetUserNumber(eChannelEnumList[i]);
-        }      
-        
-        ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST0_SET), 0x007F, 0x007F, 0); 
+        }
+
+        ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST0_SET), 0x007F, 0x007F, 0);
         udelay(1);
         ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST1_SET), 0x0190, 0x0190, 0);
-        
-    do_auxadc_polling(8, MT6331_CHIP, 0x111, channel_num, chip_num, user_num);               
+
+    do_auxadc_polling(8, MT6331_CHIP, 0x111, channel_num, chip_num, user_num);
 }
 
 void auxadc_priority_test_GPSMD2_6331(void)
 {
-    int i, ret = 0;     
+    int i, ret = 0;
         int channel_num[MAX_CHANNEL_NUM];
         upmu_adc_chip_list_enum chip_num[MAX_CHANNEL_NUM];
         upmu_adc_user_list_enum user_num[MAX_CHANNEL_NUM];
-        
+
         auxadc_set_avg_num_max();
         for (i=0; i < MAX_CHANNEL_NUM; i++) {
             channel_num[i] = PMIC_IMM_GetChannelNumber(eChannelEnumList[i]);
         chip_num[i] = PMIC_IMM_GetChipNumber(eChannelEnumList[i]);
         user_num[i] = PMIC_IMM_GetUserNumber(eChannelEnumList[i]);
-        }      
-        
-        ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST0_SET), 0x0100, 0x0100, 0); 
+        }
+
+        ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST0_SET), 0x0100, 0x0100, 0);
         udelay(1);
         ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST1_SET), 0x0080, 0x0080, 0);
-        
-    do_auxadc_polling(8, MT6331_CHIP, 0x110, channel_num, chip_num, user_num);               
+
+    do_auxadc_polling(8, MT6331_CHIP, 0x110, channel_num, chip_num, user_num);
 }
 
 void auxadc_priority_test_GPSMD3_6331(void)
 {
-    int i, ret = 0;     
+    int i, ret = 0;
         int channel_num[MAX_CHANNEL_NUM];
         upmu_adc_chip_list_enum chip_num[MAX_CHANNEL_NUM];
         upmu_adc_user_list_enum user_num[MAX_CHANNEL_NUM];
-        
+
         auxadc_set_avg_num_max();
         for (i=0; i < MAX_CHANNEL_NUM; i++) {
             channel_num[i] = PMIC_IMM_GetChannelNumber(eChannelEnumList[i]);
         chip_num[i] = PMIC_IMM_GetChipNumber(eChannelEnumList[i]);
         user_num[i] = PMIC_IMM_GetUserNumber(eChannelEnumList[i]);
-        }      
-        
-        ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST0_SET), 0x0100, 0x0100, 0); 
+        }
+
+        ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST0_SET), 0x0100, 0x0100, 0);
         if (pmic_is_auxadc_ready(8, 0, 2)) {
             ret=pmic_config_interface( (kal_uint32)(MT6331_AUXADC_RQST1_SET), 0x0080, 0x0080, 0);
             if (pmic_is_auxadc_ready(7, 0, 1)) {
                 pmic_get_adc_output(7, 0, 1);
             }
-        }              
+        }
 }
 
 #define LBAT_TEST 0
@@ -13446,7 +13566,7 @@ void auxadc_priority_test_GPSMD3_6331(void)
 kal_uint32 LBAT_VOLT_MAX=0x0A80; // wait SA provide, 4.2V
 kal_uint32 LBAT_VOLT_MIN=0x0880; // wait SA provide, 3.4V
 
-kal_uint32 LBAT_DET_PRD_19_16=0x0; 
+kal_uint32 LBAT_DET_PRD_19_16=0x0;
 kal_uint32 LBAT_DET_PRD_15_0=0x2710; // 1s
 
 
@@ -13460,7 +13580,7 @@ extern kal_uint32 mt6332_bat_h_int_handler(void);
 
 void auxadc_battery_int_protection_6331(U32 test_type, U32 test_mode)
 {
-    
+
     U32 lbat_debounce_count_max=0;
     U32 lbat_debounce_count_min=0;
     U32 timeout_count = 0;
@@ -13468,12 +13588,12 @@ void auxadc_battery_int_protection_6331(U32 test_type, U32 test_mode)
 
     //init
     mt6331_upmu_set_auxadc_lbat_irq_en_max(0);
-    mt6331_upmu_set_auxadc_lbat_irq_en_min(0);    
+    mt6331_upmu_set_auxadc_lbat_irq_en_min(0);
     mt6331_upmu_set_auxadc_lbat_en_max(0);
     mt6331_upmu_set_auxadc_lbat_en_min(0);
       mt6331_upmu_set_rg_int_en_bat_l(0);
     mt6331_upmu_set_rg_int_en_bat_h(0);
-    
+
     //0. set issue interrupt
     mt6331_upmu_set_rg_int_en_bat_l(1);
     mt6331_upmu_set_rg_int_en_bat_h(1);
@@ -13487,13 +13607,13 @@ void auxadc_battery_int_protection_6331(U32 test_type, U32 test_mode)
     //4. setup max./min. debounce time.
     mt6331_upmu_set_auxadc_lbat_debt_max(LBAT_DEBT_MAX);
     mt6331_upmu_set_auxadc_lbat_debt_min(LBAT_DEBT_MIN);
-    
-    
+
+
     if (test_type == LBAT_TEST) {
         //5. turn on IRQ
         mt6331_upmu_set_auxadc_lbat_irq_en_max(0);
         mt6331_upmu_set_auxadc_lbat_irq_en_min(1);
-    
+
         //6. turn on LowBattery Detection
         mt6331_upmu_set_auxadc_lbat_en_max(0);
         mt6331_upmu_set_auxadc_lbat_en_min(1);
@@ -13501,7 +13621,7 @@ void auxadc_battery_int_protection_6331(U32 test_type, U32 test_mode)
         //5. turn on IRQ
         mt6331_upmu_set_auxadc_lbat_irq_en_max(1);
         mt6331_upmu_set_auxadc_lbat_irq_en_min(0);
-    
+
         //6. turn on LowBattery Detection
         mt6331_upmu_set_auxadc_lbat_en_max(1);
         mt6331_upmu_set_auxadc_lbat_en_min(0);
@@ -13509,23 +13629,23 @@ void auxadc_battery_int_protection_6331(U32 test_type, U32 test_mode)
     //7. Monitor Debounce counts
     lbat_debounce_count_max = mt6331_upmu_get_auxadc_lbat_debounce_count_max();
     lbat_debounce_count_min = mt6331_upmu_get_auxadc_lbat_debounce_count_min();
-    
+
     while (!mt6331_upmu_get_auxadc_adc_rdy_lbat()) {
         mdelay(1000);
         timeout_count++;
-        printk("[auxadc_battery_int_protection_6331] wait for lbat ready! timeout_count = (%d)\n", timeout_count);
-        if (timeout_count > 10000) break;    
-    } 
+		battery_log(BAT_LOG_CRTI, "[auxadc_battery_int_protection_6331] wait for lbat ready! timeout_count = (%d)\n", timeout_count);
+        if (timeout_count > 10000) break;
+    }
     adc_out_lbat = mt6331_upmu_get_auxadc_adc_out_lbat();
-    
+
     //9. Test on VBAT = 3.5 -> 3.4 -> 3.3 and receive interrupt  -- LBAT_TEST
     //9. Test on VBAT = 4.0 -> 4.2 -> 4.3 and receive interrupt  -- HBAT_TEST
-    printk("[auxadc_battery_int_protection_6331] setting .. done (adc_out_lbat=%d, lbat_debounce_count_max=%d, lbat_debounce_count_min=%d) \n", 
+	battery_log(BAT_LOG_CRTI, "[auxadc_battery_int_protection_6331] setting .. done (adc_out_lbat=%d, lbat_debounce_count_max=%d, lbat_debounce_count_min=%d)\n",
         adc_out_lbat, lbat_debounce_count_max, lbat_debounce_count_min);
-        
+
 
     if (test_mode == SLEEP_MODE) {
-        printk("[auxadc_battery_int_protection_6331] sleep mode\n");
+		battery_log(BAT_LOG_CRTI, "[auxadc_battery_int_protection_6331] sleep mode\n");
         //0.0 wakeup start setting for sleep mode
         mt6331_upmu_set_strup_auxadc_start_sel(0);
         mt6331_upmu_set_strup_auxadc_rstb_sw(1);
@@ -13546,46 +13666,46 @@ void mt6331_bat_int_close(void)
     mt6331_upmu_set_auxadc_lbat_en_min(0);
     mt6331_upmu_set_rg_int_en_bat_l(0);
     mt6331_upmu_set_rg_int_en_bat_h(0);
-            
-    printk("[mt6331_bat_int_close] done\n");
+
+	battery_log(BAT_LOG_CRTI, "[mt6331_bat_int_close] done\n");
 }
 
 void auxadc_battery_int_protection_6332(U32 test_type, U32 test_mode)
 {
-    
+
     U32 lbat_debounce_count_max=0;
     U32 lbat_debounce_count_min=0;
     U32 timeout_count = 0;
     U32 adc_out_lbat = 0;
-    
+
     if (test_mode == SLEEP_MODE) {
-        printk("[auxadc_battery_int_protection_6332] sleep mode\n");
+		battery_log(BAT_LOG_CRTI, "[auxadc_battery_int_protection_6332] sleep mode\n");
         //0.0 wakeup start setting for sleep mode
         mt6332_upmu_set_strup_auxadc_start_sel(0);
         mt6332_upmu_set_strup_auxadc_rstb_sw(1);
         mt6332_upmu_set_strup_auxadc_rstb_sel(1);
         mt6332_upmu_set_strup_con8_rsv0(1);
     }
-    printk("[auxadc_battery_int_protection_6332] E1 workaround\n");
+	battery_log(BAT_LOG_CRTI, "[auxadc_battery_int_protection_6332] E1 workaround\n");
     mt6332_upmu_set_rg_adcin_batsns_en(1);
     mt6332_upmu_set_rg_adcin_cs_en(1);
-    
+
     if (test_mode == SLEEP_MODE) {
-        printk("[auxadc_battery_int_protection_6332] sleep mode\n");
+		battery_log(BAT_LOG_CRTI, "[auxadc_battery_int_protection_6332] sleep mode\n");
         //0.0 wakeup start setting for sleep mode
         mt6332_upmu_set_strup_auxadc_start_sel(0);
         mt6332_upmu_set_strup_auxadc_rstb_sw(1);
         mt6332_upmu_set_strup_auxadc_rstb_sel(1);
-        mt6332_upmu_set_strup_con8_rsv0(1);        
+        mt6332_upmu_set_strup_con8_rsv0(1);
     }
     //init
     mt6332_upmu_set_auxadc_lbat_irq_en_max(0);
-    mt6332_upmu_set_auxadc_lbat_irq_en_min(0);    
+    mt6332_upmu_set_auxadc_lbat_irq_en_min(0);
     mt6332_upmu_set_auxadc_lbat_en_max(0);
     mt6332_upmu_set_auxadc_lbat_en_min(0);
       mt6332_upmu_set_rg_int_en_bat_l(0);
     mt6332_upmu_set_rg_int_en_bat_h(0);
-    
+
     //0. set issue interrupt
     mt6332_upmu_set_rg_int_en_bat_l(1);
     mt6332_upmu_set_rg_int_en_bat_h(1);
@@ -13599,12 +13719,12 @@ void auxadc_battery_int_protection_6332(U32 test_type, U32 test_mode)
     //4. setup max./min. debounce time.
     mt6332_upmu_set_auxadc_lbat_debt_max(LBAT_DEBT_MAX);
     mt6332_upmu_set_auxadc_lbat_debt_min(LBAT_DEBT_MIN);
-    
+
     if (test_type == LBAT_TEST) {
         //5. turn on IRQ
         mt6332_upmu_set_auxadc_lbat_irq_en_max(0);
         mt6332_upmu_set_auxadc_lbat_irq_en_min(1);
-    
+
         //6. turn on LowBattery Detection
         mt6332_upmu_set_auxadc_lbat_en_max(0);
         mt6332_upmu_set_auxadc_lbat_en_min(1);
@@ -13612,7 +13732,7 @@ void auxadc_battery_int_protection_6332(U32 test_type, U32 test_mode)
         //5. turn on IRQ
         mt6332_upmu_set_auxadc_lbat_irq_en_max(1);
         mt6332_upmu_set_auxadc_lbat_irq_en_min(0);
-    
+
         //6. turn on LowBattery Detection
         mt6332_upmu_set_auxadc_lbat_en_max(1);
         mt6332_upmu_set_auxadc_lbat_en_min(0);
@@ -13620,21 +13740,21 @@ void auxadc_battery_int_protection_6332(U32 test_type, U32 test_mode)
     //7. Monitor Debounce counts
     lbat_debounce_count_max = mt6332_upmu_get_auxadc_lbat_debounce_count_max();
     lbat_debounce_count_min = mt6332_upmu_get_auxadc_lbat_debounce_count_min();
-    
+
     while (!mt6332_upmu_get_auxadc_adc_rdy_lbat()) {
         mdelay(1000);
         timeout_count++;
-        printk("[auxadc_battery_int_protection_6332] wait for lbat ready! timeout_count = (%d)\n", timeout_count);
-        if (timeout_count > 10000) break;    
-    } 
+		battery_log(BAT_LOG_CRTI, "[auxadc_battery_int_protection_6332] wait for lbat ready! timeout_count = (%d)\n", timeout_count);
+        if (timeout_count > 10000) break;
+    }
     adc_out_lbat = mt6332_upmu_get_auxadc_adc_out_lbat();
-    
+
     //9. Test on VBAT = 3.5 -> 3.4 -> 3.3 and receive interrupt  -- LBAT_TEST
     //9. Test on VBAT = 4.0 -> 4.2 -> 4.3 and receive interrupt  -- HBAT_TEST
-    printk("[auxadc_battery_int_protection_6332] setting .. done (adc_out_lbat=%d, lbat_debounce_count_max=%d, lbat_debounce_count_min=%d) \n", 
+	battery_log(BAT_LOG_CRTI, "[auxadc_battery_int_protection_6332] setting .. done (adc_out_lbat=%d, lbat_debounce_count_max=%d, lbat_debounce_count_min=%d)\n",
         adc_out_lbat, lbat_debounce_count_max, lbat_debounce_count_min);
     if (test_mode == SLEEP_MODE) {
-        printk("[auxadc_battery_int_protection_6332] sleep mode\n");
+		battery_log(BAT_LOG_CRTI, "[auxadc_battery_int_protection_6332] sleep mode\n");
         //0.0 wakeup start setting for sleep mode
         mt6332_upmu_set_strup_auxadc_start_sel(0);
         mt6332_upmu_set_strup_auxadc_rstb_sw(1);
@@ -13655,47 +13775,47 @@ void mt6332_bat_int_close(void)
         mt6332_upmu_set_auxadc_lbat_en_min(0);
         mt6332_upmu_set_rg_int_en_bat_l(0);
         mt6332_upmu_set_rg_int_en_bat_h(0);
-            
-    printk("[mt6332_bat_int_close] done\n");
+
+	battery_log(BAT_LOG_CRTI, "[mt6332_bat_int_close] done\n");
 }
 
 //2.1.1 test low battery voltage interrupt
-void auxadc_low_battery_int_test_6331(void) 
+void auxadc_low_battery_int_test_6331(void)
 {
     auxadc_battery_int_protection_6331(LBAT_TEST, WAKEUP_MODE);
 }
 //2.1.2 : Test high battery voltage interrupt [DVT]
-void auxadc_high_battery_int_test_6331(void) 
+void auxadc_high_battery_int_test_6331(void)
 {
     auxadc_battery_int_protection_6331(HBAT_TEST, WAKEUP_MODE);
 }
 //2.1.3 : test low battery voltage interrupt  in sleep mode [DVT]
-void auxadc_low_battery_int2_test_6331(void) 
+void auxadc_low_battery_int2_test_6331(void)
 {
     auxadc_battery_int_protection_6331(LBAT_TEST, SLEEP_MODE);
 }
 //2.1.4 : test hig battery voltage interrupt  in sleep mode [DVT]
-void auxadc_high_battery_int2_test_6331(void) 
+void auxadc_high_battery_int2_test_6331(void)
 {
     auxadc_battery_int_protection_6331(HBAT_TEST, SLEEP_MODE);
 }
 //2.1.1 test low battery voltage interrupt
-void auxadc_low_battery_int_test_6332(void) 
+void auxadc_low_battery_int_test_6332(void)
 {
     auxadc_battery_int_protection_6332(LBAT_TEST, WAKEUP_MODE);
 }
 //2.1.2 : Test high battery voltage interrupt [DVT]
-void auxadc_high_battery_int_test_6332(void) 
+void auxadc_high_battery_int_test_6332(void)
 {
     auxadc_battery_int_protection_6332(HBAT_TEST, WAKEUP_MODE);
 }
 //2.1.3 : test low battery voltage interrupt  in sleep mode [DVT]
-void auxadc_low_battery_int2_test_6332(void) 
+void auxadc_low_battery_int2_test_6332(void)
 {
     auxadc_battery_int_protection_6332(LBAT_TEST, SLEEP_MODE);
 }
 //2.1.4 : test hig battery voltage interrupt  in sleep mode [DVT]
-void auxadc_high_battery_int2_test_6332(void) 
+void auxadc_high_battery_int2_test_6332(void)
 {
     auxadc_battery_int_protection_6332(HBAT_TEST, SLEEP_MODE);
 }
@@ -13708,7 +13828,7 @@ void auxadc_high_battery_int2_test_6332(void)
 kal_uint32 THR_VOLT_MAX=0x0340; // wait SA provide, 50
 kal_uint32 THR_VOLT_MIN=0x03c0; // wait SA provide, -10
 
-kal_uint32 THR_DET_PRD_19_16=0x0; 
+kal_uint32 THR_DET_PRD_19_16=0x0;
 kal_uint32 THR_DET_PRD_15_0=0x2710; // 10s
 
 
@@ -13721,7 +13841,7 @@ extern kal_uint32 mt6332_thr_l_int_handler(void);
 extern kal_uint32 mt6332_thr_h_int_handler(void);
 void auxadc_thermal_int_protection_6331(U32 test_type, U32 test_mode)
 {
-    
+
     U32 thr_debounce_count_max=0;
     U32 thr_debounce_count_min=0;
     U32 timeout_count = 0;
@@ -13741,12 +13861,12 @@ void auxadc_thermal_int_protection_6331(U32 test_type, U32 test_mode)
     //4. setup max./min. debounce time.
     mt6331_upmu_set_auxadc_thr_debt_max(THR_DEBT_MAX);
     mt6331_upmu_set_auxadc_thr_debt_min(THR_DEBT_MIN);
-    
+
     if (test_type == LTHR_TEST) {
         //5. turn on IRQ
         mt6331_upmu_set_auxadc_thr_irq_en_max(0);
         mt6331_upmu_set_auxadc_thr_irq_en_min(1);
-    
+
         //6. turn on LowThermal Detection
         mt6331_upmu_set_auxadc_thr_en_max(0);
         mt6331_upmu_set_auxadc_thr_en_min(1);
@@ -13754,7 +13874,7 @@ void auxadc_thermal_int_protection_6331(U32 test_type, U32 test_mode)
         //5. turn on IRQ
         mt6331_upmu_set_auxadc_thr_irq_en_max(1);
         mt6331_upmu_set_auxadc_thr_irq_en_min(0);
-    
+
         //6. turn on HighThermal Detection
         mt6331_upmu_set_auxadc_thr_en_max(1);
         mt6331_upmu_set_auxadc_thr_en_min(0);
@@ -13762,31 +13882,31 @@ void auxadc_thermal_int_protection_6331(U32 test_type, U32 test_mode)
     //7. Monitor Debounce counts
     thr_debounce_count_max = mt6331_upmu_get_auxadc_thr_debounce_count_max();
     thr_debounce_count_min = mt6331_upmu_get_auxadc_thr_debounce_count_min();
-    
+
     while (!mt6331_upmu_get_auxadc_adc_rdy_thr_hw()) {
         timeout_count++;
-        printk("[auxadc_thermal_int_protection_6331] wait for lbat ready! timeout_count = (%d)\n", timeout_count);
-        if (timeout_count > 10000) break;    
-    } 
+		battery_log(BAT_LOG_CRTI, "[auxadc_thermal_int_protection_6331] wait for lbat ready! timeout_count = (%d)\n", timeout_count);
+        if (timeout_count > 10000) break;
+    }
     adc_out_thr = mt6331_upmu_get_auxadc_adc_out_thr_hw();
-    
+
     //9. Test on VBAT = 3.5 -> 3.4 -> 3.3 and receive interrupt  -- LBAT_TEST
     //9. Test on VBAT = 4.0 -> 4.2 -> 4.3 and receive interrupt  -- HBAT_TEST
-    printk("[auxadc_thermal_int_protection_6331] done (adc_out_thr=%d, thr_debounce_count_max=%d, thr_debounce_count_min=%d) \n", 
+	battery_log(BAT_LOG_CRTI, "[auxadc_thermal_int_protection_6331] done (adc_out_thr=%d, thr_debounce_count_max=%d, thr_debounce_count_min=%d)\n",
         adc_out_thr, thr_debounce_count_max, thr_debounce_count_min);
-        
+
         if (test_mode == SLEEP_MODE) {
-        printk("[auxadc_thermal_int_protection_6331] sleep mode\n");
+		battery_log(BAT_LOG_CRTI, "[auxadc_thermal_int_protection_6331] sleep mode\n");
         //0.0 wakeup start setting for sleep mode
         mt6331_upmu_set_strup_auxadc_start_sel(0);
         mt6331_upmu_set_strup_auxadc_rstb_sw(1);
         mt6331_upmu_set_strup_auxadc_rstb_sel(1);
-        //0.1 vref18 turned off setting for sleep mode    
-        
+        //0.1 vref18 turned off setting for sleep mode
+
         //0:sleep mode
         //1:normal mode
         set_srclken_sw_mode();
-        set_srclken_1_val(0);    
+        set_srclken_1_val(0);
     }
 }
 
@@ -13797,13 +13917,13 @@ void mt6331_thr_int_close(void){
             mt6331_upmu_set_auxadc_thr_en_min(0);
             mt6331_upmu_set_rg_int_en_thr_l(0);
             mt6331_upmu_set_rg_int_en_thr_h(0);
-            
-            printk("[mt6331_thr_int_close] done\n");
+
+			battery_log(BAT_LOG_CRTI, "[mt6331_thr_int_close] done\n");
 }
 
 void auxadc_thermal_int_protection_6332(U32 test_type, U32 test_mode)
 {
-    
+
     U32 thr_debounce_count_max=0;
     U32 thr_debounce_count_min=0;
     U32 timeout_count = 0;
@@ -13822,12 +13942,12 @@ void auxadc_thermal_int_protection_6332(U32 test_type, U32 test_mode)
     //4. setup max./min. debounce time.
     mt6332_upmu_set_auxadc_thr_debt_max(THR_DEBT_MAX);
     mt6332_upmu_set_auxadc_thr_debt_min(THR_DEBT_MIN);
-    
+
     if (test_type == LTHR_TEST) {
         //5. turn on IRQ
         mt6332_upmu_set_auxadc_thr_irq_en_max(0);
         mt6332_upmu_set_auxadc_thr_irq_en_min(1);
-    
+
         //6. turn on LowThermal Detection
         mt6332_upmu_set_auxadc_thr_en_max(0);
         mt6332_upmu_set_auxadc_thr_en_min(1);
@@ -13835,7 +13955,7 @@ void auxadc_thermal_int_protection_6332(U32 test_type, U32 test_mode)
         //5. turn on IRQ
         mt6332_upmu_set_auxadc_thr_irq_en_max(1);
         mt6332_upmu_set_auxadc_thr_irq_en_min(0);
-    
+
         //6. turn on HighThermal Detection
         mt6332_upmu_set_auxadc_thr_en_max(1);
         mt6332_upmu_set_auxadc_thr_en_min(0);
@@ -13843,21 +13963,21 @@ void auxadc_thermal_int_protection_6332(U32 test_type, U32 test_mode)
     //7. Monitor Debounce counts
     thr_debounce_count_max = mt6332_upmu_get_auxadc_thr_debounce_count_max();
     thr_debounce_count_min = mt6332_upmu_get_auxadc_thr_debounce_count_min();
-    
+
     while (!mt6332_upmu_get_auxadc_adc_rdy_thr_hw()) {
         timeout_count++;
-        printk("[auxadc_thermal_int_protection_6332] wait for lbat ready! timeout_count = (%d)\n", timeout_count);
-        if (timeout_count > 10000) break;    
-    } 
+		battery_log(BAT_LOG_CRTI, "[auxadc_thermal_int_protection_6332] wait for lbat ready! timeout_count = (%d)\n", timeout_count);
+        if (timeout_count > 10000) break;
+    }
     adc_out_thr = mt6332_upmu_get_auxadc_adc_out_thr_hw();
-    
+
     //9. Test on VBAT = 3.5 -> 3.4 -> 3.3 and receive interrupt  -- LTHR_TEST
     //9. Test on VBAT = 4.0 -> 4.2 -> 4.3 and receive interrupt  -- HTHR_TEST
-    printk("[auxadc_thermal_int_protection_6332] done (adc_out_thr=%d, thr_debounce_count_max=%d, thr_debounce_count_min=%d) \n", 
+	battery_log(BAT_LOG_CRTI, "[auxadc_thermal_int_protection_6332] done (adc_out_thr=%d, thr_debounce_count_max=%d, thr_debounce_count_min=%d)\n",
         adc_out_thr, thr_debounce_count_max, thr_debounce_count_min);
-        
+
     if (test_mode == SLEEP_MODE) {
-        printk("[auxadc_thermal_int_protection_6332] sleep mode\n");
+		battery_log(BAT_LOG_CRTI, "[auxadc_thermal_int_protection_6332] sleep mode\n");
         //0.0 wakeup start setting for sleep mode
         mt6332_upmu_set_strup_auxadc_start_sel(0);
         mt6332_upmu_set_strup_auxadc_rstb_sw(1);
@@ -13867,7 +13987,7 @@ void auxadc_thermal_int_protection_6332(U32 test_type, U32 test_mode)
             //1:normal mode
         set_srclken_sw_mode();
         set_srclken_1_val(0);
-        //0.1 vref18 turned off setting for sleep mode        
+        //0.1 vref18 turned off setting for sleep mode
     }
 }
 
@@ -13879,47 +13999,47 @@ void mt6332_thr_int_close(void)
             mt6332_upmu_set_auxadc_thr_en_min(0);
             mt6332_upmu_set_rg_int_en_thr_l(0);
             mt6332_upmu_set_rg_int_en_thr_h(0);
-            
-            printk("[mt6332_thr_int_close] done\n");
+
+			battery_log(BAT_LOG_CRTI, "[mt6332_thr_int_close] done\n");
 }
 
 //2.1.1 test low thermal voltage interrupt
-void auxadc_low_thermal_int_test_6331(void) 
+void auxadc_low_thermal_int_test_6331(void)
 {
     auxadc_thermal_int_protection_6331(LTHR_TEST, WAKEUP_MODE);
 }
 //2.1.2 : Test high thermal voltage interrupt [DVT]
-void auxadc_high_thermal_int_test_6331(void) 
+void auxadc_high_thermal_int_test_6331(void)
 {
     auxadc_thermal_int_protection_6331(HTHR_TEST, WAKEUP_MODE);
 }
 //2.1.3 : test low thermal voltage interrupt  in sleep mode [DVT]
-void auxadc_low_thermal_int2_test_6331(void) 
+void auxadc_low_thermal_int2_test_6331(void)
 {
     auxadc_thermal_int_protection_6331(LTHR_TEST, SLEEP_MODE);
 }
 //2.1.4 : test hig thermal voltage interrupt  in sleep mode [DVT]
-void auxadc_high_thermal_int2_test_6331(void) 
+void auxadc_high_thermal_int2_test_6331(void)
 {
     auxadc_thermal_int_protection_6331(HTHR_TEST, SLEEP_MODE);
 }
 //2.1.1 test low thermal voltage interrupt
-void auxadc_low_thermal_int_test_6332(void) 
+void auxadc_low_thermal_int_test_6332(void)
 {
     auxadc_thermal_int_protection_6332(LTHR_TEST, WAKEUP_MODE);
 }
 //2.1.2 : Test high thermal voltage interrupt [DVT]
-void auxadc_high_thermal_int_test_6332(void) 
+void auxadc_high_thermal_int_test_6332(void)
 {
     auxadc_thermal_int_protection_6332(HTHR_TEST, WAKEUP_MODE);
 }
 //2.1.3 : test low thermal voltage interrupt  in sleep mode [DVT]
-void auxadc_low_thermal_int2_test_6332(void) 
+void auxadc_low_thermal_int2_test_6332(void)
 {
     auxadc_thermal_int_protection_6332(LTHR_TEST, SLEEP_MODE);
 }
 //2.1.4 : test hig thermal voltage interrupt  in sleep mode [DVT]
-void auxadc_high_thermal_int2_test_6332(void) 
+void auxadc_high_thermal_int2_test_6332(void)
 {
     auxadc_thermal_int_protection_6332(HTHR_TEST, SLEEP_MODE);
 }
@@ -13933,9 +14053,9 @@ void auxadc_battery_wakeup_measure_6331(U32 test_mode)
 {
     U32 count = 0;
     U32 wakeup_volt = 0;
-    
+
     if (test_mode == WAKE_UP_MODE) {
-        printk("[auxadc_battery_wakeup_measure_test_6331] WAKEUP mode setting\n");
+		battery_log(BAT_LOG_CRTI, "[auxadc_battery_wakeup_measure_test_6331] WAKEUP mode setting\n");
         //0.0 wakeup start setting for sleep mode
         mt6331_upmu_set_strup_auxadc_start_sel(0);
         mt6331_upmu_set_strup_auxadc_rstb_sw(1);
@@ -13946,21 +14066,21 @@ void auxadc_battery_wakeup_measure_6331(U32 test_mode)
         set_srclken_1_val(0);
         set_srclken_1_val(1);
     }
-    
+
     while (!mt6331_upmu_get_auxadc_adc_rdy_wakeup()){
         count++;
         if (count> 100) {
-            printk("[auxadc_battery_wakeup_measure_test_6331] WHILE LOOP TIMEOUT!!\n");
+			battery_log(BAT_LOG_CRTI, "[auxadc_battery_wakeup_measure_test_6331] WHILE LOOP TIMEOUT!!\n");
             break;
         }
     }
-    
+
     if (mt6331_upmu_get_auxadc_adc_rdy_wakeup()){
         wakeup_volt = mt6331_upmu_get_auxadc_adc_out_wakeup();
-        printk("[auxadc_battery_wakeup_measure_test_6331] wakeup_volt = %d\n", wakeup_volt);    
+		battery_log(BAT_LOG_CRTI, "[auxadc_battery_wakeup_measure_test_6331] wakeup_volt = %d\n", wakeup_volt);
     }
-    
-    auxadc_priority_test_6331();    
+
+    auxadc_priority_test_6331();
 }
 
 void auxadc_measure_poweron_test_6331(void)
@@ -13977,9 +14097,9 @@ void auxadc_battery_wakeup_measure_6332(U32 test_mode)
 {
     U32 count = 0;
     U32 wakeup_volt = 0;
-    
+
     if (test_mode == WAKE_UP_MODE) {
-        printk("[auxadc_battery_wakeup_measure_test_6332] WAKEUP mode setting\n");
+		battery_log(BAT_LOG_CRTI, "[auxadc_battery_wakeup_measure_test_6332] WAKEUP mode setting\n");
         //0.0 wakeup start setting for sleep mode
         mt6332_upmu_set_strup_auxadc_start_sel(0);
         mt6332_upmu_set_strup_auxadc_rstb_sw(1);
@@ -13990,21 +14110,21 @@ void auxadc_battery_wakeup_measure_6332(U32 test_mode)
         set_srclken_1_val(0);
         set_srclken_1_val(1);
     }
-    
+
     while (!mt6332_upmu_get_auxadc_adc_rdy_wakeup()){
         count++;
         if (count> 100) {
-            printk("[auxadc_battery_wakeup_measure_test_6332] WHILE LOOP TIMEOUT!!\n");
+			battery_log(BAT_LOG_CRTI, "[auxadc_battery_wakeup_measure_test_6332] WHILE LOOP TIMEOUT!!\n");
             break;
         }
     }
-    
+
     if (mt6332_upmu_get_auxadc_adc_rdy_wakeup()){
         wakeup_volt = mt6332_upmu_get_auxadc_adc_out_wakeup();
-        printk("[auxadc_battery_wakeup_measure_test_6332] wakeup_volt = %d\n", wakeup_volt);    
+		battery_log(BAT_LOG_CRTI, "[auxadc_battery_wakeup_measure_test_6332] wakeup_volt = %d\n", wakeup_volt);
     }
-    
-    auxadc_priority_test_6332();    
+
+    auxadc_priority_test_6332();
 }
 
 void auxadc_measure_poweron_test_6332(void)
@@ -14027,21 +14147,21 @@ void auxadc_swctrl_measure_test_6331(void)
     int channel_num[MAX_CHANNEL_NUM];
         upmu_adc_chip_list_enum chip_num[MAX_CHANNEL_NUM];
         //upmu_adc_user_list_enum user_num[MAX_CHANNEL_NUM];
-            
+
     mt6331_upmu_set_auxadc_swctrl_en(1);
-    
+
     for (i=0; i< MAX_CHANNEL_NUM; i++) {
         channel_num[i] = PMIC_IMM_GetChannelNumber( eChannelEnumList[i] );
         chip_num[i] = PMIC_IMM_GetChipNumber( eChannelEnumList[i] );
         //user_num[i] = PMIC_IMM_GetUserNumber(eChannelEnumList[i]);
-        
-        printk("[auxadc_swctrl_measure_test_6331] adc info: channel_num= %d, chip_num = %d\n", channel_num[i], chip_num[i]);
+
+		battery_log(BAT_LOG_CRTI, "[auxadc_swctrl_measure_test_6331] adc info: channel_num= %d, chip_num = %d\n", channel_num[i], chip_num[i]);
         if (chip_num[i] == MT6331_CHIP) {
             mt6331_upmu_set_auxadc_chsel(channel_num[i]);
-            
-            adc_output = PMIC_IMM_GetOneChannelValue(eChannelEnumList[i], 1, 0);    
-            
-            printk("[auxadc_swctrl_measure_test_6331] adc_result = %d\n", adc_output);
+
+            adc_output = PMIC_IMM_GetOneChannelValue(eChannelEnumList[i], 1, 0);
+
+			battery_log(BAT_LOG_CRTI, "[auxadc_swctrl_measure_test_6331] adc_result = %d\n", adc_output);
         }
     }
 }
@@ -14053,24 +14173,24 @@ void auxadc_swctrl_measure_test_6332(void)
     int channel_num[MAX_CHANNEL_NUM];
         upmu_adc_chip_list_enum chip_num[MAX_CHANNEL_NUM];
         //upmu_adc_user_list_enum user_num[MAX_CHANNEL_NUM];
-            
+
     mt6332_upmu_set_auxadc_swctrl_en(1);
-    
+
     for (i=0; i< MAX_CHANNEL_NUM; i++) {
         channel_num[i] = PMIC_IMM_GetChannelNumber(eChannelEnumList[i]);
         chip_num[i] = PMIC_IMM_GetChipNumber(eChannelEnumList[i]);
         //user_num[i] = PMIC_IMM_GetUserNumber(eChannelEnumList[i]);
-        printk("[auxadc_swctrl_measure_test_6332] adc info: channel_num= %d, chip_num = %d\n", channel_num[i], chip_num[i]);
+		battery_log(BAT_LOG_CRTI, "[auxadc_swctrl_measure_test_6332] adc info: channel_num= %d, chip_num = %d\n", channel_num[i], chip_num[i]);
         if (chip_num[i] == MT6332_CHIP || chip_num[i] == 2) {
             if (channel_num[i]== 5)
                 mt6332_upmu_set_rg_adcin_chrin_en(1);
             else if (channel_num[i] == 3)
                 mt6332_upmu_set_auxadc_adcin_baton_tdet_en(1);
             mt6332_upmu_set_auxadc_chsel(channel_num[i]);
-            
-            adc_output = PMIC_IMM_GetOneChannelValue(eChannelEnumList[i], 1, 0);    
-            
-            printk("[auxadc_swctrl_measure_test_6332] adc_result = %d\n", adc_output);
+
+            adc_output = PMIC_IMM_GetOneChannelValue(eChannelEnumList[i], 1, 0);
+
+			battery_log(BAT_LOG_CRTI, "[auxadc_swctrl_measure_test_6332] adc_result = %d\n", adc_output);
         }
     }
 }
@@ -14079,14 +14199,14 @@ void auxadc_swctrl_measure_test_6332(void)
 void auxadc_accdet_auto_sampling_test(void)
 {
     mt6331_upmu_set_auxadc_accdet_auto_spl(1);
-    PMIC_IMM_GetOneChannelValue(ADC_VACCDET_AP, 1, 0);
+    PMIC_IMM_GetOneChannelValue(AUX_VACCDET_AP, 1, 0);
 }
 
 #endif
 
 void pmic_dvt_entry(int test_id)
 {
-    printk("[pmic_dvt_entry] start : test_id=%d\n", test_id);
+	battery_log(BAT_LOG_CRTI, "[pmic_dvt_entry] start : test_id=%d\n", test_id);
 
     switch (test_id)
     {
@@ -14097,7 +14217,7 @@ void pmic_dvt_entry(int test_id)
         case 4: top_6332_read();        break;
         case 5: top_6332_write(0x5a5a); break;
         case 6: top_6332_write(0xa5a5); break;
-        
+
         // BIF
         case 1000: tc_bif_1000(); break;
         case 1001: tc_bif_1001(); break;
@@ -14169,8 +14289,8 @@ void pmic_dvt_entry(int test_id)
         case 2053: PMIC_BUCK_BURST(VRF2_INDEX);    break;
         case 2054: PMIC_BUCK_BURST(VPA_INDEX);     break;
         case 2055: PMIC_BUCK_BURST(VSBST_INDEX);   break;
-        
-        //LDO        
+
+        //LDO
         case 3000: exec_6331_ldo_vtcxo1_en_test();      break;
         case 3001: exec_6331_ldo_vtcxo2_en_test();      break;
         case 3002: exec_6331_ldo_vaud32_en_test();      break;
@@ -14202,7 +14322,7 @@ void pmic_dvt_entry(int test_id)
         case 3028: exec_6332_ldo_vusb33_en_test();      break;
         case 3029: exec_6332_ldo_vdig18_en_test();      break;
         case 3030: exec_6332_ldo_vsram_dvfs2_en_test(); break;
-        
+
         case 3031: exec_6331_ldo_vtcxo1_vosel_test();      break;
         case 3032: exec_6331_ldo_vtcxo2_vosel_test();      break;
         case 3033: exec_6331_ldo_vaud32_vosel_test();      break;
@@ -14306,18 +14426,18 @@ void pmic_dvt_entry(int test_id)
         case 4002: exec_6332_efuse_test(); break;
 
         //Interrupt
-                
+
         //AUXADC
         case 6000: auxadc_request_test();            break;
-    
+
     case 6001: auxadc_trimm_channel_test();            break;
-    
+
     case 6002: auxadc_priority_test_6331();            break;
     case 6003: auxadc_priority_test_6332();            break;
     case 6004: auxadc_priority_test_GPSMD1_6331();        break;
     case 6005: auxadc_priority_test_GPSMD2_6331();        break;
     case 6006: auxadc_priority_test_GPSMD3_6331();        break;
-    
+
     case 6007: auxadc_low_battery_int_test_6331();        break;
     case 6008: auxadc_high_battery_int_test_6331();        break;
     case 6009: auxadc_low_battery_int2_test_6331();        break;
@@ -14326,7 +14446,7 @@ void pmic_dvt_entry(int test_id)
     case 6012: auxadc_high_battery_int_test_6332();        break;
     case 6013: auxadc_low_battery_int2_test_6332();        break;
     case 6014: auxadc_high_battery_int2_test_6332();    break;
-    
+
     case 6015: auxadc_low_thermal_int_test_6331();        break;
     case 6016: auxadc_high_thermal_int_test_6331();        break;
     case 6017: auxadc_low_thermal_int2_test_6331();        break;
@@ -14335,17 +14455,17 @@ void pmic_dvt_entry(int test_id)
     case 6020: auxadc_high_thermal_int_test_6332();        break;
     case 6021: auxadc_low_thermal_int2_test_6332();        break;
     case 6022: auxadc_high_thermal_int2_test_6332();    break;
-    
+
     case 6023: auxadc_measure_poweron_test_6331();        break;
     case 6024: auxadc_measure_wakeup_test_6331();        break;
     case 6025: auxadc_measure_poweron_test_6332();        break;
     case 6026: auxadc_measure_wakeup_test_6332();        break;
-    
+
     case 6027: auxadc_swctrl_measure_test_6331();        break;
     case 6028: auxadc_swctrl_measure_test_6332();        break;
-    
+
     case 6029: auxadc_accdet_auto_sampling_test();        break;
-    
+
     case 6030: auxadc_request_one_channel(0);        break;
     case 6031: auxadc_request_one_channel(1);        break;
     case 6032: auxadc_request_one_channel(2);        break;
@@ -14369,9 +14489,9 @@ void pmic_dvt_entry(int test_id)
     case 6050: auxadc_request_one_channel(20);        break;
     case 6051: auxadc_request_one_channel(21);        break;
         default:
-            printk("[pmic_dvt_entry] test_id=%d\n", test_id);
+			battery_log(BAT_LOG_CRTI, "[pmic_dvt_entry] test_id=%d\n", test_id);
             break;
     }
 
-    printk("[pmic_dvt_entry] end\n");
+	battery_log(BAT_LOG_CRTI, "[pmic_dvt_entry] end\n");
 }

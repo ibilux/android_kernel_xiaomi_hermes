@@ -14,7 +14,7 @@
 #include <asm/delay.h>
 #include <mach/mt_reg_base.h>
 #include <mach/mt_clkmgr.h>
-#include <mach/mt_freqhopping.h>
+#include "mt_freqhopping.h"
 #include <mach/emi_bwl.h>
 #include <mach/mt_typedefs.h>
 #include <mach/memory.h>
@@ -39,6 +39,7 @@ volatile unsigned char *dst_array_v;
 volatile unsigned char *src_array_v;
 volatile unsigned int dst_array_p;
 volatile unsigned int src_array_p;
+char dfs_dummy_buffer[BUFF_LEN] __attribute__ ((aligned (PAGE_SIZE)));
 int init_done = 0;
 int org_dram_data_rate = 0;
 
@@ -628,10 +629,12 @@ static ssize_t complex_mem_test_store(struct device_driver *driver, const char *
 }
 
 #ifdef APDMA_TEST
+//#error "Do not use APDMA_TEST"
 static ssize_t DFS_APDMA_TEST_show(struct device_driver *driver, char *buf)
 {   
     dma_dummy_read_for_vcorefs(7);
-    return snprintf(buf, PAGE_SIZE, "DFS APDMA Dummy Read Address 0x%x\n",(unsigned int)src_array_p);
+    return snprintf(buf, PAGE_SIZE, "DFS APDMA Dummy Read Src Addr = 0x%x, Dest Addr = 0x%p (VA) / 0x%llx (PA), size = %d\n",
+    (unsigned int)src_array_p, (void *)dfs_dummy_buffer, (unsigned long long)dst_array_p, BUFF_LEN);
 }
 static ssize_t DFS_APDMA_TEST_store(struct device_driver *driver, const char *buf, size_t count)
 {
@@ -937,7 +940,11 @@ int DFS_APDMA_early_init(void)
         }   
         
         src_array_p = (volatile unsigned int)(dummy_read_center_address - (BUFF_LEN >> 1));
-        dst_array_p = (volatile unsigned int)(dummy_read_center_address + (BUFF_LEN >> 1)); 
+	dst_array_p = __pa(dfs_dummy_buffer);
+	pr_alert("[DFS]dfs_dummy_buffer va: 0x%p, pa: 0x%llx, size: %d\n",
+		(void *)dfs_dummy_buffer,
+		(unsigned long long)dst_array_p,
+		BUFF_LEN);
         
 #ifdef APDMAREG_DUMP        
         src_array_v = ioremap(rounddown(src_array_p,IOREMAP_ALIGMENT),IOREMAP_ALIGMENT << 1)+IOREMAP_ALIGMENT-(BUFF_LEN >> 1);

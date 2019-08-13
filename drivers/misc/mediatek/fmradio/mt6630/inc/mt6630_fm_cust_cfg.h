@@ -63,17 +63,6 @@ typedef struct{
 #define FM_RX_SMG_TH_MT6630          16421	/* FM soft-mute gain threshold */
 #define FM_RX_DEEMPHASIS_MT6630       0	/* 0-50us, China Mainland; 1-75us China Taiwan */
 #define FM_RX_OSC_FREQ_MT6630         0	/* 0-26MHz; 1-19MHz; 2-24MHz; 3-38.4MHz; 4-40MHz; 5-52MHz */
-/* #define FM_RX_SEEK_SPACE_MT6630      1           //FM radio seek space,1:100KHZ; 2:200KHZ */
-/* #define FM_RX_SCAN_CH_SIZE_MT6630    40          //FM radio scan max channel size */
-/* #define FM_RX_BAND_MT6630            1           //FM radio band, 1:87.5MHz~108.0MHz; 2:76.0MHz~90.0MHz; 3:76.0MHz~108.0MHz; 4:special */
-/* #define FM_RX_SCAN_SORT_SELECT_MT6630 FM_SCAN_SORT_NON */
-/* #define FM_RX_FAKE_CH_NUM_MT6630      1 */
-/* #define FM_RX_FAKE_CH_RSSI_MT6630     40 */
-/* #define FM_RX_FAKE_CH_1_MT6630        1075 */
-/* #define FM_RX_FAKE_CH_2_MT6630        0 */
-/* #define FM_RX_FAKE_CH_3_MT6630        0 */
-/* #define FM_RX_FAKE_CH_4_MT6630        0 */
-/* #define FM_RX_FAKE_CH_5_MT6630        0 */
 
 /* TX */
 /* #define FM_TX_PWR_LEVEL_MAX_MT6630  120 */
@@ -82,7 +71,6 @@ typedef struct{
 #define FM_TX_PAMD_TH_MT6630		-23
 #define FM_TX_MR_TH_MT6630			60
 #define FM_TX_SMG_TH_MT6630			8231
-
 
 /* ***************************************************************************************** */
 /* ***********************************FM config for customer:end ******************************* */
@@ -95,8 +83,9 @@ typedef struct{
 #define FM_AUTO_HILO_OFF_MT6630    0
 #define FM_AUTO_HILO_ON_MT6630     1
 
-
 /* seek threshold */
 #define FM_SEEKTH_LEVEL_DEFAULT_MT6630 4
 
-#endif				/* __MT6630_CUST_CFG_H__ */
+extern fm_cust_cfg mt6630_fm_config;
+
+#endif /* __MT6630_CUST_CFG_H__ */

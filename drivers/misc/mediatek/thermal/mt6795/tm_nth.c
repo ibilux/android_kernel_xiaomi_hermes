@@ -1,7 +1,6 @@
 #include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/kobject.h>
 #include <linux/proc_fs.h>
@@ -19,12 +18,12 @@
 #include <linux/time.h>
 
 #define mtk_cooler_tm_nth_dprintk_always(fmt, args...) \
-  do { xlog_printk(ANDROID_LOG_INFO, "thermal/cooler/tm_nth", fmt, ##args); } while(0)
+  do { pr_notice("thermal/cooler/tm_nth" fmt, ##args); } while(0)
 
 #define mtk_cooler_tm_nth_dprintk(fmt, args...) \
   do { \
     if (1 == cl_tm_nth_klog_on) { \
-      xlog_printk(ANDROID_LOG_INFO, "thermal/cooler/tm_nth", fmt, ##args); \
+      pr_notice("thermal/cooler/tm_nth" fmt, ##args); \
     } \
   } while(0)
 
@@ -197,8 +196,8 @@ static ssize_t _cl_tm_nth_write(struct file *filp, const char __user *buf, size_
 	int tmp_NTHNTHTHRESENTER, tmp_NTHNTHTHRESEXIT, tmp_CPULOADSMASAMPLECNT, tmp_TGTTEMP, tmp_KPINIT, tmp_KIINIT, tmp_KDINIT, tmp_NTHPOLLINGINTERVAL;
 	int tmp_CPU_POWER_LIMIT0, tmp_CPU_POWER_LIMIT1, tmp_CPU_POWER_LIMIT2, tmp_CPU_POWER_LIMIT3, tmp_CPU_POWER_LIMIT4, tmp_CPU_POWER_LIMIT5, tmp_CPU_POWER_LIMIT6;
 
-	len = (len < 511) ? len : 511;
 	/* write data to the buffer */
+	len = (len < 511) ? len : 511;
 	if ( copy_from_user(tmp, buf, len) ) {
 		return -EFAULT;
 	}
@@ -476,10 +475,10 @@ static int tm_nth_get_sys_cpu_usage_info_ex(void)
 		cpu_index_list[nCoreIndex].q[CPU_USAGE_SAVE_FIELD]  = cpu_index_list[nCoreIndex].q[CPU_USAGE_CURRENT_FIELD];
 		cpu_index_list[nCoreIndex].sq[CPU_USAGE_SAVE_FIELD] = cpu_index_list[nCoreIndex].sq[CPU_USAGE_CURRENT_FIELD];
 
-		mtk_cooler_tm_nth_dprintk("CPU%d Frame:%d USAGE:%d\n", nCoreIndex, cpu_index_list[nCoreIndex].tot_frme, cpuloadings[nCoreIndex]);
+		mtk_cooler_tm_nth_dprintk("CPU%d Frame:%lu USAGE:%d\n", nCoreIndex, cpu_index_list[nCoreIndex].tot_frme, cpuloadings[nCoreIndex]);
 
         for (i=0 ; i<3 ; i++) {
-            mtk_cooler_tm_nth_dprintk("Index %d [u:%d] [n:%d] [s:%d] [i:%d] [w:%d] [q:%d] [sq:%d] \n",
+            mtk_cooler_tm_nth_dprintk("Index %d [u:%lu] [n:%lu] [s:%lu] [i:%lu] [w:%lu] [q:%lu] [sq:%lu] \n",
                       i,
                       cpu_index_list[nCoreIndex].u[i],
                       cpu_index_list[nCoreIndex].n[i],

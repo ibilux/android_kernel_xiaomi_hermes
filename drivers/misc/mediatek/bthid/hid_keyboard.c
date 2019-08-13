@@ -10,7 +10,7 @@
 #include <linux/platform_device.h>
 #include <linux/earlysuspend.h>
 #include <linux/slab.h>
-#include <linux/xlog.h>
+//#include <linux/xlog.h>
 
 #include <linux/device.h>
 #include <linux/errno.h>
@@ -329,7 +329,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 	unsigned char keycode;
 	int err,i;
 	unsigned long vid_pid = 0;
-	xlog_printk(ANDROID_LOG_INFO,HID_SAY,"hid_kbd_dev_ioctl,cmd=%d\n",cmd);			
+			
 	switch(cmd)
 	{
 		case HID_KEYBOARD:
@@ -339,14 +339,14 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 			hid_input_dev->keycodemax = ARRAY_SIZE(hid_keycode);
 			hid_input_dev->id.vendor = ((vid_pid & 0xFFFF0000) >> 16);
 			hid_input_dev->id.product = (vid_pid & 0x0000FFFF);
-			xlog_printk(ANDROID_LOG_ERROR,HID_SAY,"vendor: %04x, product: %04x\n",
+
 				hid_input_dev->id.vendor, hid_input_dev->id.product);
 			for (i = 0; i < ARRAY_SIZE(hidkbd->keymap); i++)
 				__set_bit(hidkbd->keymap[i], hid_input_dev->keybit);
 			err = input_register_device(hid_input_dev);
 			if (err) 
 			{
-				xlog_printk(ANDROID_LOG_ERROR,HID_SAY,"register input device failed (%d)\n", err);
+
 				input_free_device(hid_input_dev);
 				return err;
 			}
@@ -361,7 +361,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 			err = input_register_device(hid_input_dev);
 			if (err) 
 			{
-				xlog_printk(ANDROID_LOG_ERROR,HID_SAY,"register input device failed (%d)\n", err);
+
 				input_free_device(hid_input_dev);
 				return err;
 			}
@@ -376,7 +376,6 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 			err = input_register_device(hid_input_dev);
 			if (err) 
 			{
-				xlog_printk(ANDROID_LOG_ERROR,HID_SAY,"register input device failed (%d)\n", err);
 				input_free_device(hid_input_dev);
 				return err;
 			}
@@ -387,7 +386,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&keycode, uarg, sizeof(keycode)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid keycode  %d press\n",keycode);
+
 			input_report_key(hid_input_dev,hid_keycode[keycode], 1);
 			input_sync(hid_input_dev);
 			break;
@@ -396,7 +395,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&keycode, uarg, sizeof(keycode)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid keycode %d release\n",keycode);
+
 			input_report_key(hid_input_dev,hid_keycode[keycode], 0);
 			input_sync(hid_input_dev);
 			break;
@@ -405,7 +404,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&XValue, uarg, sizeof(XValue)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid pointer X %d \n",XValue);
+
 			/*
 			input_report_rel(hid_input_dev, REL_X, value);
 			input_sync(hid_input_dev);
@@ -416,7 +415,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&YValue, uarg, sizeof(YValue)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid pointer Y %d \n",YValue);
+
 			input_report_rel(hid_input_dev, REL_X, XValue);
 			input_report_rel(hid_input_dev, REL_Y, YValue);
 			input_sync(hid_input_dev);
@@ -428,7 +427,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&value, uarg, sizeof(value)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid wheel %d \n",value);
+
 			input_report_rel(hid_input_dev, REL_WHEEL, value);
 			input_sync(hid_input_dev);
 			break;
@@ -437,7 +436,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&value, uarg, sizeof(value)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid HID_ABS_X %d \n",value);
+
 			input_report_abs(hid_input_dev, ABS_X, value);
 			input_sync(hid_input_dev);
 			break;
@@ -446,7 +445,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&value, uarg, sizeof(value)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid HID_ABS_Y %d \n",value);
+
 			input_report_abs(hid_input_dev, ABS_Y, value);
 			input_sync(hid_input_dev);
 			break;
@@ -455,7 +454,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&value, uarg, sizeof(value)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid HID_ABS_Z %d \n",value);
+
 			input_report_abs(hid_input_dev, ABS_Z, value);
 			input_sync(hid_input_dev);
 			break;
@@ -464,7 +463,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&value, uarg, sizeof(value)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid HID_ABS_RX %d \n",value);
+
 			input_report_abs(hid_input_dev, ABS_RX, value);
 			input_sync(hid_input_dev);
 			break;
@@ -473,7 +472,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&value, uarg, sizeof(value)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid HID_ABS_RY %d \n",value);
+
 			input_report_abs(hid_input_dev, ABS_RY, value);
 			input_sync(hid_input_dev);
 			break;
@@ -482,7 +481,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&value, uarg, sizeof(value)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid HID_ABS_RZ %d \n",value);
+
 			input_report_abs(hid_input_dev, ABS_RZ, value);
 			input_sync(hid_input_dev);
 			break;
@@ -491,7 +490,7 @@ static long hid_kbd_dev_ioctl(struct file *file, unsigned int cmd, unsigned long
 		{
 			if (copy_from_user(&value, uarg, sizeof(value)))
 				return -EFAULT;
-			xlog_printk(ANDROID_LOG_DEBUG,HID_SAY,"hid HID_ABS_HAT %d (%d,%d)\n",value,hid_hat_to_axis[value].x,hid_hat_to_axis[value].y);
+
 			input_report_abs(hid_input_dev, ABS_HAT0X, hid_hat_to_axis[value].x);
 			input_report_abs(hid_input_dev, ABS_HAT0Y, hid_hat_to_axis[value].y);
 			input_sync(hid_input_dev);
@@ -507,7 +506,6 @@ static int hid_kbd_dev_open(struct inode *inode, struct file *file)
 {
 
 	int i;
-	xlog_printk(ANDROID_LOG_INFO,HID_SAY,"*** hidkeyboard hid_kbd_dev_open ***\n");
 
 	hidkbd = kzalloc(sizeof(struct hidkeyboard), GFP_KERNEL);
     	hid_input_dev = input_allocate_device();
@@ -545,7 +543,6 @@ static int hid_kbd_dev_open(struct inode *inode, struct file *file)
 	input_set_capability(hid_input_dev, EV_MSC, MSC_SCAN);
 	err = input_register_device(hid_input_dev);
     	if (err) {
-		xlog_printk(ANDROID_LOG_ERROR,HID_SAY,"register input device failed (%d)\n", err);
 		input_free_device(hid_input_dev);
 		return err;
 	}
@@ -561,7 +558,6 @@ fail:
 
 static int hid_kbd_dev_release(struct inode *inode, struct file *file)
 {
-	xlog_printk(ANDROID_LOG_INFO,HID_SAY,"*** hidkeyboard hid_kbd_dev_release ***\n");
 	if(registered == 1)
 	{
 		input_unregister_device(hid_input_dev);
@@ -589,8 +585,6 @@ static int hid_keyboard_probe(struct platform_device *pdev)
 {
 
     int i,err;
-    
-    xlog_printk(ANDROID_LOG_INFO,HID_SAY,"*** hidkeyboard probe ***\n");
 
     hidkbd = kzalloc(sizeof(struct hidkeyboard), GFP_KERNEL);
     hid_input_dev = input_allocate_device();
@@ -618,14 +612,12 @@ static int hid_keyboard_probe(struct platform_device *pdev)
 /*
     err = input_register_device(hid_input_dev);
     	if (err) {
-		xlog_printk(ANDROID_LOG_ERROR,HID_SAY,"register input device failed (%d)\n", err);
 		input_free_device(hid_input_dev);
 		return err;
 	}*/
 	hid_kbd_dev.parent = &pdev->dev;
 	err = misc_register(&hid_kbd_dev);
 	if (err) {
-		xlog_printk(ANDROID_LOG_ERROR,HID_SAY,"register device failed (%d)\n", err);
 		//input_unregister_device(hid_input_dev);
 		return err;
 	}
@@ -649,7 +641,6 @@ static struct platform_driver hid_keyboard_driver = {
 
 static int hid_keyboard_init(void)
 {
-	xlog_printk(ANDROID_LOG_INFO,HID_SAY,"hid_keyboard_init OK\n");
 
     return platform_driver_register(&hid_keyboard_driver);
 }

@@ -12,27 +12,27 @@
 #if defined(ENABLE_VFIFO_DEBUG)
 /*---------------------------------------------------------------------------*/
 #define DGBUF_INIT(v)  \
-    do { \
+do { \
 	if (UART_DEBUG_EVT(DBG_EVT_BUF)) { \
-	    v->dbgidx = (v->dbgidx+1)%(ARRAY_SIZE(v->dbg)); \
-	    v->cur = &v->dbg[v->dbgidx];                    \
-	    v->cur->idx = 0;                                \
+		v->dbgidx = (v->dbgidx+1)%(ARRAY_SIZE(v->dbg)); \
+		v->cur = &v->dbg[v->dbgidx];                    \
+		v->cur->idx = 0;                                \
 	} \
-    } while (0)
+} while (0)
 /*---------------------------------------------------------------------------*/
 #define DGBUF_PUSH_CH(v, c)    \
-    do { \
+do { \
 	if (UART_DEBUG_EVT(DBG_EVT_BUF)) \
-	    v->cur->dat[v->cur->idx++] = (char)(c); \
-    } while (0)
+		v->cur->dat[v->cur->idx++] = (char)(c); \
+} while (0)
 /*---------------------------------------------------------------------------*/
 #define DGBUF_PUSH_STR(v, s, l) \
-    do { \
+do { \
 	if (UART_DEBUG_EVT(DBG_EVT_BUF)) {\
-	    memcpy(&v->cur->dat[v->cur->idx], (s), (l)); \
-	    v->cur->idx += (l);                          \
+		memcpy(&v->cur->dat[v->cur->idx], (s), (l)); \
+		v->cur->idx += (l);                          \
 	} \
-    } while (0)
+} while (0)
 #else
 /*---------------------------------------------------------------------------*/
 #define DGBUF_INIT(v)
@@ -84,6 +84,11 @@ struct mtk_uart_setting {
 
 	unsigned long irq_flags;
 #endif
+
+#if !defined(CONFIG_MTK_LEGACY)
+	struct clk *clk_uart_main;
+#endif /* !defined(CONFIG_MTK_LEGACY) */
+
 	u8 irq_num;
 	u8 irq_sen;
 	u8 set_bit;		/*APMCU_CG_SET0 */
@@ -197,11 +202,11 @@ struct mtk_uart {
 
 	struct mtk_uart_setting *setting;
 
-	unsigned int (*write_allow) (struct mtk_uart *uart);
-	unsigned int (*read_allow) (struct mtk_uart *uart);
-	void (*write_byte) (struct mtk_uart *uart, unsigned int byte);
-	unsigned int (*read_byte) (struct mtk_uart *uart);
-	unsigned int (*read_status) (struct mtk_uart *uart);
+	unsigned int (*write_allow)(struct mtk_uart *uart);
+	unsigned int (*read_allow)(struct mtk_uart *uart);
+	void (*write_byte)(struct mtk_uart *uart, unsigned int byte);
+	unsigned int (*read_byte)(struct mtk_uart *uart);
+	unsigned int (*read_status)(struct mtk_uart *uart);
 };
 /*---------------------------------------------------------------------------*/
 /* fiq debugger */
@@ -214,18 +219,23 @@ struct fiq_dbg_event {
 /* #define UART_READ8(REG)             __raw_readb(REG) */
 /* #define UART_READ16(REG)            __raw_readw(REG) */
 /* #define UART_READ32(REG)            __raw_readl(REG) */
-#define UART_READ8(REG)             (*(volatile unsigned char*)(REG))
-#define UART_READ16(REG)            (*(volatile unsigned short*)(REG))
-#define UART_READ32(REG)            (*(volatile unsigned int*)(REG))
+#define UART_READ8(REG)             (*(volatile unsigned char *)(REG))
+#define UART_READ16(REG)            (*(volatile unsigned short *)(REG))
+#define UART_READ32(REG)            (*(volatile unsigned int *)(REG))
 #define reg_sync_writeb(v, a)			mt_reg_sync_writeb(v, a)
 #define reg_sync_writel(v, a)			mt_reg_sync_writel(v, a)
 /*---------------------------------------------------------------------------*/
-#define UART_SET_BITS(BS, REG)       ((*(volatile u32*)(REG)) |= (u32)(BS))
-#define UART_CLR_BITS(BS, REG)       ((*(volatile u32*)(REG)) &= ~((u32)(BS)))
+#define UART_SET_BITS(BS, REG)       ((*(volatile u32 *)(REG)) |= (u32)(BS))
+#define UART_CLR_BITS(BS, REG)       ((*(volatile u32 *)(REG)) &= ~((u32)(BS)))
 /*---------------------------------------------------------------------------*/
 extern spinlock_t mtk_console_lock;
 extern struct mtk_uart *console_port;
 unsigned int mtk_uart_pdn_enable(char *port, int enable);
+extern void update_history_byte(char is_tx, int nport, unsigned char byte);
+extern void update_history_time(char is_tx, int nport);
+extern void update_history_bulk(char is_tx, int nport, unsigned char *chars, int count);
 
+#ifdef CONFIG_FIQ_DEBUGGER
 extern struct resource fiq_resource[];
+#endif /* CONFIG_FIQ_DEBUGGER */
 #endif				/* MTK_UART_H */

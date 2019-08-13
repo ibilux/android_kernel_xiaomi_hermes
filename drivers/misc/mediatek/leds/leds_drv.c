@@ -92,6 +92,7 @@ static int mt65xx_led_set_cust(struct cust_mt65xx_led *cust, int level);
 static unsigned int limit = 255;
 static unsigned int limit_flag;
 static unsigned int last_level;
+static unsigned int last_level_bar;
 static unsigned int current_level;
 static DEFINE_MUTEX(bl_level_limit_mutex);
 extern int disp_bls_set_max_backlight(unsigned int level);
@@ -133,7 +134,7 @@ int setMaxbrightness(int max_level, int enable)
 		/* if (last_level != 0){ */
 		if (0 != current_level) {
 			LEDS_DRV_DEBUG("control temperature close:limit=%d\n", limit);
-			mt65xx_led_set_cust(&cust_led_list[MT65XX_LED_TYPE_LCD], last_level);
+			mt65xx_led_set_cust(&cust_led_list[MT65XX_LED_TYPE_LCD], last_level_bar);
 
 			/* printk("mt65xx_leds_set_cust in setMaxbrightness:value control close!\n"); */
 		}
@@ -145,6 +146,10 @@ int setMaxbrightness(int max_level, int enable)
 	LEDS_DRV_DEBUG("setMaxbrightness go through AAL\n");
 	disp_bls_set_max_backlight( ((((1 << LED_INTERNAL_LEVEL_BIT_CNT) - 1) * max_level +
                      127) / 255) );
+	/* Call set again to restore backlight (since bar backlight maybe > max backlight). */
+	struct cust_mt65xx_led *cust_led_list = mt_get_cust_led_list();
+	mt65xx_led_set_cust(&cust_led_list[MT65XX_LED_TYPE_LCD], last_level_bar);
+
 #endif				/* endif CONFIG_MTK_AAL_SUPPORT */
 	return 0;
 
@@ -192,6 +197,7 @@ static int mt65xx_led_set_cust(struct cust_mt65xx_led *cust, int level)
 			level = limit;
 			/* LEDS_DRV_DEBUG("backlight_set_cust: control level=%d\n", level); */
 		}
+		last_level = level;
 	}
 	mutex_unlock(&bl_level_limit_mutex);
 #endif
@@ -217,6 +223,7 @@ static void mt65xx_led_set(struct led_classdev *led_cdev, enum led_brightness le
 #ifdef CONTROL_BL_TEMPERATURE
 		mutex_lock(&bl_level_limit_mutex);
 		current_level = level;
+		last_level_bar = level;
 		/* LEDS_DRV_DEBUG("brightness_set_cust:current_level=%d\n", current_level); */
 		if (0 == limit_flag) {
 			last_level = level;
@@ -226,6 +233,7 @@ static void mt65xx_led_set(struct led_classdev *led_cdev, enum led_brightness le
 				level = limit;
 				LEDS_DRV_DEBUG("backlight_set_cust: control level=%d\n", level);
 			}
+			last_level = level;
 		}
 		mutex_unlock(&bl_level_limit_mutex);
 #endif
@@ -290,6 +298,7 @@ int backlight_brightness_set(int level)
 				// extend 8-bit limit to 10 bits
 				level = (limit << (MT_LED_INTERNAL_LEVEL_BIT_CNT - 8)) | (limit >> (16 - MT_LED_INTERNAL_LEVEL_BIT_CNT));
 			}
+			last_level = level >> (MT_LED_INTERNAL_LEVEL_BIT_CNT-8);
 		}	
 		mutex_unlock(&bl_level_limit_mutex);
 	#endif
@@ -460,18 +469,16 @@ static ssize_t show_pwm_register(struct device *dev, struct device_attribute *at
 }
 
 static DEVICE_ATTR(pwm_register, 0664, show_pwm_register, store_pwm_register);
-//add by dingyin
-struct mt65xx_led_data *g_flash_led_data=NULL;
+
+struct mt65xx_led_data *g_flash_led_data = NULL;
 extern void led_classdev_suspend(struct led_classdev *led_cdev);
 void flashlight_clear_brightness(void)
 {
-	LEDS_DRV_DEBUG("[flashlight] clear[%s] [%d][%d]\n", g_flash_led_data->cdev.name, g_flash_led_data->cdev.brightness, g_flash_led_data->level);
 	g_flash_led_data->cdev.brightness = 0;
 	g_flash_led_data->level = 0;
-	//led_classdev_suspend(g_flash_led_cdev);
-	return;
 }
 EXPORT_SYMBOL(flashlight_clear_brightness);
+
 /****************************************************************************
  * driver functions
  ***************************************************************************/
@@ -507,11 +514,10 @@ static int __init mt65xx_leds_probe(struct platform_device *pdev)
 		INIT_WORK(&g_leds_data[i]->work, mt_mt65xx_led_work);
 
 		ret = led_classdev_register(&pdev->dev, &g_leds_data[i]->cdev);
-		//add by dingyin
+
 		if (strcmp(g_leds_data[i]->cdev.name, "flashlight") == 0)
-		{
 			g_flash_led_data = g_leds_data[i];
-		}
+
 		if (strcmp(g_leds_data[i]->cdev.name, "lcd-backlight") == 0) {
 			rc = device_create_file(g_leds_data[i]->cdev.dev, &dev_attr_duty);
 			if (rc) {
@@ -542,6 +548,7 @@ static int __init mt65xx_leds_probe(struct platform_device *pdev)
 #ifdef CONTROL_BL_TEMPERATURE
 
 	last_level = 0;
+	last_level_bar = 0;
 	limit = 255;
 	limit_flag = 0;
 	current_level = 0;

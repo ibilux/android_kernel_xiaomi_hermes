@@ -1,18 +1,16 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/privacy.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/privacy.h#1
 */
 
 /*! \file   privacy.h
     \brief This file contains the function declaration for privacy.c.
 */
 
-
-
 /*
-** $Log: privacy.h $
+** Log: privacy.h
  *
  * 07 24 2010 wh.su
- * 
+ *
  * .support the Wi-Fi RSN
  *
  * 07 08 2010 cp.wu
@@ -109,8 +107,8 @@
 #define MIC_TX_KEY_OFFSET                       24
 #define MIC_KEY_LEN                             8
 
-#define WEP_KEY_ID_FIELD      BITS(0,29)
-#define KEY_ID_FIELD          BITS(0,7)
+#define WEP_KEY_ID_FIELD      BITS(0, 29)
+#define KEY_ID_FIELD          BITS(0, 7)
 
 #define IS_TRANSMIT_KEY       BIT(31)
 #define IS_UNICAST_KEY        BIT(30)
@@ -126,12 +124,11 @@
 #define CIPHER_SUITE_WEP128             7
 #define CIPHER_SUITE_WPI                8
 
-#define WPA_KEY_INFO_KEY_TYPE BIT(3) /* 1 = Pairwise, 0 = Group key */
+#define WPA_KEY_INFO_KEY_TYPE BIT(3)	/* 1 = Pairwise, 0 = Group key */
 #define WPA_KEY_INFO_MIC      BIT(8)
 #define WPA_KEY_INFO_SECURE   BIT(9)
 
 #define MASK_2ND_EAPOL       (WPA_KEY_INFO_KEY_TYPE | WPA_KEY_INFO_MIC)
-
 
 /*******************************************************************************
 *                         D A T A   T Y P E S
@@ -139,38 +136,38 @@
 */
 
 typedef struct _IEEE_802_1X_HDR {
-    UINT_8      ucVersion;
-    UINT_8      ucType;
-    UINT_16     u2Length;
-    /* followed by length octets of data */
+	UINT_8 ucVersion;
+	UINT_8 ucType;
+	UINT_16 u2Length;
+	/* followed by length octets of data */
 } IEEE_802_1X_HDR, *P_IEEE_802_1X_HDR;
 
 typedef struct _EAPOL_KEY {
-    UINT_8 ucType;
-    /* Note: key_info, key_length, and key_data_length are unaligned */
-    UINT_8 aucKeyInfo[2]; /* big endian */
-    UINT_8 aucKeyLength[2]; /* big endian */
-    UINT_8 aucReplayCounter[8];
-    UINT_8 aucKeyNonce[16];
-    UINT_8 aucKeyIv[16];
-    UINT_8 aucKeyRsc[8];
-    UINT_8 aucKeyId[8]; /* Reserved in IEEE 802.11i/RSN */
-    UINT_8 aucKeyMic[16];
-    UINT_8 aucKeyDataLength[2]; /* big endian */
-    /* followed by key_data_length bytes of key_data */
+	UINT_8 ucType;
+	/* Note: key_info, key_length, and key_data_length are unaligned */
+	UINT_8 aucKeyInfo[2];	/* big endian */
+	UINT_8 aucKeyLength[2];	/* big endian */
+	UINT_8 aucReplayCounter[8];
+	UINT_8 aucKeyNonce[16];
+	UINT_8 aucKeyIv[16];
+	UINT_8 aucKeyRsc[8];
+	UINT_8 aucKeyId[8];	/* Reserved in IEEE 802.11i/RSN */
+	UINT_8 aucKeyMic[16];
+	UINT_8 aucKeyDataLength[2];	/* big endian */
+	/* followed by key_data_length bytes of key_data */
 } EAPOL_KEY, *P_EAPOL_KEY;
 
 /* WPA2 PMKID candicate structure */
 typedef struct _PMKID_CANDICATE_T {
-    UINT_8              aucBssid[MAC_ADDR_LEN];
-    UINT_32             u4PreAuthFlags;
+	UINT_8 aucBssid[MAC_ADDR_LEN];
+	UINT_32 u4PreAuthFlags;
 } PMKID_CANDICATE_T, *P_PMKID_CANDICATE_T;
 
 #if 0
 /* WPA2 PMKID cache structure */
 typedef struct _PMKID_ENTRY_T {
-    PARAM_BSSID_INFO_T  rBssidInfo;
-    BOOLEAN             fgPmkidExist;
+	PARAM_BSSID_INFO_T rBssidInfo;
+	BOOLEAN fgPmkidExist;
 } PMKID_ENTRY_T, *P_PMKID_ENTRY_T;
 #endif
 
@@ -194,90 +191,36 @@ typedef struct _PMKID_ENTRY_T {
 ********************************************************************************
 */
 
-VOID
-secInit(
-    IN P_ADAPTER_T          prAdapter,
-    IN UINT_8               ucNetTypeIdx
-    );
+VOID secInit(IN P_ADAPTER_T prAdapter, IN UINT_8 ucNetTypeIdx);
 
-VOID
-secSetPortBlocked(
-    IN P_ADAPTER_T          prAdapter,
-    IN P_STA_RECORD_T       prSta,
-    IN BOOLEAN              fgPort
-   );
+VOID secSetPortBlocked(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta, IN BOOLEAN fgPort);
 
-BOOLEAN
-secCheckClassError(
-    IN P_ADAPTER_T          prAdapter,
-    IN P_SW_RFB_T           prSwRfb,
-    IN P_STA_RECORD_T       prStaRec
-    );
+BOOLEAN secCheckClassError(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, IN P_STA_RECORD_T prStaRec);
+
+BOOLEAN secTxPortControlCheck(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN P_STA_RECORD_T prStaRec);
+
+BOOLEAN secRxPortControlCheck(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSWRfb);
+
+VOID secSetCipherSuite(IN P_ADAPTER_T prAdapter, IN UINT_32 u4CipherSuitesFlags);
 
 BOOLEAN
-secTxPortControlCheck(
-    IN P_ADAPTER_T          prAdapter,
-    IN P_MSDU_INFO_T        prMsduInfo,
-    IN P_STA_RECORD_T       prStaRec
-    );
-
-BOOLEAN
-secRxPortControlCheck(
-    IN P_ADAPTER_T          prAdapter,
-    IN P_SW_RFB_T           prSWRfb
-    );
+secProcessEAPOL(IN P_ADAPTER_T prAdapter,
+		IN P_MSDU_INFO_T prMsduInfo,
+		IN P_STA_RECORD_T prStaRec, IN PUINT_8 pucPayload, IN UINT_16 u2PayloadLen);
 
 VOID
-secSetCipherSuite(
-    IN P_ADAPTER_T prAdapter,
-    IN UINT_32     u4CipherSuitesFlags
-    );
+secHandleTxDoneCallback(IN P_ADAPTER_T prAdapter,
+			IN P_MSDU_INFO_T pMsduInfo, IN P_STA_RECORD_T prStaRec, IN WLAN_STATUS rStatus);
 
-BOOLEAN
-secProcessEAPOL(
-    IN P_ADAPTER_T          prAdapter,
-    IN P_MSDU_INFO_T        prMsduInfo,
-    IN P_STA_RECORD_T       prStaRec,
-    IN PUINT_8              pucPayload,
-    IN UINT_16              u2PayloadLen
-   );
+BOOLEAN secIsProtectedFrame(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsdu, IN P_STA_RECORD_T prStaRec);
 
-VOID
-secHandleTxDoneCallback(
-    IN P_ADAPTER_T          prAdapter,
-    IN P_MSDU_INFO_T        pMsduInfo,
-    IN P_STA_RECORD_T       prStaRec,
-    IN WLAN_STATUS          rStatus
-    );
+VOID secClearPmkid(IN P_ADAPTER_T prAdapter);
 
-BOOLEAN
-secIsProtectedFrame (
-    IN P_ADAPTER_T          prAdapter,
-    IN P_MSDU_INFO_T        prMsdu,
-    IN P_STA_RECORD_T       prStaRec
-    );
+BOOLEAN secRsnKeyHandshakeEnabled(IN P_ADAPTER_T prAdapter);
 
-VOID
-secClearPmkid(
-    IN P_ADAPTER_T          prAdapter
-    );
+BOOLEAN secTransmitKeyExist(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta);
 
-BOOLEAN
-secRsnKeyHandshakeEnabled(
-    IN P_ADAPTER_T          prAdapter
-    );
-
-BOOLEAN
-secTransmitKeyExist(
-    IN P_ADAPTER_T          prAdapter,
-    IN P_STA_RECORD_T       prSta
-    );
-
-BOOLEAN
-secEnabledInAis(
-    IN P_ADAPTER_T          prAdapter
-    );
-
+BOOLEAN secEnabledInAis(IN P_ADAPTER_T prAdapter);
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -285,4 +228,3 @@ secEnabledInAis(
 */
 
 #endif /* _PRIVACY_H */
-

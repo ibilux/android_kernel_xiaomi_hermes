@@ -19,15 +19,15 @@ extern "C" {
 #define TAG     "[Power/cpufreq] "
 
 #define cpufreq_tlp_err(fmt, args...)       \
-	printk(KERN_ERR TAG KERN_CONT fmt, ##args)
+	pr_err(TAG KERN_CONT "[ERROR]"fmt, ##args)
 #define cpufreq_tlp_warn(fmt, args...)      \
-	printk(KERN_WARNING TAG KERN_CONT fmt, ##args)
+	pr_warn(TAG KERN_CONT "[WARNING]"fmt, ##args)
 #define cpufreq_tlp_info(fmt, args...)      \
-	printk(KERN_NOTICE TAG KERN_CONT fmt, ##args)
+	pr_warn(TAG KERN_CONT fmt, ##args)
 #define cpufreq_tlp_dbg(fmt, args...)       \
-	printk(KERN_INFO TAG KERN_CONT fmt, ##args)
+	pr_warn(TAG KERN_CONT fmt, ##args)
 #define cpufreq_tlp_ver(fmt, args...)       \
-	printk(KERN_DEBUG TAG KERN_CONT fmt, ##args)
+	pr_warn(TAG KERN_CONT fmt, ##args)
 
 #define FUNC_ENTER() do { cpufreq_tlp_dbg(">> %s()\n", __func__); } while (0)
 #define FUNC_EXIT() do { cpufreq_tlp_dbg("<< %s():%d\n", __func__, __LINE__); } while (0)

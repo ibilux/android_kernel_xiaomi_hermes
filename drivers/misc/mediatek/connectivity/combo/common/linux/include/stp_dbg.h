@@ -123,7 +123,7 @@ typedef struct mtkstp_dbg_t {
 } MTKSTP_DBG_T;
 
 
-#define STP_CORE_DUMP_TIMEOUT 1*60*1000	/* default 5minutes */
+#define STP_CORE_DUMP_TIMEOUT 5*60*1000	/* default 5minutes */
 #define STP_OJB_NAME_SZ 20
 #define STP_CORE_DUMP_INFO_SZ 500
 typedef enum wcn_compress_algorithm_t {

@@ -19,7 +19,7 @@
 #include <linux/slab.h>
 
 //<20130327> <marc.huang> add wakelock dubug log
-int wakelock_debug = 1;
+int wakelock_debug = 0;
 #define _TAG_WAKELOCK "WAKELOCK"
 #define wakelock_log(fmt, ...)    do { if (wakelock_debug) pr_debug("[%s][%s]" fmt, _TAG_WAKELOCK, __func__, ##__VA_ARGS__); } while (0)
 #define wakelock_warn(fmt, ...)   do { if (wakelock_debug) pr_warn("[%s][%s]" fmt, _TAG_WAKELOCK, __func__, ##__VA_ARGS__); } while (0)

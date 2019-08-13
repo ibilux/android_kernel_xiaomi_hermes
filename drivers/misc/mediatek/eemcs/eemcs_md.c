@@ -62,6 +62,28 @@ KAL_INT32 eemcs_md_runtime_cfg(void *buffer)
 
     DBGLOG(BOOT, INF, "send /data/mdlog/mdlog5_config =%d to modem!", mdlog_flag);
 
+#if defined (_RUNTIME_MISC_INFO_SUPPORT_)	
+    // misc region, little endian for string
+    runtime->misc_prefix = 0x4353494D; // "MISC"
+    runtime->misc_postfix = 0x4353494D; // "MISC"
+    runtime->index = 0;
+    runtime->next = 0;
+
+    DBGLOG(BOOT, INF, "misc_info_support =0x%x, feature_4_val[0]-(SBP)=0x%x ", \
+		runtime->support_mask, runtime->feature_4_val[0]);
+
+    runtime->support_mask |= (FEATURE_SUPPORT<<(MISC_MD_CCCI_DEBUG*2));
+    runtime->feature_5_val[0] = 0;
+    #if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    runtime->feature_5_val[0] |= 1<< CCCI_DBG_ADD_CCCI_SEQNO;
+    #endif
+
+    #if defined (DBG_FEATURE_POLL_MD_STA)
+    runtime->feature_5_val[0] |= 1<< CCCI_DBG_POLL_MD_STA;
+    #endif
+    DBGLOG(BOOT, INF, "misc_info_support =0x%x, feature_val=0x%x ", \
+		runtime->support_mask, runtime->feature_5_val[0]);
+#endif
     return sizeof(struct MODEM_RUNTIME_st);
 }
 

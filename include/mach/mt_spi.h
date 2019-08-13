@@ -7,6 +7,15 @@
 /*******************************************************************************
 * define struct for spi driver
 ********************************************************************************/
+enum spi_sample_sel {
+	POSEDGE,
+	NEGEDGE
+};
+enum spi_cs_pol {
+	ACTIVE_LOW,
+	ACTIVE_HIGH
+};
+
 enum spi_cpol {
 	SPI_CPOL_0,
 	SPI_CPOL_1
@@ -67,6 +76,8 @@ struct mt_chip_conf {
 	u32 low_time;
 	u32 cs_idletime;
 	u32 ulthgh_thrsh;
+	enum spi_sample_sel sample_sel;
+	enum spi_cs_pol cs_pol;
 	enum spi_cpol cpol;
 	enum spi_cpha cpha;
 	enum spi_mlsb tx_mlsb;

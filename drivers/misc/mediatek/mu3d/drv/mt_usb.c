@@ -261,7 +261,7 @@ bool usb_cable_connected(void)
 	{
 		CHARGER_TYPE chg_type = mt_charger_type_detection();
 		os_printk(K_INFO, "%s type=%d\n", __func__, chg_type);
-		if (chg_type == STANDARD_HOST)
+		if (chg_type == STANDARD_HOST || chg_type == CHARGING_HOST)
 			return true;
 	}
 #endif
@@ -428,7 +428,7 @@ ssize_t musb_tx_show(struct device* dev, struct device_attribute *attr, char *bu
 		return 0;
 	}
 
-	var = U3PhyReadReg8(U3D_U2PHYDTM1+0x2);
+	var = U3PhyReadReg8((u3phy_addr_t)(U3D_U2PHYDTM1+0x2));
 	var2 = (var >> 3) & ~0xFE;
 	printk("[MUSB]addr: 0x6E (TX), value: %x - %x\n", var, var2);
 
@@ -453,7 +453,7 @@ ssize_t musb_tx_store(struct device* dev, struct device_attribute *attr,
 #ifdef CONFIG_MTK_FPGA
 		var = USB_PHY_Read_Register8(U3D_U2PHYDTM1+0x2);
 #else
-        var = U3PhyReadReg8(U3D_U2PHYDTM1+0x2);
+        var = U3PhyReadReg8((u3phy_addr_t)(U3D_U2PHYDTM1+0x2));
 #endif
 
 		if (val == 0) {
@@ -468,7 +468,7 @@ ssize_t musb_tx_store(struct device* dev, struct device_attribute *attr,
 #else
         //U3PhyWriteField32(U3D_USBPHYDTM1+0x2, E60802_RG_USB20_BC11_SW_EN_OFST, E60802_RG_USB20_BC11_SW_EN, 0);
         //Jeremy TODO 0320
-		var = U3PhyReadReg8(U3D_U2PHYDTM1+0x2);
+		var = U3PhyReadReg8((u3phy_addr_t)(U3D_U2PHYDTM1+0x2));
 #endif
 
 		var2 = (var >> 3) & ~0xFE;
@@ -492,7 +492,7 @@ ssize_t musb_rx_show(struct device* dev, struct device_attribute *attr, char *bu
 #ifdef CONFIG_MTK_FPGA
 	var = USB_PHY_Read_Register8(U3D_U2PHYDMON1+0x3);
 #else
-    var = U3PhyReadReg8(U3D_U2PHYDMON1+0x3);
+    var = U3PhyReadReg8((u3phy_addr_t)(U3D_U2PHYDMON1+0x3));
 #endif
 	var2 = (var >> 7) & ~0xFE;
 	printk("[MUSB]addr: U3D_U2PHYDMON1 (0x77) (RX), value: %x - %x\n", var, var2);

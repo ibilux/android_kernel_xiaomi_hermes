@@ -28,10 +28,8 @@ fm_s32 mt6626_pwrup_digital_init_2(fm_u8 *tx_buf, fm_s32 tx_buf_size);
 fm_s32 mt6626_pwrdown(fm_u8 *tx_buf, fm_s32 tx_buf_size);
 fm_s32 mt6626_rampdown(fm_u8 *tx_buf, fm_s32 tx_buf_size);
 fm_s32 mt6626_tune(fm_u8 *tx_buf, fm_s32 tx_buf_size, fm_u16 freq);
-fm_s32 mt6626_seek(fm_u8 *tx_buf, fm_s32 tx_buf_size, fm_u16 seekdir, fm_u16 space,
-		   fm_u16 max_freq, fm_u16 min_freq);
-fm_s32 mt6626_scan(fm_u8 *tx_buf, fm_s32 tx_buf_size, fm_u16 scandir, fm_u16 space,
-		   fm_u16 max_freq, fm_u16 min_freq);
+fm_s32 mt6626_seek(fm_u8 *tx_buf, fm_s32 tx_buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq);
+fm_s32 mt6626_scan(fm_u8 *tx_buf, fm_s32 tx_buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq);
 fm_s32 mt6626_get_reg(fm_u8 *tx_buf, fm_s32 tx_buf_size, fm_u8 addr);
 fm_s32 mt6626_set_reg(fm_u8 *tx_buf, fm_s32 tx_buf_size, fm_u8 addr, fm_u16 value);
 fm_s32 mt6626_patch_download(fm_u8 *tx_buf, fm_s32 tx_buf_size, fm_u8 seg_num, fm_u8 seg_id,

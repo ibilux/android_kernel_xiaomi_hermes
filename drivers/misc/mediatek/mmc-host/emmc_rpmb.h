@@ -7,6 +7,7 @@
 #include <linux/mmc/ioctl.h>
 #include <linux/mmc/card.h>
 
+extern struct msdc_host *mtk_msdc_host[];
 
 /************************************************************************
  *
@@ -18,12 +19,12 @@
 #define RPMB_IOCTL_READ_DATA    4
 
 struct rpmb_ioc_param {
-    unsigned char *key;
-    unsigned char *data;
-    unsigned int  data_len;
-    unsigned short addr;
-    unsigned char *hmac;
-    unsigned int hmac_len;
+	unsigned char *key;
+	unsigned char *data;
+	unsigned int  data_len;
+	unsigned short addr;
+	unsigned char *hmac;
+	unsigned int hmac_len;
 };
 /***********************************************************************/
 
@@ -33,26 +34,26 @@ struct rpmb_ioc_param {
 #define RPMB_SZ_DATA  256
 #define RPMB_SZ_NONCE 16
 
-struct s_rpmb {	
-    unsigned char stuff[RPMB_SZ_STUFF];	
-    unsigned char mac[RPMB_SZ_MAC];	
-    unsigned char data[RPMB_SZ_DATA];	
-    unsigned char nonce[RPMB_SZ_NONCE];	
-    unsigned int write_counter;	
-    unsigned short address;	
-    unsigned short block_count;	
-    unsigned short result;	
-    unsigned short request;
+struct s_rpmb {
+	unsigned char stuff[RPMB_SZ_STUFF];
+	unsigned char mac[RPMB_SZ_MAC];
+	unsigned char data[RPMB_SZ_DATA];
+	unsigned char nonce[RPMB_SZ_NONCE];
+	unsigned int write_counter;
+	unsigned short address;
+	unsigned short block_count;
+	unsigned short result;
+	unsigned short request;
 };
 
 enum {
-    RPMB_SUCCESS = 0,
-    RPMB_HMAC_ERROR,
-    RPMB_RESULT_ERROR,
-    RPMB_WC_ERROR,
-    RPMB_NONCE_ERROR,
-    RPMB_ALLOC_ERROR,
-    RPMB_TRANSFER_NOT_COMPLETE,
+	RPMB_SUCCESS = 0,
+	RPMB_HMAC_ERROR,
+	RPMB_RESULT_ERROR,
+	RPMB_WC_ERROR,
+	RPMB_NONCE_ERROR,
+	RPMB_ALLOC_ERROR,
+	RPMB_TRANSFER_NOT_COMPLETE,
 };
 
 #define RPMB_PROGRAM_KEY       1       /* Program RPMB Authentication Key */
@@ -83,7 +84,7 @@ struct emmc_rpmb_req {
 	__u8 *nonce;                    /* Ramdom number */
 	__u8 *data;                     /* Buffer of the user data */
 	__u8 *mac;                      /* Message Authentication Code */
-    __u8 *data_frame;
+	__u8 *data_frame;
 };
 
 

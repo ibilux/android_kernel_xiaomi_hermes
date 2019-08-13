@@ -1,7 +1,6 @@
 #include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/kobject.h>
 #include <linux/proc_fs.h>
@@ -34,12 +33,12 @@ extern int set_bat_charging_current_limit(int current_limit);
 extern struct proc_dir_entry * mtk_thermal_get_proc_drv_therm_dir_entry(void);
 
 #define mtk_cooler_bcct_dprintk_always(fmt, args...) \
-  do { xlog_printk(ANDROID_LOG_INFO, "thermal/cooler/bcct", fmt, ##args); } while(0)
+  do { pr_notice("thermal/cooler/bcct" fmt, ##args); } while(0)
 
 #define mtk_cooler_bcct_dprintk(fmt, args...) \
   do { \
     if (1 == cl_bcct_klog_on) { \
-      xlog_printk(ANDROID_LOG_INFO, "thermal/cooler/bcct", fmt, ##args); \
+      pr_notice("thermal/cooler/bcct" fmt, ##args); \
     } \
   } while(0)
 
@@ -111,7 +110,7 @@ mtk_cl_bcct_get_max_state(struct thermal_cooling_device *cdev,
                           unsigned long *state)
 {
   *state = 1;
-  mtk_cooler_bcct_dprintk("mtk_cl_bcct_get_max_state() %s %d\n", cdev->type, *state);
+  mtk_cooler_bcct_dprintk("mtk_cl_bcct_get_max_state() %s %lu\n", cdev->type, *state);
   return 0;
 }
 
@@ -120,7 +119,7 @@ mtk_cl_bcct_get_cur_state(struct thermal_cooling_device *cdev,
                           unsigned long *state)
 {
   MTK_CL_BCCT_GET_CURR_STATE(*state, *((unsigned long*) cdev->devdata));
-  mtk_cooler_bcct_dprintk("mtk_cl_bcct_get_cur_state() %s %d\n", cdev->type, *state);
+  mtk_cooler_bcct_dprintk("mtk_cl_bcct_get_cur_state() %s %lu\n", cdev->type, *state);
   mtk_cooler_bcct_dprintk("mtk_cl_bcct_get_cur_state() %s limit=%d\n", cdev->type, get_bat_charging_current_level()/100);
   return 0;
 }
@@ -129,7 +128,7 @@ static int
 mtk_cl_bcct_set_cur_state(struct thermal_cooling_device *cdev,
                           unsigned long state)
 {
-  mtk_cooler_bcct_dprintk("mtk_cl_bcct_set_cur_state() %s %d\n", cdev->type, state);
+  mtk_cooler_bcct_dprintk("mtk_cl_bcct_set_cur_state() %s %lu\n", cdev->type, state);
   MTK_CL_BCCT_SET_CURR_STATE(state, *((unsigned long*) cdev->devdata));
   mtk_cl_bcct_set_bcct_limit();
   mtk_cooler_bcct_dprintk("mtk_cl_bcct_set_cur_state() %s limit=%d\n", cdev->type, get_bat_charging_current_level()/100);

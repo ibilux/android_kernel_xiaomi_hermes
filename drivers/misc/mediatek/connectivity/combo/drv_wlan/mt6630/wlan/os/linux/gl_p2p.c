@@ -1,5 +1,5 @@
 /*
-** $Id: @(#) gl_p2p.c@@
+** Id: @(#) gl_p2p.c@@
 */
 
 /*! \file   gl_p2p.c
@@ -9,13 +9,12 @@
     Wireless LAN Adapters.
 */
 
-
-
 /*
-** $Log: gl_p2p.c $
+** Log: gl_p2p.c
 **
 ** 04 14 2014 eason.tsai
-** [ALPS01510349] [6595][KK][HotKnot][Reboot][KE][p2pDevFsmRunEventScanDone]Sender reboot automatically with KE about p2pDevFsmRunEventScanDone.
+** [ALPS01510349] [6595][KK][HotKnot][Reboot][KE][p2pDevFsmRunEventScanDone]Sender
+** reboot automatically with KE about p2pDevFsmRunEventScanDone.
 ** fix KE
 **
 ** 01 23 2014 eason.tsai
@@ -159,7 +158,8 @@
  * Fix default device name issue.
  *
  * 11 08 2011 yuche.tsai
- * [WCXRP00001094] [Volunteer Patch][Driver] Driver version & supplicant version query & set support for service discovery version check.
+ * [WCXRP00001094] [Volunteer Patch][Driver] Driver version & supplicant version query & set support for service
+ * discovery version check.
  * Add support for driver version query & p2p supplicant verseion set.
  * For new service discovery mechanism sync.
  *
@@ -338,7 +338,8 @@
  * modify P2P's netdevice  functions to support multiple H/W queues
  *
  * 03 03 2011 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service
+ * Discovery
  * for get request, the buffer length to be copied is header + payload.
  *
  * 03 02 2011 wh.su
@@ -346,7 +347,8 @@
  * add code to let the beacon and probe response for Auto GO WSC .
  *
  * 03 02 2011 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service
+ * Discovery
  * add a missed break.
  *
  * 03 01 2011 yuche.tsai
@@ -386,7 +388,8 @@
  * fixed the probe request send out without WSC IE issue (at P2P).
  *
  * 02 09 2011 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service
+ * Discovery
  * fix typo
  *
  * 02 09 2011 yuche.tsai
@@ -404,15 +407,18 @@
  * 3. Add channel selection support for AP mode.
  *
  * 01 05 2011 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service
+ * Discovery
  * ioctl implementations for P2P Service Discovery
  *
  * 01 04 2011 cp.wu
- * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and vmalloc implementations to ease physically continous memory demands
+ * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and vmalloc implementations to ease
+ * physically continous memory demands
  * separate kalMemAlloc() into virtually-continous and physically-continous type to ease slab system pressure
  *
  * 12 22 2010 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service
+ * Discovery
  * 1. header file restructure for more clear module isolation
  * 2. add function interface definition for implementing Service Discovery callbacks
  *
@@ -429,7 +435,8 @@
  * Invitation & Provision Discovery Indication.
  *
  * 11 17 2010 wh.su
- * [WCXRP00000164] [MT6620 Wi-Fi][Driver] Support the p2p random SSID[WCXRP00000179] [MT6620 Wi-Fi][FW] Set the Tx lowest rate at wlan table for normal operation
+ * [WCXRP00000164] [MT6620 Wi-Fi][Driver] Support the p2p random SSID[WCXRP00000179] [MT6620 Wi-Fi][FW] Set the Tx
+ * lowest rate at wlan table for normal operation
  * fixed some ASSERT check.
  *
  * 11 04 2010 wh.su
@@ -663,6 +670,7 @@
 */
 
 static struct net_device *g_P2pPrDev;
+static struct wireless_dev *gprP2pWdev;
 
 #if CFG_ENABLE_WIFI_DIRECT_CFG_80211
 /* for cfg80211 - frequency table */
@@ -793,7 +801,7 @@ static const UINT_32 cipher_suites[] = {
 };
 
 static struct cfg80211_ops mtk_p2p_config_ops = {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 32) && (CFG_ENABLE_WIFI_DIRECT_CFG_80211 != 0)
+#if (CFG_ENABLE_WIFI_DIRECT_CFG_80211 != 0)
 	/* Froyo */
 	.add_virtual_intf = mtk_p2p_cfg80211_add_iface,
 	.change_virtual_intf = mtk_p2p_cfg80211_change_iface,	/* 1 st */
@@ -808,20 +816,11 @@ static struct cfg80211_ops mtk_p2p_config_ops = {
 	.disconnect = mtk_p2p_cfg80211_disconnect,
 	.deauth = mtk_p2p_cfg80211_deauth,
 	.disassoc = mtk_p2p_cfg80211_disassoc,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
 	.start_ap = mtk_p2p_cfg80211_start_ap,
 	.change_beacon = mtk_p2p_cfg80211_change_beacon,
 	.stop_ap = mtk_p2p_cfg80211_stop_ap,
-#else
-	.add_beacon = mtk_p2p_cfg80211_add_set_beacon,
-	.set_beacon = mtk_p2p_cfg80211_add_set_beacon,
-	.del_beacon = mtk_p2p_cfg80211_stop_ap,
-#endif
 	.set_wiphy_params = mtk_p2p_cfg80211_set_wiphy_params,
 	.del_station = mtk_p2p_cfg80211_del_station,
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-	.set_channel = mtk_p2p_cfg80211_set_channel,
-#endif
 	.set_bitrate_mask = mtk_p2p_cfg80211_set_bitrate_mask,
 	.mgmt_frame_register = mtk_p2p_cfg80211_mgmt_frame_register,
 	.get_station = mtk_p2p_cfg80211_get_station,
@@ -841,24 +840,20 @@ static struct cfg80211_ops mtk_p2p_config_ops = {
 #endif
 };
 
-
-
 /* There isn't a lot of sense in it, but you can transmit anything you like */
 static const struct ieee80211_txrx_stypes
- mtk_cfg80211_default_mgmt_stypes[NUM_NL80211_IFTYPES] = {
+mtk_cfg80211_default_mgmt_stypes[NUM_NL80211_IFTYPES] = {
 	[NL80211_IFTYPE_ADHOC] = {
 				  .tx = 0xffff,
 				  .rx = BIT(IEEE80211_STYPE_ACTION >> 4)
 				  },
 	[NL80211_IFTYPE_STATION] = {
 				    .tx = 0xffff,
-				    .rx = BIT(IEEE80211_STYPE_ACTION >> 4) |
-				    BIT(IEEE80211_STYPE_PROBE_REQ >> 4)
+				    .rx = BIT(IEEE80211_STYPE_ACTION >> 4) | BIT(IEEE80211_STYPE_PROBE_REQ >> 4)
 				    },
 	[NL80211_IFTYPE_AP] = {
 			       .tx = 0xffff,
-			       .rx = BIT(IEEE80211_STYPE_PROBE_REQ >> 4) |
-			       BIT(IEEE80211_STYPE_ACTION >> 4)
+			       .rx = BIT(IEEE80211_STYPE_PROBE_REQ >> 4) | BIT(IEEE80211_STYPE_ACTION >> 4)
 			       },
 	[NL80211_IFTYPE_AP_VLAN] = {
 				    /* copy AP */
@@ -868,23 +863,39 @@ static const struct ieee80211_txrx_stypes
 				    BIT(IEEE80211_STYPE_PROBE_REQ >> 4) |
 				    BIT(IEEE80211_STYPE_DISASSOC >> 4) |
 				    BIT(IEEE80211_STYPE_AUTH >> 4) |
-				    BIT(IEEE80211_STYPE_DEAUTH >> 4) |
-				    BIT(IEEE80211_STYPE_ACTION >> 4)
+				    BIT(IEEE80211_STYPE_DEAUTH >> 4) | BIT(IEEE80211_STYPE_ACTION >> 4)
 				    },
 	[NL80211_IFTYPE_P2P_CLIENT] = {
 				       .tx = 0xffff,
-				       .rx = BIT(IEEE80211_STYPE_ACTION >> 4) |
-				       BIT(IEEE80211_STYPE_PROBE_REQ >> 4)
+				       .rx = BIT(IEEE80211_STYPE_ACTION >> 4) | BIT(IEEE80211_STYPE_PROBE_REQ >> 4)
 				       },
 	[NL80211_IFTYPE_P2P_GO] = {
 				   .tx = 0xffff,
-				   .rx = BIT(IEEE80211_STYPE_PROBE_REQ >> 4) |
-				   BIT(IEEE80211_STYPE_ACTION >> 4)
+				   .rx = BIT(IEEE80211_STYPE_PROBE_REQ >> 4) | BIT(IEEE80211_STYPE_ACTION >> 4)
 				   }
 };
 
+static const struct ieee80211_iface_limit mtk_p2p_iface_limits[] = {
+	{
+		.max = 1,
+		.types = BIT(NL80211_IFTYPE_STATION) |
+			BIT(NL80211_IFTYPE_AP)
+	},
+	{
+		.max = 1,
+		.types = BIT(NL80211_IFTYPE_P2P_CLIENT) |
+		BIT(NL80211_IFTYPE_P2P_GO)
+	},
+};
 
-
+static const struct ieee80211_iface_combination mtk_p2p_iface_combos[] = {
+	{
+		.max_interfaces = 2,
+		.num_different_channels = 2,
+		.n_limits = ARRAY_SIZE(mtk_p2p_iface_limits),
+		.limits = mtk_p2p_iface_limits
+	}
+};
 #endif
 
 #if 0
@@ -1035,7 +1046,6 @@ static void p2pSetMulticastList(IN struct net_device *prDev);
 
 static int p2pHardStartXmit(IN struct sk_buff *prSkb, IN struct net_device *prDev);
 
-
 static int p2pSetMACAddress(IN struct net_device *prDev, void *addr);
 
 static int p2pDoIOCTL(struct net_device *prDev, struct ifreq *prIFReq, int i4Cmd);
@@ -1063,9 +1073,8 @@ unsigned int _p2p_cfg80211_classify8021d(struct sk_buff *skb)
 	 * tags
 	 */
 
-	if (skb->priority >= 256 && skb->priority <= 263) {
+	if (skb->priority >= 256 && skb->priority <= 263)
 		return skb->priority - 256;
-	}
 	switch (skb->protocol) {
 	case htons(ETH_P_IP):
 		dscp = ip_hdr(skb)->tos & 0xfc;
@@ -1073,7 +1082,6 @@ unsigned int _p2p_cfg80211_classify8021d(struct sk_buff *skb)
 	}
 	return dscp >> 5;
 }
-
 
 static const UINT_16 au16Wlan1dToQueueIdx[8] = { 1, 0, 0, 1, 2, 2, 3, 3 };
 
@@ -1097,13 +1105,11 @@ static UINT_16 p2pSelectQueue(struct net_device *dev, struct sk_buff *skb)
 /*----------------------------------------------------------------------------*/
 static int p2pInit(struct net_device *prDev)
 {
-	if (!prDev) {
+	if (!prDev)
 		return -ENXIO;
-	}
 
 	return 0;		/* success */
 }				/* end of p2pInit() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1117,20 +1123,14 @@ static int p2pInit(struct net_device *prDev)
 static void p2pUninit(IN struct net_device *prDev)
 {
 
-
 	return;
 }				/* end of p2pUninit() */
 
-#if  LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 31)
 const struct net_device_ops p2p_netdev_ops = {
 	.ndo_open = p2pOpen,
 	.ndo_stop = p2pStop,
 	.ndo_set_mac_address = p2pSetMACAddress,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
 	.ndo_set_rx_mode = p2pSetMulticastList,
-#else
-	.ndo_set_multicast_list = p2pSetMulticastList,
-#endif
 	.ndo_get_stats = p2pGetStats,
 	.ndo_do_ioctl = p2pDoIOCTL,
 	.ndo_start_xmit = p2pHardStartXmit,
@@ -1139,10 +1139,6 @@ const struct net_device_ops p2p_netdev_ops = {
 	.ndo_init = p2pInit,
 	.ndo_uninit = p2pUninit,
 };
-
-
-#endif
-
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -1175,19 +1171,13 @@ BOOLEAN p2PAllocInfo(IN P_GLUE_INFO_T prGlueInfo)
 	ASSERT(prWifiVar);
 
 	do {
-		if (prGlueInfo == NULL) {
-			break;
-		}
-
 		if (prGlueInfo->prP2PInfo == NULL) {
 			/*alloc memory for p2p info */
 			prGlueInfo->prP2PInfo = kalMemAlloc(sizeof(GL_P2P_INFO_T), VIR_MEM_TYPE);
 			prAdapter->prP2pInfo = kalMemAlloc(sizeof(P2P_INFO_T), VIR_MEM_TYPE);
-			prWifiVar->prP2PConnSettings =
-			    kalMemAlloc(sizeof(P2P_CONNECTION_SETTINGS_T), VIR_MEM_TYPE);
+			prWifiVar->prP2PConnSettings = kalMemAlloc(sizeof(P2P_CONNECTION_SETTINGS_T), VIR_MEM_TYPE);
 
-			prWifiVar->prP2pDevFsmInfo =
-			    kalMemAlloc(sizeof(P2P_DEV_FSM_INFO_T), VIR_MEM_TYPE);
+			prWifiVar->prP2pDevFsmInfo = kalMemAlloc(sizeof(P2P_DEV_FSM_INFO_T), VIR_MEM_TYPE);
 
 			/* TODO: It can be moved to the inteface been created. */
 /*
@@ -1196,8 +1186,7 @@ BOOLEAN p2PAllocInfo(IN P_GLUE_INFO_T prGlueInfo)
 	    }
 */
 
-			prWifiVar->prP2pSpecificBssInfo =
-			    kalMemAlloc(sizeof(P2P_SPECIFIC_BSS_INFO_T), VIR_MEM_TYPE);
+			prWifiVar->prP2pSpecificBssInfo = kalMemAlloc(sizeof(P2P_SPECIFIC_BSS_INFO_T), VIR_MEM_TYPE);
 		} else {
 			ASSERT(prAdapter->prP2pInfo != NULL);
 			ASSERT(prWifiVar->prP2PConnSettings != NULL);
@@ -1205,14 +1194,17 @@ BOOLEAN p2PAllocInfo(IN P_GLUE_INFO_T prGlueInfo)
 			ASSERT(prWifiVar->prP2pSpecificBssInfo != NULL);
 		}
 		/*MUST set memory to 0 */
-		kalMemZero(prGlueInfo->prP2PInfo, sizeof(GL_P2P_INFO_T));
-		kalMemZero(prAdapter->prP2pInfo, sizeof(P2P_INFO_T));
-		kalMemZero(prWifiVar->prP2PConnSettings, sizeof(P2P_CONNECTION_SETTINGS_T));
-/* kalMemZero(prWifiVar->prP2pFsmInfo, sizeof(P2P_FSM_INFO_T)); */
-		kalMemZero(prWifiVar->prP2pSpecificBssInfo, sizeof(P2P_SPECIFIC_BSS_INFO_T));
+		if (prGlueInfo->prP2PInfo)
+			kalMemZero(prGlueInfo->prP2PInfo, sizeof(GL_P2P_INFO_T));
+		if (prAdapter->prP2pInfo)
+			kalMemZero(prAdapter->prP2pInfo, sizeof(P2P_INFO_T));
+		if (prWifiVar->prP2PConnSettings)
+			kalMemZero(prWifiVar->prP2PConnSettings, sizeof(P2P_CONNECTION_SETTINGS_T));
+		/* kalMemZero(prWifiVar->prP2pFsmInfo, sizeof(P2P_FSM_INFO_T)); */
+		if (prWifiVar->prP2pSpecificBssInfo)
+			kalMemZero(prWifiVar->prP2pSpecificBssInfo, sizeof(P2P_SPECIFIC_BSS_INFO_T));
 
 	} while (FALSE);
-
 
 	/* chk if alloc successful or not */
 	if (prGlueInfo->prP2PInfo && prAdapter->prP2pInfo && prWifiVar->prP2PConnSettings &&
@@ -1222,8 +1214,7 @@ BOOLEAN p2PAllocInfo(IN P_GLUE_INFO_T prGlueInfo)
 	} else {
 
 		if (prWifiVar->prP2pSpecificBssInfo) {
-			kalMemFree(prWifiVar->prP2pSpecificBssInfo, VIR_MEM_TYPE,
-				   sizeof(P2P_SPECIFIC_BSS_INFO_T));
+			kalMemFree(prWifiVar->prP2pSpecificBssInfo, VIR_MEM_TYPE, sizeof(P2P_SPECIFIC_BSS_INFO_T));
 
 			prWifiVar->prP2pSpecificBssInfo = NULL;
 		}
@@ -1233,8 +1224,7 @@ BOOLEAN p2PAllocInfo(IN P_GLUE_INFO_T prGlueInfo)
 /* prWifiVar->prP2pFsmInfo = NULL; */
 /* } */
 		if (prWifiVar->prP2PConnSettings) {
-			kalMemFree(prWifiVar->prP2PConnSettings, VIR_MEM_TYPE,
-				   sizeof(P2P_CONNECTION_SETTINGS_T));
+			kalMemFree(prWifiVar->prP2PConnSettings, VIR_MEM_TYPE, sizeof(P2P_CONNECTION_SETTINGS_T));
 
 			prWifiVar->prP2PConnSettings = NULL;
 		}
@@ -1253,7 +1243,6 @@ BOOLEAN p2PAllocInfo(IN P_GLUE_INFO_T prGlueInfo)
 
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Free memory for P2P_INFO, GL_P2P_INFO, P2P_CONNECTION_SETTINGS
@@ -1269,7 +1258,6 @@ BOOLEAN p2PFreeInfo(P_GLUE_INFO_T prGlueInfo)
 {
 
 	ASSERT(prGlueInfo);
-	ASSERT(prGlueInfo->prAdapter);
 
 	/* free memory after p2p module is ALREADY unregistered */
 	if (prGlueInfo->prAdapter->fgIsP2PRegistered == FALSE) {
@@ -1282,8 +1270,7 @@ BOOLEAN p2PFreeInfo(P_GLUE_INFO_T prGlueInfo)
 		kalMemFree(prGlueInfo->prAdapter->rWifiVar.prP2pSpecificBssInfo, VIR_MEM_TYPE,
 			   sizeof(P2P_SPECIFIC_BSS_INFO_T));
 
-		kalMemFree(prGlueInfo->prAdapter->rWifiVar.prP2pDevFsmInfo, VIR_MEM_TYPE,
-			   sizeof(P2P_DEV_FSM_INFO_T));
+		kalMemFree(prGlueInfo->prAdapter->rWifiVar.prP2pDevFsmInfo, VIR_MEM_TYPE, sizeof(P2P_DEV_FSM_INFO_T));
 
 		/*Reomve p2p bss scan list */
 		scanRemoveAllP2pBssDesc(prGlueInfo->prAdapter);
@@ -1295,7 +1282,6 @@ BOOLEAN p2PFreeInfo(P_GLUE_INFO_T prGlueInfo)
 /* prGlueInfo->prAdapter->rWifiVar.prP2pFsmInfo = NULL; */
 		prGlueInfo->prAdapter->rWifiVar.prP2pSpecificBssInfo = NULL;
 		prGlueInfo->prAdapter->rWifiVar.prP2pDevFsmInfo = NULL;
-
 
 		return TRUE;
 	} else {
@@ -1315,9 +1301,7 @@ BOOLEAN p2PFreeInfo(P_GLUE_INFO_T prGlueInfo)
 */
 /*----------------------------------------------------------------------------*/
 VOID
-p2pEnableChannel(PUINT_8 pucChIdx,
-		 UINT_8 ucChannelNum,
-		 struct ieee80211_channel *mtk_channels, UINT_8 mtk_channel_sz)
+p2pEnableChannel(PUINT_8 pucChIdx, UINT_8 ucChannelNum, struct ieee80211_channel *mtk_channels, UINT_8 mtk_channel_sz)
 {
 	UINT_8 ucCurChIdx = *pucChIdx;
 
@@ -1331,12 +1315,11 @@ p2pEnableChannel(PUINT_8 pucChIdx,
 		}
 
 		if (*pucChIdx == ucCurChIdx) {
-			printk(KERN_ALERT DRV_NAME "Orphan channel [%d]\n", ucChannelNum);
+			DBGLOG(INIT, WARN, "Orphan channel [%d]\n", ucChannelNum);
 			break;
 		}
 	}
 }
-
 
 BOOLEAN p2pNetRegister(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgIsRtnlLockAcquired)
 {
@@ -1349,7 +1332,6 @@ BOOLEAN p2pNetRegister(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgIsRtnlLockAcquired)
 	ASSERT(prGlueInfo);
 	ASSERT(prGlueInfo->prAdapter);
 
-
 	GLUE_ACQUIRE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_NET_DEV);
 	if (prGlueInfo->prAdapter->rP2PNetRegState == ENUM_NET_REG_STATE_UNREGISTERED) {
 		prGlueInfo->prAdapter->rP2PNetRegState = ENUM_NET_REG_STATE_REGISTERING;
@@ -1357,17 +1339,13 @@ BOOLEAN p2pNetRegister(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgIsRtnlLockAcquired)
 	}
 	GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_NET_DEV);
 
-	if (!fgDoRegister) {
+	if (!fgDoRegister)
 		return TRUE;
-	}
 
 	if (fgIsRtnlLockAcquired && rtnl_is_locked()) {
 		fgRollbackRtnlLock = TRUE;
 		rtnl_unlock();
 	}
-
-	/* Here are functions which need rtnl_lock */
-	wiphy_register(prGlueInfo->prP2PInfo->wdev.wiphy);
 
 	/* net device initialize */
 	netif_carrier_off(prGlueInfo->prP2PInfo->prDevHandler);
@@ -1375,7 +1353,7 @@ BOOLEAN p2pNetRegister(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgIsRtnlLockAcquired)
 
 	/* register for net device */
 	if (register_netdev(prGlueInfo->prP2PInfo->prDevHandler) < 0) {
-		printk(KERN_ALERT DRV_NAME "unable to register netdevice for p2p\n");
+		DBGLOG(INIT, WARN, "unable to register netdevice for p2p\n");
 
 		free_netdev(prGlueInfo->prP2PInfo->prDevHandler);
 
@@ -1385,9 +1363,8 @@ BOOLEAN p2pNetRegister(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgIsRtnlLockAcquired)
 		ret = TRUE;
 	}
 
-	if (fgRollbackRtnlLock) {
+	if (fgRollbackRtnlLock)
 		rtnl_lock();
-	}
 
 	return ret;
 }
@@ -1409,14 +1386,12 @@ BOOLEAN p2pNetUnregister(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgIsRtnlLockAcquired)
 	}
 	GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_NET_DEV);
 
-	if (!fgDoUnregister) {
+	if (!fgDoUnregister)
 		return TRUE;
-	}
 
 	/* prepare for removal */
-	if (netif_carrier_ok(prGlueInfo->prP2PInfo->prDevHandler)) {
+	if (netif_carrier_ok(prGlueInfo->prP2PInfo->prDevHandler))
 		netif_carrier_off(prGlueInfo->prP2PInfo->prDevHandler);
-	}
 
 	netif_tx_stop_all_queues(prGlueInfo->prP2PInfo->prDevHandler);
 
@@ -1428,17 +1403,13 @@ BOOLEAN p2pNetUnregister(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgIsRtnlLockAcquired)
 
 	unregister_netdev(prGlueInfo->prP2PInfo->prDevHandler);
 
-	wiphy_unregister(prGlueInfo->prP2PInfo->wdev.wiphy);
-
-	if (fgRollbackRtnlLock) {
+	if (fgRollbackRtnlLock)
 		rtnl_lock();
-	}
 
 	prGlueInfo->prAdapter->rP2PNetRegState = ENUM_NET_REG_STATE_UNREGISTERED;
 
 	return TRUE;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1452,7 +1423,7 @@ BOOLEAN p2pNetUnregister(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgIsRtnlLockAcquired)
 /*----------------------------------------------------------------------------*/
 VOID p2pUpdateChannelTableByDomain(P_GLUE_INFO_T prGlueInfo)
 {
-	UINT_8 i, uc2gChIdx, uc5gChIdx;
+	UINT_8 i, j, uc2gChIdx, uc5gChIdx;
 	UINT_8 ucMaxChannelNum = ARRAY_SIZE(mtk_2ghz_channels) + ARRAY_SIZE(mtk_5ghz_a_channels);
 	UINT_8 ucNumOfChannel = ucMaxChannelNum;
 	RF_CHANNEL_INFO_T aucChannelList[ucMaxChannelNum];
@@ -1462,30 +1433,41 @@ VOID p2pUpdateChannelTableByDomain(P_GLUE_INFO_T prGlueInfo)
 	/* 1. Disable all channel */
 	for (i = 0; i < ARRAY_SIZE(mtk_2ghz_channels); i++) {
 		mtk_2ghz_channels[i].flags |= IEEE80211_CHAN_DISABLED;
+		mtk_2ghz_channels[i].orig_flags |= IEEE80211_CHAN_DISABLED;
 	}
 	for (i = 0; i < ARRAY_SIZE(mtk_5ghz_a_channels); i++) {
 		mtk_5ghz_a_channels[i].flags |= IEEE80211_CHAN_DISABLED;
+		mtk_5ghz_a_channels[i].orig_flags |= IEEE80211_CHAN_DISABLED;
 	}
 
 	/* 2. Get current domain channel list */
-	rlmDomainGetChnlList(prGlueInfo->prAdapter, BAND_NULL, ucMaxChannelNum, &ucNumOfChannel,
-			     aucChannelList);
+	rlmDomainGetChnlList(prGlueInfo->prAdapter, BAND_NULL, ucMaxChannelNum, &ucNumOfChannel, aucChannelList);
 
 	/* 3. Enable specific channel based on domain channel list */
 	for (i = 0; i < ucNumOfChannel; i++) {
 		switch (aucChannelList[i].eBand) {
 		case BAND_2G4:
-			p2pEnableChannel(&uc2gChIdx, aucChannelList[i].ucChannelNum,
-					 mtk_2ghz_channels, ARRAY_SIZE(mtk_2ghz_channels));
+			for (j = 0; j < ARRAY_SIZE(mtk_2ghz_channels); j++) {
+				if (mtk_2ghz_channels[j].hw_value == aucChannelList[i].ucChannelNum) {
+					mtk_2ghz_channels[j].flags &= ~IEEE80211_CHAN_DISABLED;
+					mtk_2ghz_channels[j].orig_flags &= ~IEEE80211_CHAN_DISABLED;
+					break;
+				}
+			}
 			break;
 
 		case BAND_5G:
-			p2pEnableChannel(&uc5gChIdx, aucChannelList[i].ucChannelNum,
-					 mtk_5ghz_a_channels, ARRAY_SIZE(mtk_5ghz_a_channels));
+			for (j = 0; j < ARRAY_SIZE(mtk_5ghz_a_channels); j++) {
+				if (mtk_5ghz_a_channels[j].hw_value == aucChannelList[i].ucChannelNum) {
+					mtk_5ghz_a_channels[j].flags &= ~IEEE80211_CHAN_DISABLED;
+					mtk_5ghz_a_channels[j].orig_flags &= ~IEEE80211_CHAN_DISABLED;
+					break;
+				}
+			}
 			break;
 
 		default:
-			printk(KERN_ALERT DRV_NAME "Unknow band.\n");
+			DBGLOG(INIT, WARN, "Unknow band.\n");
 			break;
 
 		}
@@ -1521,93 +1503,52 @@ BOOLEAN glRegisterP2P(P_GLUE_INFO_T prGlueInfo, const char *prDevName, BOOLEAN f
 	prHif = &prGlueInfo->rHifInfo;
 	ASSERT(prHif);
 
-	printk("glRegisterP2P\n");
+#if CFG_ENABLE_WIFI_DIRECT_CFG_80211
+	if (!gprP2pWdev) {
+		DBGLOG(P2P, ERROR, "gl_p2p, wireless device is not exist\n");
+		return FALSE;
+	}
+#endif
+	DBGLOG(INIT, INFO, "glRegisterP2P\n");
 
 	/*0. allocate p2pinfo */
 	if (!p2PAllocInfo(prGlueInfo)) {
-		printk(KERN_ALERT DRV_NAME "Allocate memory for p2p FAILED\n");
+		DBGLOG(INIT, WARN, "Allocate memory for p2p FAILED\n");
 		ASSERT(0);
 		return FALSE;
 	}
 #if CFG_ENABLE_WIFI_DIRECT_CFG_80211
-	/* 1. allocate WIPHY */
-	prGlueInfo->prP2PInfo->wdev.wiphy = wiphy_new(&mtk_p2p_config_ops, sizeof(P_GLUE_INFO_T));
-	if (!prGlueInfo->prP2PInfo->wdev.wiphy) {
-		printk(KERN_ALERT DRV_NAME "unable to allocate wiphy for p2p\n");
-
-		goto err_alloc_wiphy;
-	}
 
 	/* 1.1 fill wiphy parameters */
 #if MTK_WCN_HIF_SDIO
 	mtk_wcn_hif_sdio_get_dev(prHif->cltCtx, &prDev);
 	if (!prDev) {
-		printk(KERN_ALERT DRV_NAME "unable to get struct dev for p2p\n");
+		DBGLOG(INIT, INFO,
+			"unable to get struct dev for p2p\n");
 	}
 #else
 	prDev = &(prHif->func->dev);
 #endif
-	set_wiphy_dev(prGlueInfo->prP2PInfo->wdev.wiphy, prDev);
-
-	prGlueInfo->prP2PInfo->wdev.wiphy->interface_modes = BIT(NL80211_IFTYPE_AP)
-	    | BIT(NL80211_IFTYPE_P2P_CLIENT)
-	    | BIT(NL80211_IFTYPE_P2P_GO)
-	    | BIT(NL80211_IFTYPE_STATION);
+	prGlueInfo->prP2PInfo->prWdev = gprP2pWdev;
+	/*set_wiphy_dev(gprP2pWdev->wiphy, prDev);*/
+	if (!prGlueInfo->prAdapter->fgEnable5GBand)
+		gprP2pWdev->wiphy->bands[IEEE80211_BAND_5GHZ] = NULL;
 
 	p2pUpdateChannelTableByDomain(prGlueInfo);
-	prGlueInfo->prP2PInfo->wdev.wiphy->bands[IEEE80211_BAND_2GHZ] = &mtk_band_2ghz;
-	if (prAdapter->fgEnable5GBand) {
-		prGlueInfo->prP2PInfo->wdev.wiphy->bands[IEEE80211_BAND_5GHZ] = &mtk_band_5ghz;
-	}
-
-	prGlueInfo->prP2PInfo->wdev.wiphy->mgmt_stypes = mtk_cfg80211_default_mgmt_stypes;
-	prGlueInfo->prP2PInfo->wdev.wiphy->max_remain_on_channel_duration = 5000;
-	prGlueInfo->prP2PInfo->wdev.wiphy->n_cipher_suites = 5;
-	prGlueInfo->prP2PInfo->wdev.wiphy->cipher_suites = (const u32 *)cipher_suites;
-	prGlueInfo->prP2PInfo->wdev.wiphy->flags = WIPHY_FLAG_CUSTOM_REGULATORY |
-	    WIPHY_FLAG_HAS_REMAIN_ON_CHANNEL | WIPHY_FLAG_HAVE_AP_SME;
-	prGlueInfo->prP2PInfo->wdev.wiphy->ap_sme_capa = 1;
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 32)
-	prGlueInfo->prP2PInfo->wdev.wiphy->max_scan_ssids = MAX_SCAN_LIST_NUM;
-	prGlueInfo->prP2PInfo->wdev.wiphy->max_scan_ie_len = MAX_SCAN_IE_LEN;
-	prGlueInfo->prP2PInfo->wdev.wiphy->signal_type = CFG80211_SIGNAL_TYPE_MBM;
-#endif
-
-#ifdef CONFIG_PM
-	kalMemCopy(&prGlueInfo->prP2PInfo->wdev.wiphy->wowlan, &mtk_p2p_wowlan_support,
-		   sizeof(struct wiphy_wowlan_support));
-#endif
-
-#if 0
-	/* 2. Register WIPHY */
-	if (wiphy_register(prGlueInfo->prP2PInfo->wdev.wiphy) < 0) {
-		printk(KERN_ALERT DRV_NAME "Couldn't register wiphy device for p2p\n");
-
-		goto err_reg_wiphy;
-	}
-#endif
-
-	/* 2.1 set priv as pointer to glue structure */
-	*((P_GLUE_INFO_T *) wiphy_priv(prGlueInfo->prP2PInfo->wdev.wiphy)) = prGlueInfo;
 
 	/* 2.2 wdev initialization */
-	if (fgIsApMode) {
-		prGlueInfo->prP2PInfo->wdev.iftype = NL80211_IFTYPE_AP;
-	} else {
-		prGlueInfo->prP2PInfo->wdev.iftype = NL80211_IFTYPE_P2P_CLIENT;
-	}
+	if (fgIsApMode)
+		gprP2pWdev->iftype = NL80211_IFTYPE_AP;
+	else
+		gprP2pWdev->iftype = NL80211_IFTYPE_P2P_CLIENT;
 
-#endif				/* CFG_ENABLE_WIFI_DIRECT_CFG_80211 */
+#endif /* CFG_ENABLE_WIFI_DIRECT_CFG_80211 */
 
 	/* 3. allocate netdev */
 	prGlueInfo->prP2PInfo->prDevHandler =
-	    alloc_netdev_mq(sizeof(NETDEV_PRIVATE_GLUE_INFO), prDevName, ether_setup,
-			    CFG_MAX_TXQ_NUM);
+	    alloc_netdev_mq(sizeof(NETDEV_PRIVATE_GLUE_INFO), prDevName, ether_setup, CFG_MAX_TXQ_NUM);
 	if (!prGlueInfo->prP2PInfo->prDevHandler) {
-		printk(KERN_ALERT DRV_NAME "unable to allocate netdevice for p2p\n");
-
-		printk("unable to allocate netdevice for p2p\n");
+		DBGLOG(INIT, WARN, "unable to allocate netdevice for p2p\n");
 
 		goto err_alloc_netdev;
 	}
@@ -1615,47 +1556,31 @@ BOOLEAN glRegisterP2P(P_GLUE_INFO_T prGlueInfo, const char *prDevName, BOOLEAN f
 	/* 4. setup netdev */
 	/* 4.1 Point to shared glue structure */
 /* *((P_GLUE_INFO_T *) netdev_priv(prGlueInfo->prP2PInfo->prDevHandler)) = prGlueInfo; */
-	prNetDevPriv =
-	    (P_NETDEV_PRIVATE_GLUE_INFO) netdev_priv(prGlueInfo->prP2PInfo->prDevHandler);
+	prNetDevPriv = (P_NETDEV_PRIVATE_GLUE_INFO) netdev_priv(prGlueInfo->prP2PInfo->prDevHandler);
 	prNetDevPriv->prGlueInfo = prGlueInfo;
-
-
 
 	/* 4.2 fill hardware address */
 	COPY_MAC_ADDR(rMacAddr, prAdapter->rMyMacAddr);
 	rMacAddr[0] ^= 0x2;	/* change to local administrated address */
 	memcpy(prGlueInfo->prP2PInfo->prDevHandler->dev_addr, rMacAddr, ETH_ALEN);
-	memcpy(prGlueInfo->prP2PInfo->prDevHandler->perm_addr,
-	       prGlueInfo->prP2PInfo->prDevHandler->dev_addr, ETH_ALEN);
+	memcpy(prGlueInfo->prP2PInfo->prDevHandler->perm_addr, prGlueInfo->prP2PInfo->prDevHandler->dev_addr, ETH_ALEN);
 
 	/* 4.3 register callback functions */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 31)
 	prGlueInfo->prP2PInfo->prDevHandler->netdev_ops = &p2p_netdev_ops;
-#else
-	prGlueInfo->prP2PInfo->prDevHandler->open = p2pOpen;
-	prGlueInfo->prP2PInfo->prDevHandler->stop = p2pStop;
-	prGlueInfo->prP2PInfo->prDevHandler->get_stats = p2pGetStats;
-	prGlueInfo->prP2PInfo->prDevHandler->set_multicast_list = p2pSetMulticastList;
-	prGlueInfo->prP2PInfo->prDevHandler->hard_start_xmit = p2pHardStartXmit;
-	prGlueInfo->prP2PInfo->prDevHandler->do_ioctl = p2pDoIOCTL;
-	prGlueInfo->prP2PInfo->prDevHandler->set_mac_address = p2pSetMACAddress;
-#endif
 /* prGlueInfo->prP2PInfo->prDevHandler->wireless_handlers    = &mtk_p2p_wext_handler_def; */
-
 
 #if (MTK_WCN_HIF_SDIO == 0)
 	SET_NETDEV_DEV(prGlueInfo->prP2PInfo->prDevHandler, &(prHif->func->dev));
 #endif
 
-
 #if CFG_ENABLE_WIFI_DIRECT_CFG_80211
-	prGlueInfo->prP2PInfo->prDevHandler->ieee80211_ptr = &(prGlueInfo->prP2PInfo->wdev);
-	prGlueInfo->prP2PInfo->wdev.netdev = prGlueInfo->prP2PInfo->prDevHandler;
+	prGlueInfo->prP2PInfo->prDevHandler->ieee80211_ptr = gprP2pWdev;
+	gprP2pWdev->netdev = prGlueInfo->prP2PInfo->prDevHandler;
 #endif
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
 	prGlueInfo->prP2PInfo->prDevHandler->features = NETIF_F_IP_CSUM;
-#endif				/* CFG_TCP_IP_CHKSUM_OFFLOAD */
+#endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
 
 	kalResetStats(prGlueInfo->prP2PInfo->prDevHandler);
 
@@ -1666,7 +1591,7 @@ BOOLEAN glRegisterP2P(P_GLUE_INFO_T prGlueInfo, const char *prDevName, BOOLEAN f
 
 	/* 8. register for net device */
 	if (register_netdev(prGlueInfo->prP2PInfo->prDevHandler) < 0) {
-		printk(KERN_ALERT DRV_NAME "unable to register netdevice for p2p\n");
+		DBGLOG(INIT, WARN, "unable to register netdevice for p2p\n");
 
 		goto err_reg_netdev;
 	}
@@ -1680,13 +1605,13 @@ BOOLEAN glRegisterP2P(P_GLUE_INFO_T prGlueInfo, const char *prDevName, BOOLEAN f
 
 	/* 10. finish */
 	/* 13. bind netdev pointer to netdev index */
-	wlanBindBssIdxToNetInterface(prGlueInfo, p2pDevFsmInit(prAdapter),
-				     (PVOID) prGlueInfo->prP2PInfo->prDevHandler);
+	wlanBindBssIdxToNetInterface(prGlueInfo, p2pDevFsmInit(prAdapter), (PVOID) prGlueInfo->prP2PInfo->prDevHandler);
 
 	prGlueInfo->prP2PInfo->aprRoleHandler[0] = prGlueInfo->prP2PInfo->prDevHandler;
 
 	prNetDevPriv->ucBssIdx = p2pRoleFsmInit(prAdapter, 0);
-	/* 11. Currently wpasupplicant can't support create interface. so initial the corresponding data structure here. */
+	/* 11. Currently wpasupplicant can't support create interface. */
+	/* so initial the corresponding data structure here. */
 	wlanBindBssIdxToNetInterface(prGlueInfo, prNetDevPriv->ucBssIdx,
 				     (PVOID) prGlueInfo->prP2PInfo->aprRoleHandler[0]);
 
@@ -1707,19 +1632,78 @@ err_reg_netdev:
 	free_netdev(prGlueInfo->prP2PInfo->prDevHandler);
 #endif
 err_alloc_netdev:
-#if CFG_ENABLE_WIFI_DIRECT_CFG_80211
-/* wiphy_unregister(prGlueInfo->prP2PInfo->wdev.wiphy); */
-
-/* err_reg_wiphy: */
-	wiphy_free(prGlueInfo->prP2PInfo->wdev.wiphy);
-	prGlueInfo->prP2PInfo->wdev.wiphy = NULL;
-
-err_alloc_wiphy:
-#endif
-
 	return FALSE;
 }				/* end of glRegisterP2P() */
 
+BOOLEAN glP2pCreateWirelessDevice(P_GLUE_INFO_T prGlueInfo)
+{
+	struct wiphy *prWiphy = NULL;
+	struct wireless_dev *prWdev = NULL;
+#if CFG_ENABLE_WIFI_DIRECT_CFG_80211
+	prWdev = kzalloc(sizeof(struct wireless_dev), GFP_KERNEL);
+	if (!prWdev) {
+		DBGLOG(P2P, ERROR, "allocate p2p wireless device fail, no memory\n");
+		return FALSE;
+	}
+	/* 1. allocate WIPHY */
+	prWiphy = wiphy_new(&mtk_p2p_config_ops, sizeof(P_GLUE_INFO_T));
+	if (!prWiphy) {
+		DBGLOG(P2P, ERROR, "unable to allocate wiphy for p2p\n");
+		goto free_wdev;
+	}
+
+	prWiphy->interface_modes = BIT(NL80211_IFTYPE_AP)
+	    | BIT(NL80211_IFTYPE_P2P_CLIENT)
+	    | BIT(NL80211_IFTYPE_P2P_GO)
+	    | BIT(NL80211_IFTYPE_STATION);
+
+	prWiphy->iface_combinations = mtk_p2p_iface_combos;
+	prWiphy->n_iface_combinations = ARRAY_SIZE(mtk_p2p_iface_combos);
+
+	prWiphy->bands[IEEE80211_BAND_2GHZ] = &mtk_band_2ghz;
+	prWiphy->bands[IEEE80211_BAND_5GHZ] = &mtk_band_5ghz;
+
+	prWiphy->mgmt_stypes = mtk_cfg80211_default_mgmt_stypes;
+	prWiphy->max_remain_on_channel_duration = 5000;
+	prWiphy->n_cipher_suites = 5;
+	prWiphy->cipher_suites = (const u32 *)cipher_suites;
+	prWiphy->flags = WIPHY_FLAG_CUSTOM_REGULATORY | WIPHY_FLAG_HAS_REMAIN_ON_CHANNEL | WIPHY_FLAG_HAVE_AP_SME;
+	prWiphy->ap_sme_capa = 1;
+
+	prWiphy->max_scan_ssids = MAX_SCAN_LIST_NUM;
+	prWiphy->max_scan_ie_len = MAX_SCAN_IE_LEN;
+	prWiphy->signal_type = CFG80211_SIGNAL_TYPE_MBM;
+#ifdef CONFIG_PM
+	kalMemCopy(&(prWiphy->wowlan), &mtk_p2p_wowlan_support, sizeof(struct wiphy_wowlan_support));
+#endif
+	/* 2.1 set priv as pointer to glue structure */
+	*((P_GLUE_INFO_T *) wiphy_priv(prWiphy)) = prGlueInfo;
+	/* Here are functions which need rtnl_lock */
+	if (wiphy_register(prWiphy) < 0) {
+		DBGLOG(INIT, WARN, "fail to register wiphy for p2p\n");
+		goto free_wiphy;
+	}
+	prWdev->wiphy = prWiphy;
+	gprP2pWdev = prWdev;
+	return TRUE;
+
+free_wiphy:
+	wiphy_free(prWiphy);
+free_wdev:
+	kfree(prWdev);
+#endif
+	return FALSE;
+}
+
+void glP2pDestroyWirelessDevice()
+{
+#if CFG_ENABLE_WIFI_DIRECT_CFG_80211
+	wiphy_unregister(gprP2pWdev->wiphy);
+	wiphy_free(gprP2pWdev->wiphy);
+	kfree(gprP2pWdev);
+	gprP2pWdev = NULL;
+#endif
+}
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1746,23 +1730,17 @@ BOOLEAN glUnregisterP2P(P_GLUE_INFO_T prGlueInfo)
 
 	/* 4 <2> Uninit P2P role FSM */
 	for (ucRoleIdx = 0; ucRoleIdx < BSS_P2P_NUM; ucRoleIdx++) {
-		if (P2P_ROLE_INDEX_2_ROLE_FSM_INFO(prAdapter, ucRoleIdx)) {
+		if (P2P_ROLE_INDEX_2_ROLE_FSM_INFO(prAdapter, ucRoleIdx))
 			p2pRoleFsmUninit(prGlueInfo->prAdapter, ucRoleIdx);
-		}
 	}
 
 	/* 4 <3> Free Wiphy & netdev */
 	free_netdev(prGlueInfo->prP2PInfo->prDevHandler);
 	prGlueInfo->prP2PInfo->prDevHandler = NULL;
 
-#if CFG_ENABLE_WIFI_DIRECT_CFG_80211
-	wiphy_free(prGlueInfo->prP2PInfo->wdev.wiphy);
-	prGlueInfo->prP2PInfo->wdev.wiphy = NULL;
-#endif
-
 	/* 4 <4> Free P2P internal memory */
 	if (!p2PFreeInfo(prGlueInfo)) {
-		printk(KERN_ALERT DRV_NAME "Free memory for p2p FAILED\n");
+		DBGLOG(INIT, WARN, "Free memory for p2p FAILED\n");
 		ASSERT(0);
 		return FALSE;
 	}
@@ -1793,9 +1771,8 @@ BOOLEAN glUnregisterP2P(P_GLUE_INFO_T prGlueInfo)
 
 #if 0
 	/* prepare for removal */
-	if (netif_carrier_ok(prGlueInfo->prP2PInfo->prDevHandler)) {
+	if (netif_carrier_ok(prGlueInfo->prP2PInfo->prDevHandler))
 		netif_carrier_off(prGlueInfo->prP2PInfo->prDevHandler);
-	}
 
 	netif_tx_stop_all_queues(prGlueInfo->prP2PInfo->prDevHandler);
 
@@ -1816,7 +1793,7 @@ BOOLEAN glUnregisterP2P(P_GLUE_INFO_T prGlueInfo)
 	/* Free p2p memory */
 #if 1
 	if (!p2PFreeInfo(prGlueInfo)) {
-		printk(KERN_ALERT DRV_NAME "Free memory for p2p FAILED\n");
+		DBGLOG(INIT, WARN, "Free memory for p2p FAILED\n");
 		ASSERT(0);
 		return FALSE;
 	}
@@ -1827,7 +1804,6 @@ BOOLEAN glUnregisterP2P(P_GLUE_INFO_T prGlueInfo)
 	return 0;
 #endif
 }				/* end of glUnregisterP2P() */
-
 
 /* Net Device Hooks */
 /*----------------------------------------------------------------------------*/
@@ -1858,8 +1834,7 @@ static int p2pOpen(IN struct net_device *prDev)
 	/* 1. switch P2P-FSM on */
 	/* 1.1 allocate for message */
 	prFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T) cnmMemAlloc(prAdapter,
-								 RAM_TYPE_MSG,
-								 sizeof(MSG_P2P_FUNCTION_SWITCH_T));
+								 RAM_TYPE_MSG, sizeof(MSG_P2P_FUNCTION_SWITCH_T));
 
 	if (!prFuncSwitch) {
 		ASSERT(0);	/* Can't trigger P2P FSM */
@@ -1880,7 +1855,6 @@ static int p2pOpen(IN struct net_device *prDev)
 
 	return 0;		/* success */
 }				/* end of p2pOpen() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1912,8 +1886,7 @@ static int p2pStop(IN struct net_device *prDev)
 	/* 2. switch P2P-FSM off */
 	/* 2.1 allocate for message */
 	prFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T) cnmMemAlloc(prAdapter,
-								 RAM_TYPE_MSG,
-								 sizeof(MSG_P2P_FUNCTION_SWITCH_T));
+								 RAM_TYPE_MSG, sizeof(MSG_P2P_FUNCTION_SWITCH_T));
 
 	if (!prFuncSwitch) {
 		ASSERT(0);	/* Can't trigger P2P FSM */
@@ -1931,13 +1904,11 @@ static int p2pStop(IN struct net_device *prDev)
 	prGlueInfo->prP2PInfo->eState = PARAM_MEDIA_STATE_DISCONNECTED;
 
 	netif_tx_stop_all_queues(prDev);
-	if (netif_carrier_ok(prDev)) {
+	if (netif_carrier_ok(prDev))
 		netif_carrier_off(prDev);
-	}
 
 	return 0;
 }				/* end of p2pStop() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1957,7 +1928,6 @@ struct net_device_stats *p2pGetStats(IN struct net_device *prDev)
 	return (struct net_device_stats *)kalGetStats(prDev);
 }				/* end of p2pGetStats() */
 
-
 static void p2pSetMulticastList(IN struct net_device *prDev)
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
@@ -1967,11 +1937,10 @@ static void p2pSetMulticastList(IN struct net_device *prDev)
 	ASSERT(prDev);
 	ASSERT(prGlueInfo);
 	if (!prDev || !prGlueInfo) {
-		printk(KERN_WARNING DRV_NAME
-		       " abnormal dev or skb: prDev(0x%p), prGlueInfo(0x%p)\n", prDev, prGlueInfo);
+		DBGLOG(INIT, WARN,
+			" abnormal dev or skb: prDev(0x%p), prGlueInfo(0x%p)\n", prDev, prGlueInfo);
 		return;
 	}
-
 
 	g_P2pPrDev = prDev;
 
@@ -1981,7 +1950,6 @@ static void p2pSetMulticastList(IN struct net_device *prDev)
 	wake_up_interruptible(&prGlueInfo->waitq);
 
 }				/* p2pSetMulticastList */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2003,66 +1971,43 @@ void mtk_p2p_wext_set_Multicastlist(P_GLUE_INFO_T prGlueInfo)
 	ASSERT(prDev);
 	ASSERT(prGlueInfo);
 	if (!prDev || !prGlueInfo) {
-		printk(KERN_WARNING DRV_NAME
-		       " abnormal dev or skb: prDev(0x%p), prGlueInfo(0x%p)\n", prDev, prGlueInfo);
+		DBGLOG(INIT, WARN,
+			" abnormal dev or skb: prDev(0x%p), prGlueInfo(0x%p)\n", prDev, prGlueInfo);
 		return;
 	}
 
-
-	if (prDev->flags & IFF_PROMISC) {
+	if (prDev->flags & IFF_PROMISC)
 		prGlueInfo->prP2PInfo->u4PacketFilter |= PARAM_PACKET_FILTER_PROMISCUOUS;
-	}
 
-	if (prDev->flags & IFF_BROADCAST) {
+	if (prDev->flags & IFF_BROADCAST)
 		prGlueInfo->prP2PInfo->u4PacketFilter |= PARAM_PACKET_FILTER_BROADCAST;
-	}
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
 	u4McCount = netdev_mc_count(prDev);
-#else
-	u4McCount = prDev->mc_count;
-#endif
 
 	if (prDev->flags & IFF_MULTICAST) {
-		if ((prDev->flags & IFF_ALLMULTI) || (u4McCount > MAX_NUM_GROUP_ADDR)) {
+		if ((prDev->flags & IFF_ALLMULTI) || (u4McCount > MAX_NUM_GROUP_ADDR))
 			prGlueInfo->prP2PInfo->u4PacketFilter |= PARAM_PACKET_FILTER_ALL_MULTICAST;
-		} else {
+		else
 			prGlueInfo->prP2PInfo->u4PacketFilter |= PARAM_PACKET_FILTER_MULTICAST;
-		}
 	}
 
 	if (prGlueInfo->prP2PInfo->u4PacketFilter & PARAM_PACKET_FILTER_MULTICAST) {
 		/* Prepare multicast address list */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
 		struct netdev_hw_addr *ha;
-#else
-		struct dev_mc_list *prMcList;
-#endif
 		UINT_32 i = 0;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35)
 		netdev_for_each_mc_addr(ha, prDev) {
 			if (i < MAX_NUM_GROUP_ADDR) {
 				COPY_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucMCAddrList[i]), ha->addr);
 				i++;
 			}
 		}
-#else
-		for (i = 0, prMcList = prDev->mc_list;
-		     (prMcList) && (i < prDev->mc_count) && (i < MAX_NUM_GROUP_ADDR);
-		     i++, prMcList = prMcList->next) {
-			COPY_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucMCAddrList[i]),
-				      prMcList->dmi_addr);
-		}
-#endif
 
-		DBGLOG(P2P, TRACE, ("SEt Multicast Address List\n"));
+		DBGLOG(P2P, TRACE, "SEt Multicast Address List\n");
 
-		if (i >= MAX_NUM_GROUP_ADDR) {
+		if (i >= MAX_NUM_GROUP_ADDR)
 			return;
-		}
 		wlanoidSetP2PMulticastList(prGlueInfo->prAdapter,
-					   &(prGlueInfo->prP2PInfo->aucMCAddrList[0]),
-					   (i * ETH_ALEN), &u4SetInfoLen);
+					   &(prGlueInfo->prP2PInfo->aucMCAddrList[0]), (i * ETH_ALEN), &u4SetInfoLen);
 
 	}
 
@@ -2093,7 +2038,7 @@ int p2pHardStartXmit(IN struct sk_buff *prSkb, IN struct net_device *prDev)
 	prGlueInfo = prNetDevPrivate->prGlueInfo;
 	ucBssIndex = prNetDevPrivate->ucBssIdx;
 
-    kalResetPacket(prGlueInfo, (P_NATIVE_PACKET)prSkb);
+	kalResetPacket(prGlueInfo, (P_NATIVE_PACKET) prSkb);
 
 	kalHardStartXmit(prSkb, prDev, prGlueInfo, ucBssIndex);
 
@@ -2133,7 +2078,7 @@ int p2pDoIOCTL(struct net_device *prDev, struct ifreq *prIFReq, int i4Cmd)
 
 	ASSERT(prGlueInfo);
 	if (!prGlueInfo) {
-		DBGLOG(INIT, WARN, ("%s No glue info\n", __func__));
+		DBGLOG(INIT, WARN, "%s No glue info\n", __func__);
 		return -EFAULT;
 	}
 
@@ -2146,11 +2091,9 @@ int p2pDoIOCTL(struct net_device *prDev, struct ifreq *prIFReq, int i4Cmd)
 		ret = priv_support_driver_cmd(prDev, prIFReq, i4Cmd);
 
 	} else {
-		DBGLOG(INIT, WARN,
-		       ("Unexpected ioctl command on p2p0 %s: 0x%04x\n", __func__, i4Cmd));
+		DBGLOG(INIT, WARN, "Unexpected ioctl command on p2p0 %s: 0x%04x\n", __func__, i4Cmd);
 		ret = -1;
 	}
-
 
 #if 0
 	/* fill rIwReqInfo */
@@ -2169,19 +2112,15 @@ int p2pDoIOCTL(struct net_device *prDev, struct ifreq *prIFReq, int i4Cmd)
 				break;
 			}
 
-			if (copy_from_user(prExtraBuf,
-					   prIwReq->u.encoding.pointer,
-					   prIwReq->u.encoding.length)) {
+			if (copy_from_user(prExtraBuf, prIwReq->u.encoding.pointer, prIwReq->u.encoding.length))
 				ret = -EFAULT;
-			}
 		} else if (prIwReq->u.encoding.length != 0) {
 			ret = -EINVAL;
 			break;
 		}
 
-		if (ret == 0) {
+		if (ret == 0)
 			ret = mtk_p2p_wext_set_key(prDev, &rIwReqInfo, &(prIwReq->u), prExtraBuf);
-		}
 
 		kalMemFree(prExtraBuf, VIR_MEM_TYPE, u4ExtraSize);
 		prExtraBuf = NULL;
@@ -2190,7 +2129,7 @@ int p2pDoIOCTL(struct net_device *prDev, struct ifreq *prIFReq, int i4Cmd)
 	case SIOCSIWMLME:
 		/* IW_MLME_DISASSOC used for disconnection */
 		if (prIwReq->u.data.length != sizeof(struct iw_mlme)) {
-			printk(KERN_INFO "MLME buffer strange:%d\n", prIwReq->u.data.length);
+			DBGLOG(INIT, INFO, "MLME buffer strange:%d\n", prIwReq->u.data.length);
 			ret = -EINVAL;
 			break;
 		}
@@ -2206,13 +2145,10 @@ int p2pDoIOCTL(struct net_device *prDev, struct ifreq *prIFReq, int i4Cmd)
 			break;
 		}
 
-		if (copy_from_user(prExtraBuf, prIwReq->u.data.pointer, sizeof(struct iw_mlme))) {
+		if (copy_from_user(prExtraBuf, prIwReq->u.data.pointer, sizeof(struct iw_mlme)))
 			ret = -EFAULT;
-		} else {
-			ret =
-			    mtk_p2p_wext_mlme_handler(prDev, &rIwReqInfo, &(prIwReq->u),
-						      prExtraBuf);
-		}
+		else
+			ret = mtk_p2p_wext_mlme_handler(prDev, &rIwReqInfo, &(prIwReq->u), prExtraBuf);
 
 		kalMemFree(prExtraBuf, VIR_MEM_TYPE, sizeof(struct iw_mlme));
 		prExtraBuf = NULL;
@@ -2241,7 +2177,10 @@ int p2pDoIOCTL(struct net_device *prDev, struct ifreq *prIFReq, int i4Cmd)
 	case IOC_P2P_GET_STRUCT:
 	case IOC_P2P_SET_STRUCT:
 	case IOC_P2P_GET_REQ_DEVICE_INFO:
-		/* ret = rP2PIwPrivHandler[i4Cmd - SIOCIWFIRSTPRIV](prDev, &rIwReqInfo, &(prIwReq->u), (char *)&(prIwReq->u)); */
+		/* ret = rP2PIwPrivHandler[i4Cmd - SIOCIWFIRSTPRIV](prDev,
+									&rIwReqInfo,
+									&(prIwReq->u),
+									(char *)&(prIwReq->u)); */
 		break;
 #if CFG_SUPPORT_P2P_RSSI_QUERY
 	case SIOCGIWSTATS:
@@ -2251,7 +2190,7 @@ int p2pDoIOCTL(struct net_device *prDev, struct ifreq *prIFReq, int i4Cmd)
 	default:
 		ret = -ENOTTY;
 	}
-#endif				/* 0 */
+#endif /* 0 */
 
 	return ret;
 }				/* end of p2pDoIOCTL() */
@@ -2303,8 +2242,7 @@ int p2pSetMACAddress(IN struct net_device *prDev, void *addr)
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_get_priv(IN struct net_device *prDev,
-		      IN struct iw_request_info *info,
-		      IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+		      IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	struct iw_point *prData = (struct iw_point *)&wrqu->data;
 	UINT_16 u2BufferSize = 0;
@@ -2316,19 +2254,16 @@ mtk_p2p_wext_get_priv(IN struct net_device *prDev,
 	/* update our private table size */
 	prData->length = (__u16) sizeof(rP2PIwPrivTable) / sizeof(struct iw_priv_args);
 
-	if (u2BufferSize < prData->length) {
+	if (u2BufferSize < prData->length)
 		return -E2BIG;
-	}
 
 	if (prData->length) {
-		if (copy_to_user(prData->pointer, rP2PIwPrivTable, sizeof(rP2PIwPrivTable))) {
+		if (copy_to_user(prData->pointer, rP2PIwPrivTable, sizeof(rP2PIwPrivTable)))
 			return -EFAULT;
-		}
 	}
 
 	return 0;
 }				/* end of mtk_p2p_wext_get_priv() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2344,8 +2279,7 @@ mtk_p2p_wext_get_priv(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_reconnect(IN struct net_device *prDev,
-		       IN struct iw_request_info *info,
-		       IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+		       IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 #if 0
 	P_ADAPTER_T prAdapter = NULL;
@@ -2368,16 +2302,13 @@ mtk_p2p_wext_reconnect(IN struct net_device *prDev,
 
 	/* 1.2 fill message */
 
-	DBGLOG(P2P, TRACE, ("mtk_p2p_wext_reconnect: P2P Reconnect\n"));
+	DBGLOG(P2P, TRACE, "mtk_p2p_wext_reconnect: P2P Reconnect\n");
 
 	/* 1.3 send message */
 	mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prMsgHdr, MSG_SEND_METHOD_BUF);
 #endif
 	return 0;
 }				/* end of mtk_p2p_wext_reconnect() */
-
-
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2395,8 +2326,7 @@ mtk_p2p_wext_reconnect(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_mlme_handler(IN struct net_device *prDev,
-			  IN struct iw_request_info *info,
-			  IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			  IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 #if 0
 	P_ADAPTER_T prAdapter = NULL;
@@ -2415,13 +2345,12 @@ mtk_p2p_wext_mlme_handler(IN struct net_device *prDev,
 
 	prP2pBssInfo = &(prAdapter->rWifiVar.arBssInfo[NETWORK_TYPE_P2P_INDEX]);
 
-	DBGLOG(P2P, TRACE, ("mtk_p2p_wext_mlme_handler:\n"));
+	DBGLOG(P2P, TRACE, "mtk_p2p_wext_mlme_handler:\n");
 
 	switch (mlme->cmd) {
 	case IW_MLME_DISASSOC:
 		prMsgP2PConnAbt =
-		    (P_MSG_HDR_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG,
-					      sizeof(MSG_P2P_CONNECTION_ABORT_T));
+		    (P_MSG_HDR_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_P2P_CONNECTION_ABORT_T));
 		if (!prMsgP2PConnAbt) {
 			ASSERT(0);	/* Can't trigger P2P FSM */
 			return -ENOMEM;
@@ -2431,21 +2360,19 @@ mtk_p2p_wext_mlme_handler(IN struct net_device *prDev,
 
 		prMsgP2PConnAbt->u2ReasonCode = mlme->reason_code;
 
-
 		if (EQUAL_MAC_ADDR(prMsgP2PConnAbt->aucTargetID, prP2pBssInfo->aucOwnMacAddr)) {
-			DBGLOG(P2P, TRACE, ("P2P Connection Abort:\n"));
+			DBGLOG(P2P, TRACE, "P2P Connection Abort:\n");
 
 			/* 1.2 fill message */
 			prMsgP2PConnAbt->rMsgHdr.eMsgId = MID_MNY_P2P_CONNECTION_ABORT;
 		} else {
-			DBGLOG(P2P, TRACE, ("P2P Connection Pause:\n"));
+			DBGLOG(P2P, TRACE, "P2P Connection Pause:\n");
 
 			/* 1.2 fill message */
 		}
 
 		/* 1.3 send message */
-		mboxSendMsg(prAdapter,
-			    MBOX_ID_0, (P_MSG_HDR_T) prMsgP2PConnAbt, MSG_SEND_METHOD_BUF);
+		mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prMsgP2PConnAbt, MSG_SEND_METHOD_BUF);
 
 		break;
 
@@ -2455,7 +2382,6 @@ mtk_p2p_wext_mlme_handler(IN struct net_device *prDev,
 #endif
 	return 0;
 }				/* end of mtk_p2p_wext_mlme_handler() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2473,8 +2399,7 @@ mtk_p2p_wext_mlme_handler(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_set_provision_complete(IN struct net_device *prDev,
-				    IN struct iw_request_info *info,
-				    IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+				    IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 #if 0
 	P_ADAPTER_T prAdapter = NULL;
@@ -2519,8 +2444,6 @@ mtk_p2p_wext_set_provision_complete(IN struct net_device *prDev,
 	return 0;
 }				/* end of mtk_p2p_wext_set_provision_complete() */
 
-
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief P2P Private I/O Control handler (IOC_P2P_START_STOP_DISCOVERY)
@@ -2537,8 +2460,7 @@ mtk_p2p_wext_set_provision_complete(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_start_stop_discovery(IN struct net_device *prDev,
-				  IN struct iw_request_info *info,
-				  IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+				  IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 #if 0
 	P_ADAPTER_T prAdapter = NULL;
@@ -2569,7 +2491,6 @@ mtk_p2p_wext_start_stop_discovery(IN struct net_device *prDev,
 			return -ENOMEM;
 		}
 
-
 		mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prMsgHdr, MSG_SEND_METHOD_BUF);
 	} else if (prData->flags == P2P_START_DISCOVERY) {
 
@@ -2578,12 +2499,10 @@ mtk_p2p_wext_start_stop_discovery(IN struct net_device *prDev,
 			if (prReqDeviceType->probe_rsp_len <= MAX_IE_LENGTH) {
 				if (copy_from_user
 				    (prGlueInfo->prP2PInfo->aucWSCIE[2],
-				     prReqDeviceType->probe_rsp_ie,
-				     prReqDeviceType->probe_rsp_len)) {
+				     prReqDeviceType->probe_rsp_ie, prReqDeviceType->probe_rsp_len)) {
 					return -EFAULT;
 				}
-				prGlueInfo->prP2PInfo->u2WSCIELen[2] =
-				    prReqDeviceType->probe_rsp_len;
+				prGlueInfo->prP2PInfo->u2WSCIELen[2] = prReqDeviceType->probe_rsp_len;
 			} else {
 				return -E2BIG;
 			}
@@ -2594,12 +2513,10 @@ mtk_p2p_wext_start_stop_discovery(IN struct net_device *prDev,
 			if (prReqDeviceType->probe_req_len <= MAX_IE_LENGTH) {
 				if (copy_from_user
 				    (prGlueInfo->prP2PInfo->aucWSCIE[1],
-				     prReqDeviceType->probe_req_ie,
-				     prReqDeviceType->probe_req_len)) {
+				     prReqDeviceType->probe_req_ie, prReqDeviceType->probe_req_len)) {
 					return -EFAULT;
 				}
-				prGlueInfo->prP2PInfo->u2WSCIELen[1] =
-				    prReqDeviceType->probe_req_len;
+				prGlueInfo->prP2PInfo->u2WSCIELen[1] = prReqDeviceType->probe_req_len;
 			} else {
 				return -E2BIG;
 			}
@@ -2614,8 +2531,7 @@ mtk_p2p_wext_start_stop_discovery(IN struct net_device *prDev,
 			/* indicate P2P-FSM with MID_MNY_P2P_DEVICE_DISCOVERY */
 			prDiscoverMsg = (P_MSG_P2P_DEVICE_DISCOVER_T) cnmMemAlloc(prAdapter,
 										  RAM_TYPE_MSG,
-										  sizeof
-										  (MSG_P2P_DEVICE_DISCOVER_T));
+										  sizeof(MSG_P2P_DEVICE_DISCOVER_T));
 
 			if (!prDiscoverMsg) {
 				ASSERT(0);	/* Can't trigger P2P FSM */
@@ -2632,8 +2548,7 @@ mtk_p2p_wext_start_stop_discovery(IN struct net_device *prDev,
 			COPY_MAC_ADDR(prDiscoverMsg->aucTargetDeviceID, aucNullAddr);
 
 			/* @FIXME: parameter to be refined, where to pass IE buffer ? */
-			mboxSendMsg(prAdapter,
-				    MBOX_ID_0, (P_MSG_HDR_T) prDiscoverMsg, MSG_SEND_METHOD_BUF);
+			mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prDiscoverMsg, MSG_SEND_METHOD_BUF);
 		}
 	} else {
 		return -EINVAL;
@@ -2642,8 +2557,6 @@ mtk_p2p_wext_start_stop_discovery(IN struct net_device *prDev,
 
 	return 0;
 }				/* end of mtk_p2p_wext_start_stop_discovery() */
-
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2661,16 +2574,14 @@ mtk_p2p_wext_start_stop_discovery(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_invitation_request(IN struct net_device *prDev,
-				IN struct iw_request_info *info,
-				IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+				IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	int i4Status = 0;
 #if 0
 	P_ADAPTER_T prAdapter = (P_ADAPTER_T) NULL;
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 	struct iw_point *prData = (struct iw_point *)&wrqu->data;
-	P_IW_P2P_IOCTL_INVITATION_STRUCT prIoctlInvitation =
-	    (P_IW_P2P_IOCTL_INVITATION_STRUCT) NULL;
+	P_IW_P2P_IOCTL_INVITATION_STRUCT prIoctlInvitation = (P_IW_P2P_IOCTL_INVITATION_STRUCT) NULL;
 
 	do {
 		if ((prDev == NULL) || (extra == NULL)) {
@@ -2678,7 +2589,6 @@ mtk_p2p_wext_invitation_request(IN struct net_device *prDev,
 			i4Status = -EINVAL;
 			break;
 		}
-
 
 		prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 		prIoctlInvitation = (P_IW_P2P_IOCTL_INVITATION_STRUCT) extra;
@@ -2688,14 +2598,12 @@ mtk_p2p_wext_invitation_request(IN struct net_device *prDev,
 			break;
 		}
 
-
 		prAdapter = prGlueInfo->prAdapter;
 
 		if (prAdapter == NULL) {
 			i4Status = -EINVAL;
 			break;
 		}
-
 
 		if (prIoctlInvitation->ucReinvoke == 1) {
 			/* TODO: Set Group ID */
@@ -2704,14 +2612,12 @@ mtk_p2p_wext_invitation_request(IN struct net_device *prDev,
 		}
 
 		else {
-			P_MSG_P2P_INVITATION_REQUEST_T prMsgP2PInvitationReq =
-			    (P_MSG_P2P_INVITATION_REQUEST_T) NULL;
+			P_MSG_P2P_INVITATION_REQUEST_T prMsgP2PInvitationReq = (P_MSG_P2P_INVITATION_REQUEST_T) NULL;
 
 			/* TODO: Do Invitation. */
 			prMsgP2PInvitationReq =
 			    (P_MSG_P2P_INVITATION_REQUEST_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG,
-									 sizeof
-									 (MSG_P2P_INVITATION_REQUEST_T));
+									 sizeof(MSG_P2P_INVITATION_REQUEST_T));
 			if (!prMsgP2PInvitationReq) {
 				ASSERT(0);	/* Can't trigger P2P FSM */
 				i4Status = -ENOMEM;
@@ -2719,20 +2625,14 @@ mtk_p2p_wext_invitation_request(IN struct net_device *prDev,
 			}
 
 			/* 1.2 fill message */
-			kalMemCopy(prMsgP2PInvitationReq->aucDeviceID,
-				   prIoctlInvitation->aucDeviceID, MAC_ADDR_LEN);
+			kalMemCopy(prMsgP2PInvitationReq->aucDeviceID, prIoctlInvitation->aucDeviceID, MAC_ADDR_LEN);
 
-			DBGLOG(P2P, TRACE,
-			       ("mtk_p2p_wext_invitation_request: P2P Invitation Req\n"));
+			DBGLOG(P2P, TRACE, "mtk_p2p_wext_invitation_request: P2P Invitation Req\n");
 
 			/* 1.3 send message */
-			mboxSendMsg(prAdapter,
-				    MBOX_ID_0,
-				    (P_MSG_HDR_T) prMsgP2PInvitationReq, MSG_SEND_METHOD_BUF);
+			mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prMsgP2PInvitationReq, MSG_SEND_METHOD_BUF);
 
 		}
-
-
 
 	} while (FALSE);
 #endif
@@ -2742,7 +2642,6 @@ mtk_p2p_wext_invitation_request(IN struct net_device *prDev,
 }
 
 /* mtk_p2p_wext_invitation_request */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2760,16 +2659,14 @@ mtk_p2p_wext_invitation_request(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_invitation_abort(IN struct net_device *prDev,
-			      IN struct iw_request_info *info,
-			      IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			      IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	int i4Status = 0;
 #if 0
 	P_ADAPTER_T prAdapter = (P_ADAPTER_T) NULL;
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 	struct iw_point *prData = (struct iw_point *)&wrqu->data;
-	P_IW_P2P_IOCTL_ABORT_INVITATION prIoctlInvitationAbort =
-	    (P_IW_P2P_IOCTL_ABORT_INVITATION) NULL;
+	P_IW_P2P_IOCTL_ABORT_INVITATION prIoctlInvitationAbort = (P_IW_P2P_IOCTL_ABORT_INVITATION) NULL;
 
 	UINT_8 bssid[MAC_ADDR_LEN];
 
@@ -2780,7 +2677,6 @@ mtk_p2p_wext_invitation_abort(IN struct net_device *prDev,
 			break;
 		}
 
-
 		prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 		prIoctlInvitationAbort = (P_IW_P2P_IOCTL_ABORT_INVITATION) extra;
 
@@ -2789,20 +2685,17 @@ mtk_p2p_wext_invitation_abort(IN struct net_device *prDev,
 			break;
 		}
 
-
 		prAdapter = prGlueInfo->prAdapter;
 
 		if (prAdapter == NULL) {
 			i4Status = -EINVAL;
 			break;
 		} else {
-			P_MSG_P2P_INVITATION_REQUEST_T prMsgP2PInvitationAbort =
-			    (P_MSG_P2P_INVITATION_REQUEST_T) NULL;
+			P_MSG_P2P_INVITATION_REQUEST_T prMsgP2PInvitationAbort = (P_MSG_P2P_INVITATION_REQUEST_T) NULL;
 
 			prMsgP2PInvitationAbort =
 			    (P_MSG_P2P_INVITATION_REQUEST_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG,
-									 sizeof
-									 (MSG_P2P_INVITATION_REQUEST_T));
+									 sizeof(MSG_P2P_INVITATION_REQUEST_T));
 
 			if (!prMsgP2PInvitationAbort) {
 				ASSERT(0);	/* Can't trigger P2P FSM */
@@ -2810,21 +2703,16 @@ mtk_p2p_wext_invitation_abort(IN struct net_device *prDev,
 				break;
 			}
 
-
 			/* 1.2 fill message */
 			kalMemCopy(prMsgP2PInvitationAbort->aucDeviceID,
 				   prIoctlInvitationAbort->dev_addr, MAC_ADDR_LEN);
 
-			DBGLOG(P2P, TRACE,
-			       ("mtk_p2p_wext_invitation_request: P2P Invitation Req\n"));
+			DBGLOG(P2P, TRACE, "mtk_p2p_wext_invitation_request: P2P Invitation Req\n");
 
 			/* 1.3 send message */
-			mboxSendMsg(prAdapter,
-				    MBOX_ID_0,
-				    (P_MSG_HDR_T) prMsgP2PInvitationAbort, MSG_SEND_METHOD_BUF);
+			mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prMsgP2PInvitationAbort, MSG_SEND_METHOD_BUF);
 
 		}
-
 
 	} while (FALSE);
 #endif
@@ -2834,16 +2722,6 @@ mtk_p2p_wext_invitation_abort(IN struct net_device *prDev,
 }
 
 /* mtk_p2p_wext_invitation_abort */
-
-
-
-
-
-
-
-
-
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2861,17 +2739,15 @@ mtk_p2p_wext_invitation_abort(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_set_auth(IN struct net_device *prDev,
-		      IN struct iw_request_info *info,
-		      IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+		      IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	struct iw_param *prAuth = (struct iw_param *)wrqu;
 
 	ASSERT(prDev);
 	ASSERT(prAuth);
-	if (FALSE == GLUE_CHK_PR2(prDev, prAuth)) {
+	if (FALSE == GLUE_CHK_PR2(prDev, prAuth))
 		return -EINVAL;
-	}
 
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 
@@ -2899,7 +2775,6 @@ mtk_p2p_wext_set_auth(IN struct net_device *prDev,
 	return 0;
 }				/* end of mtk_p2p_wext_set_auth() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief To set encryption cipher and key.
@@ -2917,8 +2792,7 @@ mtk_p2p_wext_set_auth(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_set_key(IN struct net_device *prDev,
-		     IN struct iw_request_info *info,
-		     IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+		     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	int ret = 0;
 	struct iw_encode_ext *prIWEncExt;
@@ -2944,8 +2818,7 @@ mtk_p2p_wext_set_key(IN struct net_device *prDev,
 				break;
 			}
 
-			if (copy_from_user(prExtraBuf,
-					   wrqu->encoding.pointer, wrqu->encoding.length)) {
+			if (copy_from_user(prExtraBuf, wrqu->encoding.pointer, wrqu->encoding.length)) {
 				ret = -EFAULT;
 				break;
 			}
@@ -2967,8 +2840,7 @@ mtk_p2p_wext_set_key(IN struct net_device *prDev,
 				rStatus = kalIoctl(prGlueInfo,
 						   wlanoidSetRemoveP2PKey,
 						   prRemoveKey,
-						   prRemoveKey->u4Length,
-						   FALSE, FALSE, TRUE, TRUE, &u4BufLen);
+						   prRemoveKey->u4Length, FALSE, FALSE, TRUE, TRUE, &u4BufLen);
 
 				if (rStatus != WLAN_STATUS_SUCCESS)
 					ret = -EFAULT;
@@ -3005,9 +2877,8 @@ mtk_p2p_wext_set_key(IN struct net_device *prDev,
 /* To be fixed */
 void mtk_p2p_wext_set_key_prkit(void)
 {
-	if (prIWEncExt->ext_flags & IW_ENCODE_EXT_SET_TX_KEY) {
+	if (prIWEncExt->ext_flags & IW_ENCODE_EXT_SET_TX_KEY)
 		prKey->u4KeyIndex |= 0x1UL << 31;
-		}
 	/* Pairwise Key Bit(30) */
 	if (prIWEncExt->ext_flags & IW_ENCODE_EXT_GROUP_KEY) {
 		/* group key */
@@ -3017,34 +2888,23 @@ void mtk_p2p_wext_set_key_prkit(void)
 	}
 
 	/* Rx SC Bit(29) */
-	if (prIWEncExt->
-	    ext_flags & IW_ENCODE_EXT_RX_SEQ_VALID) {
+	if (prIWEncExt->ext_flags & IW_ENCODE_EXT_RX_SEQ_VALID) {
 		prKey->u4KeyIndex |= 0x1UL << 29;
-		memcpy(&prKey->rKeyRSC, prIWEncExt->rx_seq,
-		       IW_ENCODE_SEQ_MAX_SIZE);
+		memcpy(&prKey->rKeyRSC, prIWEncExt->rx_seq, IW_ENCODE_SEQ_MAX_SIZE);
 	}
 
 	/* BSSID */
 	memcpy(prKey->arBSSID, prIWEncExt->addr.sa_data, 6);
-	memcpy(prKey->aucKeyMaterial, prIWEncExt->key,
-	       prIWEncExt->key_len);
+	memcpy(prKey->aucKeyMaterial, prIWEncExt->key, prIWEncExt->key_len);
 
 	prKey->u4KeyLength = prIWEncExt->key_len;
-	prKey->u4Length =
-	    ((UINT_32) &
-	     (((P_PARAM_KEY_T) 0)->aucKeyMaterial)) +
-	    prKey->u4KeyLength;
+	prKey->u4Length = ((UINT_32) &(((P_PARAM_KEY_T) 0)->aucKeyMaterial)) + prKey->u4KeyLength;
 
 	rStatus = kalIoctl(prGlueInfo,
-			   wlanoidSetAddP2PKey,
-			   prKey,
-			   prKey->u4Length,
-			   FALSE,
-			   FALSE, TRUE, TRUE, &u4BufLen);
+			   wlanoidSetAddP2PKey, prKey, prKey->u4Length, FALSE, FALSE, TRUE, TRUE, &u4BufLen);
 
-	if (rStatus != WLAN_STATUS_SUCCESS) {
+	if (rStatus != WLAN_STATUS_SUCCESS)
 		ret = -EFAULT;
-	}
 }
 
 /*----------------------------------------------------------------------------*/
@@ -3063,8 +2923,7 @@ void mtk_p2p_wext_set_key_prkit(void)
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_set_powermode(IN struct net_device *prNetDev,
-			   IN struct iw_request_info *info,
-			   IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			   IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	/* printk("set_powermode = %d, value = %d\n", wrqu->power.disabled, wrqu->power.value); */
 	struct iw_param *prPower = (struct iw_param *)&wrqu->power;
@@ -3078,9 +2937,8 @@ mtk_p2p_wext_set_powermode(IN struct net_device *prNetDev,
 
 	ASSERT(prNetDev);
 	ASSERT(prPower);
-	if (FALSE == GLUE_CHK_PR2(prNetDev, prPower)) {
+	if (FALSE == GLUE_CHK_PR2(prNetDev, prPower))
 		return -EINVAL;
-	}
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prNetDev));
 
 	/* printk(KERN_INFO "wext_set_power value(%d) disabled(%d) flag(0x%x)\n", */
@@ -3100,27 +2958,25 @@ mtk_p2p_wext_set_powermode(IN struct net_device *prNetDev,
 		} else if (i4PowerValue == 2) {
 			ePowerMode = Param_PowerModeFast_PSP;
 		} else {
-			printk(KERN_DEBUG "%s(): unsupported power management mode value = %d.\n",
-			       __func__, prPower->value);
+			DBGLOG(INIT, WARN, "%s(): unsupported power management mode value = %d.\n",
+			       __func__, prPower->value;
 
 			return -EINVAL;
 		}
 	}
-
 
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidSetP2pPowerSaveProfile,
 			   &ePowerMode, sizeof(ePowerMode), FALSE, FALSE, TRUE, TRUE, &u4BufLen);
 
 	if (rStatus != WLAN_STATUS_SUCCESS) {
-		/* printk(KERN_INFO DRV_NAME"wlanoidSet802dot11PowerSaveProfile fail 0x%lx\n", rStatus); */
+		/* DBGLOG(INIT, INFO, ("wlanoidSet802dot11PowerSaveProfile fail 0x%lx\n", rStatus)); */
 		return -EFAULT;
 	}
 #endif
 
 	return 0;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -3138,8 +2994,7 @@ mtk_p2p_wext_set_powermode(IN struct net_device *prNetDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_get_powermode(IN struct net_device *prNetDev,
-			   IN struct iw_request_info *info,
-			   IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			   IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	/* printk("mtk_p2p_wext_get_powermode\n"); */
 	/* wrqu->power.disabled = 0; */
@@ -3154,13 +3009,11 @@ mtk_p2p_wext_get_powermode(IN struct net_device *prNetDev,
 
 	ASSERT(prNetDev);
 	ASSERT(prPower);
-	if (FALSE == GLUE_CHK_PR2(prNetDev, prPower)) {
+	if (FALSE == GLUE_CHK_PR2(prNetDev, prPower))
 		return -EINVAL;
-	}
 
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prNetDev));
 	ASSERT(prGlueInfo);
-
 
 #if 1
 	rStatus = kalIoctl(prGlueInfo,
@@ -3168,8 +3021,7 @@ mtk_p2p_wext_get_powermode(IN struct net_device *prNetDev,
 			   &ePowerMode, sizeof(ePowerMode), TRUE, FALSE, FALSE, TRUE, &u4BufLen);
 #else
 	rStatus = wlanQueryInformation(prGlueInfo->prAdapter,
-				       wlanoidQueryP2pPowerSaveProfile,
-				       &ePowerMode, sizeof(ePowerMode), &u4BufLen);
+				       wlanoidQueryP2pPowerSaveProfile, &ePowerMode, sizeof(ePowerMode), &u4BufLen);
 #endif
 
 	prPower->value = 0;
@@ -3191,10 +3043,8 @@ mtk_p2p_wext_get_powermode(IN struct net_device *prNetDev,
 	prPower->value *= 1000000;
 #endif
 
-
 	return 0;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -3212,8 +3062,7 @@ mtk_p2p_wext_get_powermode(IN struct net_device *prNetDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_set_local_dev_info(IN struct net_device *prDev,
-				IN struct iw_request_info *info,
-				IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+				IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
@@ -3235,49 +3084,38 @@ mtk_p2p_wext_set_local_dev_info(IN struct net_device *prDev,
 
 	/* update connection settings for P2P-FSM */
 	/* 1. update SSID */
-	if (prDeviceCfg->ssid_len > ELEM_MAX_LEN_SSID) {
+	if (prDeviceCfg->ssid_len > ELEM_MAX_LEN_SSID)
 		prConnSettings->ucSSIDLen = ELEM_MAX_LEN_SSID;
-	} else {
+	else
 		prConnSettings->ucSSIDLen = prDeviceCfg->ssid_len;
-	}
 
-	if (copy_from_user(prConnSettings->aucSSID, prDeviceCfg->ssid, prConnSettings->ucSSIDLen)) {
+	if (copy_from_user(prConnSettings->aucSSID, prDeviceCfg->ssid, prConnSettings->ucSSIDLen))
 		return -EFAULT;
-	}
 	/* 2. update device type (WPS IE) */
-	kalMemCopy(&(prConnSettings->rPrimaryDevTypeBE), &(prDeviceCfg->pri_device_type),
-		   sizeof(DEVICE_TYPE_T));
+	kalMemCopy(&(prConnSettings->rPrimaryDevTypeBE), &(prDeviceCfg->pri_device_type), sizeof(DEVICE_TYPE_T));
 #if P2P_MAX_SUPPORTED_SEC_DEV_TYPE_COUNT
-	kalMemCopy(&(prConnSettings->arSecondaryDevTypeBE[0]), &(prDeviceCfg->snd_device_type),
-		   sizeof(DEVICE_TYPE_T));
+	kalMemCopy(&(prConnSettings->arSecondaryDevTypeBE[0]), &(prDeviceCfg->snd_device_type), sizeof(DEVICE_TYPE_T));
 #endif
 
 	/* 3. update device name */
-	if (prDeviceCfg->device_name_len > WPS_ATTRI_MAX_LEN_DEVICE_NAME) {
+	if (prDeviceCfg->device_name_len > WPS_ATTRI_MAX_LEN_DEVICE_NAME)
 		prConnSettings->ucDevNameLen = WPS_ATTRI_MAX_LEN_DEVICE_NAME;
-	} else {
+	else
 		prConnSettings->ucDevNameLen = prDeviceCfg->device_name_len;
-	}
-	if (copy_from_user
-	    (prConnSettings->aucDevName, prDeviceCfg->device_name, prConnSettings->ucDevNameLen)) {
+	if (copy_from_user(prConnSettings->aucDevName, prDeviceCfg->device_name, prConnSettings->ucDevNameLen))
 		return -EFAULT;
-	}
 	/* 4. update GO intent */
 	prConnSettings->ucGoIntent = prDeviceCfg->intend;
 
-
 	/* Preferred channel bandwidth */
-	prAdapter->rWifiVar.rConnSettings.uc2G4BandwidthMode =
-	    prDeviceCfg->ch_width ? CONFIG_BW_20_40M : CONFIG_BW_20M;
-	prAdapter->rWifiVar.rConnSettings.uc5GBandwidthMode =
-	    prDeviceCfg->ch_width ? CONFIG_BW_20_40M : CONFIG_BW_20M;
+	prAdapter->rWifiVar.rConnSettings.uc2G4BandwidthMode = prDeviceCfg->ch_width ? CONFIG_BW_20_40M : CONFIG_BW_20M;
+	prAdapter->rWifiVar.rConnSettings.uc5GBandwidthMode = prDeviceCfg->ch_width ? CONFIG_BW_20_40M : CONFIG_BW_20M;
 
 #if 0
 	/* 1. switch P2P-FSM on */
 	/* 1.1 allocate for message */
 	prFuncSwitch = (P_MSG_P2P_FUNCTION_SWITCH_T) cnmMemAlloc(prAdapter,
-								 RAM_TYPE_MSG,
-								 sizeof(MSG_P2P_FUNCTION_SWITCH_T));
+								 RAM_TYPE_MSG, sizeof(MSG_P2P_FUNCTION_SWITCH_T));
 
 	if (!prFuncSwitch) {
 		ASSERT(0);	/* Can't trigger P2P FSM */
@@ -3293,11 +3131,6 @@ mtk_p2p_wext_set_local_dev_info(IN struct net_device *prDev,
 #endif
 	return 0;
 }				/* end of mtk_p2p_wext_set_local_dev_info() */
-
-
-
-
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -3316,8 +3149,7 @@ mtk_p2p_wext_set_local_dev_info(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
-			       IN struct iw_request_info *info,
-			       IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			       IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	struct iw_event iwe;
 	char *current_ev = extra;
@@ -3346,9 +3178,7 @@ mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
 		iwe.u.ap_addr.sa_family = ARPHRD_ETHER;
 		memcpy(iwe.u.ap_addr.sa_data, prTargetResult->aucInterfaceAddr, 6);
 
-		current_ev = iwe_stream_add_event(info, current_ev,
-						  extra + IW_SCAN_MAX_DATA, &iwe, IW_EV_ADDR_LEN);
-
+		current_ev = iwe_stream_add_event(info, current_ev, extra + IW_SCAN_MAX_DATA, &iwe, IW_EV_ADDR_LEN);
 
 		/* SIOCGIWESSID */
 		iwe.cmd = SIOCGIWESSID;
@@ -3356,8 +3186,7 @@ mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
 		iwe.u.data.length = prTargetResult->u2NameLength;
 
 		current_ev = iwe_stream_add_point(info, current_ev,
-						  extra + IW_SCAN_MAX_DATA,
-						  &iwe, prTargetResult->aucName);
+						  extra + IW_SCAN_MAX_DATA, &iwe, prTargetResult->aucName);
 
 		/* IWEVGENIE for WPA IE */
 		if (prTargetResult->u2IELength <= 600
@@ -3369,8 +3198,7 @@ mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
 			iwe.u.data.length = 2 + (__u16) prDesiredIE->ucLength;
 
 			current_ev = iwe_stream_add_point(info, current_ev,
-							  extra + IW_SCAN_MAX_DATA,
-							  &iwe, (char *)prDesiredIE);
+							  extra + IW_SCAN_MAX_DATA, &iwe, (char *)prDesiredIE);
 		}
 #if CFG_SUPPORT_WPS
 
@@ -3384,8 +3212,7 @@ mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
 			iwe.u.data.length = 2 + (__u16) prDesiredIE->ucLength;
 
 			current_ev = iwe_stream_add_point(info, current_ev,
-							  extra + IW_SCAN_MAX_DATA,
-							  &iwe, (char *)prDesiredIE);
+							  extra + IW_SCAN_MAX_DATA, &iwe, (char *)prDesiredIE);
 		}
 #endif
 
@@ -3399,8 +3226,7 @@ mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
 			iwe.u.data.length = 2 + (__u16) prDesiredIE->ucLength;
 
 			current_ev = iwe_stream_add_point(info, current_ev,
-							  extra + IW_SCAN_MAX_DATA,
-							  &iwe, (char *)prDesiredIE);
+							  extra + IW_SCAN_MAX_DATA, &iwe, (char *)prDesiredIE);
 		}
 
 		/* IOC_P2P_GO_WSC_IE */
@@ -3419,8 +3245,7 @@ mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
 				 (UINT_8) prTargetResult->u2ConfigMethod,
 				 (UINT_8) (prTargetResult->u2ConfigMethod >> 8), '\0');
 			current_ev =
-			    iwe_stream_add_point(info, current_ev, extra + IW_SCAN_MAX_DATA, &iwe,
-						 (char *)data);
+			    iwe_stream_add_point(info, current_ev, extra + IW_SCAN_MAX_DATA, &iwe, (char *)data);
 
 			/* printk("%s\n", data); */
 			kalMemZero(data, 40);
@@ -3437,8 +3262,7 @@ mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
 				 (UINT_8) prTargetResult->arSecDevType[1].u2CategoryID,
 				 (UINT_8) prTargetResult->arSecDevType[1].u2SubCategoryID, '\0');
 			current_ev =
-			    iwe_stream_add_point(info, current_ev, extra + IW_SCAN_MAX_DATA, &iwe,
-						 (char *)data);
+			    iwe_stream_add_point(info, current_ev, extra + IW_SCAN_MAX_DATA, &iwe, (char *)data);
 			/* printk("%s\n", data); */
 
 			kalMemZero(data, 40);
@@ -3450,8 +3274,7 @@ mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
 			snprintf(data, iwe.u.data.length, "p2p_grp_bssid=" MACSTR "%c",
 				 MAC2STR(prTargetResult->aucBSSID), '\0');
 			current_ev = iwe_stream_add_point(info, current_ev,
-							  extra + IW_SCAN_MAX_DATA,
-							  &iwe, (char *)data);
+							  extra + IW_SCAN_MAX_DATA, &iwe, (char *)data);
 			/* printk("%s\n", data); */
 
 		}
@@ -3464,7 +3287,6 @@ mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
 
 	return 0;
 }				/* end of mtk_p2p_wext_discovery_results() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -3482,8 +3304,7 @@ mtk_p2p_wext_discovery_results(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_wsc_ie(IN struct net_device *prDev,
-		    IN struct iw_request_info *info,
-		    IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+		    IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 #if 0				/* Marked for MT6630 (New ucBssIndex) */
 	P_ADAPTER_T prAdapter = NULL;
@@ -3498,13 +3319,11 @@ mtk_p2p_wext_wsc_ie(IN struct net_device *prDev,
 	if (prHostapdParam->len > 0) {
 		if (prHostapdParam->len <= MAX_WSC_IE_LENGTH) {
 			if (copy_from_user
-			    (prGlueInfo->prP2PInfo->aucWSCIE[0], prHostapdParam->data,
-			     prHostapdParam->len)) {
+			    (prGlueInfo->prP2PInfo->aucWSCIE[0], prHostapdParam->data, prHostapdParam->len)) {
 				return -EFAULT;
 			}
 			if (copy_from_user
-			    (prGlueInfo->prP2PInfo->aucWSCIE[2], prHostapdParam->data,
-			     prHostapdParam->len)) {
+			    (prGlueInfo->prP2PInfo->aucWSCIE[2], prHostapdParam->data, prHostapdParam->len)) {
 				return -EFAULT;
 			}
 		} else {
@@ -3526,7 +3345,6 @@ mtk_p2p_wext_wsc_ie(IN struct net_device *prDev,
 	return 0;
 }				/* end of mtk_p2p_wext_wsc_ie() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief P2P Private I/O Control handler (IOC_P2P_CONNECT_DISCONNECT)
@@ -3543,8 +3361,7 @@ mtk_p2p_wext_wsc_ie(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_connect_disconnect(IN struct net_device *prDev,
-				IN struct iw_request_info *info,
-				IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+				IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
@@ -3568,24 +3385,20 @@ mtk_p2p_wext_connect_disconnect(IN struct net_device *prDev,
 		/* indicate P2P-FSM with MID_MNY_P2P_CONNECTION_REQ */
 		prMsgP2PConnReq = (P_MSG_P2P_CONNECTION_REQUEST_T) cnmMemAlloc(prAdapter,
 									       RAM_TYPE_MSG,
-									       sizeof
-									       (MSG_P2P_CONNECTION_REQUEST_T));
+									       sizeof(MSG_P2P_CONNECTION_REQUEST_T));
 
 		if (!prMsgP2PConnReq) {
 			ASSERT(0);	/* Can't trigger P2P FSM */
 			return -ENOMEM;
 		}
 
-
-		mboxSendMsg(prAdapter,
-			    MBOX_ID_0, (P_MSG_HDR_T) prMsgP2PConnReq, MSG_SEND_METHOD_BUF);
+		mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prMsgP2PConnReq, MSG_SEND_METHOD_BUF);
 #endif
 	} else if (prData->flags == P2P_DISCONNECT) {
 #if 0
 		/* indicate P2P-FSM with MID_MNY_P2P_CONNECTION_ABORT */
 		prMsgP2PConnAbt = (P_MSG_HDR_T) cnmMemAlloc(prAdapter,
-							    RAM_TYPE_MSG,
-							    sizeof(MSG_P2P_CONNECTION_ABORT_T));
+							    RAM_TYPE_MSG, sizeof(MSG_P2P_CONNECTION_ABORT_T));
 
 		if (!prMsgP2PConnAbt) {
 			ASSERT(0);	/* Can't trigger P2P FSM */
@@ -3596,8 +3409,7 @@ mtk_p2p_wext_connect_disconnect(IN struct net_device *prDev,
 
 		prMsgP2PConnAbt->rMsgHdr.eMsgId = MID_MNY_P2P_CONNECTION_ABORT;
 
-		mboxSendMsg(prAdapter,
-			    MBOX_ID_0, (P_MSG_HDR_T) prMsgP2PConnAbt, MSG_SEND_METHOD_BUF);
+		mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prMsgP2PConnAbt, MSG_SEND_METHOD_BUF);
 #endif
 	} else {
 		return -EINVAL;
@@ -3605,7 +3417,6 @@ mtk_p2p_wext_connect_disconnect(IN struct net_device *prDev,
 
 	return 0;
 }				/* end of mtk_p2p_wext_connect_disconnect() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -3623,8 +3434,7 @@ mtk_p2p_wext_connect_disconnect(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_password_ready(IN struct net_device *prDev,
-			    IN struct iw_request_info *info,
-			    IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			    IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
@@ -3689,7 +3499,6 @@ mtk_p2p_wext_password_ready(IN struct net_device *prDev,
 	return 0;
 }				/* end of mtk_p2p_wext_password_ready() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief P2P Private I/O Control handler (IOC_P2P_GET_REQ_DEVICE_INFO)
@@ -3706,8 +3515,7 @@ mtk_p2p_wext_password_ready(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_request_dev_info(IN struct net_device *prDev,
-			      IN struct iw_request_info *info,
-			      IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			      IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
@@ -3737,7 +3545,6 @@ mtk_p2p_wext_request_dev_info(IN struct net_device *prDev,
 	return 0;
 }				/* end of mtk_p2p_wext_request_dev_info() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief P2P Private I/O Control handler (IOC_P2P_GET_STRUCT)
@@ -3754,13 +3561,11 @@ mtk_p2p_wext_request_dev_info(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_invitation_indicate(IN struct net_device *prDev,
-				 IN struct iw_request_info *info,
-				 IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+				 IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
-	P_IW_P2P_IOCTL_INVITATION_INDICATE prInvIndicate =
-	    (P_IW_P2P_IOCTL_INVITATION_INDICATE) extra;
+	P_IW_P2P_IOCTL_INVITATION_INDICATE prInvIndicate = (P_IW_P2P_IOCTL_INVITATION_INDICATE) extra;
 
 	ASSERT(prDev);
 
@@ -3776,8 +3581,7 @@ mtk_p2p_wext_invitation_indicate(IN struct net_device *prDev,
 	/* copy to upper-layer supplied buffer */
 	kalMemCopy(prInvIndicate->dev_name, prGlueInfo->prP2PInfo->aucConnReqDevName,
 		   prGlueInfo->prP2PInfo->u4ConnReqNameLength);
-	kalMemCopy(prInvIndicate->group_bssid, prGlueInfo->prP2PInfo->rConnReqGroupAddr,
-		   MAC_ADDR_LEN);
+	kalMemCopy(prInvIndicate->group_bssid, prGlueInfo->prP2PInfo->rConnReqGroupAddr, MAC_ADDR_LEN);
 	prInvIndicate->name_len = prGlueInfo->prP2PInfo->u4ConnReqNameLength;
 	prInvIndicate->dev_name[prInvIndicate->name_len] = '\0';
 	COPY_MAC_ADDR(prInvIndicate->dev_addr, prGlueInfo->prP2PInfo->rConnReqPeerAddr);
@@ -3787,7 +3591,6 @@ mtk_p2p_wext_invitation_indicate(IN struct net_device *prDev,
 
 	return 0;
 }				/* end of mtk_p2p_wext_invitation_indicate() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -3805,8 +3608,7 @@ mtk_p2p_wext_invitation_indicate(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_invitation_status(IN struct net_device *prDev,
-			       IN struct iw_request_info *info,
-			       IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			       IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
@@ -3828,7 +3630,6 @@ mtk_p2p_wext_invitation_status(IN struct net_device *prDev,
 
 	return 0;
 }				/* end of mtk_p2p_wext_invitation_status() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -3860,8 +3661,7 @@ BOOLEAN kalP2PIndicateFound(IN P_GLUE_INFO_T prGlueInfo)
 
 int
 mtk_p2p_wext_set_network_address(IN struct net_device *prDev,
-				 IN struct iw_request_info *info,
-				 IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+				 IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
@@ -3887,8 +3687,7 @@ mtk_p2p_wext_set_network_address(IN struct net_device *prDev,
 
 int
 mtk_p2p_wext_set_ps_profile(IN struct net_device *prDev,
-			    IN struct iw_request_info *info,
-			    IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			    IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
@@ -3914,8 +3713,7 @@ mtk_p2p_wext_set_ps_profile(IN struct net_device *prDev,
 
 int
 mtk_p2p_wext_set_pm_param(IN struct net_device *prDev,
-			  IN struct iw_request_info *info,
-			  IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			  IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
@@ -3939,8 +3737,6 @@ mtk_p2p_wext_set_pm_param(IN struct net_device *prDev,
 
 }
 
-
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief P2P Private I/O Control handler (IOC_P2P_SET_INT)
@@ -3957,15 +3753,13 @@ mtk_p2p_wext_set_pm_param(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_start_formation(IN struct net_device *prDev,
-			     IN struct iw_request_info *info,
-			     IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	int i4Status = 0;
 	P_ADAPTER_T prAdapter = (P_ADAPTER_T) NULL;
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 /* struct iw_point *prData = (struct iw_point*)&wrqu->data; */
-	P_IW_P2P_IOCTL_START_FORMATION prIoctlStartFormation =
-	    (P_IW_P2P_IOCTL_START_FORMATION) NULL;
+	P_IW_P2P_IOCTL_START_FORMATION prIoctlStartFormation = (P_IW_P2P_IOCTL_START_FORMATION) NULL;
 
 	do {
 		if ((prDev == NULL) || (extra == NULL)) {
@@ -3973,7 +3767,6 @@ mtk_p2p_wext_start_formation(IN struct net_device *prDev,
 			i4Status = -EINVAL;
 			break;
 		}
-
 
 		prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 		prIoctlStartFormation = (P_IW_P2P_IOCTL_START_FORMATION) extra;
@@ -3983,14 +3776,12 @@ mtk_p2p_wext_start_formation(IN struct net_device *prDev,
 			break;
 		}
 
-
 		prAdapter = prGlueInfo->prAdapter;
 
 		if (prAdapter == NULL) {
 			i4Status = -EINVAL;
 			break;
 		}
-
 
 	} while (FALSE);
 
@@ -3999,7 +3790,6 @@ mtk_p2p_wext_start_formation(IN struct net_device *prDev,
 }
 
 /* mtk_p2p_wext_start_formation */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -4017,8 +3807,7 @@ mtk_p2p_wext_start_formation(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_set_int(IN struct net_device *prDev,
-		     IN struct iw_request_info *info,
-		     IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+		     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	int status = 0;
 	UINT_32 u4SubCmd = 0;
@@ -4037,9 +3826,8 @@ mtk_p2p_wext_set_int(IN struct net_device *prDev,
 	/* printk("mtk_p2p_wext_set_int\n"); */
 	pu4IntBuf = (PUINT_32) extra;
 
-	if (FALSE == GLUE_CHK_PR2(prDev, wrqu)) {
+	if (FALSE == GLUE_CHK_PR2(prDev, wrqu))
 		return -EINVAL;
-	}
 
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 	ASSERT(prGlueInfo);
@@ -4052,8 +3840,8 @@ mtk_p2p_wext_set_int(IN struct net_device *prDev,
 	index = pu4IntBuf[1];
 	value = pu4IntBuf[2];
 
-	printk("set parameter, u4SubCmd=%d idx=%d value=%lu\n", (INT_16) u4SubCmd, (INT_16) index,
-	       value);
+	DBGLOG(INIT, WARN,
+		"set parameter, u4SubCmd=%d idx=%d value=%lu\n", (INT_16) u4SubCmd, (INT_16) index, value);
 
 	switch (u4SubCmd) {
 	case PRIV_CMD_INT_P2P_SET:
@@ -4072,7 +3860,6 @@ mtk_p2p_wext_set_int(IN struct net_device *prDev,
 					prP2pSpecificBssInfo->ucListenChannel = ucSuggestChnl;
 				}
 
-
 				break;
 			}
 		case 1:	/* P2p mode */
@@ -4080,18 +3867,23 @@ mtk_p2p_wext_set_int(IN struct net_device *prDev,
 		case 4:	/* Noa duration */
 			prP2pSpecificBssInfo->rNoaParam.u4NoaDurationMs = value;
 			/* only to apply setting when setting NOA count */
-			/* status = mtk_p2p_wext_set_noa_param(prDev, info, wrqu, (char *)&prP2pSpecificBssInfo->rNoaParam); */
+			/* status = mtk_p2p_wext_set_noa_param(prDev,
+								info,
+								wrqu,
+								(char *)&prP2pSpecificBssInfo->rNoaParam); */
 			break;
 		case 5:	/* Noa interval */
 			prP2pSpecificBssInfo->rNoaParam.u4NoaIntervalMs = value;
 			/* only to apply setting when setting NOA count */
-			/* status = mtk_p2p_wext_set_noa_param(prDev, info, wrqu, (char *)&prP2pSpecificBssInfo->rNoaParam); */
+			/* status = mtk_p2p_wext_set_noa_param(prDev,
+								info,
+								wrqu,
+								(char *)&prP2pSpecificBssInfo->rNoaParam); */
 			break;
 		case 6:	/* Noa count */
 			prP2pSpecificBssInfo->rNoaParam.u4NoaCount = value;
 			status =
-			    mtk_p2p_wext_set_noa_param(prDev, info, wrqu,
-						       (char *)&prP2pSpecificBssInfo->rNoaParam);
+			    mtk_p2p_wext_set_noa_param(prDev, info, wrqu, (char *)&prP2pSpecificBssInfo->rNoaParam);
 			break;
 		case 100:	/* Oper CH */
 			/* 20110920 - frog: User configurations are placed in ConnSettings. */
@@ -4120,9 +3912,7 @@ mtk_p2p_wext_set_int(IN struct net_device *prDev,
 		case 107:	/* P2P set opps, CTWindowl */
 			prP2pSpecificBssInfo->rOppPsParam.u4CTwindowMs = value;
 			status =
-			    mtk_p2p_wext_set_oppps_param(prDev, info, wrqu,
-							 (char *)&prP2pSpecificBssInfo->
-							 rOppPsParam);
+			    mtk_p2p_wext_set_oppps_param(prDev, info, wrqu, (char *)&prP2pSpecificBssInfo->rOppPsParam);
 			break;
 		case 108:	/* p2p_set_power_save */
 			kalIoctl(prGlueInfo,
@@ -4158,8 +3948,7 @@ mtk_p2p_wext_set_int(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_set_struct(IN struct net_device *prDev,
-			IN struct iw_request_info *info,
-			IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	int status = 0;
 	UINT_32 u4SubCmd = 0;
@@ -4169,9 +3958,8 @@ mtk_p2p_wext_set_struct(IN struct net_device *prDev,
 	ASSERT(prDev);
 	ASSERT(wrqu);
 
-	if (FALSE == GLUE_CHK_PR2(prDev, wrqu)) {
+	if (FALSE == GLUE_CHK_PR2(prDev, wrqu))
 		return -EINVAL;
-	}
 
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 	ASSERT(prGlueInfo);
@@ -4182,56 +3970,51 @@ mtk_p2p_wext_set_struct(IN struct net_device *prDev,
 
 	switch (u4SubCmd) {
 	case PRIV_CMD_OID:
-		if (copy_from_user(&(prGlueInfo->prP2PInfo->aucOidBuf[0]),
-				   wrqu->data.pointer, wrqu->data.length)) {
+		if (copy_from_user(&(prGlueInfo->prP2PInfo->aucOidBuf[0]), wrqu->data.pointer, wrqu->data.length)) {
 			status = -EFAULT;
 			break;
 		}
 
-		if (!kalMemCmp(&(prGlueInfo->prP2PInfo->aucOidBuf[0]), extra, wrqu->data.length)) {
-			printk(KERN_INFO DRV_NAME "extra buffer is valid\n");
-		} else {
-			printk(KERN_INFO DRV_NAME "extra 0x%p\n", extra);
-		}
+		if (!kalMemCmp(&(prGlueInfo->prP2PInfo->aucOidBuf[0]), extra, wrqu->data.length))
+			DBGLOG(INIT, WARN, "extra buffer is valid\n");
+		else
+			DBGLOG(INIT, WARN, "extra 0x%p\n", extra);
 
 		prP2PReq = (P_IW_P2P_TRANSPORT_STRUCT) (&(prGlueInfo->prP2PInfo->aucOidBuf[0]));
 		switch (prP2PReq->u4CmdId) {
 		case P2P_CMD_ID_SEND_SD_RESPONSE:
-			status =
-			    mtk_p2p_wext_send_service_discovery_response(prDev, info, wrqu,
-									 (char *)prP2PReq);
+			status = mtk_p2p_wext_send_service_discovery_response(prDev, info, wrqu, (char *)prP2PReq);
 			break;
 
 		case P2P_CMD_ID_SEND_SD_REQUEST:
-			status =
-			    mtk_p2p_wext_send_service_discovery_request(prDev, info, wrqu,
-									(char *)prP2PReq);
+			status = mtk_p2p_wext_send_service_discovery_request(prDev, info, wrqu, (char *)prP2PReq);
 			break;
 
 		case P2P_CMD_ID_TERMINATE_SD_PHASE:
-			status =
-			    mtk_p2p_wext_terminate_service_discovery_phase(prDev, info, wrqu,
-									   (char *)prP2PReq);
+			status = mtk_p2p_wext_terminate_service_discovery_phase(prDev, info, wrqu, (char *)prP2PReq);
 			break;
 
 		case P2P_CMD_ID_INVITATION:
 			if (prP2PReq->inBufferLength == sizeof(IW_P2P_IOCTL_INVITATION_STRUCT)) {
-/* status = mtk_p2p_wext_invitation_request(prDev, info, wrqu, (char *)(prP2PReq->aucBuffer)); */
+				/* status = mtk_p2p_wext_invitation_request(prDev,
+									info,
+									wrqu,
+									(char *)(prP2PReq->aucBuffer)); */
 			}
 			break;
 
 		case P2P_CMD_ID_INVITATION_ABORT:
 			if (prP2PReq->inBufferLength == sizeof(IW_P2P_IOCTL_ABORT_INVITATION)) {
-/* status = mtk_p2p_wext_invitation_abort(prDev, info, wrqu, (char *)(prP2PReq->aucBuffer)); */
+				/* status = mtk_p2p_wext_invitation_abort(prDev,
+									info,
+									wrqu,
+									(char *)(prP2PReq->aucBuffer)); */
 			}
 			break;
 
 		case P2P_CMD_ID_START_FORMATION:
-			if (prP2PReq->inBufferLength == sizeof(IW_P2P_IOCTL_START_FORMATION)) {
-				status =
-				    mtk_p2p_wext_start_formation(prDev, info, wrqu,
-								 (char *)(prP2PReq->aucBuffer));
-			}
+			if (prP2PReq->inBufferLength == sizeof(IW_P2P_IOCTL_START_FORMATION))
+				status = mtk_p2p_wext_start_formation(prDev, info, wrqu, (char *)(prP2PReq->aucBuffer));
 			break;
 		default:
 			status = -EOPNOTSUPP;
@@ -4244,23 +4027,20 @@ mtk_p2p_wext_set_struct(IN struct net_device *prDev,
 			status = -EOPNOTSUPP;
 			break;
 		}
-		if (copy_from_user(&(prGlueInfo->prP2PInfo->aucSecCheck[0]),
-				   wrqu->data.pointer, wrqu->data.length)) {
+		if (copy_from_user(&(prGlueInfo->prP2PInfo->aucSecCheck[0]), wrqu->data.pointer, wrqu->data.length)) {
 			status = -EFAULT;
 			break;
 		}
 
-		if (!kalMemCmp(&(prGlueInfo->prP2PInfo->aucSecCheck[0]), extra, wrqu->data.length)) {
-			printk(KERN_INFO DRV_NAME "extra buffer is valid\n");
-		} else {
-			printk(KERN_INFO DRV_NAME "extra 0x%p\n", extra);
-		}
+		if (!kalMemCmp(&(prGlueInfo->prP2PInfo->aucSecCheck[0]), extra, wrqu->data.length))
+			DBGLOG(INIT, WARN, "extra buffer is valid\n");
+		else
+			DBGLOG(INIT, WARN, "extra 0x%p\n", extra);
 		prP2PReq = (P_IW_P2P_TRANSPORT_STRUCT) (&(prGlueInfo->prP2PInfo->aucSecCheck[0]));
 
 		switch (prP2PReq->u4CmdId) {
 		case P2P_CMD_ID_SEC_CHECK:
-			status =
-			    mtk_p2p_wext_set_sec_check_request(prDev, info, wrqu, (char *)prP2PReq);
+			status = mtk_p2p_wext_set_sec_check_request(prDev, info, wrqu, (char *)prP2PReq);
 			break;
 		default:
 			status = -EOPNOTSUPP;
@@ -4268,17 +4048,15 @@ mtk_p2p_wext_set_struct(IN struct net_device *prDev,
 		break;
 #endif
 	case PRIV_CMD_P2P_VERSION:
-		if (copy_from_user(&(prGlueInfo->prP2PInfo->aucOidBuf[0]),
-				   wrqu->data.pointer, wrqu->data.length)) {
+		if (copy_from_user(&(prGlueInfo->prP2PInfo->aucOidBuf[0]), wrqu->data.pointer, wrqu->data.length)) {
 			status = -EFAULT;
 			break;
 		}
 
-		if (!kalMemCmp(&(prGlueInfo->prP2PInfo->aucOidBuf[0]), extra, wrqu->data.length)) {
-			printk(KERN_INFO DRV_NAME "extra buffer is valid\n");
-		} else {
-			printk(KERN_INFO DRV_NAME "extra 0x%p\n", extra);
-		}
+		if (!kalMemCmp(&(prGlueInfo->prP2PInfo->aucOidBuf[0]), extra, wrqu->data.length))
+			DBGLOG(INIT, WARN, "extra buffer is valid\n");
+		else
+			DBGLOG(INIT, WARN, "extra 0x%p\n", extra);
 
 		prP2PReq = (P_IW_P2P_TRANSPORT_STRUCT) (&(prGlueInfo->prP2PInfo->aucOidBuf[0]));
 		switch (prP2PReq->u4CmdId) {
@@ -4298,7 +4076,6 @@ mtk_p2p_wext_set_struct(IN struct net_device *prDev,
 	return status;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief P2P Private I/O Control handler (IOC_P2P_GET_STRUCT)
@@ -4315,8 +4092,7 @@ mtk_p2p_wext_set_struct(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_get_struct(IN struct net_device *prDev,
-			IN struct iw_request_info *info,
-			IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	int status = 0;
 	UINT_32 u4SubCmd = 0;
@@ -4327,8 +4103,7 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 	ASSERT(wrqu);
 
 	if (!prDev || !wrqu) {
-		printk(KERN_INFO DRV_NAME "%s(): invalid param(0x%p, 0x%p)\n",
-		       __func__, prDev, wrqu);
+		DBGLOG(INIT, WARN, "%s(): invalid param(0x%p, 0x%p)\n", __func__, prDev, wrqu);
 		return -EINVAL;
 	}
 
@@ -4337,14 +4112,13 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 
 	u4SubCmd = (UINT_32) wrqu->data.flags;
 
-	kalMemZero(&(prGlueInfo->prP2PInfo->aucOidBuf[0]),
-		   sizeof(prGlueInfo->prP2PInfo->aucOidBuf));
+	kalMemZero(&(prGlueInfo->prP2PInfo->aucOidBuf[0]), sizeof(prGlueInfo->prP2PInfo->aucOidBuf));
 
 	switch (u4SubCmd) {
 	case PRIV_CMD_OID:
 		if (copy_from_user(&(prGlueInfo->prP2PInfo->aucOidBuf[0]),
 				   wrqu->data.pointer, sizeof(IW_P2P_TRANSPORT_STRUCT))) {
-			printk(KERN_NOTICE "%s() copy_from_user oidBuf fail\n", __func__);
+			DBGLOG(INIT, WARN, "%s() copy_from_user oidBuf fail\n", __func__);
 			return -EFAULT;
 		}
 
@@ -4352,28 +4126,22 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 
 		switch (prP2PReq->u4CmdId) {
 		case P2P_CMD_ID_GET_SD_REQUEST:
-			status =
-			    mtk_p2p_wext_get_service_discovery_request(prDev, info, wrqu,
-								       (char *)prP2PReq);
+			status = mtk_p2p_wext_get_service_discovery_request(prDev, info, wrqu, (char *)prP2PReq);
 			break;
 
 		case P2P_CMD_ID_GET_SD_RESPONSE:
-			status =
-			    mtk_p2p_wext_get_service_discovery_response(prDev, info, wrqu,
-									(char *)prP2PReq);
+			status = mtk_p2p_wext_get_service_discovery_response(prDev, info, wrqu, (char *)prP2PReq);
 			break;
 
 		case P2P_CMD_ID_INVITATION_INDICATE:
 			{
 				status =
-				    mtk_p2p_wext_invitation_indicate(prDev, info, wrqu,
-								     (char *)(prP2PReq->aucBuffer));
+				    mtk_p2p_wext_invitation_indicate(prDev, info, wrqu, (char *)(prP2PReq->aucBuffer));
 				prP2PReq->outBufferLength = wrqu->data.length;
 				if (copy_to_user(wrqu->data.pointer,
 						 &(prGlueInfo->prP2PInfo->aucOidBuf[0]),
-						 wrqu->data.length +
-						 OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
-					printk(KERN_NOTICE "%s() copy_to_user() fail\n", __func__);
+						 wrqu->data.length + OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
+					DBGLOG(INIT, WARN, "%s() copy_to_user() fail\n", __func__);
 					return -EIO;
 				} else {
 					return 0;
@@ -4383,14 +4151,12 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 		case P2P_CMD_ID_INVITATION_STATUS:
 			{
 				status =
-				    mtk_p2p_wext_invitation_status(prDev, info, wrqu,
-								   (char *)(prP2PReq->aucBuffer));
+				    mtk_p2p_wext_invitation_status(prDev, info, wrqu, (char *)(prP2PReq->aucBuffer));
 				prP2PReq->outBufferLength = wrqu->data.length;
 				if (copy_to_user(wrqu->data.pointer,
 						 &(prGlueInfo->prP2PInfo->aucOidBuf[0]),
-						 wrqu->data.length +
-						 OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
-					printk(KERN_NOTICE "%s() copy_to_user() fail\n", __func__);
+						 wrqu->data.length + OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
+					DBGLOG(INIT, WARN, "%s() copy_to_user() fail\n", __func__);
 					return -EIO;
 				} else {
 					return 0;
@@ -4405,8 +4171,7 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 				UINT_8 ucMaxChannelNum = 50;
 				PUINT_8 pucChnlList = (PUINT_8) prP2PReq->aucBuffer;
 
-				kalGetChnlList(prGlueInfo, BAND_NULL, ucMaxChannelNum,
-					       &NumOfChannel, aucChannelList);
+				kalGetChnlList(prGlueInfo, BAND_NULL, ucMaxChannelNum, &NumOfChannel, aucChannelList);
 				if (NumOfChannel > 50)
 					NumOfChannel = 50;
 				prP2PReq->outBufferLength = NumOfChannel;
@@ -4422,9 +4187,8 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 				}
 				if (copy_to_user(wrqu->data.pointer,
 						 &(prGlueInfo->prP2PInfo->aucOidBuf[0]),
-						 NumOfChannel + OFFSET_OF(IW_P2P_TRANSPORT_STRUCT,
-									  aucBuffer))) {
-					printk(KERN_NOTICE "%s() copy_to_user() fail\n", __func__);
+						 NumOfChannel + OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
+					DBGLOG(INIT, WARN, "%s() copy_to_user() fail\n", __func__);
 					return -EIO;
 				} else {
 					return 0;
@@ -4438,26 +4202,21 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 
 				status = wlanoidQueryP2pOpChannel(prGlueInfo->prAdapter,
 								  prP2PReq->aucBuffer,
-								  prP2PReq->inBufferLength,
-								  &prP2PReq->outBufferLength);
+								  prP2PReq->inBufferLength, &prP2PReq->outBufferLength);
 
 				if (status == 0) {	/* WLAN_STATUS_SUCCESS */
 					if (copy_to_user(wrqu->data.pointer,
 							 &(prGlueInfo->prP2PInfo->aucOidBuf[0]),
 							 prP2PReq->outBufferLength +
-							 OFFSET_OF(IW_P2P_TRANSPORT_STRUCT,
-								   aucBuffer))) {
-						printk(KERN_NOTICE "%s() copy_to_user() fail\n",
-						       __func__);
+							 OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
+						DBGLOG(INIT, WARN, "%s() copy_to_user() fail\n", __func__);
 						return -EIO;
 					}
 				} else {
 					if (copy_to_user(wrqu->data.pointer,
 							 &(prGlueInfo->prP2PInfo->aucOidBuf[0]),
-							 OFFSET_OF(IW_P2P_TRANSPORT_STRUCT,
-								   aucBuffer))) {
-						printk(KERN_NOTICE "%s() copy_to_user() fail\n",
-						       __func__);
+							 OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
+						DBGLOG(INIT, WARN, "%s() copy_to_user() fail\n", __func__);
 						return -EIO;
 					}
 				}
@@ -4477,7 +4236,7 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 		}
 		if (copy_from_user(&(prGlueInfo->prP2PInfo->aucSecCheck[0]),
 				   wrqu->data.pointer, sizeof(IW_P2P_TRANSPORT_STRUCT))) {
-			printk(KERN_NOTICE "%s() copy_from_user oidBuf fail\n", __func__);
+			DBGLOG(INIT, WARN, "%s() copy_from_user oidBuf fail\n", __func__);
 			return -EFAULT;
 		}
 
@@ -4485,9 +4244,7 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 
 		switch (prP2PReq->u4CmdId) {
 		case P2P_CMD_ID_SEC_CHECK:
-			status =
-			    mtk_p2p_wext_get_sec_check_response(prDev, info, wrqu,
-								(char *)prP2PReq);
+			status = mtk_p2p_wext_get_sec_check_response(prDev, info, wrqu, (char *)prP2PReq);
 			break;
 		default:
 			status = -EOPNOTSUPP;
@@ -4497,7 +4254,7 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 	case PRIV_CMD_P2P_VERSION:
 		if (copy_from_user(&(prGlueInfo->prP2PInfo->aucOidBuf[0]),
 				   wrqu->data.pointer, sizeof(IW_P2P_TRANSPORT_STRUCT))) {
-			printk(KERN_NOTICE "%s() copy_from_user oidBuf fail\n", __func__);
+			DBGLOG(INIT, WARN, "%s() copy_from_user oidBuf fail\n", __func__);
 			return -EFAULT;
 		}
 
@@ -4512,14 +4269,12 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 			break;
 		}
 
-
 		/* Copy queried data to user. */
 		if (status == 0) {	/* WLAN_STATUS_SUCCESS */
 			if (copy_to_user(wrqu->data.pointer,
 					 &(prGlueInfo->prP2PInfo->aucOidBuf[0]),
-					 prP2PReq->outBufferLength +
-					 OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
-				printk(KERN_NOTICE "%s() copy_to_user() fail\n", __func__);
+					 prP2PReq->outBufferLength + OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
+				DBGLOG(INIT, WARN, "%s() copy_to_user() fail\n", __func__);
 				return -EIO;
 			}
 		}
@@ -4528,7 +4283,7 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 			if (copy_to_user(wrqu->data.pointer,
 					 &(prGlueInfo->prP2PInfo->aucOidBuf[0]),
 					 OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
-				printk(KERN_NOTICE "%s() copy_to_user() fail\n", __func__);
+				DBGLOG(INIT, WARN, "%s() copy_to_user() fail\n", __func__);
 				return -EIO;
 			}
 		}
@@ -4540,7 +4295,6 @@ mtk_p2p_wext_get_struct(IN struct net_device *prDev,
 
 	return status;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -4574,8 +4328,7 @@ mtk_p2p_wext_get_service_discovery_request(IN struct net_device *prDev,
 
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidGetP2PSDRequest,
-			   prP2PReq->aucBuffer,
-			   prP2PReq->outBufferLength, TRUE, FALSE, TRUE, TRUE, &u4QueryInfoLen);
+			   prP2PReq->aucBuffer, prP2PReq->outBufferLength, TRUE, FALSE, TRUE, TRUE, &u4QueryInfoLen);
 
 	if (rStatus != WLAN_STATUS_SUCCESS) {
 		return -EFAULT;
@@ -4585,14 +4338,13 @@ mtk_p2p_wext_get_service_discovery_request(IN struct net_device *prDev,
 		if (copy_to_user(wrqu->data.pointer,
 				 &(prGlueInfo->prP2PInfo->aucOidBuf[0]),
 				 u4QueryInfoLen + OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
-			printk(KERN_NOTICE "%s() copy_to_user() fail\n", __func__);
+			DBGLOG(INIT, WARN, "%s() copy_to_user() fail\n", __func__);
 			return -EIO;
 		} else {
 			return 0;
 		}
 	}
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -4626,8 +4378,7 @@ mtk_p2p_wext_get_service_discovery_response(IN struct net_device *prDev,
 
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidGetP2PSDResponse,
-			   prP2PReq->aucBuffer,
-			   prP2PReq->outBufferLength, TRUE, FALSE, TRUE, TRUE, &u4QueryInfoLen);
+			   prP2PReq->aucBuffer, prP2PReq->outBufferLength, TRUE, FALSE, TRUE, TRUE, &u4QueryInfoLen);
 
 	if (rStatus != WLAN_STATUS_SUCCESS) {
 		return -EFAULT;
@@ -4637,14 +4388,13 @@ mtk_p2p_wext_get_service_discovery_response(IN struct net_device *prDev,
 		if (copy_to_user(wrqu->data.pointer,
 				 &(prGlueInfo->prP2PInfo->aucOidBuf[0]),
 				 u4QueryInfoLen + OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
-			printk(KERN_NOTICE "%s() copy_to_user() fail\n", __func__);
+			DBGLOG(INIT, WARN, "%s() copy_to_user() fail\n", __func__);
 			return -EIO;
 		} else {
 			return 0;
 		}
 	}
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -4678,16 +4428,13 @@ mtk_p2p_wext_send_service_discovery_request(IN struct net_device *prDev,
 
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidSendP2PSDRequest,
-			   prP2PReq->aucBuffer,
-			   prP2PReq->inBufferLength, FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
+			   prP2PReq->aucBuffer, prP2PReq->inBufferLength, FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
 
-	if (rStatus != WLAN_STATUS_SUCCESS) {
+	if (rStatus != WLAN_STATUS_SUCCESS)
 		return -EFAULT;
-	} else {
+	else
 		return 0;
-	}
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -4721,14 +4468,12 @@ mtk_p2p_wext_send_service_discovery_response(IN struct net_device *prDev,
 
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidSendP2PSDResponse,
-			   prP2PReq->aucBuffer,
-			   prP2PReq->inBufferLength, FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
+			   prP2PReq->aucBuffer, prP2PReq->inBufferLength, FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
 
-	if (rStatus != WLAN_STATUS_SUCCESS) {
+	if (rStatus != WLAN_STATUS_SUCCESS)
 		return -EFAULT;
-	} else {
+	else
 		return 0;
-	}
 }
 
 #if CFG_SUPPORT_ANTI_PIRACY
@@ -4748,8 +4493,7 @@ mtk_p2p_wext_send_service_discovery_response(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_set_sec_check_request(IN struct net_device *prDev,
-				   IN struct iw_request_info *info,
-				   IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+				   IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 	UINT_32 u4SetInfoLen;
@@ -4763,16 +4507,13 @@ mtk_p2p_wext_set_sec_check_request(IN struct net_device *prDev,
 
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidSetSecCheckRequest,
-			   prP2PReq->aucBuffer,
-			   prP2PReq->inBufferLength, FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
+			   prP2PReq->aucBuffer, prP2PReq->inBufferLength, FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
 
-	if (rStatus != WLAN_STATUS_SUCCESS) {
+	if (rStatus != WLAN_STATUS_SUCCESS)
 		return -EFAULT;
-	} else {
+	else
 		return 0;
-	}
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -4790,8 +4531,7 @@ mtk_p2p_wext_set_sec_check_request(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_get_sec_check_response(IN struct net_device *prDev,
-				    IN struct iw_request_info *info,
-				    IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+				    IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 	UINT_32 u4QueryInfoLen;
@@ -4803,11 +4543,10 @@ mtk_p2p_wext_get_sec_check_response(IN struct net_device *prDev,
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 	ASSERT(prGlueInfo);
 
-	printk("mtk_p2p_wext_get_sec_check_response\n");
+	DBGLOG(INIT, INFO, "mtk_p2p_wext_get_sec_check_response\n");
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidGetSecCheckResponse,
-			   prP2PReq->aucBuffer,
-			   prP2PReq->outBufferLength, TRUE, FALSE, TRUE, TRUE, &u4QueryInfoLen);
+			   prP2PReq->aucBuffer, prP2PReq->outBufferLength, TRUE, FALSE, TRUE, TRUE, &u4QueryInfoLen);
 
 	if (rStatus != WLAN_STATUS_SUCCESS) {
 		return -EFAULT;
@@ -4815,9 +4554,8 @@ mtk_p2p_wext_get_sec_check_response(IN struct net_device *prDev,
 		prP2PReq->outBufferLength = u4QueryInfoLen;
 
 		if (copy_to_user(wrqu->data.pointer,
-				 prP2PReq->aucBuffer,
-				 u4QueryInfoLen + OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
-			printk(KERN_NOTICE "%s() copy_to_user() fail\n", __func__);
+				 prP2PReq->aucBuffer, u4QueryInfoLen + OFFSET_OF(IW_P2P_TRANSPORT_STRUCT, aucBuffer))) {
+			DBGLOG(INIT, WARN, "%s() copy_to_user() fail\n", __func__);
 			return -EIO;
 		} else {
 			return 0;
@@ -4858,14 +4596,12 @@ mtk_p2p_wext_terminate_service_discovery_phase(IN struct net_device *prDev,
 
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidSetP2PTerminateSDPhase,
-			   prP2PReq->aucBuffer,
-			   prP2PReq->inBufferLength, FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
+			   prP2PReq->aucBuffer, prP2PReq->inBufferLength, FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
 
-	if (rStatus != WLAN_STATUS_SUCCESS) {
+	if (rStatus != WLAN_STATUS_SUCCESS)
 		return -EFAULT;
-	} else {
+	else
 		return 0;
-	}
 }
 
 /*----------------------------------------------------------------------------*/
@@ -4884,8 +4620,7 @@ mtk_p2p_wext_terminate_service_discovery_phase(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_set_noa_param(IN struct net_device *prDev,
-			   IN struct iw_request_info *info,
-			   IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			   IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 	UINT_32 u4SetInfoLen;
@@ -4898,17 +4633,16 @@ mtk_p2p_wext_set_noa_param(IN struct net_device *prDev,
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 	ASSERT(prGlueInfo);
 
-	printk("mtk_p2p_wext_set_noa_param\n");
+	DBGLOG(INIT, INFO, "mtk_p2p_wext_set_noa_param\n");
 
 	rStatus = kalIoctl(prGlueInfo, wlanoidSetNoaParam, prNoaParam,	/* prP2PReq->aucBuffer, */
 			   sizeof(PARAM_CUSTOM_NOA_PARAM_STRUC_T),	/* prP2PReq->inBufferLength, */
 			   FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
 
-	if (rStatus != WLAN_STATUS_SUCCESS) {
+	if (rStatus != WLAN_STATUS_SUCCESS)
 		return -EFAULT;
-	} else {
+	else
 		return 0;
-	}
 }
 
 /*----------------------------------------------------------------------------*/
@@ -4927,14 +4661,12 @@ mtk_p2p_wext_set_noa_param(IN struct net_device *prDev,
 /*----------------------------------------------------------------------------*/
 int
 mtk_p2p_wext_set_oppps_param(IN struct net_device *prDev,
-			     IN struct iw_request_info *info,
-			     IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 	UINT_32 u4SetInfoLen;
 /* P_IW_P2P_TRANSPORT_STRUCT   prP2PReq = (P_IW_P2P_TRANSPORT_STRUCT)extra; */
-	P_PARAM_CUSTOM_OPPPS_PARAM_STRUC_T prOppPsParam =
-	    (P_PARAM_CUSTOM_OPPPS_PARAM_STRUC_T) extra;
+	P_PARAM_CUSTOM_OPPPS_PARAM_STRUC_T prOppPsParam = (P_PARAM_CUSTOM_OPPPS_PARAM_STRUC_T) extra;
 	P_GLUE_INFO_T prGlueInfo = NULL;
 
 	ASSERT(prDev);
@@ -4942,24 +4674,21 @@ mtk_p2p_wext_set_oppps_param(IN struct net_device *prDev,
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 	ASSERT(prGlueInfo);
 
-	printk("mtk_p2p_wext_set_oppps_param\n");
+	DBGLOG(INIT, INFO, "mtk_p2p_wext_set_oppps_param\n");
 
 	rStatus = kalIoctl(prGlueInfo, wlanoidSetOppPsParam, prOppPsParam,	/* prP2PReq->aucBuffer, */
 			   sizeof(PARAM_CUSTOM_OPPPS_PARAM_STRUC_T),	/* prP2PReq->inBufferLength, */
 			   FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
 
-	if (rStatus != WLAN_STATUS_SUCCESS) {
+	if (rStatus != WLAN_STATUS_SUCCESS)
 		return -EFAULT;
-	} else {
+	else
 		return 0;
-	}
 }
-
 
 int
 mtk_p2p_wext_set_p2p_version(IN struct net_device *prDev,
-			     IN struct iw_request_info *info,
-			     IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 	P_GLUE_INFO_T prGlueInfo = NULL;
@@ -4973,15 +4702,12 @@ mtk_p2p_wext_set_p2p_version(IN struct net_device *prDev,
 
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidSetP2pSupplicantVersion,
-			   prP2PReq->aucBuffer,
-			   prP2PReq->inBufferLength, FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
+			   prP2PReq->aucBuffer, prP2PReq->inBufferLength, FALSE, FALSE, TRUE, TRUE, &u4SetInfoLen);
 
-	if (rStatus != WLAN_STATUS_SUCCESS) {
+	if (rStatus != WLAN_STATUS_SUCCESS)
 		return -EFAULT;
-	} else {
+	else
 		return rStatus;
-	}
-
 
 }
 
@@ -4989,8 +4715,7 @@ mtk_p2p_wext_set_p2p_version(IN struct net_device *prDev,
 
 int
 mtk_p2p_wext_get_p2p_version(IN struct net_device *prDev,
-			     IN struct iw_request_info *info,
-			     IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+			     IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 	UINT_32 u4QueryInfoLen;
@@ -5004,15 +4729,12 @@ mtk_p2p_wext_get_p2p_version(IN struct net_device *prDev,
 
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidQueryP2pVersion,
-			   prP2PReq->aucBuffer,
-			   prP2PReq->outBufferLength, TRUE, FALSE, TRUE, TRUE, &u4QueryInfoLen);
+			   prP2PReq->aucBuffer, prP2PReq->outBufferLength, TRUE, FALSE, TRUE, TRUE, &u4QueryInfoLen);
 
-	if (rStatus != WLAN_STATUS_SUCCESS) {
+	if (rStatus != WLAN_STATUS_SUCCESS)
 		return -EFAULT;
-	} else {
+	else
 		return rStatus;
-	}
-
 
 }				/* mtk_p2p_wext_get_p2p_version */
 
@@ -5020,8 +4742,7 @@ mtk_p2p_wext_get_p2p_version(IN struct net_device *prDev,
 
 int
 mtk_p2p_wext_get_rssi(IN struct net_device *prDev,
-		      IN struct iw_request_info *info,
-		      IN OUT union iwreq_data *wrqu, IN OUT char *extra)
+		      IN struct iw_request_info *info, IN OUT union iwreq_data *wrqu, IN OUT char *extra)
 {
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 	UINT_32 u4QueryInfoLen;
@@ -5044,28 +4765,22 @@ mtk_p2p_wext_get_rssi(IN struct net_device *prDev,
 	pStats = (struct iw_statistics *)(&(prGlueInfo->rP2pIwStats));
 
 	rStatus = kalIoctl(prGlueInfo,
-			   wlanoidQueryP2pRssi,
-			   &i4Rssi, sizeof(i4Rssi), TRUE, TRUE, TRUE, TRUE, &u4QueryInfoLen);
+			   wlanoidQueryP2pRssi, &i4Rssi, sizeof(i4Rssi), TRUE, TRUE, TRUE, TRUE, &u4QueryInfoLen);
 
 	u2BufferSize = prData->length;
 
-	if (u2BufferSize < sizeof(struct iw_statistics)) {
+	if (u2BufferSize < sizeof(struct iw_statistics))
 		return -E2BIG;
-	}
 
-
-	if (copy_to_user(prData->pointer, pStats, sizeof(struct iw_statistics))) {
+	if (copy_to_user(prData->pointer, pStats, sizeof(struct iw_statistics)))
 		rStatus = WLAN_STATUS_FAILURE;
-	}
-
 
 stat_out:
 
-	if (rStatus != WLAN_STATUS_SUCCESS) {
+	if (rStatus != WLAN_STATUS_SUCCESS)
 		return -EFAULT;
-	} else {
+	else
 		return rStatus;
-	}
 
 }				/* mtk_p2p_wext_get_rssi */
 
@@ -5079,9 +4794,8 @@ struct iw_statistics *mtk_p2p_wext_get_wireless_stats(struct net_device *prDev)
 
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 	ASSERT(prGlueInfo);
-	if (!prGlueInfo) {
+	if (!prGlueInfo)
 		goto stat_out;
-	}
 
 	pStats = (struct iw_statistics *)(&(prGlueInfo->rP2pIwStats));
 
@@ -5090,22 +4804,17 @@ struct iw_statistics *mtk_p2p_wext_get_wireless_stats(struct net_device *prDev)
 		goto stat_out;
 	}
 
-	rStatus = kalIoctl(prGlueInfo,
-			   wlanoidQueryP2pRssi,
-			   &i4Rssi, sizeof(i4Rssi), TRUE, TRUE, TRUE, TRUE, &bufLen);
+	rStatus = kalIoctl(prGlueInfo, wlanoidQueryP2pRssi, &i4Rssi, sizeof(i4Rssi), TRUE, TRUE, TRUE, TRUE, &bufLen);
 
 stat_out:
 	return pStats;
 }				/* mtk_p2p_wext_get_wireless_stats */
 
-
-#endif				/* CFG_SUPPORT_P2P_RSSI_QUERY */
-
+#endif /* CFG_SUPPORT_P2P_RSSI_QUERY */
 
 int
 mtk_p2p_wext_set_txpow(IN struct net_device *prDev,
-		       IN struct iw_request_info *prIwrInfo,
-		       IN OUT union iwreq_data *prTxPow, IN char *pcExtra)
+		       IN struct iw_request_info *prIwrInfo, IN OUT union iwreq_data *prTxPow, IN char *pcExtra)
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 	P_ADAPTER_T prAdapter = (P_ADAPTER_T) NULL;
@@ -5123,14 +4832,12 @@ mtk_p2p_wext_set_txpow(IN struct net_device *prDev,
 			break;
 		}
 
-
 		prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 
 		if (!prGlueInfo) {
 			i4Ret = -EINVAL;
 			break;
 		}
-
 
 		prAdapter = prGlueInfo->prAdapter;
 #if 0
@@ -5154,8 +4861,7 @@ mtk_p2p_wext_set_txpow(IN struct net_device *prDev,
 		}
 
 		/* 1.3 send message */
-		mboxSendMsg(prAdapter,
-			    MBOX_ID_0, (P_MSG_HDR_T) prMsgFuncSwitch, MSG_SEND_METHOD_BUF);
+		mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prMsgFuncSwitch, MSG_SEND_METHOD_BUF);
 #endif
 
 	} while (FALSE);

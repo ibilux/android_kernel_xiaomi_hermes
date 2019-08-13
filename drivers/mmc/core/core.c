@@ -37,8 +37,7 @@
 #include <linux/mmc/sd.h>
 
 #define FEATURE_STORAGE_PERF_INDEX
-   
-#ifdef USER_BUILD_KERNEL
+#if !defined(CONFIG_MT_ENG_BUILD)
 #undef FEATURE_STORAGE_PERF_INDEX
 #endif
 
@@ -51,6 +50,7 @@
 #include "sd_ops.h"
 #include "sdio_ops.h"
 
+#if defined(FEATURE_MET_MMC_INDEX)
 #define MET_USER_EVENT_SUPPORT
 #include <linux/met_drv.h>
 extern void met_mmc_insert(struct mmc_host *host, struct mmc_async_req *areq);
@@ -60,6 +60,7 @@ extern void met_mmc_complete(struct mmc_host *host, struct mmc_async_req *areq);
 extern void met_mmc_dma_unmap_start(struct mmc_host *host, struct mmc_async_req *areq);
 extern void met_mmc_dma_unmap_stop(struct mmc_host *host, struct mmc_async_req *areq);
 extern void met_mmc_continue_req_end(struct mmc_host *host, struct mmc_async_req *areq);
+#endif
 
 #define DAT_TIMEOUT         (HZ    * 5)
 /* If the device is not responding */
@@ -602,19 +603,25 @@ struct mmc_async_req *mmc_start_req(struct mmc_host *host,
 #endif
 	struct mmc_async_req *data = host->areq;
 
+#if defined(FEATURE_MET_MMC_INDEX)
 	if (areq == NULL) {
 		if (host->areq) {
 			met_mmc_continue_req_end(host, host->areq);
 		}
 	}
+#endif
 
 	/* Prepare a new request */
 	if (areq) {
+#if defined(FEATURE_MET_MMC_INDEX)
 		met_mmc_insert(host, areq);
+#endif
 
 		mmc_pre_req(host, areq->mrq, !host->areq);
 
+#if defined(FEATURE_MET_MMC_INDEX)
 		met_mmc_dma_map(host, areq);
+#endif
 	}
 
 	if (host->areq) {
@@ -670,7 +677,9 @@ struct mmc_async_req *mmc_start_req(struct mmc_host *host,
 		    (host->areq->mrq->cmd->resp[0] & R1_EXCEPTION_EVENT))
 			mmc_start_bkops(host->card, true);
 
+#if defined(FEATURE_MET_MMC_INDEX)
 		met_mmc_complete(host, host->areq);
+#endif
 	}
 
 	if (!err && areq) {
@@ -686,11 +695,15 @@ struct mmc_async_req *mmc_start_req(struct mmc_host *host,
 	}
 
 	if (host->areq) {
+#if defined(FEATURE_MET_MMC_INDEX)
 		met_mmc_dma_unmap_start(host, host->areq);
+#endif
 
 		mmc_post_req(host, host->areq->mrq, 0);
 
+#if defined(FEATURE_MET_MMC_INDEX)
 		met_mmc_dma_unmap_stop(host, host->areq);
+#endif
     }
 
 	 /* Cancel a prepared request if it was not started. */
@@ -1961,7 +1974,8 @@ int mmc_resume_bus(struct mmc_host *host)
 
 	mmc_bus_get(host);
 	if (host->bus_ops && !host->bus_dead) {
-		mmc_power_up(host);
+		if (!mmc_card_mmc(host->card))
+			mmc_power_up(host);
 		BUG_ON(!host->bus_ops->resume);
 		host->bus_ops->resume(host);
 	}
@@ -2042,8 +2056,11 @@ void mmc_detect_change(struct mmc_host *host, unsigned long delay)
 	spin_unlock_irqrestore(&host->lock, flags);
 #endif
 	host->detect_change = 1;
-
+#ifndef CONFIG_HAS_EARLYSUSPEND
+	__pm_stay_awake(&host->detect_wake_lock);
+#else
 	wake_lock(&host->detect_wake_lock);
+#endif
 	ret = mmc_schedule_delayed_work(&host->detect, delay);
 	printk(KERN_INFO"msdc: %d,mmc_schedule_delayed_work ret= %d\n",host->index,ret);
 }
@@ -2760,9 +2777,17 @@ void mmc_rescan(struct work_struct *work)
 // [FIXME] VIA marks it wrong
 /*    if ((host->caps & MMC_CAP_NONREMOVABLE) && host->rescan_entered){
         if (extend_wakelock)
+#ifndef CONFIG_HAS_EARLYSUSPEND
+            __pm_wakeup_event(&host->detect_wake_lock, HZ / 2);
+#else
             wake_lock_timeout(&host->detect_wake_lock, HZ / 2);
+#endif
         else
+#ifndef CONFIG_HAS_EARLYSUSPEND
+            __pm_relax(&host->detect_wake_lock);
+#else
             wake_unlock(&host->detect_wake_lock);
+#endif
 
 		return;
     }
@@ -2825,11 +2850,23 @@ void mmc_rescan(struct work_struct *work)
 
  out:
 	if (extend_wakelock)
+#ifndef CONFIG_HAS_EARLYSUSPEND
+		__pm_wakeup_event(&host->detect_wake_lock, HZ / 2);
+#else
 		wake_lock_timeout(&host->detect_wake_lock, HZ / 2);
+#endif
 	else
+#ifndef CONFIG_HAS_EARLYSUSPEND
+		__pm_relax(&host->detect_wake_lock);
+#else
 		wake_unlock(&host->detect_wake_lock);
+#endif
 	if (host->caps & MMC_CAP_NEEDS_POLL) {
+#ifndef CONFIG_HAS_EARLYSUSPEND
+		__pm_stay_awake(&host->detect_wake_lock);
+#else
 		wake_lock(&host->detect_wake_lock);
+#endif
 		mmc_schedule_delayed_work(&host->detect, HZ);
 	}
 }
@@ -2856,7 +2893,11 @@ void mmc_stop_host(struct mmc_host *host)
 
 	host->rescan_disable = 1;
 	if (cancel_delayed_work_sync(&host->detect))
+#ifndef CONFIG_HAS_EARLYSUSPEND
+		__pm_relax(&host->detect_wake_lock);
+#else
 		wake_unlock(&host->detect_wake_lock);
+#endif
 	mmc_flush_scheduled_work();
 
 	/* clear pm flags now and let card drivers set them as needed */
@@ -3063,7 +3104,11 @@ int mmc_suspend_host(struct mmc_host *host)
 		return 0;
 
 	if (cancel_delayed_work(&host->detect))
+#ifndef CONFIG_HAS_EARLYSUSPEND
+		__pm_relax(&host->detect_wake_lock);
+#else
 		wake_unlock(&host->detect_wake_lock);
+#endif
 	mmc_flush_scheduled_work();
 
 	mmc_bus_get(host);
@@ -3194,7 +3239,11 @@ int mmc_pm_notify(struct notifier_block *notify_block,
 		host->rescan_disable = 1;
 		spin_unlock_irqrestore(&host->lock, flags);
 		if (cancel_delayed_work_sync(&host->detect))
+#ifndef CONFIG_HAS_EARLYSUSPEND
+			__pm_relax(&host->detect_wake_lock);
+#else
 			wake_unlock(&host->detect_wake_lock);
+#endif
 
 		if (!host->bus_ops || host->bus_ops->suspend)
 			break;

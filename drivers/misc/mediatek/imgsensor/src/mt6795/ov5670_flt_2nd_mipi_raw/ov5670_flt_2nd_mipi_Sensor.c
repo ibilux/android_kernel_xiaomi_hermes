@@ -56,7 +56,7 @@ static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
 
 static imgsensor_info_struct imgsensor_info = { 
-	.sensor_id = OV5670_FLT_2ND_MIPI_SENSOR_ID,		//record sensor id defined in Kd_imgsensor.h
+	.sensor_id = OV5670_FLT_2ND_MIPI_RAW_SENSOR_ID,		//record sensor id defined in Kd_imgsensor.h
 	
 	.checksum_value = 0x523c51f6,		//checksum value for Camera Auto Test
 	
@@ -1646,6 +1646,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 				    dev_ofilm->device_module = DEVINFO_NULL;
 				    dev_ofilm->device_info = DEVINFO_NULL;
 				    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);*/
+				    
 				    dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 				    dev_sunny->device_type = "Camera";
 				    dev_sunny->device_vendor = &Module_information;//"Sunny_flt";
@@ -1667,7 +1668,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 				    	case 0x01:
 				    		//dev_ofilm->device_used = DEVINFO_UNUSED;
 				    		dev_sunny->device_used = DEVINFO_USED;
-				    		*sensor_id = OV5670_FLT_2ND_MIPI_SENSOR_ID;
+				    		*sensor_id = OV5670_FLT_2ND_MIPI_RAW_SENSOR_ID;
 				    		break;
 				    	default :
 				    		dev_sunny->device_used = DEVINFO_UNUSED;
@@ -1678,7 +1679,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 				else
 				{
 						dev_sunny->device_used = DEVINFO_UNUSED;
-				    		*sensor_id = 0xFFFFFFFF;
+				    	*sensor_id = 0xFFFFFFFF;
 				}
 			    	//dev_ofilm->device_used = DEVINFO_USED;
 			    	//DEVINFO_CHECK_ADD_DEVICE(dev_ofilm);
@@ -1708,6 +1709,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		    dev_ofilm->device_module = DEVINFO_NULL;
 		    dev_ofilm->device_info = DEVINFO_NULL;
 		    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);*/
+		    
 		    dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 		    dev_sunny->device_type = "Camera";
 		    dev_sunny->device_vendor = &Module_information;//"Sunny_flt";
@@ -1768,7 +1770,7 @@ static kal_uint32 open(void)
 		do {
 			sensor_id = ((read_cmos_sensor(0x300B) << 8) | read_cmos_sensor(0x300C));
 			if (sensor_id == 0x5670)
-				sensor_id = OV5670_FLT_2ND_MIPI_SENSOR_ID;
+				sensor_id = OV5670_FLT_2ND_MIPI_RAW_SENSOR_ID;
 			if (sensor_id == imgsensor_info.sensor_id) {				
 				LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n", imgsensor.i2c_write_id,sensor_id);	  
 				break;

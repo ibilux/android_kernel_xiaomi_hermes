@@ -1,5 +1,5 @@
 /*
-** $Id: @(#) bss.h
+** Id: @(#) bss.h
 */
 
 /*! \file   "bss.h"
@@ -8,10 +8,8 @@
     The file contains the function declarations and defines for used in BSS/IBSS.
 */
 
-
-
 /*
-** $Log: bss.h $
+** Log: bss.h
 **
 ** 02 19 2013 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -68,7 +66,8 @@
  * Extend TIM PVB, from 2 to 3 octets.
  *
  * 11 29 2010 cp.wu
- * [WCXRP00000210] [MT6620 Wi-Fi][Driver][FW] Set RCPI value in STA_REC for initial TX rate selection of auto-rate algorithm
+ * [WCXRP00000210] [MT6620 Wi-Fi][Driver][FW] Set RCPI value in STA_REC for
+ * initial TX rate selection of auto-rate algorithm
  * update ucRcpi of STA_RECORD_T for AIS when
  * 1) Beacons for IBSS merge is received
  * 2) Associate Response for a connecting peer is received
@@ -177,10 +176,10 @@ extern const PUINT_8 apucNetworkType[NETWORK_TYPE_NUM];
 #error Exceed HW capability (KAL_BSS_NUM or KAL_P2P_NUM)!!
 #endif
 
-
 /* NOTE(Kevin): change define for george */
 /* #define MAX_LEN_TIM_PARTIAL_BMP     (((MAX_ASSOC_ID + 1) + 7) / 8) */ /* Required bits = (MAX_ASSOC_ID + 1) */
-#define MAX_LEN_TIM_PARTIAL_BMP                     ((CFG_STA_REC_NUM + 7) / 8)  /* reserve length greater than maximum size of STA_REC */	/* obsoleted: Assume we only use AID:1~15 */
+#define MAX_LEN_TIM_PARTIAL_BMP                     ((CFG_STA_REC_NUM + 7) / 8)
+/* reserve length greater than maximum size of STA_REC */	/* obsoleted: Assume we only use AID:1~15 */
 
 /* CTRL FLAGS for Probe Response */
 #define BSS_PROBE_RESP_USE_P2P_DEV_ADDR             BIT(0)
@@ -221,31 +220,24 @@ extern const PUINT_8 apucNetworkType[NETWORK_TYPE_NUM];
 /*----------------------------------------------------------------------------*/
 P_STA_RECORD_T
 bssCreateStaRecFromBssDesc(IN P_ADAPTER_T prAdapter,
-			   IN ENUM_STA_TYPE_T eStaType,
-			   IN UINT_8 uBssIndex, IN P_BSS_DESC_T prBssDesc);
+			   IN ENUM_STA_TYPE_T eStaType, IN UINT_8 uBssIndex, IN P_BSS_DESC_T prBssDesc);
 
-VOID
-bssComposeNullFrame(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuffer, IN P_STA_RECORD_T prStaRec);
+VOID bssComposeNullFrame(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuffer, IN P_STA_RECORD_T prStaRec);
 
 VOID
 bssComposeQoSNullFrame(IN P_ADAPTER_T prAdapter,
-		       IN PUINT_8 pucBuffer,
-		       IN P_STA_RECORD_T prStaRec, IN UINT_8 ucUP, IN BOOLEAN fgSetEOSP);
+		       IN PUINT_8 pucBuffer, IN P_STA_RECORD_T prStaRec, IN UINT_8 ucUP, IN BOOLEAN fgSetEOSP);
 
 WLAN_STATUS
-bssSendNullFrame(IN P_ADAPTER_T prAdapter,
-		 IN P_STA_RECORD_T prStaRec, IN PFN_TX_DONE_HANDLER pfTxDoneHandler);
+bssSendNullFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN PFN_TX_DONE_HANDLER pfTxDoneHandler);
 
 WLAN_STATUS
 bssSendQoSNullFrame(IN P_ADAPTER_T prAdapter,
-		    IN P_STA_RECORD_T prStaRec,
-		    IN UINT_8 ucUP, IN PFN_TX_DONE_HANDLER pfTxDoneHandler);
+		    IN P_STA_RECORD_T prStaRec, IN UINT_8 ucUP, IN PFN_TX_DONE_HANDLER pfTxDoneHandler);
 
 VOID bssDumpBssInfo(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex);
 
-VOID
-bssDetermineApBssInfoPhyTypeSet(IN P_ADAPTER_T prAdapter,
-				IN BOOLEAN fgIsPureAp, OUT P_BSS_INFO_T prBssInfo);
+VOID bssDetermineApBssInfoPhyTypeSet(IN P_ADAPTER_T prAdapter, IN BOOLEAN fgIsPureAp, OUT P_BSS_INFO_T prBssInfo);
 
 /*----------------------------------------------------------------------------*/
 /* Routines for both IBSS(AdHoc) and BSS(AP)                                  */
@@ -253,15 +245,13 @@ bssDetermineApBssInfoPhyTypeSet(IN P_ADAPTER_T prAdapter,
 VOID bssGenerateExtSuppRate_IE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo);
 
 VOID
-bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo,
-				      IN P_BSS_INFO_T prBssInfo, IN PUINT_8 pucDestAddr);
+bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo, IN P_BSS_INFO_T prBssInfo, IN PUINT_8 pucDestAddr);
 
 VOID
 bssComposeBeaconProbeRespFrameHeaderAndFF(IN PUINT_8 pucBuffer,
 					  IN PUINT_8 pucDestAddr,
 					  IN PUINT_8 pucOwnMACAddress,
-					  IN PUINT_8 pucBSSID,
-					  IN UINT_16 u2BeaconInterval, IN UINT_16 u2CapInfo);
+					  IN PUINT_8 pucBSSID, IN UINT_16 u2BeaconInterval, IN UINT_16 u2CapInfo);
 
 WLAN_STATUS
 bssSendBeaconProbeResponse(IN P_ADAPTER_T prAdapter,
@@ -269,26 +259,19 @@ bssSendBeaconProbeResponse(IN P_ADAPTER_T prAdapter,
 
 WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
-VOID bssInitializeClientList(IN P_ADAPTER_T prAdapter, 
-    IN P_BSS_INFO_T prBssInfo);
+VOID bssInitializeClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo);
 
-VOID bssAddClient(IN P_ADAPTER_T prAdapter,
-    IN P_BSS_INFO_T prBssInfo, IN P_STA_RECORD_T prStaRec);
+VOID bssAddClient(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN P_STA_RECORD_T prStaRec);
 
-BOOLEAN bssRemoveClient(IN P_ADAPTER_T prAdapter,
-	IN P_BSS_INFO_T prBssInfo, IN P_STA_RECORD_T prStaRec);
+BOOLEAN bssRemoveClient(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN P_STA_RECORD_T prStaRec);
 
-P_STA_RECORD_T bssRemoveClientByMac(
-    IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN PUINT_8 pucMac);
+P_STA_RECORD_T bssRemoveClientByMac(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN PUINT_8 pucMac);
 
-P_STA_RECORD_T bssRemoveHeadClient(
-    IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo);
+P_STA_RECORD_T bssRemoveHeadClient(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo);
 
-UINT_32 bssGetClientCount(IN P_ADAPTER_T prAdapter, 
-    IN P_BSS_INFO_T prBssInfo);
+UINT_32 bssGetClientCount(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo);
 
-VOID bssDumpClientList(IN P_ADAPTER_T prAdapter, 
-    IN P_BSS_INFO_T prBssInfo);
+VOID bssDumpClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo);
 
 VOID bssCheckClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo);
 
@@ -305,7 +288,6 @@ VOID ibssInitForAdHoc(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo);
 
 WLAN_STATUS bssUpdateBeaconContent(IN P_ADAPTER_T prAdapter, IN UINT_8 uBssIndex);
 
-
 /*----------------------------------------------------------------------------*/
 /* Routines for BSS(AP) only                                                  */
 /*----------------------------------------------------------------------------*/
@@ -314,7 +296,6 @@ VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEA
 VOID bssUpdateDTIMCount(IN P_ADAPTER_T prAdapter, IN UINT_8 uBssIndex);
 
 VOID bssSetTIMBitmap(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN UINT_16 u2AssocId);
-
 
 /*link function to p2p module for txBcnIETable*/
 
@@ -334,5 +315,4 @@ typedef enum _ENUM_AC_PRIORITY_T {
 	AC_VO_PRIORITY
 } ENUM_AC_PRIORITY_T, *P_ENUM_AC_PRIORITY_T;
 
-
-#endif				/* _BSS_H */
+#endif /* _BSS_H */

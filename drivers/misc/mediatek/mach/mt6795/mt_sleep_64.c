@@ -98,10 +98,10 @@ static u32 slp_spm_flags = {
 #if defined(CONFIG_MTK_DT_USB_SUPPORT) || defined(CONFIG_MTK_ICUSB_SUPPORT)
 	/* disable infra pdn to avoid usb20 host pdn */
 	/*SPM_CPU_PDN_DIS | SPM_INFRA_PDN_DIS | SPM_DDRPHY_PDN_DIS |*/
-	SPM_DUALVCORE_PDN_DIS /*| SPM_PASR_DIS*/  | SPM_DPD_DIS /*| SPM_CPU_DVS_DIS*/
+	SPM_DUALVCORE_PDN_DIS | SPM_PASR_DIS | SPM_DPD_DIS /*| SPM_CPU_DVS_DIS*/
 #else
 	/*SPM_CPU_PDN_DIS | SPM_INFRA_PDN_DIS | SPM_DDRPHY_PDN_DIS |*/
-	SPM_DUALVCORE_PDN_DIS /*| SPM_PASR_DIS*/ | SPM_DPD_DIS /*| SPM_CPU_DVS_DIS*/
+	SPM_DUALVCORE_PDN_DIS | SPM_PASR_DIS | SPM_DPD_DIS /*| SPM_CPU_DVS_DIS*/
 #endif
 #else
 	0
@@ -193,7 +193,7 @@ static int slp_suspend_ops_begin(suspend_state_t state)
 {
     /* legacy log */
     slp_notice("@@@@@@@@@@@@@@@@@@@@\n");
-    slp_notice("Chip_pm_begin(%u)(%u)\n", is_cpu_pdn(slp_spm_flags), is_infra_pdn(slp_spm_flags));
+	slp_notice("Chip_pm_begin(%u)(%u)\n", is_cpu_pdn(slp_spm_flags), is_infra_pdn(slp_spm_flags));
     slp_notice("@@@@@@@@@@@@@@@@@@@@\n");
 
     slp_wake_reason = WR_NONE;
@@ -244,7 +244,7 @@ static int enter_pasrdpd(void)
     	slp_notice("@@@@@@@@@@@@@@@@@@@@\n");
 	slp_crit2("[%s]\n",__FUNCTION__);
     	slp_notice("@@@@@@@@@@@@@@@@@@@@\n");
-	
+
 	/* Setup SPM wakeup event firstly */
 	spm_set_wakeup_src_check();
 
@@ -253,7 +253,7 @@ static int enter_pasrdpd(void)
 
 	if (error) {
 		slp_crit2("[PM_WAKEUP] Failed to enter PASR!\n");
-	} else {	
+	} else {
 		/* Call SPM/DPD control API */
 		slp_crit2("MR17[0x%x] DPD[0x%x]\n",sr,dpd);
 		/* Should configure SR */
@@ -279,12 +279,12 @@ static void leave_pasrdpd(void)
 
 	/* Disable PASR */
 	exit_pasr_dpd_config();
-	
+
 	slp_crit2("[%d]\n",__LINE__);
 
 	/* End PASR/DPD SW operations */
 	pasr_exit();
-	
+
 	slp_crit2("Bye [%s]\n",__FUNCTION__);
 }
 #endif
@@ -349,7 +349,7 @@ static int slp_suspend_ops_enter(suspend_state_t state)
         ret = -EPERM;
         goto LEAVE_SLEEP;
     }
-  
+
     /* only for test */
     #if 0
     slp_pasr_en(1, 0x0);
@@ -388,14 +388,15 @@ static void slp_suspend_ops_end(void)
 {
     /* legacy log */
     slp_notice("@@@@@@@@@@@@@@@@@@@@\n");
-    slp_notice("Chip_pm_end\n");
+	slp_notice("Chip_pm_end\n");
     slp_notice("@@@@@@@@@@@@@@@@@@@@\n");
 
     if (1 == slp_auto_suspend_resume)
     {
-        slp_crit2("slp_auto_suspend_resume_cnt = %d \n", slp_auto_suspend_resume_cnt);
+	slp_crit2("slp_auto_suspend_resume_cnt = %d\n", slp_auto_suspend_resume_cnt);
+
         slp_auto_suspend_resume_cnt++;
-        
+
         if (10 < slp_auto_suspend_resume_cnt)
         {
             slp_crit2("do spm_usb_resume\n");
@@ -430,7 +431,7 @@ int slp_set_wakesrc(u32 wakesrc, bool enable, bool ck26m_on)
     int r;
     unsigned long flags;
 
-    slp_notice("wakesrc = 0x%x, enable = %u, ck26m_on = %u\n",
+	slp_notice("wakesrc = 0x%x, enable = %u, ck26m_on = %u\n",
                wakesrc, enable, ck26m_on);
 
 #if SLP_REPLACE_DEF_WAKESRC
@@ -565,7 +566,7 @@ void slp_set_auto_suspend_wakelock(bool lock)
     if (lock)
         wake_lock(&spm_suspend_lock);
     else
-        wake_unlock(&spm_suspend_lock);    
+	wake_unlock(&spm_suspend_lock);
 }
 
 module_param(slp_ck26m_on, bool, 0644);

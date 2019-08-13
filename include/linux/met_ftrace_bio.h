@@ -39,6 +39,7 @@ DECLARE_EVENT_CLASS(met_mmc_async_req_template,
 		  __entry->start_lba, __entry->lba_len, __entry->comm)
 );
 
+#if 0
 DECLARE_EVENT_CLASS(met_mmc_dma_async_req_template,
 	TP_PROTO(struct mmc_blk_data *md, struct mmc_async_req *areq, char type, unsigned int bd_num),
 
@@ -69,6 +70,7 @@ DECLARE_EVENT_CLASS(met_mmc_dma_async_req_template,
 		  __entry->major, __entry->minor, __entry->lba_dir, __entry->bdnum,
 		  __entry->start_lba, __entry->lba_len, __entry->comm)
 );
+#endif
 
 DECLARE_EVENT_CLASS(met_mmc_req_template,
 	TP_PROTO(struct mmc_blk_data *md, struct mmc_request *req, char type),
@@ -193,9 +195,40 @@ DEFINE_EVENT(met_mmc_async_req_template, met_mmc_continue_req_end,
 /*
  * Tracepoint for met_mmc_dma_stop
  */
-DEFINE_EVENT(met_mmc_dma_async_req_template, met_mmc_dma_stop,
-	     TP_PROTO(struct mmc_blk_data *md, struct mmc_async_req *areq, char type, unsigned int bd_num),
-	     TP_ARGS(md, areq, type, bd_num));
+//DEFINE_EVENT(met_mmc_dma_async_req_template, met_mmc_dma_stop,
+//	     TP_PROTO(struct mmc_blk_data *md, struct mmc_async_req *areq, char type, unsigned int bd_num),
+//	     TP_ARGS(md, areq, type, bd_num));
+
+TRACE_EVENT(met_mmc_dma_stop,
+	TP_PROTO(struct mmc_blk_data *md, u32 lba, unsigned int len, char type, unsigned int bd_num),
+
+	TP_ARGS(md, lba, len, type, bd_num),
+
+	TP_STRUCT__entry(
+		__field(int, major)
+		__field(int, minor)
+		__array(char, lba_dir, 2)
+		__field(unsigned int, start_lba)
+		__field(unsigned int, lba_len)
+		__field(unsigned int, bdnum)
+		__array(char, comm, TASK_COMM_LEN)
+	),
+
+	TP_fast_assign(
+		memset(__entry->lba_dir, 0, sizeof(__entry->lba_dir));
+		__entry->major = md->disk->major;
+		__entry->minor = md->disk->first_minor;
+		memcpy(__entry->lba_dir, &type, sizeof(char));
+		__entry->start_lba = lba;
+		__entry->lba_len = len;
+		__entry->bdnum = bd_num;
+		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+	),
+
+	TP_printk("%d,%d %s %d %d + %d [%s]",
+		  __entry->major, __entry->minor, __entry->lba_dir, __entry->bdnum,
+		  __entry->start_lba, __entry->lba_len, __entry->comm)
+);
 
 #if 0
 /*

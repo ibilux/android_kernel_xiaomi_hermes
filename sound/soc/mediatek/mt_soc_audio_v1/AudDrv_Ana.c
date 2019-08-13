@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2007 The Android Open Source Project
- * Copyright (C) 2018 XiaoMi, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +62,8 @@
 #include <mach/mt_pmic_wrap.h>
 #endif
 
+static DEFINE_SPINLOCK(ana_set_reg_lock);
+
 /*****************************************************************************
  *                         D A T A   T Y P E S
  *****************************************************************************/
@@ -72,17 +73,21 @@ void Ana_Set_Reg(uint32 offset, uint32 value, uint32 mask)
     // set pmic register or analog CONTROL_IFACE_PATH
     int ret = 0;
     uint32 Reg_Value = 0;
+	unsigned int flags = 0;
+
     PRINTK_ANA_REG("Ana_Set_Reg offset= 0x%x , value = 0x%x mask = 0x%x\n", offset, value, mask);
 #ifdef AUDIO_USING_WRAP_DRIVER
+	spin_lock_irqsave(&ana_set_reg_lock, flags);
     Reg_Value = Ana_Get_Reg(offset);
     Reg_Value &= (~mask);
     Reg_Value |= (value & mask);
     ret = pwrap_write(offset, Reg_Value);
+	spin_unlock_irqrestore(&ana_set_reg_lock, flags);
+
     Reg_Value = Ana_Get_Reg(offset);
     if ((Reg_Value & mask) != (value & mask))
     {
-        //delete // by lct huangchunyan from mtk
-        printk("Ana_Set_Reg offset= 0x%x , value = 0x%x mask = 0x%x ret = %d Reg_Value = 0x%x\n", offset, value, mask, ret, Reg_Value);  
+        //printk("Ana_Set_Reg offset= 0x%x , value = 0x%x mask = 0x%x ret = %d Reg_Value = 0x%x\n", offset, value, mask, ret, Reg_Value);
     }
 #endif
 }

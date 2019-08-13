@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/bss.c#3 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/bss.c#3
 */
 
 /*! \file   "bss.c"
@@ -10,18 +10,16 @@
     the Probe Response Frame for received Probe Request Frame.
 */
 
-
-
 /*
-** $Log: bss.c $
-** 
+** Log: bss.c
+**
 ** 09 03 2013 cp.wu
 ** add path for reassociation
-** 
+**
 ** 08 30 2012 chinglan.wang
 ** [ALPS00349664] [6577JB][WIFI] Phone can not connect to AP secured with AES via WPS in 802.11n Only
 ** .
-** 
+**
 ** 07 26 2012 yuche.tsai
 ** [ALPS00324337] [ALPS.JB][Hot-Spot] Driver update for Hot-Spot
 ** Update driver code of ALPS.JB for hot-spot.
@@ -167,14 +165,12 @@
 
 Add per station flow control when STA is in PS
 
-
  * Fix  prBssInfo->aucCWminLog to  prBssInfo->aucCWminLogForBcast
  *
  * 12 29 2010 eddie.chen
  * [WCXRP00000322] Add WMM IE in beacon,
 
 Add per station flow control when STA is in PS
-
 
  * Add WMM parameter for broadcast.
  *
@@ -187,7 +183,8 @@ Add per station flow control when STA is in PS
  * 2) WMM IE in beacon, assoc resp, probe resp
  *
  * 11 29 2010 cp.wu
- * [WCXRP00000210] [MT6620 Wi-Fi][Driver][FW] Set RCPI value in STA_REC for initial TX rate selection of auto-rate algorithm
+ * [WCXRP00000210] [MT6620 Wi-Fi][Driver][FW] Set RCPI value in STA_REC
+ * for initial TX rate selection of auto-rate algorithm
  * update ucRcpi of STA_RECORD_T for AIS when
  * 1) Beacons for IBSS merge is received
  * 2) Associate Response for a connecting peer is received
@@ -491,46 +488,44 @@ Add per station flow control when STA is in PS
 */
 #if (CFG_SUPPORT_ADHOC) || (CFG_SUPPORT_AAA)
 APPEND_VAR_IE_ENTRY_T txBcnIETable[] = {
-    { (ELEM_HDR_LEN + (RATE_NUM - ELEM_MAX_LEN_SUP_RATES)), NULL,                           bssGenerateExtSuppRate_IE   }   /* 50 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_ERP),                    NULL,                           rlmRspGenerateErpIE         }   /* 42 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_HT_CAP),                 NULL,                           rlmRspGenerateHtCapIE       }   /* 45 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_HT_OP),                  NULL,                           rlmRspGenerateHtOpIE        }   /* 61 */
+	{(ELEM_HDR_LEN + (RATE_NUM - ELEM_MAX_LEN_SUP_RATES)), NULL, bssGenerateExtSuppRate_IE},	/* 50 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_ERP), NULL, rlmRspGenerateErpIE},	/* 42 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_HT_CAP), NULL, rlmRspGenerateHtCapIE},	/* 45 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_HT_OP), NULL, rlmRspGenerateHtOpIE},	/* 61 */
 #if CFG_ENABLE_WIFI_DIRECT
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_OBSS_SCAN),              NULL,                           rlmRspGenerateObssScanIE    }   /* 74 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_OBSS_SCAN), NULL, rlmRspGenerateObssScanIE},	/* 74 */
 #endif
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_EXT_CAP),                NULL,                           rlmRspGenerateExtCapIE      }   /* 127 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_WPA),                    NULL,                           rsnGenerateWpaNoneIE        }   /* 221 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_WMM_PARAM),              NULL,                           mqmGenerateWmmParamIE       }   /* 221 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_EXT_CAP), NULL, rlmRspGenerateExtCapIE},	/* 127 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_WPA), NULL, rsnGenerateWpaNoneIE},	/* 221 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_WMM_PARAM), NULL, mqmGenerateWmmParamIE},	/* 221 */
 #if CFG_ENABLE_WIFI_DIRECT
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_WPA),                    NULL,                           rsnGenerateWPAIE            }   /* 221 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_RSN),                    NULL,                           rsnGenerateRSNIE            }   /* 48 */
-#if 0 //LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
-   ,{ 0,                                                    p2pFuncCalculateExtra_IELenForBeacon, p2pFuncGenerateExtra_IEForBeacon  }   /* 221 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_WPA), NULL, rsnGenerateWPAIE},	/* 221 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_RSN), NULL, rsnGenerateRSNIE},	/* 48 */
+#if 0				/* LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0) */
+	{0, p2pFuncCalculateExtra_IELenForBeacon, p2pFuncGenerateExtra_IEForBeacon},	/* 221 */
 #else
-   ,{ 0,                                                    p2pFuncCalculateP2p_IELenForBeacon, p2pFuncGenerateP2p_IEForBeacon  }   /* 221 */
-   ,{ 0,                                                    p2pFuncCalculateWSC_IELenForBeacon, p2pFuncGenerateWSC_IEForBeacon      }   /* 221 */
-   ,{ 0,                                                    p2pFuncCalculateP2P_IE_NoA,     p2pFuncGenerateP2P_IE_NoA   }   /* 221 */
+	{0, p2pFuncCalculateP2p_IELenForBeacon, p2pFuncGenerateP2p_IEForBeacon},	/* 221 */
+	{0, p2pFuncCalculateWSC_IELenForBeacon, p2pFuncGenerateWSC_IEForBeacon},	/* 221 */
+	{0, p2pFuncCalculateP2P_IE_NoA, p2pFuncGenerateP2P_IE_NoA},	/* 221 */
 #endif
 #endif /* CFG_ENABLE_WIFI_DIRECT */
 };
 
-
 APPEND_VAR_IE_ENTRY_T txProbRspIETable[] = {
-    { (ELEM_HDR_LEN + (RATE_NUM - ELEM_MAX_LEN_SUP_RATES)), NULL,                           bssGenerateExtSuppRate_IE   }   /* 50 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_ERP),                    NULL,                           rlmRspGenerateErpIE         }   /* 42 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_HT_CAP),                 NULL,                           rlmRspGenerateHtCapIE       }   /* 45 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_HT_OP),                  NULL,                           rlmRspGenerateHtOpIE        }   /* 61 */
+	{(ELEM_HDR_LEN + (RATE_NUM - ELEM_MAX_LEN_SUP_RATES)), NULL, bssGenerateExtSuppRate_IE},	/* 50 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_ERP), NULL, rlmRspGenerateErpIE},	/* 42 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_HT_CAP), NULL, rlmRspGenerateHtCapIE},	/* 45 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_HT_OP), NULL, rlmRspGenerateHtOpIE},	/* 61 */
 #if CFG_ENABLE_WIFI_DIRECT
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_RSN),                    NULL,                           rsnGenerateRSNIE            }   /* 48 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_OBSS_SCAN),              NULL,                           rlmRspGenerateObssScanIE    }   /* 74 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_RSN), NULL, rsnGenerateRSNIE},	/* 48 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_OBSS_SCAN), NULL, rlmRspGenerateObssScanIE},	/* 74 */
 #endif
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_EXT_CAP),                NULL,                           rlmRspGenerateExtCapIE      }   /* 127 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_WPA),                    NULL,                           rsnGenerateWpaNoneIE        }   /* 221 */
-   ,{ (ELEM_HDR_LEN + ELEM_MAX_LEN_WMM_PARAM),              NULL,                           mqmGenerateWmmParamIE       }   /* 221 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_EXT_CAP), NULL, rlmRspGenerateExtCapIE},	/* 127 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_WPA), NULL, rsnGenerateWpaNoneIE},	/* 221 */
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_WMM_PARAM), NULL, mqmGenerateWmmParamIE}	/* 221 */
 };
 
 #endif /* CFG_SUPPORT_ADHOC || CFG_SUPPORT_AAA */
-
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A
@@ -541,7 +536,6 @@ APPEND_VAR_IE_ENTRY_T txProbRspIETable[] = {
 *                                 M A C R O S
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
@@ -569,140 +563,121 @@ APPEND_VAR_IE_ENTRY_T txProbRspIETable[] = {
 */
 /*----------------------------------------------------------------------------*/
 P_STA_RECORD_T
-bssCreateStaRecFromBssDesc (
-    IN P_ADAPTER_T                  prAdapter,
-    IN ENUM_STA_TYPE_T              eStaType,
-    IN ENUM_NETWORK_TYPE_INDEX_T    eNetTypeIndex,
-    IN P_BSS_DESC_T                 prBssDesc
-    )
+bssCreateStaRecFromBssDesc(IN P_ADAPTER_T prAdapter,
+			   IN ENUM_STA_TYPE_T eStaType,
+			   IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex, IN P_BSS_DESC_T prBssDesc)
 {
-    P_STA_RECORD_T prStaRec;
-    UINT_8 ucNonHTPhyTypeSet;
+	P_STA_RECORD_T prStaRec;
+	UINT_8 ucNonHTPhyTypeSet;
 
+	ASSERT(prBssDesc);
 
-    ASSERT(prBssDesc);
+	/* 4 <1> Get a valid STA_RECORD_T */
+	prStaRec = cnmGetStaRecByAddress(prAdapter, (UINT_8) eNetTypeIndex, prBssDesc->aucSrcAddr);
+	if (!prStaRec) {
 
-    //4 <1> Get a valid STA_RECORD_T
-    prStaRec = cnmGetStaRecByAddress(prAdapter, (UINT_8) eNetTypeIndex,
-                                        prBssDesc->aucSrcAddr);
-    if (!prStaRec) {
+		prStaRec = cnmStaRecAlloc(prAdapter, (UINT_8) eNetTypeIndex);
 
-        prStaRec = cnmStaRecAlloc(prAdapter, (UINT_8) eNetTypeIndex);
+		/* TODO(Kevin): Error handling of allocation of STA_RECORD_T for
+		 * exhausted case and do removal of unused STA_RECORD_T.
+		 */
 
-        /* TODO(Kevin): Error handling of allocation of STA_RECORD_T for
-         * exhausted case and do removal of unused STA_RECORD_T.
-         */
+		if (!prStaRec) {
+			ASSERT(FALSE);
+			return NULL;
+		}
 
-        if(!prStaRec) {
-            ASSERT(FALSE);
-            return NULL;
-        }
+		ASSERT(prStaRec);
 
-        ASSERT(prStaRec);
+		prStaRec->ucStaState = STA_STATE_1;
+		prStaRec->ucJoinFailureCount = 0;
+		/* TODO(Kevin): If this is an old entry, we may also reset the ucJoinFailureCount to 0.
+		 */
 
-        prStaRec->ucStaState = STA_STATE_1;
-        prStaRec->ucJoinFailureCount = 0;
-        /* TODO(Kevin): If this is an old entry, we may also reset the ucJoinFailureCount to 0.
-         */
-
-        COPY_MAC_ADDR(prStaRec->aucMacAddr, prBssDesc->aucSrcAddr);
-    }
-
-
-    //4 <2> Setup STA TYPE and NETWORK
-    prStaRec->eStaType = eStaType;
-
-    prStaRec->ucNetTypeIndex = eNetTypeIndex;
-
-
-    //4 <3> Update information from BSS_DESC_T to current P_STA_RECORD_T
-    prStaRec->u2CapInfo = prBssDesc->u2CapInfo;
-
-    prStaRec->u2OperationalRateSet = prBssDesc->u2OperationalRateSet;
-    prStaRec->u2BSSBasicRateSet = prBssDesc->u2BSSBasicRateSet;
-
-    prStaRec->ucPhyTypeSet = prBssDesc->ucPhyTypeSet;
-	if(IS_STA_IN_AIS(prStaRec)){
-	if (!((prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION3_ENABLED) ||
-		(prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION3_KEY_ABSENT) ||
-		(prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION_DISABLED) ||
-		(prAdapter->prGlueInfo->u2WSCAssocInfoIELen) ||
-		(prAdapter->prGlueInfo->u2WapiAssocInfoIESz))) {
-		DBGLOG(BSS, INFO, ("Ignore the HT Bit for TKIP as pairwise cipher configed!\n"));
-		prStaRec->ucPhyTypeSet &= ~PHY_TYPE_BIT_HT;
+		COPY_MAC_ADDR(prStaRec->aucMacAddr, prBssDesc->aucSrcAddr);
 	}
+	/* 4 <2> Setup STA TYPE and NETWORK */
+	prStaRec->eStaType = eStaType;
+
+	prStaRec->ucNetTypeIndex = eNetTypeIndex;
+
+	/* 4 <3> Update information from BSS_DESC_T to current P_STA_RECORD_T */
+	prStaRec->u2CapInfo = prBssDesc->u2CapInfo;
+
+	prStaRec->u2OperationalRateSet = prBssDesc->u2OperationalRateSet;
+	prStaRec->u2BSSBasicRateSet = prBssDesc->u2BSSBasicRateSet;
+
+	prStaRec->ucPhyTypeSet = prBssDesc->ucPhyTypeSet;
+	if (IS_STA_IN_AIS(prStaRec)) {
+		if (!((prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION3_ENABLED) ||
+		      (prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION3_KEY_ABSENT) ||
+		      (prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION_DISABLED) ||
+		      (prAdapter->prGlueInfo->u2WSCAssocInfoIELen) || (prAdapter->prGlueInfo->u2WapiAssocInfoIESz))) {
+			DBGLOG(BSS, TRACE, "Ignore the HT Bit for TKIP as pairwise cipher configured!\n");
+			prStaRec->ucPhyTypeSet &= ~PHY_TYPE_BIT_HT;
+		}
+	} else {
+		DBGLOG(BSS, TRACE, "P2P skip TKIP limitation for HT Hit!\n");
 	}
-	else{		
-		DBGLOG(BSS, INFO, ("P2P skip TKIP limitation for HT Hit!\n"));
-        }
-    prStaRec->ucDesiredPhyTypeSet = prStaRec->ucPhyTypeSet & prAdapter->rWifiVar.ucAvailablePhyTypeSet;
+	prStaRec->ucDesiredPhyTypeSet = prStaRec->ucPhyTypeSet & prAdapter->rWifiVar.ucAvailablePhyTypeSet;
 
-    ucNonHTPhyTypeSet = prStaRec->ucDesiredPhyTypeSet & PHY_TYPE_SET_802_11ABG;
+	ucNonHTPhyTypeSet = prStaRec->ucDesiredPhyTypeSet & PHY_TYPE_SET_802_11ABG;
 
-    /* Check for Target BSS's non HT Phy Types */
-    if (ucNonHTPhyTypeSet) {
+	/* Check for Target BSS's non HT Phy Types */
+	if (ucNonHTPhyTypeSet) {
 
-        if (ucNonHTPhyTypeSet & PHY_TYPE_BIT_ERP) {
-            prStaRec->ucNonHTBasicPhyType = PHY_TYPE_ERP_INDEX;
-        }
-        else if (ucNonHTPhyTypeSet & PHY_TYPE_BIT_OFDM) {
-            prStaRec->ucNonHTBasicPhyType = PHY_TYPE_OFDM_INDEX;
-        }
-        else /* if (ucNonHTPhyTypeSet & PHY_TYPE_HR_DSSS_INDEX) */ {
-            prStaRec->ucNonHTBasicPhyType = PHY_TYPE_HR_DSSS_INDEX;
-        }
+		if (ucNonHTPhyTypeSet & PHY_TYPE_BIT_ERP) {
+			prStaRec->ucNonHTBasicPhyType = PHY_TYPE_ERP_INDEX;
+		} else if (ucNonHTPhyTypeSet & PHY_TYPE_BIT_OFDM) {
+			prStaRec->ucNonHTBasicPhyType = PHY_TYPE_OFDM_INDEX;
+		} else {	/* if (ucNonHTPhyTypeSet & PHY_TYPE_HR_DSSS_INDEX) */
 
-        prStaRec->fgHasBasicPhyType = TRUE;
-    }
-    else {
-        /* Use mandatory for 11N only BSS */
-        ASSERT(prStaRec->ucPhyTypeSet & PHY_TYPE_SET_802_11N);
+			prStaRec->ucNonHTBasicPhyType = PHY_TYPE_HR_DSSS_INDEX;
+		}
 
-        {
-            /* TODO(Kevin): which value should we set for 11n ? ERP ? */
-            prStaRec->ucNonHTBasicPhyType = PHY_TYPE_HR_DSSS_INDEX;
-        }
+		prStaRec->fgHasBasicPhyType = TRUE;
+	} else {
+		/* Use mandatory for 11N only BSS */
+		ASSERT(prStaRec->ucPhyTypeSet & PHY_TYPE_SET_802_11N);
 
-        prStaRec->fgHasBasicPhyType = FALSE;
-    }
+		{
+			/* TODO(Kevin): which value should we set for 11n ? ERP ? */
+			prStaRec->ucNonHTBasicPhyType = PHY_TYPE_HR_DSSS_INDEX;
+		}
 
-    /* Update non HT Desired Rate Set */
-    {
-        P_CONNECTION_SETTINGS_T prConnSettings;
+		prStaRec->fgHasBasicPhyType = FALSE;
+	}
 
+	/* Update non HT Desired Rate Set */
+	{
+		P_CONNECTION_SETTINGS_T prConnSettings;
 
-        prConnSettings = &(prAdapter->rWifiVar.rConnSettings);
+		prConnSettings = &(prAdapter->rWifiVar.rConnSettings);
 
-        prStaRec->u2DesiredNonHTRateSet =
-            (prStaRec->u2OperationalRateSet & prConnSettings->u2DesiredNonHTRateSet);
-    }
+		prStaRec->u2DesiredNonHTRateSet =
+		    (prStaRec->u2OperationalRateSet & prConnSettings->u2DesiredNonHTRateSet);
+	}
 
-    //4 <4> Update information from BSS_DESC_T to current P_STA_RECORD_T
-    if (IS_AP_STA(prStaRec)) {
-        /* do not need to parse IE for DTIM,
-         * which have been parsed before inserting into BSS_DESC_T
-         */
-        if (prBssDesc->ucDTIMPeriod) {
-            prStaRec->ucDTIMPeriod = prBssDesc->ucDTIMPeriod;
-        }
-        else {
-            prStaRec->ucDTIMPeriod = 0; // Means that TIM was not parsed.
-        }
-    }
+	/* 4 <4> Update information from BSS_DESC_T to current P_STA_RECORD_T */
+	if (IS_AP_STA(prStaRec)) {
+		/* do not need to parse IE for DTIM,
+		 * which have been parsed before inserting into BSS_DESC_T
+		 */
+		if (prBssDesc->ucDTIMPeriod)
+			prStaRec->ucDTIMPeriod = prBssDesc->ucDTIMPeriod;
+		else
+			prStaRec->ucDTIMPeriod = 0;	/* Means that TIM was not parsed. */
+	}
+	/* 4 <5> Update default value */
+	prStaRec->fgDiagnoseConnection = FALSE;
 
+	/* 4 <6> Update default value for other Modules */
+	/* Determine fgIsWmmSupported and fgIsUapsdSupported in STA_REC */
+	mqmProcessScanResult(prAdapter, prBssDesc, prStaRec);
 
-    //4 <5> Update default value
-    prStaRec->fgDiagnoseConnection = FALSE;
+	return prStaRec;
 
-
-    //4 <6> Update default value for other Modules
-    /* Determine fgIsWmmSupported and fgIsUapsdSupported in STA_REC */
-    mqmProcessScanResult(prAdapter, prBssDesc, prStaRec);
-
-    return prStaRec;
-
-} /* end of bssCreateStaRecFromBssDesc() */
-
+}				/* end of bssCreateStaRecFromBssDesc() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -715,71 +690,60 @@ bssCreateStaRecFromBssDesc (
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssComposeNullFrame (
-    IN P_ADAPTER_T      prAdapter,
-    IN PUINT_8          pucBuffer,
-    IN P_STA_RECORD_T   prStaRec
-    )
+VOID bssComposeNullFrame(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuffer, IN P_STA_RECORD_T prStaRec)
 {
-    P_WLAN_MAC_HEADER_T prNullFrame;
-    P_BSS_INFO_T prBssInfo;
-    UINT_16 u2FrameCtrl;
+	P_WLAN_MAC_HEADER_T prNullFrame;
+	P_BSS_INFO_T prBssInfo;
+	UINT_16 u2FrameCtrl;
 
+	ASSERT(pucBuffer);
+	ASSERT(prStaRec);
+	ASSERT(prStaRec->ucNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
 
-    ASSERT(pucBuffer);
-    ASSERT(prStaRec);
-    ASSERT(prStaRec->ucNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
+	prBssInfo = &(prAdapter->rWifiVar.arBssInfo[prStaRec->ucNetTypeIndex]);
 
-    prBssInfo = &(prAdapter->rWifiVar.arBssInfo[prStaRec->ucNetTypeIndex]);
+	ASSERT(prBssInfo);
 
-    ASSERT(prBssInfo);
+	prNullFrame = (P_WLAN_MAC_HEADER_T) pucBuffer;
 
-    prNullFrame = (P_WLAN_MAC_HEADER_T)pucBuffer;
+	/* 4 <1> Decide the Frame Control Field */
+	u2FrameCtrl = MAC_FRAME_NULL;
 
-    //4 <1> Decide the Frame Control Field
-    u2FrameCtrl = MAC_FRAME_NULL;
+	if (IS_AP_STA(prStaRec)) {
+		u2FrameCtrl |= MASK_FC_TO_DS;
 
-    if (IS_AP_STA(prStaRec)) {
-        u2FrameCtrl |= MASK_FC_TO_DS;
+		if (prStaRec->fgSetPwrMgtBit)
+			u2FrameCtrl |= MASK_FC_PWR_MGT;
+	} else if (IS_CLIENT_STA(prStaRec)) {
+		u2FrameCtrl |= MASK_FC_FROM_DS;
+	} else if (IS_DLS_STA(prStaRec)) {
+		/* TODO(Kevin) */
+	} else {
+		/* NOTE(Kevin): We won't send Null frame for IBSS */
+		ASSERT(0);
+		return;
+	}
 
-        if (prStaRec->fgSetPwrMgtBit) {
-            u2FrameCtrl |= MASK_FC_PWR_MGT;
-        }
-    }
-    else if (IS_CLIENT_STA(prStaRec)) {
-        u2FrameCtrl |= MASK_FC_FROM_DS;
-    }
-    else if (IS_DLS_STA(prStaRec)) {
-        /* TODO(Kevin) */
-    }
-    else {
-        /* NOTE(Kevin): We won't send Null frame for IBSS */
-        ASSERT(0);
-        return;
-    }
+	/* 4 <2> Compose the Null frame */
+	/* Fill the Frame Control field. */
+	/* WLAN_SET_FIELD_16(&prNullFrame->u2FrameCtrl, u2FrameCtrl); */
+	prNullFrame->u2FrameCtrl = u2FrameCtrl;	/* NOTE(Kevin): Optimized for ARM */
 
-    //4 <2> Compose the Null frame
-    /* Fill the Frame Control field. */
-    //WLAN_SET_FIELD_16(&prNullFrame->u2FrameCtrl, u2FrameCtrl);
-    prNullFrame->u2FrameCtrl = u2FrameCtrl; // NOTE(Kevin): Optimized for ARM
+	/* Fill the Address 1 field with Target Peer Address. */
+	COPY_MAC_ADDR(prNullFrame->aucAddr1, prStaRec->aucMacAddr);
 
-    /* Fill the Address 1 field with Target Peer Address. */
-    COPY_MAC_ADDR(prNullFrame->aucAddr1, prStaRec->aucMacAddr);
+	/* Fill the Address 2 field with our MAC Address. */
+	COPY_MAC_ADDR(prNullFrame->aucAddr2, prBssInfo->aucOwnMacAddr);
 
-    /* Fill the Address 2 field with our MAC Address. */
-    COPY_MAC_ADDR(prNullFrame->aucAddr2, prBssInfo->aucOwnMacAddr);
+	/* Fill the Address 3 field with Target BSSID. */
+	COPY_MAC_ADDR(prNullFrame->aucAddr3, prBssInfo->aucBSSID);
 
-    /* Fill the Address 3 field with Target BSSID. */
-    COPY_MAC_ADDR(prNullFrame->aucAddr3, prBssInfo->aucBSSID);
+	/* Clear the SEQ/FRAG_NO field(HW won't overide the FRAG_NO, so we need to clear it). */
+	prNullFrame->u2SeqCtrl = 0;
 
-    /* Clear the SEQ/FRAG_NO field(HW won't overide the FRAG_NO, so we need to clear it). */
-    prNullFrame->u2SeqCtrl = 0;
+	return;
 
-    return;
-
-} /* end of bssComposeNullFrameHeader() */
-
+}				/* end of bssComposeNullFrameHeader() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -795,82 +759,69 @@ bssComposeNullFrame (
 */
 /*----------------------------------------------------------------------------*/
 VOID
-bssComposeQoSNullFrame (
-    IN P_ADAPTER_T      prAdapter,
-    IN PUINT_8          pucBuffer,
-    IN P_STA_RECORD_T   prStaRec,
-    IN UINT_8           ucUP,
-    IN BOOLEAN          fgSetEOSP
-    )
+bssComposeQoSNullFrame(IN P_ADAPTER_T prAdapter,
+		       IN PUINT_8 pucBuffer, IN P_STA_RECORD_T prStaRec, IN UINT_8 ucUP, IN BOOLEAN fgSetEOSP)
 {
-    P_WLAN_MAC_HEADER_QOS_T prQoSNullFrame;
-    P_BSS_INFO_T prBssInfo;
-    UINT_16 u2FrameCtrl;
-    UINT_16 u2QosControl;
+	P_WLAN_MAC_HEADER_QOS_T prQoSNullFrame;
+	P_BSS_INFO_T prBssInfo;
+	UINT_16 u2FrameCtrl;
+	UINT_16 u2QosControl;
 
+	ASSERT(pucBuffer);
+	ASSERT(prStaRec);
+	ASSERT(prStaRec->ucNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
 
-    ASSERT(pucBuffer);
-    ASSERT(prStaRec);
-    ASSERT(prStaRec->ucNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
+	prBssInfo = &(prAdapter->rWifiVar.arBssInfo[prStaRec->ucNetTypeIndex]);
 
-    prBssInfo = &(prAdapter->rWifiVar.arBssInfo[prStaRec->ucNetTypeIndex]);
+	ASSERT(prBssInfo);
 
-    ASSERT(prBssInfo);
+	prQoSNullFrame = (P_WLAN_MAC_HEADER_QOS_T) pucBuffer;
 
-    prQoSNullFrame = (P_WLAN_MAC_HEADER_QOS_T)pucBuffer;
+	/* 4 <1> Decide the Frame Control Field */
+	u2FrameCtrl = MAC_FRAME_QOS_NULL;
 
-    //4 <1> Decide the Frame Control Field
-    u2FrameCtrl = MAC_FRAME_QOS_NULL;
+	if (IS_AP_STA(prStaRec)) {
+		u2FrameCtrl |= MASK_FC_TO_DS;
 
-    if (IS_AP_STA(prStaRec)) {
-        u2FrameCtrl |= MASK_FC_TO_DS;
+		if (prStaRec->fgSetPwrMgtBit)
+			u2FrameCtrl |= MASK_FC_PWR_MGT;
+	} else if (IS_CLIENT_STA(prStaRec)) {
+		u2FrameCtrl |= MASK_FC_FROM_DS;
+	} else if (IS_DLS_STA(prStaRec)) {
+		/* TODO(Kevin) */
+	} else {
+		/* NOTE(Kevin): We won't send QoS Null frame for IBSS */
+		ASSERT(0);
+		return;
+	}
 
-        if (prStaRec->fgSetPwrMgtBit) {
-            u2FrameCtrl |= MASK_FC_PWR_MGT;
-        }
-    }
-    else if (IS_CLIENT_STA(prStaRec)) {
-        u2FrameCtrl |= MASK_FC_FROM_DS;
-    }
-    else if (IS_DLS_STA(prStaRec)) {
-        /* TODO(Kevin) */
-    }
-    else {
-        /* NOTE(Kevin): We won't send QoS Null frame for IBSS */
-        ASSERT(0);
-        return;
-    }
+	/* 4 <2> Compose the QoS Null frame */
+	/* Fill the Frame Control field. */
+	/* WLAN_SET_FIELD_16(&prQoSNullFrame->u2FrameCtrl, u2FrameCtrl); */
+	prQoSNullFrame->u2FrameCtrl = u2FrameCtrl;	/* NOTE(Kevin): Optimized for ARM */
 
-    //4 <2> Compose the QoS Null frame
-    /* Fill the Frame Control field. */
-    //WLAN_SET_FIELD_16(&prQoSNullFrame->u2FrameCtrl, u2FrameCtrl);
-    prQoSNullFrame->u2FrameCtrl = u2FrameCtrl; // NOTE(Kevin): Optimized for ARM
+	/* Fill the Address 1 field with Target Peer Address. */
+	COPY_MAC_ADDR(prQoSNullFrame->aucAddr1, prStaRec->aucMacAddr);
 
-    /* Fill the Address 1 field with Target Peer Address. */
-    COPY_MAC_ADDR(prQoSNullFrame->aucAddr1, prStaRec->aucMacAddr);
+	/* Fill the Address 2 field with our MAC Address. */
+	COPY_MAC_ADDR(prQoSNullFrame->aucAddr2, prBssInfo->aucOwnMacAddr);
 
-    /* Fill the Address 2 field with our MAC Address. */
-    COPY_MAC_ADDR(prQoSNullFrame->aucAddr2, prBssInfo->aucOwnMacAddr);
+	/* Fill the Address 3 field with Target BSSID. */
+	COPY_MAC_ADDR(prQoSNullFrame->aucAddr3, prBssInfo->aucBSSID);
 
-    /* Fill the Address 3 field with Target BSSID. */
-    COPY_MAC_ADDR(prQoSNullFrame->aucAddr3, prBssInfo->aucBSSID);
+	/* Clear the SEQ/FRAG_NO field(HW won't overide the FRAG_NO, so we need to clear it). */
+	prQoSNullFrame->u2SeqCtrl = 0;
 
-    /* Clear the SEQ/FRAG_NO field(HW won't overide the FRAG_NO, so we need to clear it). */
-    prQoSNullFrame->u2SeqCtrl = 0;
+	u2QosControl = (UINT_16) (ucUP & WMM_QC_UP_MASK);
 
-    u2QosControl = (UINT_16)(ucUP & WMM_QC_UP_MASK);
+	if (fgSetEOSP)
+		u2QosControl |= WMM_QC_EOSP;
+	/* WLAN_SET_FIELD_16(&prQoSNullFrame->u2QosCtrl, u2QosControl); */
+	prQoSNullFrame->u2QosCtrl = u2QosControl;	/* NOTE(Kevin): Optimized for ARM */
 
-    if (fgSetEOSP) {
-        u2QosControl |= WMM_QC_EOSP;
-    }
+	return;
 
-    //WLAN_SET_FIELD_16(&prQoSNullFrame->u2QosCtrl, u2QosControl);
-    prQoSNullFrame->u2QosCtrl = u2QosControl; // NOTE(Kevin): Optimized for ARM
-
-    return;
-
-} /* end of bssComposeQoSNullFrameHeader() */
-
+}				/* end of bssComposeQoSNullFrameHeader() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -885,86 +836,78 @@ bssComposeQoSNullFrame (
 */
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
-bssSendNullFrame (
-    IN P_ADAPTER_T          prAdapter,
-    IN P_STA_RECORD_T       prStaRec,
-    IN PFN_TX_DONE_HANDLER  pfTxDoneHandler
-    )
+bssSendNullFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN PFN_TX_DONE_HANDLER pfTxDoneHandler)
 {
-    P_MSDU_INFO_T prMsduInfo;
-    UINT_16 u2EstimatedFrameLen;
+	P_MSDU_INFO_T prMsduInfo;
+	UINT_16 u2EstimatedFrameLen;
 
+	/* 4 <1> Allocate a PKT_INFO_T for Null Frame */
+	/* Init with MGMT Header Length */
+	u2EstimatedFrameLen = MAC_TX_RESERVED_FIELD + WLAN_MAC_HEADER_LEN;
 
-    //4 <1> Allocate a PKT_INFO_T for Null Frame
-    /* Init with MGMT Header Length */
-    u2EstimatedFrameLen = MAC_TX_RESERVED_FIELD + \
-                          WLAN_MAC_HEADER_LEN;
-
-    /* Allocate a MSDU_INFO_T */
-    if ( (prMsduInfo = cnmMgtPktAlloc(prAdapter, u2EstimatedFrameLen)) == NULL) {
-        DBGLOG(BSS, WARN, ("No PKT_INFO_T for sending Null Frame.\n"));
-        return WLAN_STATUS_RESOURCES;
-    }
-
-    //4 <2> Compose Null frame in MSDU_INfO_T.
-    bssComposeNullFrame(prAdapter,
-            (PUINT_8)((ULONG)prMsduInfo->prPacket + MAC_TX_RESERVED_FIELD),
-            prStaRec);
+	/* Allocate a MSDU_INFO_T */
+	prMsduInfo = cnmMgtPktAlloc(prAdapter, u2EstimatedFrameLen);
+	if (prMsduInfo == NULL) {
+		DBGLOG(BSS, WARN, "No PKT_INFO_T for sending Null Frame.\n");
+		return WLAN_STATUS_RESOURCES;
+	}
+	/* 4 <2> Compose Null frame in MSDU_INfO_T. */
+	bssComposeNullFrame(prAdapter, (PUINT_8) ((ULONG) prMsduInfo->prPacket + MAC_TX_RESERVED_FIELD), prStaRec);
 #if 0
-    //4 <3> Update information of MSDU_INFO_T
-    TXM_SET_DATA_PACKET( \
-    /* STA_REC ptr */       prStaRec, \
-    /* MSDU_INFO ptr */     prMsduInfo, \
-    /* MAC HDR ptr */       (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD), \
-    /* MAC HDR length */    WLAN_MAC_HEADER_LEN, \
-    /* PAYLOAD ptr */       (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD + WLAN_MAC_HEADER_LEN), \
-    /* PAYLOAD length */    0, \
-    /* Network Type Index */(UINT_8)prStaRec->ucNetTypeIndex, \
-    /* TID */               0 /* BE: AC1 */, \
-    /* Flag 802.11 */       TRUE,\
-    /* Pkt arrival time */  0 /* TODO: Obtain the system time */, \
-    /* Resource TC */       0 /* Irrelevant */, \
-    /* Flag 802.1x */       FALSE,\
-    /* TX-done callback */  pfTxDoneHandler, \
-    /* PS forwarding type*/ PS_FORWARDING_TYPE_NON_PS, \
-    /* PS Session ID */     0           /* Irrelevant */, \
-    /* Flag fixed rate */   TRUE, \
-    /* Fixed tx rate */     g_aprBssInfo[prStaRec->ucNetTypeIndex]->ucHwDefaultFixedRateCode, \
-    /* Fixed-rate retry */  BSS_DEFAULT_CONN_TEST_NULL_FRAME_RETRY_LIMIT, \
-    /* PAL LLH */           0 /* Irrelevant */,\
-    /* ACL SN */            0 /* Irrelevant */,\
-    /* Flag No Ack */       FALSE \
-    );
+	/* 4 <3> Update information of MSDU_INFO_T */
+	TXM_SET_DATA_PACKET(
+				   /* STA_REC ptr */ prStaRec,
+				   /* MSDU_INFO ptr */ prMsduInfo,
+				   /* MAC HDR ptr */ (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD),
+				   /* MAC HDR length */ WLAN_MAC_HEADER_LEN,
+				   /* PAYLOAD ptr */
+				   (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD + WLAN_MAC_HEADER_LEN),
+				   /* PAYLOAD length */ 0,
+				   /* Network Type Index */ (UINT_8) prStaRec->ucNetTypeIndex,
+				   /* TID */ 0 /* BE: AC1 */ ,
+				   /* Flag 802.11 */ TRUE,
+				   /* Pkt arrival time */ 0 /* TODO: Obtain the system time */ ,
+				   /* Resource TC */ 0 /* Irrelevant */ ,
+				   /* Flag 802.1x */ FALSE,
+				   /* TX-done callback */ pfTxDoneHandler,
+				   /* PS forwarding type */ PS_FORWARDING_TYPE_NON_PS,
+				   /* PS Session ID */ 0 /* Irrelevant */ ,
+				   /* Flag fixed rate */ TRUE,
+				   /* Fixed tx rate */ g_aprBssInfo[prStaRec->ucNetTypeIndex]->ucHwDefaultFixedRateCode,
+				   /* Fixed-rate retry */ BSS_DEFAULT_CONN_TEST_NULL_FRAME_RETRY_LIMIT,
+				   /* PAL LLH */ 0 /* Irrelevant */ ,
+				   /* ACL SN */ 0 /* Irrelevant */ ,
+				   /* Flag No Ack */ FALSE
+	    );
 
-    /* Terminate with a NULL pointer */
-    NIC_HIF_TX_SET_NEXT_MSDU_INFO(prMsduInfo,NULL);
+	/* Terminate with a NULL pointer */
+	NIC_HIF_TX_SET_NEXT_MSDU_INFO(prMsduInfo, NULL);
 
-    /* TODO(Kevin): Also release the unused tail room of the composed MMPDU */
+	/* TODO(Kevin): Also release the unused tail room of the composed MMPDU */
 
-    /* Indicate the packet to TXM */
-    //4 <4> Inform TXM to send this Null frame.
-    txmSendFwDataPackets(prMsduInfo);
+	/* Indicate the packet to TXM */
+	/* 4 <4> Inform TXM to send this Null frame. */
+	txmSendFwDataPackets(prMsduInfo);
 #endif
 
-    prMsduInfo->eSrc = TX_PACKET_MGMT;
-    prMsduInfo->ucPacketType = HIF_TX_PACKET_TYPE_DATA;
-    prMsduInfo->ucStaRecIndex = prStaRec->ucIndex;
-    prMsduInfo->ucNetworkType = prStaRec->ucNetTypeIndex;
-    prMsduInfo->ucMacHeaderLength = WLAN_MAC_HEADER_LEN;
-    prMsduInfo->fgIs802_1x = FALSE;
-    prMsduInfo->fgIs802_11 = TRUE;
-    prMsduInfo->u2FrameLength = WLAN_MAC_HEADER_LEN;
-    prMsduInfo->ucTxSeqNum = nicIncreaseTxSeqNum(prAdapter);
-    prMsduInfo->pfTxDoneHandler = pfTxDoneHandler;
-    prMsduInfo->fgIsBasicRate = FALSE;
+	prMsduInfo->eSrc = TX_PACKET_MGMT;
+	prMsduInfo->ucPacketType = HIF_TX_PACKET_TYPE_DATA;
+	prMsduInfo->ucStaRecIndex = prStaRec->ucIndex;
+	prMsduInfo->ucNetworkType = prStaRec->ucNetTypeIndex;
+	prMsduInfo->ucMacHeaderLength = WLAN_MAC_HEADER_LEN;
+	prMsduInfo->fgIs802_1x = FALSE;
+	prMsduInfo->fgIs802_11 = TRUE;
+	prMsduInfo->u2FrameLength = WLAN_MAC_HEADER_LEN;
+	prMsduInfo->ucTxSeqNum = nicIncreaseTxSeqNum(prAdapter);
+	prMsduInfo->pfTxDoneHandler = pfTxDoneHandler;
+	prMsduInfo->fgIsBasicRate = FALSE;
 
-    //4 <4> Inform TXM  to send this Null frame.
-    nicTxEnqueueMsdu(prAdapter, prMsduInfo);
+	/* 4 <4> Inform TXM  to send this Null frame. */
+	nicTxEnqueueMsdu(prAdapter, prMsduInfo);
 
-    return WLAN_STATUS_SUCCESS;
+	return WLAN_STATUS_SUCCESS;
 
-} /* end of bssSendNullFrame() */
-
+}				/* end of bssSendNullFrame() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -979,89 +922,81 @@ bssSendNullFrame (
 */
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
-bssSendQoSNullFrame (
-    IN P_ADAPTER_T          prAdapter,
-    IN P_STA_RECORD_T       prStaRec,
-    IN UINT_8               ucUP,
-    IN PFN_TX_DONE_HANDLER  pfTxDoneHandler
-    )
+bssSendQoSNullFrame(IN P_ADAPTER_T prAdapter,
+		    IN P_STA_RECORD_T prStaRec, IN UINT_8 ucUP, IN PFN_TX_DONE_HANDLER pfTxDoneHandler)
 {
-    P_MSDU_INFO_T prMsduInfo;
-    UINT_16 u2EstimatedFrameLen;
+	P_MSDU_INFO_T prMsduInfo;
+	UINT_16 u2EstimatedFrameLen;
 
+	/* 4 <1> Allocate a PKT_INFO_T for Null Frame */
+	/* Init with MGMT Header Length */
+	u2EstimatedFrameLen = MAC_TX_RESERVED_FIELD + WLAN_MAC_HEADER_QOS_LEN;
 
-    //4 <1> Allocate a PKT_INFO_T for Null Frame
-    /* Init with MGMT Header Length */
-    u2EstimatedFrameLen = MAC_TX_RESERVED_FIELD + \
-                          WLAN_MAC_HEADER_QOS_LEN;
-
-    /* Allocate a MSDU_INFO_T */
-    if ( (prMsduInfo = cnmMgtPktAlloc(prAdapter, u2EstimatedFrameLen)) == NULL) {
-        DBGLOG(BSS, WARN, ("No PKT_INFO_T for sending Null Frame.\n"));
-        return WLAN_STATUS_RESOURCES;
-    }
-
-    //4 <2> Compose Null frame in MSDU_INfO_T.
-    bssComposeQoSNullFrame(prAdapter,
-            (PUINT_8)((ULONG)(prMsduInfo->prPacket) + MAC_TX_RESERVED_FIELD),
-            prStaRec,
-            ucUP,
-            FALSE);
+	/* Allocate a MSDU_INFO_T */
+	prMsduInfo = cnmMgtPktAlloc(prAdapter, u2EstimatedFrameLen);
+	if (prMsduInfo == NULL) {
+		DBGLOG(BSS, WARN, "No PKT_INFO_T for sending Null Frame.\n");
+		return WLAN_STATUS_RESOURCES;
+	}
+	/* 4 <2> Compose Null frame in MSDU_INfO_T. */
+	bssComposeQoSNullFrame(prAdapter,
+			       (PUINT_8) ((ULONG) (prMsduInfo->prPacket) + MAC_TX_RESERVED_FIELD),
+			       prStaRec, ucUP, FALSE);
 #if 0
-    //4 <3> Update information of MSDU_INFO_T
-    TXM_SET_DATA_PACKET( \
-    /* STA_REC ptr */       prStaRec, \
-    /* MSDU_INFO ptr */     prMsduInfo, \
-    /* MAC HDR ptr */       (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD), \
-    /* MAC HDR length */    WLAN_MAC_HEADER_QOS_LEN, \
-    /* PAYLOAD ptr */       (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD + WLAN_MAC_HEADER_QOS_LEN), \
-    /* PAYLOAD length */    0, \
-    /* Network Type Index */(UINT_8)prStaRec->ucNetTypeIndex, \
-    /* TID */               0 /* BE: AC1 */, \
-    /* Flag 802.11 */       TRUE,\
-    /* Pkt arrival time */  0 /* TODO: Obtain the system time */, \
-    /* Resource TC */       0 /* Irrelevant */, \
-    /* Flag 802.1x */       FALSE,\
-    /* TX-done callback */  pfTxDoneHandler, \
-    /* PS forwarding type*/ PS_FORWARDING_TYPE_NON_PS, \
-    /* PS Session ID */     0           /* Irrelevant */, \
-    /* Flag fixed rate */   TRUE, \
-    /* Fixed tx rate */     g_aprBssInfo[prStaRec->ucNetTypeIndex]->ucHwDefaultFixedRateCode, \
-    /* Fixed-rate retry */  TXM_DEFAULT_DATA_FRAME_RETRY_LIMIT, \
-    /* PAL LLH */           0 /* Irrelevant */,\
-    /* ACL SN */            0 /* Irrelevant */,\
-    /* Flag No Ack */       FALSE \
-    );
+	/* 4 <3> Update information of MSDU_INFO_T */
+	TXM_SET_DATA_PACKET(
+				   /* STA_REC ptr */ prStaRec,
+				   /* MSDU_INFO ptr */ prMsduInfo,
+				   /* MAC HDR ptr */ (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD),
+				   /* MAC HDR length */ WLAN_MAC_HEADER_QOS_LEN,
+				   /* PAYLOAD ptr */
+				   (prMsduInfo->pucBuffer + MAC_TX_RESERVED_FIELD + WLAN_MAC_HEADER_QOS_LEN),
+				   /* PAYLOAD length */ 0,
+				   /* Network Type Index */ (UINT_8) prStaRec->ucNetTypeIndex,
+				   /* TID */ 0 /* BE: AC1 */ ,
+				   /* Flag 802.11 */ TRUE,
+				   /* Pkt arrival time */ 0 /* TODO: Obtain the system time */ ,
+				   /* Resource TC */ 0 /* Irrelevant */ ,
+				   /* Flag 802.1x */ FALSE,
+				   /* TX-done callback */ pfTxDoneHandler,
+				   /* PS forwarding type */ PS_FORWARDING_TYPE_NON_PS,
+				   /* PS Session ID */ 0 /* Irrelevant */ ,
+				   /* Flag fixed rate */ TRUE,
+				   /* Fixed tx rate */ g_aprBssInfo[prStaRec->ucNetTypeIndex]->ucHwDefaultFixedRateCode,
+				   /* Fixed-rate retry */ TXM_DEFAULT_DATA_FRAME_RETRY_LIMIT,
+				   /* PAL LLH */ 0 /* Irrelevant */ ,
+				   /* ACL SN */ 0 /* Irrelevant */ ,
+				   /* Flag No Ack */ FALSE
+	    );
 
-    /* Terminate with a NULL pointer */
-    NIC_HIF_TX_SET_NEXT_MSDU_INFO(prMsduInfo,NULL);
+	/* Terminate with a NULL pointer */
+	NIC_HIF_TX_SET_NEXT_MSDU_INFO(prMsduInfo, NULL);
 
-    /* TODO(Kevin): Also release the unused tail room of the composed MMPDU */
+	/* TODO(Kevin): Also release the unused tail room of the composed MMPDU */
 
-    /* Indicate the packet to TXM */
-    //4 <4> Inform TXM to send this Null frame.
-    txmSendFwDataPackets(prMsduInfo);
+	/* Indicate the packet to TXM */
+	/* 4 <4> Inform TXM to send this Null frame. */
+	txmSendFwDataPackets(prMsduInfo);
 #endif
 
-    prMsduInfo->eSrc = TX_PACKET_MGMT;
-    prMsduInfo->ucPacketType = HIF_TX_PACKET_TYPE_MGMT;
-    prMsduInfo->ucStaRecIndex = prStaRec->ucIndex;
-    prMsduInfo->ucNetworkType = prStaRec->ucNetTypeIndex;
-    prMsduInfo->ucMacHeaderLength = WLAN_MAC_HEADER_QOS_LEN;
-    prMsduInfo->fgIs802_1x = FALSE;
-    prMsduInfo->fgIs802_11 = TRUE;
-    prMsduInfo->u2FrameLength = WLAN_MAC_HEADER_QOS_LEN;
-    prMsduInfo->ucTxSeqNum = nicIncreaseTxSeqNum(prAdapter);
-    prMsduInfo->pfTxDoneHandler = pfTxDoneHandler;
-    prMsduInfo->fgIsBasicRate = TRUE;
+	prMsduInfo->eSrc = TX_PACKET_MGMT;
+	prMsduInfo->ucPacketType = HIF_TX_PACKET_TYPE_MGMT;
+	prMsduInfo->ucStaRecIndex = prStaRec->ucIndex;
+	prMsduInfo->ucNetworkType = prStaRec->ucNetTypeIndex;
+	prMsduInfo->ucMacHeaderLength = WLAN_MAC_HEADER_QOS_LEN;
+	prMsduInfo->fgIs802_1x = FALSE;
+	prMsduInfo->fgIs802_11 = TRUE;
+	prMsduInfo->u2FrameLength = WLAN_MAC_HEADER_QOS_LEN;
+	prMsduInfo->ucTxSeqNum = nicIncreaseTxSeqNum(prAdapter);
+	prMsduInfo->pfTxDoneHandler = pfTxDoneHandler;
+	prMsduInfo->fgIsBasicRate = TRUE;
 
-    //4 <4> Inform TXM  to send this Null frame.
-    nicTxEnqueueMsdu(prAdapter, prMsduInfo);
+	/* 4 <4> Inform TXM  to send this Null frame. */
+	nicTxEnqueueMsdu(prAdapter, prMsduInfo);
 
-    return WLAN_STATUS_SUCCESS;
+	return WLAN_STATUS_SUCCESS;
 
-} /* end of bssSendQoSNullFrame() */
-
+}				/* end of bssSendQoSNullFrame() */
 
 #if (CFG_SUPPORT_ADHOC) || (CFG_SUPPORT_AAA)
 /*----------------------------------------------------------------------------*/
@@ -1078,50 +1013,39 @@ bssSendQoSNullFrame (
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssGenerateExtSuppRate_IE (
-    IN P_ADAPTER_T      prAdapter,
-    IN P_MSDU_INFO_T    prMsduInfo
-    )
+VOID bssGenerateExtSuppRate_IE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo)
 {
-    P_BSS_INFO_T prBssInfo;
-    PUINT_8 pucBuffer;
-    UINT_8 ucExtSupRatesLen;
+	P_BSS_INFO_T prBssInfo;
+	PUINT_8 pucBuffer;
+	UINT_8 ucExtSupRatesLen;
 
+	ASSERT(prMsduInfo);
 
-    ASSERT(prMsduInfo);
+	prBssInfo = &(prAdapter->rWifiVar.arBssInfo[prMsduInfo->ucNetworkType]);
+	ASSERT(prBssInfo);
 
-    prBssInfo = &(prAdapter->rWifiVar.arBssInfo[prMsduInfo->ucNetworkType]);
-    ASSERT(prBssInfo);
+	pucBuffer = (PUINT_8) ((ULONG) prMsduInfo->prPacket + (UINT_32) prMsduInfo->u2FrameLength);
+	ASSERT(pucBuffer);
 
-    pucBuffer = (PUINT_8)((ULONG)prMsduInfo->prPacket +
-                          (UINT_32)prMsduInfo->u2FrameLength);
-    ASSERT(pucBuffer);
+	if (prBssInfo->ucAllSupportedRatesLen > ELEM_MAX_LEN_SUP_RATES)
+		ucExtSupRatesLen = prBssInfo->ucAllSupportedRatesLen - ELEM_MAX_LEN_SUP_RATES;
+	else
+		ucExtSupRatesLen = 0;
 
-    if (prBssInfo->ucAllSupportedRatesLen > ELEM_MAX_LEN_SUP_RATES) {
+	/* Fill the Extended Supported Rates element. */
+	if (ucExtSupRatesLen) {
 
-        ucExtSupRatesLen = prBssInfo->ucAllSupportedRatesLen - ELEM_MAX_LEN_SUP_RATES;
-    }
-    else {
-        ucExtSupRatesLen = 0;
-    }
+		EXT_SUP_RATES_IE(pucBuffer)->ucId = ELEM_ID_EXTENDED_SUP_RATES;
+		EXT_SUP_RATES_IE(pucBuffer)->ucLength = ucExtSupRatesLen;
 
-    /* Fill the Extended Supported Rates element. */
-    if (ucExtSupRatesLen) {
+		kalMemCopy(EXT_SUP_RATES_IE(pucBuffer)->aucExtSupportedRates,
+			   &prBssInfo->aucAllSupportedRates[ELEM_MAX_LEN_SUP_RATES], ucExtSupRatesLen);
 
-        EXT_SUP_RATES_IE(pucBuffer)->ucId = ELEM_ID_EXTENDED_SUP_RATES;
-        EXT_SUP_RATES_IE(pucBuffer)->ucLength = ucExtSupRatesLen;
+		prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
+	}
 
-        kalMemCopy(EXT_SUP_RATES_IE(pucBuffer)->aucExtSupportedRates,
-                   &prBssInfo->aucAllSupportedRates[ELEM_MAX_LEN_SUP_RATES],
-                   ucExtSupRatesLen);
-
-        prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
-    }
-
-    return;
-} /* end of bssGenerateExtSuppRate_IE() */
-
+	return;
+}				/* end of bssGenerateExtSuppRate_IE() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1136,176 +1060,150 @@ bssGenerateExtSuppRate_IE (
 */
 /*----------------------------------------------------------------------------*/
 VOID
-bssBuildBeaconProbeRespFrameCommonIEs (
-    IN P_MSDU_INFO_T    prMsduInfo,
-    IN P_BSS_INFO_T     prBssInfo,
-    IN PUINT_8          pucDestAddr
-    )
+bssBuildBeaconProbeRespFrameCommonIEs(IN P_MSDU_INFO_T prMsduInfo, IN P_BSS_INFO_T prBssInfo, IN PUINT_8 pucDestAddr)
 {
-    PUINT_8 pucBuffer;
-    UINT_8 ucSupRatesLen;
+	PUINT_8 pucBuffer;
+	UINT_8 ucSupRatesLen;
 
+	ASSERT(prMsduInfo);
+	ASSERT(prBssInfo);
 
-    ASSERT(prMsduInfo);
-    ASSERT(prBssInfo);
+	pucBuffer = (PUINT_8) ((ULONG) prMsduInfo->prPacket + (UINT_32) prMsduInfo->u2FrameLength);
+	ASSERT(pucBuffer);
 
-    pucBuffer = (PUINT_8)((ULONG)prMsduInfo->prPacket +
-                          (UINT_32)prMsduInfo->u2FrameLength);
-    ASSERT(pucBuffer);
+	/* Compose the frame body of the Probe Response frame. */
+	/* 4 <1> Fill the SSID element. */
+	SSID_IE(pucBuffer)->ucId = ELEM_ID_SSID;
+	if (prBssInfo->eHiddenSsidType == ENUM_HIDDEN_SSID_LEN) {
+		if ((!pucDestAddr) &&	/* For Beacon only */
+		    (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)) {
+			SSID_IE(pucBuffer)->ucLength = 0;
+		} else {	/* Probe response */
+			SSID_IE(pucBuffer)->ucLength = prBssInfo->ucSSIDLen;
+			if (prBssInfo->ucSSIDLen)
+				kalMemCopy(SSID_IE(pucBuffer)->aucSSID, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
+		}
+	} else {
+		SSID_IE(pucBuffer)->ucLength = prBssInfo->ucSSIDLen;
+		if (prBssInfo->ucSSIDLen)
+			kalMemCopy(SSID_IE(pucBuffer)->aucSSID, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
+	}
 
-    /* Compose the frame body of the Probe Response frame. */
-    //4 <1> Fill the SSID element.
-    SSID_IE(pucBuffer)->ucId = ELEM_ID_SSID;
-    if (prBssInfo->eHiddenSsidType == ENUM_HIDDEN_SSID_LEN) {
-        if ((!pucDestAddr) && // For Beacon only
-            (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)) {
-            SSID_IE(pucBuffer)->ucLength = 0;
-        } else { // Probe response
-            SSID_IE(pucBuffer)->ucLength = prBssInfo->ucSSIDLen;
-            if (prBssInfo->ucSSIDLen) {
-                kalMemCopy(SSID_IE(pucBuffer)->aucSSID, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
-            }
-        }
-    }
-    else {
-        SSID_IE(pucBuffer)->ucLength = prBssInfo->ucSSIDLen;
-        if (prBssInfo->ucSSIDLen) {
-            kalMemCopy(SSID_IE(pucBuffer)->aucSSID, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
-        }
-    }
+	prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
+	pucBuffer += IE_SIZE(pucBuffer);
 
-    prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
-    pucBuffer += IE_SIZE(pucBuffer);
+	/* 4 <2> Fill the Supported Rates element. */
+	if (prBssInfo->ucAllSupportedRatesLen > ELEM_MAX_LEN_SUP_RATES)
+		ucSupRatesLen = ELEM_MAX_LEN_SUP_RATES;
+	else
+		ucSupRatesLen = prBssInfo->ucAllSupportedRatesLen;
 
+	if (ucSupRatesLen) {
+		SUP_RATES_IE(pucBuffer)->ucId = ELEM_ID_SUP_RATES;
+		SUP_RATES_IE(pucBuffer)->ucLength = ucSupRatesLen;
+		kalMemCopy(SUP_RATES_IE(pucBuffer)->aucSupportedRates, prBssInfo->aucAllSupportedRates, ucSupRatesLen);
 
-    //4 <2> Fill the Supported Rates element.
-    if (prBssInfo->ucAllSupportedRatesLen > ELEM_MAX_LEN_SUP_RATES) {
+		prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
+		pucBuffer += IE_SIZE(pucBuffer);
+	}
+	/* 4 <3> Fill the DS Parameter Set element. */
+	if (prBssInfo->eBand == BAND_2G4) {
+		DS_PARAM_IE(pucBuffer)->ucId = ELEM_ID_DS_PARAM_SET;
+		DS_PARAM_IE(pucBuffer)->ucLength = ELEM_MAX_LEN_DS_PARAMETER_SET;
+		DS_PARAM_IE(pucBuffer)->ucCurrChnl = prBssInfo->ucPrimaryChannel;
 
-        ucSupRatesLen = ELEM_MAX_LEN_SUP_RATES;
-    }
-    else {
-        ucSupRatesLen = prBssInfo->ucAllSupportedRatesLen;
-    }
+		prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
+		pucBuffer += IE_SIZE(pucBuffer);
+	}
+	/* 4 <4> IBSS Parameter Set element, ID: 6 */
+	if (prBssInfo->eCurrentOPMode == OP_MODE_IBSS) {
+		IBSS_PARAM_IE(pucBuffer)->ucId = ELEM_ID_IBSS_PARAM_SET;
+		IBSS_PARAM_IE(pucBuffer)->ucLength = ELEM_MAX_LEN_IBSS_PARAMETER_SET;
+		WLAN_SET_FIELD_16(&(IBSS_PARAM_IE(pucBuffer)->u2ATIMWindow), prBssInfo->u2ATIMWindow);
 
-    if (ucSupRatesLen) {
-        SUP_RATES_IE(pucBuffer)->ucId = ELEM_ID_SUP_RATES;
-        SUP_RATES_IE(pucBuffer)->ucLength = ucSupRatesLen;
-        kalMemCopy(SUP_RATES_IE(pucBuffer)->aucSupportedRates,
-                   prBssInfo->aucAllSupportedRates,
-                   ucSupRatesLen);
-
-        prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
-        pucBuffer += IE_SIZE(pucBuffer);
-    }
-
-
-    //4 <3> Fill the DS Parameter Set element.
-    if (prBssInfo->eBand == BAND_2G4) {
-        DS_PARAM_IE(pucBuffer)->ucId = ELEM_ID_DS_PARAM_SET;
-        DS_PARAM_IE(pucBuffer)->ucLength = ELEM_MAX_LEN_DS_PARAMETER_SET;
-        DS_PARAM_IE(pucBuffer)->ucCurrChnl = prBssInfo->ucPrimaryChannel;
-
-        prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
-        pucBuffer += IE_SIZE(pucBuffer);
-    }
-
-
-    //4 <4> IBSS Parameter Set element, ID: 6
-    if (prBssInfo->eCurrentOPMode == OP_MODE_IBSS) {
-        IBSS_PARAM_IE(pucBuffer)->ucId = ELEM_ID_IBSS_PARAM_SET;
-        IBSS_PARAM_IE(pucBuffer)->ucLength = ELEM_MAX_LEN_IBSS_PARAMETER_SET;
-        WLAN_SET_FIELD_16(&(IBSS_PARAM_IE(pucBuffer)->u2ATIMWindow), prBssInfo->u2ATIMWindow);
-
-        prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
-        pucBuffer += IE_SIZE(pucBuffer);
-    }
-
-
-    //4 <5> TIM element, ID: 5
-    if ((!pucDestAddr) && // For Beacon only.
-        (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)) {
+		prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
+		pucBuffer += IE_SIZE(pucBuffer);
+	}
+	/* 4 <5> TIM element, ID: 5 */
+	if ((!pucDestAddr) &&	/* For Beacon only. */
+	    (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)) {
 
 #if CFG_ENABLE_WIFI_DIRECT
-        /*no fgIsP2PRegistered protect*/
-        if (prBssInfo->ucNetTypeIndex == NETWORK_TYPE_P2P_INDEX) {
+		/*no fgIsP2PRegistered protect */
+		if (prBssInfo->ucNetTypeIndex == NETWORK_TYPE_P2P_INDEX) {
 #if 0
-            P_P2P_SPECIFIC_BSS_INFO_T prP2pSpecificBssInfo;
-            UINT_8 ucBitmapControl = 0;
-            UINT_32 u4N1, u4N2;
+			P_P2P_SPECIFIC_BSS_INFO_T prP2pSpecificBssInfo;
+			UINT_8 ucBitmapControl = 0;
+			UINT_32 u4N1, u4N2;
 
+			prP2pSpecificBssInfo = &(prAdapter->rWifiVar.rP2pSpecificBssInfo);
 
-            prP2pSpecificBssInfo = &(prAdapter->rWifiVar.rP2pSpecificBssInfo);
+			/* Clear existing value. */
+			prP2pSpecificBssInfo->ucBitmapCtrl = 0;
+			kalMemZero(prP2pSpecificBssInfo->aucPartialVirtualBitmap,
+				   sizeof(prP2pSpecificBssInfo->aucPartialVirtualBitmap));
 
-            // Clear existing value.
-            prP2pSpecificBssInfo->ucBitmapCtrl = 0;
-            kalMemZero(prP2pSpecificBssInfo->aucPartialVirtualBitmap,
-                       sizeof(prP2pSpecificBssInfo->aucPartialVirtualBitmap));
+			/* IEEE 802.11 2007 - 7.3.2.6 */
+			TIM_IE(pucBuffer)->ucId = ELEM_ID_TIM;
+			TIM_IE(pucBuffer)->ucDTIMCount = prBssInfo->ucDTIMCount;
+			TIM_IE(pucBuffer)->ucDTIMPeriod = prBssInfo->ucDTIMPeriod;
 
+			/* Setup DTIM Count for next TBTT. */
+			if (prBssInfo->ucDTIMCount == 0) {
+				/*Do nothing*/
+				/* 3 *** pmQueryBufferedBCAST(); */
+			}
+			/* 3 *** pmQueryBufferedPSNode(); */
+			/* TODO(Kevin): Call PM Module here to loop all STA_RECORD_Ts and it
+			 * will call bssSetTIMBitmap to toggle the Bitmap.
+			 */
 
-            // IEEE 802.11 2007 - 7.3.2.6
-            TIM_IE(pucBuffer)->ucId = ELEM_ID_TIM;
-            TIM_IE(pucBuffer)->ucDTIMCount = prBssInfo->ucDTIMCount;
-            TIM_IE(pucBuffer)->ucDTIMPeriod = prBssInfo->ucDTIMPeriod;
+			/* Set Virtual Bitmap for UCAST */
+			u4N1 = (prP2pSpecificBssInfo->u2SmallestAID >> 4) << 1;	/* Find the largest even number. */
+			u4N2 = prP2pSpecificBssInfo->u2LargestAID >> 3;	/* Find the smallest number. */
 
-            // Setup DTIM Count for next TBTT.
-            if (prBssInfo->ucDTIMCount == 0) {
-                //3 *** pmQueryBufferedBCAST();
-            }
+			ASSERT(u4N2 >= u4N1);
 
-            //3 *** pmQueryBufferedPSNode();
-            /* TODO(Kevin): Call PM Module here to loop all STA_RECORD_Ts and it
-             * will call bssSetTIMBitmap to toggle the Bitmap.
-             */
+			kalMemCopy(TIM_IE(pucBuffer)->aucPartialVirtualMap,
+				   &prP2pSpecificBssInfo->aucPartialVirtualBitmap[u4N1], ((u4N2 - u4N1) + 1));
 
-            // Set Virtual Bitmap for UCAST
-            u4N1 = (prP2pSpecificBssInfo->u2SmallestAID >> 4) << 1; // Find the largest even number.
-            u4N2 = prP2pSpecificBssInfo->u2LargestAID >> 3; // Find the smallest number.
+			/* Set Virtual Bitmap for BMCAST */
+			/* BMC bit only indicated when DTIM count == 0. */
+			if (prBssInfo->ucDTIMCount == 0)
+				ucBitmapControl = prP2pSpecificBssInfo->ucBitmapCtrl;
+			TIM_IE(pucBuffer)->ucBitmapControl = ucBitmapControl | (UINT_8) u4N1;
 
-            ASSERT(u4N2 >= u4N1);
+			TIM_IE(pucBuffer)->ucLength = ((u4N2 - u4N1) + 4);
 
-            kalMemCopy(TIM_IE(pucBuffer)->aucPartialVirtualMap,
-                       &prP2pSpecificBssInfo->aucPartialVirtualBitmap[u4N1],
-                       ((u4N2 - u4N1) + 1));
-
-            // Set Virtual Bitmap for BMCAST
-            // BMC bit only indicated when DTIM count == 0.
-            if (prBssInfo->ucDTIMCount == 0) {
-                ucBitmapControl = prP2pSpecificBssInfo->ucBitmapCtrl;
-            }
-            TIM_IE(pucBuffer)->ucBitmapControl = ucBitmapControl | (UINT_8)u4N1;
-
-            TIM_IE(pucBuffer)->ucLength = ((u4N2 - u4N1) + 4);
-
-            prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
+			prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
 #else
 
-            // IEEE 802.11 2007 - 7.3.2.6
-            TIM_IE(pucBuffer)->ucId = ELEM_ID_TIM;
-            TIM_IE(pucBuffer)->ucLength = (3 + MAX_LEN_TIM_PARTIAL_BMP)/*((u4N2 - u4N1) + 4)*/; // NOTE: fixed PVB length (AID is allocated from 8 ~ 15 only)
-            TIM_IE(pucBuffer)->ucDTIMCount = 0/*prBssInfo->ucDTIMCount*/; // will be overwrite by FW
-            TIM_IE(pucBuffer)->ucDTIMPeriod = prBssInfo->ucDTIMPeriod;
-            TIM_IE(pucBuffer)->ucBitmapControl = 0/*ucBitmapControl | (UINT_8)u4N1*/; // will be overwrite by FW
+			/* IEEE 802.11 2007 - 7.3.2.6 */
+			TIM_IE(pucBuffer)->ucId = ELEM_ID_TIM;
+			/* NOTE: fixed PVB length (AID is allocated from 8 ~ 15 only) */
+			TIM_IE(pucBuffer)->ucLength = (3 + MAX_LEN_TIM_PARTIAL_BMP); /*((u4N2 - u4N1) + 4) */
+			/* will be overwrite by FW */
+			TIM_IE(pucBuffer)->ucDTIMCount = 0; /*prBssInfo->ucDTIMCount */
+			TIM_IE(pucBuffer)->ucDTIMPeriod = prBssInfo->ucDTIMPeriod;
+			/* will be overwrite by FW */
+			TIM_IE(pucBuffer)->ucBitmapControl = 0; /*ucBitmapControl | (UINT_8)u4N1 */
 
-            prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
+			prMsduInfo->u2FrameLength += IE_SIZE(pucBuffer);
 
 #endif
 
-        }
-        else
+		} else
 #endif /* CFG_ENABLE_WIFI_DIRECT */
-        {
-            /* NOTE(Kevin): 1. AIS - Didn't Support AP Mode.
-             *              2. BOW - Didn't Support BCAST and PS.
-             */
-        }
+		{
+			/* NOTE(Kevin): 1. AIS - Didn't Support AP Mode.
+			 *              2. BOW - Didn't Support BCAST and PS.
+			 */
+		}
 
+	}
 
-
-    }
-
-    return;
-} /* end of bssBuildBeaconProbeRespFrameCommonIEs() */
-
+	return;
+}				/* end of bssBuildBeaconProbeRespFrameCommonIEs() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1323,68 +1221,60 @@ bssBuildBeaconProbeRespFrameCommonIEs (
 */
 /*----------------------------------------------------------------------------*/
 VOID
-bssComposeBeaconProbeRespFrameHeaderAndFF (
-    IN PUINT_8      pucBuffer,
-    IN PUINT_8      pucDestAddr,
-    IN PUINT_8      pucOwnMACAddress,
-    IN PUINT_8      pucBSSID,
-    IN UINT_16      u2BeaconInterval,
-    IN UINT_16      u2CapInfo
-    )
+bssComposeBeaconProbeRespFrameHeaderAndFF(IN PUINT_8 pucBuffer,
+					  IN PUINT_8 pucDestAddr,
+					  IN PUINT_8 pucOwnMACAddress,
+					  IN PUINT_8 pucBSSID, IN UINT_16 u2BeaconInterval, IN UINT_16 u2CapInfo)
 {
-    P_WLAN_BEACON_FRAME_T prBcnProbRspFrame;
-    UINT_8 aucBCAddr[] = BC_MAC_ADDR;
-    UINT_16 u2FrameCtrl;
+	P_WLAN_BEACON_FRAME_T prBcnProbRspFrame;
+	UINT_8 aucBCAddr[] = BC_MAC_ADDR;
+	UINT_16 u2FrameCtrl;
 
-    DEBUGFUNC("bssComposeBeaconProbeRespFrameHeaderAndFF");
-    //DBGLOG(INIT, LOUD, ("\n"));
+	DEBUGFUNC("bssComposeBeaconProbeRespFrameHeaderAndFF");
+	/* DBGLOG(INIT, LOUD, ("\n")); */
 
+	ASSERT(pucBuffer);
+	ASSERT(pucOwnMACAddress);
+	ASSERT(pucBSSID);
 
-    ASSERT(pucBuffer);
-    ASSERT(pucOwnMACAddress);
-    ASSERT(pucBSSID);
+	prBcnProbRspFrame = (P_WLAN_BEACON_FRAME_T) pucBuffer;
 
-    prBcnProbRspFrame = (P_WLAN_BEACON_FRAME_T)pucBuffer;
+	/* 4 <1> Compose the frame header of the Beacon /ProbeResp frame. */
+	/* Fill the Frame Control field. */
+	if (pucDestAddr) {
+		u2FrameCtrl = MAC_FRAME_PROBE_RSP;
+	} else {
+		u2FrameCtrl = MAC_FRAME_BEACON;
+		pucDestAddr = aucBCAddr;
+	}
+	/* WLAN_SET_FIELD_16(&prBcnProbRspFrame->u2FrameCtrl, u2FrameCtrl); */
+	prBcnProbRspFrame->u2FrameCtrl = u2FrameCtrl;	/* NOTE(Kevin): Optimized for ARM */
 
-    //4 <1> Compose the frame header of the Beacon /ProbeResp frame.
-    /* Fill the Frame Control field. */
-    if (pucDestAddr) {
-        u2FrameCtrl = MAC_FRAME_PROBE_RSP;
-    }
-    else {
-        u2FrameCtrl = MAC_FRAME_BEACON;
-        pucDestAddr = aucBCAddr;
-    }
-    //WLAN_SET_FIELD_16(&prBcnProbRspFrame->u2FrameCtrl, u2FrameCtrl);
-    prBcnProbRspFrame->u2FrameCtrl = u2FrameCtrl; // NOTE(Kevin): Optimized for ARM
+	/* Fill the DA field with BCAST MAC ADDR or TA of ProbeReq. */
+	COPY_MAC_ADDR(prBcnProbRspFrame->aucDestAddr, pucDestAddr);
 
-    /* Fill the DA field with BCAST MAC ADDR or TA of ProbeReq. */
-    COPY_MAC_ADDR(prBcnProbRspFrame->aucDestAddr, pucDestAddr);
+	/* Fill the SA field with our MAC Address. */
+	COPY_MAC_ADDR(prBcnProbRspFrame->aucSrcAddr, pucOwnMACAddress);
 
-    /* Fill the SA field with our MAC Address. */
-    COPY_MAC_ADDR(prBcnProbRspFrame->aucSrcAddr, pucOwnMACAddress);
+	/* Fill the BSSID field with current BSSID. */
+	COPY_MAC_ADDR(prBcnProbRspFrame->aucBSSID, pucBSSID);
 
-    /* Fill the BSSID field with current BSSID. */
-    COPY_MAC_ADDR(prBcnProbRspFrame->aucBSSID, pucBSSID);
+	/* Clear the SEQ/FRAG_NO field(HW won't overide the FRAG_NO, so we need to clear it). */
+	prBcnProbRspFrame->u2SeqCtrl = 0;
 
-    /* Clear the SEQ/FRAG_NO field(HW won't overide the FRAG_NO, so we need to clear it). */
-    prBcnProbRspFrame->u2SeqCtrl = 0;
+	/* 4 <2> Compose the frame body's common fixed field part of the Beacon /ProbeResp frame. */
+	/* MAC will update TimeStamp field */
 
+	/* Fill the Beacon Interval field. */
+	/* WLAN_SET_FIELD_16(&prBcnProbRspFrame->u2BeaconInterval, u2BeaconInterval); */
+	prBcnProbRspFrame->u2BeaconInterval = u2BeaconInterval;	/* NOTE(Kevin): Optimized for ARM */
 
-    //4 <2> Compose the frame body's common fixed field part of the Beacon /ProbeResp frame.
-    /* MAC will update TimeStamp field */
+	/* Fill the Capability Information field. */
+	/* WLAN_SET_FIELD_16(&prBcnProbRspFrame->u2CapInfo, u2CapInfo); */
+	prBcnProbRspFrame->u2CapInfo = u2CapInfo;	/* NOTE(Kevin): Optimized for ARM */
 
-    /* Fill the Beacon Interval field. */
-    //WLAN_SET_FIELD_16(&prBcnProbRspFrame->u2BeaconInterval, u2BeaconInterval);
-    prBcnProbRspFrame->u2BeaconInterval = u2BeaconInterval; // NOTE(Kevin): Optimized for ARM
-
-    /* Fill the Capability Information field. */
-    //WLAN_SET_FIELD_16(&prBcnProbRspFrame->u2CapInfo, u2CapInfo);
-    prBcnProbRspFrame->u2CapInfo = u2CapInfo; // NOTE(Kevin): Optimized for ARM
-
-    return;
-} /* end of bssComposeBeaconProbeRespFrameHeaderAndFF() */
-
+	return;
+}				/* end of bssComposeBeaconProbeRespFrameHeaderAndFF() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1396,74 +1286,61 @@ bssComposeBeaconProbeRespFrameHeaderAndFF (
 * @retval WLAN_STATUS_SUCCESS   Success.
 */
 /*----------------------------------------------------------------------------*/
-WLAN_STATUS
-bssUpdateBeaconContent (
-    IN P_ADAPTER_T prAdapter,
-    IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex
-    )
+WLAN_STATUS bssUpdateBeaconContent(IN P_ADAPTER_T prAdapter, IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex)
 {
-    P_BSS_INFO_T prBssInfo;
-    P_MSDU_INFO_T prMsduInfo;
-    P_WLAN_BEACON_FRAME_T prBcnFrame;
-    UINT_32 i;
+	P_BSS_INFO_T prBssInfo;
+	P_MSDU_INFO_T prMsduInfo;
+	P_WLAN_BEACON_FRAME_T prBcnFrame;
+	UINT_32 i;
 
-    DEBUGFUNC("bssUpdateBeaconContent");
-    DBGLOG(INIT, LOUD, ("\n"));
+	DEBUGFUNC("bssUpdateBeaconContent");
+	DBGLOG(BSS, LOUD, "\n");
 
-    ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
+	ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
 
-    prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
+	prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
 
-    //4 <1> Allocate a PKT_INFO_T for Beacon Frame
-    /* Allocate a MSDU_INFO_T */
-    // For Beacon
-    prMsduInfo = prBssInfo->prBeacon;
+	/* 4 <1> Allocate a PKT_INFO_T for Beacon Frame */
+	/* Allocate a MSDU_INFO_T */
+	/* For Beacon */
+	prMsduInfo = prBssInfo->prBeacon;
 
-    // beacon prMsduInfo will be NULLify once BSS deactivated, so skip if it is
-    if (prMsduInfo == NULL) {
-        return WLAN_STATUS_SUCCESS;
-    }
+	/* beacon prMsduInfo will be NULLify once BSS deactivated, so skip if it is */
+	if (prMsduInfo == NULL)
+		return WLAN_STATUS_SUCCESS;
+	/* 4 <2> Compose header */
+	bssComposeBeaconProbeRespFrameHeaderAndFF((PUINT_8) ((ULONG) (prMsduInfo->prPacket) + MAC_TX_RESERVED_FIELD),
+						  NULL,
+						  prBssInfo->aucOwnMacAddr,
+						  prBssInfo->aucBSSID,
+						  prBssInfo->u2BeaconInterval, prBssInfo->u2CapInfo);
 
-    //4 <2> Compose header
-    bssComposeBeaconProbeRespFrameHeaderAndFF(
-            (PUINT_8)((ULONG)(prMsduInfo->prPacket) + MAC_TX_RESERVED_FIELD),
-            NULL,
-            prBssInfo->aucOwnMacAddr,
-            prBssInfo->aucBSSID,
-            prBssInfo->u2BeaconInterval,
-            prBssInfo->u2CapInfo);
+	prMsduInfo->u2FrameLength = (WLAN_MAC_MGMT_HEADER_LEN +
+				     (TIMESTAMP_FIELD_LEN + BEACON_INTERVAL_FIELD_LEN + CAP_INFO_FIELD_LEN));
 
+	prMsduInfo->ucNetworkType = eNetTypeIndex;
 
-    prMsduInfo->u2FrameLength = (WLAN_MAC_MGMT_HEADER_LEN +
-        (TIMESTAMP_FIELD_LEN + BEACON_INTERVAL_FIELD_LEN + CAP_INFO_FIELD_LEN));
+	/* 4 <3> Compose the frame body's Common IEs of the Beacon frame. */
+	bssBuildBeaconProbeRespFrameCommonIEs(prMsduInfo, prBssInfo, NULL);
 
-    prMsduInfo->ucNetworkType = eNetTypeIndex;
+	/* 4 <4> Compose IEs in MSDU_INFO_T */
 
-    //4 <3> Compose the frame body's Common IEs of the Beacon frame.
-    bssBuildBeaconProbeRespFrameCommonIEs(prMsduInfo, prBssInfo, NULL);
+	/* Append IE for Beacon */
+	for (i = 0; i < sizeof(txBcnIETable) / sizeof(APPEND_VAR_IE_ENTRY_T); i++) {
+		if (txBcnIETable[i].pfnAppendIE)
+			txBcnIETable[i].pfnAppendIE(prAdapter, prMsduInfo);
+	}
 
+	prBcnFrame = (P_WLAN_BEACON_FRAME_T) prMsduInfo->prPacket;
 
-    //4 <4> Compose IEs in MSDU_INFO_T
+	return nicUpdateBeaconIETemplate(prAdapter,
+					 IE_UPD_METHOD_UPDATE_ALL,
+					 eNetTypeIndex,
+					 prBssInfo->u2CapInfo,
+					 (PUINT_8) prBcnFrame->aucInfoElem,
+					 prMsduInfo->u2FrameLength - OFFSET_OF(WLAN_BEACON_FRAME_T, aucInfoElem));
 
-    /* Append IE for Beacon */
-    for (i = 0; i < sizeof(txBcnIETable)/sizeof(APPEND_VAR_IE_ENTRY_T); i++) {
-        if (txBcnIETable[i].pfnAppendIE) {
-            txBcnIETable[i].pfnAppendIE(prAdapter, prMsduInfo);
-        }
-    }
-
-    prBcnFrame = (P_WLAN_BEACON_FRAME_T)prMsduInfo->prPacket;
-
-    return nicUpdateBeaconIETemplate(prAdapter,
-            IE_UPD_METHOD_UPDATE_ALL,
-            eNetTypeIndex,
-            prBssInfo->u2CapInfo,
-            (PUINT_8)prBcnFrame->aucInfoElem,
-            prMsduInfo->u2FrameLength - OFFSET_OF(WLAN_BEACON_FRAME_T, aucInfoElem));
-
-
-} /* end of bssUpdateBeaconContent() */
-
+}				/* end of bssUpdateBeaconContent() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1480,143 +1357,123 @@ bssUpdateBeaconContent (
 */
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
-bssSendBeaconProbeResponse (
-    IN P_ADAPTER_T prAdapter,
-    IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex,
-    IN PUINT_8 pucDestAddr,
-    IN UINT_32 u4ControlFlags
-    )
+bssSendBeaconProbeResponse(IN P_ADAPTER_T prAdapter,
+			   IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex,
+			   IN PUINT_8 pucDestAddr, IN UINT_32 u4ControlFlags)
 {
-    P_BSS_INFO_T prBssInfo;
-    P_MSDU_INFO_T prMsduInfo;
-    UINT_16 u2EstimatedFrameLen;
-    UINT_16 u2EstimatedFixedIELen;
-    UINT_16 u2EstimatedExtraIELen;
-    P_APPEND_VAR_IE_ENTRY_T prIeArray = NULL;
-    UINT_32 u4IeArraySize = 0;
-    UINT_32 i;
+	P_BSS_INFO_T prBssInfo;
+	P_MSDU_INFO_T prMsduInfo;
+	UINT_16 u2EstimatedFrameLen;
+	UINT_16 u2EstimatedFixedIELen;
+	UINT_16 u2EstimatedExtraIELen;
+	P_APPEND_VAR_IE_ENTRY_T prIeArray = NULL;
+	UINT_32 u4IeArraySize = 0;
+	UINT_32 i;
 
+	ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
 
-    ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
+	prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
 
-    prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
+	if (!pucDestAddr) {	/* For Beacon */
+		prIeArray = &txBcnIETable[0];
+		u4IeArraySize = sizeof(txBcnIETable) / sizeof(APPEND_VAR_IE_ENTRY_T);
+	} else {
+		prIeArray = &txProbRspIETable[0];
+		u4IeArraySize = sizeof(txProbRspIETable) / sizeof(APPEND_VAR_IE_ENTRY_T);
+	}
 
+	/* 4 <1> Allocate a PKT_INFO_T for Beacon /Probe Response Frame */
+	/* Allocate a MSDU_INFO_T */
 
-    if (!pucDestAddr) { // For Beacon
-        prIeArray = &txBcnIETable[0];
-        u4IeArraySize = sizeof(txBcnIETable)/sizeof(APPEND_VAR_IE_ENTRY_T);
-    }
-    else {
-        prIeArray = &txProbRspIETable[0];
-        u4IeArraySize = sizeof(txProbRspIETable)/sizeof(APPEND_VAR_IE_ENTRY_T);
-    }
+	/* Init with MGMT Header Length + Length of Fixed Fields + Common IE Fields */
+	u2EstimatedFrameLen = MAC_TX_RESERVED_FIELD +
+	    WLAN_MAC_MGMT_HEADER_LEN +
+	    TIMESTAMP_FIELD_LEN +
+	    BEACON_INTERVAL_FIELD_LEN +
+	    CAP_INFO_FIELD_LEN +
+	    (ELEM_HDR_LEN + ELEM_MAX_LEN_SSID) +
+	    (ELEM_HDR_LEN + ELEM_MAX_LEN_SUP_RATES) +
+	    (ELEM_HDR_LEN + ELEM_MAX_LEN_DS_PARAMETER_SET) +
+	    (ELEM_HDR_LEN + ELEM_MAX_LEN_IBSS_PARAMETER_SET) + (ELEM_HDR_LEN + (3 + MAX_LEN_TIM_PARTIAL_BMP));
 
+	/* + Extra IE Length */
+	u2EstimatedExtraIELen = 0;
 
-    //4 <1> Allocate a PKT_INFO_T for Beacon /Probe Response Frame
-    /* Allocate a MSDU_INFO_T */
+	for (i = 0; i < u4IeArraySize; i++) {
+		u2EstimatedFixedIELen = prIeArray[i].u2EstimatedFixedIELen;
 
-    /* Init with MGMT Header Length + Length of Fixed Fields + Common IE Fields */
-    u2EstimatedFrameLen = MAC_TX_RESERVED_FIELD + \
-                          WLAN_MAC_MGMT_HEADER_LEN + \
-                          TIMESTAMP_FIELD_LEN + \
-                          BEACON_INTERVAL_FIELD_LEN + \
-                          CAP_INFO_FIELD_LEN + \
-                          (ELEM_HDR_LEN + ELEM_MAX_LEN_SSID) + \
-                          (ELEM_HDR_LEN + ELEM_MAX_LEN_SUP_RATES) + \
-                          (ELEM_HDR_LEN + ELEM_MAX_LEN_DS_PARAMETER_SET) + \
-                          (ELEM_HDR_LEN + ELEM_MAX_LEN_IBSS_PARAMETER_SET) + \
-                          (ELEM_HDR_LEN + (3 + MAX_LEN_TIM_PARTIAL_BMP));
+		if (u2EstimatedFixedIELen) {
+			u2EstimatedExtraIELen += u2EstimatedFixedIELen;
+		} else {
+			ASSERT(prIeArray[i].pfnCalculateVariableIELen);
 
-    /* + Extra IE Length */
-    u2EstimatedExtraIELen = 0;
+			u2EstimatedExtraIELen += (UINT_16)
+			    prIeArray[i].pfnCalculateVariableIELen(prAdapter, eNetTypeIndex, NULL);
+		}
+	}
 
-    for (i = 0; i < u4IeArraySize; i++) {
-        u2EstimatedFixedIELen = prIeArray[i].u2EstimatedFixedIELen;
-
-        if (u2EstimatedFixedIELen) {
-            u2EstimatedExtraIELen += u2EstimatedFixedIELen;
-        }
-        else {
-            ASSERT(prIeArray[i].pfnCalculateVariableIELen);
-
-            u2EstimatedExtraIELen += (UINT_16)
-                prIeArray[i].pfnCalculateVariableIELen(prAdapter, eNetTypeIndex, NULL);
-        }
-    }
-
-    u2EstimatedFrameLen += u2EstimatedExtraIELen;
-
-    if ( (prMsduInfo = cnmMgtPktAlloc(prAdapter, u2EstimatedFrameLen)) == NULL) {
-        DBGLOG(BSS, WARN, ("No PKT_INFO_T for sending %s.\n",
-            ((!pucDestAddr)?"Beacon":"Probe Response")));
-        return WLAN_STATUS_RESOURCES;
-    }
-
-
-    //4 <2> Compose Beacon/Probe Response frame header and fixed fields in MSDU_INfO_T.
-    /* Compose Header and Fixed Field */
+	u2EstimatedFrameLen += u2EstimatedExtraIELen;
+	prMsduInfo = cnmMgtPktAlloc(prAdapter, u2EstimatedFrameLen);
+	if (prMsduInfo == NULL) {
+		DBGLOG(BSS, WARN, "No PKT_INFO_T for sending %s.\n", ((!pucDestAddr) ? "Beacon" : "Probe Response"));
+		return WLAN_STATUS_RESOURCES;
+	}
+	/* 4 <2> Compose Beacon/Probe Response frame header and fixed fields in MSDU_INfO_T. */
+	/* Compose Header and Fixed Field */
 #if CFG_ENABLE_WIFI_DIRECT
-    if (u4ControlFlags & BSS_PROBE_RESP_USE_P2P_DEV_ADDR) {
-        if(prAdapter->fgIsP2PRegistered) {
-            bssComposeBeaconProbeRespFrameHeaderAndFF(
-                    (PUINT_8)((ULONG)(prMsduInfo->prPacket) + MAC_TX_RESERVED_FIELD),
-                    pucDestAddr,
-                    prAdapter->rWifiVar.aucDeviceAddress,
-                    prAdapter->rWifiVar.aucDeviceAddress,
-                    DOT11_BEACON_PERIOD_DEFAULT,
-                    (prBssInfo->u2CapInfo & ~(CAP_INFO_ESS | CAP_INFO_IBSS)));
-        }
-    }
-    else
+	if (u4ControlFlags & BSS_PROBE_RESP_USE_P2P_DEV_ADDR) {
+		if (prAdapter->fgIsP2PRegistered) {
+			bssComposeBeaconProbeRespFrameHeaderAndFF((PUINT_8)
+								  ((ULONG) (prMsduInfo->prPacket) +
+								   MAC_TX_RESERVED_FIELD), pucDestAddr,
+								  prAdapter->rWifiVar.aucDeviceAddress,
+								  prAdapter->rWifiVar.aucDeviceAddress,
+								  DOT11_BEACON_PERIOD_DEFAULT,
+								  (prBssInfo->u2CapInfo &
+								   ~(CAP_INFO_ESS | CAP_INFO_IBSS)));
+		}
+	} else
 #endif /* CFG_ENABLE_WIFI_DIRECT */
-    {
-        bssComposeBeaconProbeRespFrameHeaderAndFF(
-                (PUINT_8)((ULONG)(prMsduInfo->prPacket) + MAC_TX_RESERVED_FIELD),
-                pucDestAddr,
-                prBssInfo->aucOwnMacAddr,
-                prBssInfo->aucBSSID,
-                prBssInfo->u2BeaconInterval,
-                prBssInfo->u2CapInfo);
-    }
+	{
+		bssComposeBeaconProbeRespFrameHeaderAndFF((PUINT_8)
+							  ((ULONG) (prMsduInfo->prPacket) + MAC_TX_RESERVED_FIELD),
+							  pucDestAddr, prBssInfo->aucOwnMacAddr, prBssInfo->aucBSSID,
+							  prBssInfo->u2BeaconInterval, prBssInfo->u2CapInfo);
+	}
 
+	/* 4 <3> Update information of MSDU_INFO_T */
+	prMsduInfo->eSrc = TX_PACKET_MGMT;
+	prMsduInfo->ucPacketType = HIF_TX_PACKET_TYPE_MGMT;
+	prMsduInfo->ucStaRecIndex = 0xFF;
+	prMsduInfo->ucNetworkType = (UINT_8) eNetTypeIndex;
+	prMsduInfo->ucMacHeaderLength = WLAN_MAC_MGMT_HEADER_LEN;
+	prMsduInfo->fgIs802_1x = FALSE;
+	prMsduInfo->fgIs802_11 = TRUE;
+	prMsduInfo->u2FrameLength = (WLAN_MAC_MGMT_HEADER_LEN +
+				     TIMESTAMP_FIELD_LEN + BEACON_INTERVAL_FIELD_LEN + CAP_INFO_FIELD_LEN);
+	prMsduInfo->ucTxSeqNum = nicIncreaseTxSeqNum(prAdapter);
+	prMsduInfo->pfTxDoneHandler = NULL;
+	prMsduInfo->fgIsBasicRate = TRUE;
 
-    //4 <3> Update information of MSDU_INFO_T
-    prMsduInfo->eSrc = TX_PACKET_MGMT;
-    prMsduInfo->ucPacketType = HIF_TX_PACKET_TYPE_MGMT;
-    prMsduInfo->ucStaRecIndex = 0xFF;
-    prMsduInfo->ucNetworkType = (UINT_8)eNetTypeIndex;
-    prMsduInfo->ucMacHeaderLength = WLAN_MAC_MGMT_HEADER_LEN;
-    prMsduInfo->fgIs802_1x = FALSE;
-    prMsduInfo->fgIs802_11 = TRUE;
-    prMsduInfo->u2FrameLength = (WLAN_MAC_MGMT_HEADER_LEN +
-        TIMESTAMP_FIELD_LEN + BEACON_INTERVAL_FIELD_LEN + CAP_INFO_FIELD_LEN);
-    prMsduInfo->ucTxSeqNum = nicIncreaseTxSeqNum(prAdapter);
-    prMsduInfo->pfTxDoneHandler = NULL;
-    prMsduInfo->fgIsBasicRate = TRUE;
+	/* 4 <4> Compose the frame body's Common IEs of the Beacon/ProbeResp  frame. */
+	bssBuildBeaconProbeRespFrameCommonIEs(prMsduInfo, prBssInfo, pucDestAddr);
 
+	/* 4 <5> Compose IEs in MSDU_INFO_T */
 
-    //4 <4> Compose the frame body's Common IEs of the Beacon/ProbeResp  frame.
-    bssBuildBeaconProbeRespFrameCommonIEs(prMsduInfo, prBssInfo, pucDestAddr);
+	/* Append IE */
+	for (i = 0; i < u4IeArraySize; i++) {
+		if (prIeArray[i].pfnAppendIE)
+			prIeArray[i].pfnAppendIE(prAdapter, prMsduInfo);
+	}
 
+	/* TODO(Kevin): Also release the unused tail room of the composed MMPDU */
 
-    //4 <5> Compose IEs in MSDU_INFO_T
+	/* 4 <6> Inform TXM  to send this Beacon /Probe Response frame. */
+	nicTxEnqueueMsdu(prAdapter, prMsduInfo);
 
-    /* Append IE */
-    for (i = 0; i < u4IeArraySize; i++) {
-        if (prIeArray[i].pfnAppendIE) {
-            prIeArray[i].pfnAppendIE(prAdapter, prMsduInfo);
-        }
-    }
+	return WLAN_STATUS_SUCCESS;
 
-    /* TODO(Kevin): Also release the unused tail room of the composed MMPDU */
-
-    //4 <6> Inform TXM  to send this Beacon /Probe Response frame.
-    nicTxEnqueueMsdu(prAdapter, prMsduInfo);
-
-    return WLAN_STATUS_SUCCESS;
-
-} /* end of bssSendBeaconProbeResponse() */
-
+}				/* end of bssSendBeaconProbeResponse() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1630,99 +1487,84 @@ bssSendBeaconProbeResponse (
 * @retval WLAN_STATUS_SUCCESS   Always return success
 */
 /*----------------------------------------------------------------------------*/
-WLAN_STATUS
-bssProcessProbeRequest (
-    IN P_ADAPTER_T prAdapter,
-    IN P_SW_RFB_T prSwRfb
-    )
+WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb)
 {
-    P_WLAN_MAC_MGMT_HEADER_T prMgtHdr;
-    P_BSS_INFO_T prBssInfo;
-    ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex;
-    UINT_8 aucBCBSSID[] = BC_BSSID;
-    BOOLEAN fgIsBcBssid;
-    BOOLEAN fgReplyProbeResp;
-    UINT_32 u4CtrlFlagsForProbeResp = 0;
-    ENUM_BAND_T             eBand;
-    UINT_8                  ucHwChannelNum;
+	P_WLAN_MAC_MGMT_HEADER_T prMgtHdr;
+	P_BSS_INFO_T prBssInfo;
+	ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex;
+	UINT_8 aucBCBSSID[] = BC_BSSID;
+	BOOLEAN fgIsBcBssid;
+	BOOLEAN fgReplyProbeResp;
+	UINT_32 u4CtrlFlagsForProbeResp = 0;
+	ENUM_BAND_T eBand;
+	UINT_8 ucHwChannelNum;
 
+	ASSERT(prSwRfb);
 
-    ASSERT(prSwRfb);
+	/* 4 <1> Parse Probe Req and Get BSSID */
+	prMgtHdr = (P_WLAN_MAC_MGMT_HEADER_T) prSwRfb->pvHeader;
 
-    //4 <1> Parse Probe Req and Get BSSID
-    prMgtHdr = (P_WLAN_MAC_MGMT_HEADER_T)prSwRfb->pvHeader;
+	if (EQUAL_MAC_ADDR(aucBCBSSID, prMgtHdr->aucBSSID))
+		fgIsBcBssid = TRUE;
+	else
+		fgIsBcBssid = FALSE;
 
-    if (EQUAL_MAC_ADDR(aucBCBSSID, prMgtHdr->aucBSSID)) {
-        fgIsBcBssid = TRUE;
-    }
-    else {
-        fgIsBcBssid = FALSE;
-    }
+	/* 4 <2> Check network conditions before reply Probe Response Frame (Consider Concurrent) */
+	for (eNetTypeIndex = NETWORK_TYPE_AIS_INDEX; eNetTypeIndex < NETWORK_TYPE_INDEX_NUM; eNetTypeIndex++) {
 
+		if (!IS_NET_ACTIVE(prAdapter, eNetTypeIndex))
+			continue;
 
-    //4 <2> Check network conditions before reply Probe Response Frame (Consider Concurrent)
-    for (eNetTypeIndex = NETWORK_TYPE_AIS_INDEX; eNetTypeIndex < NETWORK_TYPE_INDEX_NUM; eNetTypeIndex++) {
+		prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
 
-        if (!IS_NET_ACTIVE(prAdapter, eNetTypeIndex)) {
-            continue;
-        }
+		if ((!fgIsBcBssid) && UNEQUAL_MAC_ADDR(prBssInfo->aucBSSID, prMgtHdr->aucBSSID))
+			continue;
 
-        prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
+		eBand = HIF_RX_HDR_GET_RF_BAND(prSwRfb->prHifRxHdr);
+		ucHwChannelNum = HIF_RX_HDR_GET_CHNL_NUM(prSwRfb->prHifRxHdr);
 
-        if ((!fgIsBcBssid) &&
-            UNEQUAL_MAC_ADDR(prBssInfo->aucBSSID, prMgtHdr->aucBSSID)) {
-            continue;
-        }
+		if (prBssInfo->eBand != eBand)
+			continue;
 
-        eBand = HIF_RX_HDR_GET_RF_BAND(prSwRfb->prHifRxHdr);
-        ucHwChannelNum = HIF_RX_HDR_GET_CHNL_NUM(prSwRfb->prHifRxHdr);
+		if (prBssInfo->ucPrimaryChannel != ucHwChannelNum)
+			continue;
 
-        if(prBssInfo->eBand != eBand) {
-            continue;
-        }
+		fgReplyProbeResp = FALSE;
 
-        if(prBssInfo->ucPrimaryChannel != ucHwChannelNum) {
-            continue;
-        }
-
-        fgReplyProbeResp = FALSE;
-
-        if (NETWORK_TYPE_AIS_INDEX == eNetTypeIndex) {
+		if (NETWORK_TYPE_AIS_INDEX == eNetTypeIndex) {
 
 #if CFG_SUPPORT_ADHOC
-            fgReplyProbeResp = aisValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp);
+			fgReplyProbeResp = aisValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp);
 #endif
-        }
+		}
 #if CFG_ENABLE_WIFI_DIRECT
-        else if ((prAdapter->fgIsP2PRegistered) &&
-                 (NETWORK_TYPE_P2P_INDEX == eNetTypeIndex)) {
-            if(nicTxGetFreeCmdCount(prAdapter) > (CFG_TX_MAX_CMD_PKT_NUM/2)){
-                /* Resource margin is enough */
-                fgReplyProbeResp = p2pFuncValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp);
-            }
-        }
+		else if ((prAdapter->fgIsP2PRegistered) && (NETWORK_TYPE_P2P_INDEX == eNetTypeIndex)) {
+			if (nicTxGetFreeCmdCount(prAdapter) > (CFG_TX_MAX_CMD_PKT_NUM / 2)) {
+				/* Resource margin is enough */
+				fgReplyProbeResp =
+				    p2pFuncValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp);
+			}
+		}
 #endif
 #if CFG_ENABLE_BT_OVER_WIFI
-        else if (NETWORK_TYPE_BOW_INDEX == eNetTypeIndex) {
-
-            fgReplyProbeResp = bowValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp);
-        }
+		else if (NETWORK_TYPE_BOW_INDEX == eNetTypeIndex)
+			fgReplyProbeResp = bowValidateProbeReq(prAdapter, prSwRfb, &u4CtrlFlagsForProbeResp);
 #endif
 
-       if (fgReplyProbeResp) {
-            if(nicTxGetFreeCmdCount(prAdapter) > (CFG_TX_MAX_CMD_PKT_NUM/2)){
-                /* Resource margin is enough */
-                bssSendBeaconProbeResponse(prAdapter, eNetTypeIndex, prMgtHdr->aucSrcAddr, u4CtrlFlagsForProbeResp);
-            }
-        }
-    }
+		if (fgReplyProbeResp) {
+			if (nicTxGetFreeCmdCount(prAdapter) > (CFG_TX_MAX_CMD_PKT_NUM / 2)) {
+				/* Resource margin is enough */
+				bssSendBeaconProbeResponse(prAdapter, eNetTypeIndex, prMgtHdr->aucSrcAddr,
+							   u4CtrlFlagsForProbeResp);
+			}
+		}
+	}
 
-    return WLAN_STATUS_SUCCESS;
+	return WLAN_STATUS_SUCCESS;
 
-} /* end of bssProcessProbeRequest() */
+}				/* end of bssProcessProbeRequest() */
 
-
-#if 0 // NOTE(Kevin): condition check should move to P2P_FSM.c
+#if 0				/* NOTE(Kevin): condition check should move to P2P_FSM.c */
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function will process the Rx Probe Request Frame and then send
@@ -1734,235 +1576,216 @@ bssProcessProbeRequest (
 * @retval WLAN_STATUS_SUCCESS   Always return success
 */
 /*----------------------------------------------------------------------------*/
-WLAN_STATUS
-bssProcessProbeRequest (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_SW_RFB_T   prSwRfb
-    )
+WLAN_STATUS bssProcessProbeRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb)
 {
-    P_WLAN_MAC_MGMT_HEADER_T prMgtHdr;
-    P_BSS_INFO_T prBssInfo;
-    P_IE_SSID_T prIeSsid = (P_IE_SSID_T)NULL;
-    P_IE_SUPPORTED_RATE_T prIeSupportedRate = (P_IE_SUPPORTED_RATE_T)NULL;
-    P_IE_EXT_SUPPORTED_RATE_T prIeExtSupportedRate = (P_IE_EXT_SUPPORTED_RATE_T)NULL;
-    PUINT_8 pucIE;
-    UINT_16 u2IELength;
-    UINT_16 u2Offset = 0;
-    UINT_8 aucBCBSSID[] = BC_BSSID;
-    ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex;
-    BOOLEAN fgReplyProbeResp;
+	P_WLAN_MAC_MGMT_HEADER_T prMgtHdr;
+	P_BSS_INFO_T prBssInfo;
+	P_IE_SSID_T prIeSsid = (P_IE_SSID_T) NULL;
+	P_IE_SUPPORTED_RATE_T prIeSupportedRate = (P_IE_SUPPORTED_RATE_T) NULL;
+	P_IE_EXT_SUPPORTED_RATE_T prIeExtSupportedRate = (P_IE_EXT_SUPPORTED_RATE_T) NULL;
+	PUINT_8 pucIE;
+	UINT_16 u2IELength;
+	UINT_16 u2Offset = 0;
+	UINT_8 aucBCBSSID[] = BC_BSSID;
+	ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex;
+	BOOLEAN fgReplyProbeResp;
 #if CFG_ENABLE_WIFI_DIRECT
-    BOOLEAN fgP2PTargetDeviceFound;
-    UINT_8 aucP2PWildcardSSID[] = P2P_WILDCARD_SSID;
+	BOOLEAN fgP2PTargetDeviceFound;
+	UINT_8 aucP2PWildcardSSID[] = P2P_WILDCARD_SSID;
 #endif
 
-    ASSERT(prSwRfb);
+	ASSERT(prSwRfb);
 
-    //4 <1> Parse Probe Req and Get SSID IE ptr
-    prMgtHdr = (P_WLAN_MAC_MGMT_HEADER_T)prSwRfb->pvHeader;
+	/* 4 <1> Parse Probe Req and Get SSID IE ptr */
+	prMgtHdr = (P_WLAN_MAC_MGMT_HEADER_T) prSwRfb->pvHeader;
 
-    u2IELength = prSwRfb->u2PacketLen - prSwRfb->u2HeaderLen;
-    pucIE = (PUINT_8)((UINT_32)prSwRfb->pvHeader + prSwRfb->u2HeaderLen);
+	u2IELength = prSwRfb->u2PacketLen - prSwRfb->u2HeaderLen;
+	pucIE = (PUINT_8) ((UINT_32) prSwRfb->pvHeader + prSwRfb->u2HeaderLen);
 
-    prIeSsid = (P_IE_SSID_T)NULL;
+	prIeSsid = (P_IE_SSID_T) NULL;
 
-    IE_FOR_EACH(pucIE, u2IELength, u2Offset) {
-        switch (IE_ID(pucIE)) {
-        case ELEM_ID_SSID:
-            if ((!prIeSsid) &&
-                (IE_LEN(pucIE) <= ELEM_MAX_LEN_SSID)) {
-                prIeSsid = (P_IE_SSID_T)pucIE;
-            }
-            break;
+	IE_FOR_EACH(pucIE, u2IELength, u2Offset) {
+		switch (IE_ID(pucIE)) {
+		case ELEM_ID_SSID:
+			if ((!prIeSsid) && (IE_LEN(pucIE) <= ELEM_MAX_LEN_SSID))
+				prIeSsid = (P_IE_SSID_T) pucIE;
+			break;
 
-        case ELEM_ID_SUP_RATES:
-            /* NOTE(Kevin): Buffalo WHR-G54S's supported rate set IE exceed 8.
-             * IE_LEN(pucIE) == 12, "1(B), 2(B), 5.5(B), 6(B), 9(B), 11(B),
-             * 12(B), 18(B), 24(B), 36(B), 48(B), 54(B)"
-             */
-            // if (IE_LEN(pucIE) <= ELEM_MAX_LEN_SUP_RATES) {
-            if (IE_LEN(pucIE) <= RATE_NUM) {
-                prIeSupportedRate = SUP_RATES_IE(pucIE);
-            }
-            break;
+		case ELEM_ID_SUP_RATES:
+			/* NOTE(Kevin): Buffalo WHR-G54S's supported rate set IE exceed 8.
+			 * IE_LEN(pucIE) == 12, "1(B), 2(B), 5.5(B), 6(B), 9(B), 11(B),
+			 * 12(B), 18(B), 24(B), 36(B), 48(B), 54(B)"
+			 */
+			/* if (IE_LEN(pucIE) <= ELEM_MAX_LEN_SUP_RATES) { */
+			if (IE_LEN(pucIE) <= RATE_NUM)
+				prIeSupportedRate = SUP_RATES_IE(pucIE);
+			break;
 
-        case ELEM_ID_EXTENDED_SUP_RATES:
-            prIeExtSupportedRate = EXT_SUP_RATES_IE(pucIE);
-            break;
+		case ELEM_ID_EXTENDED_SUP_RATES:
+			prIeExtSupportedRate = EXT_SUP_RATES_IE(pucIE);
+			break;
 
 #if CFG_ENABLE_WIFI_DIRECT
-        // TODO: P2P IE & WCS IE parsing for P2P.
-        case ELEM_ID_P2P:
+			/* TODO: P2P IE & WCS IE parsing for P2P. */
+		case ELEM_ID_P2P:
 
-            break;
+			break;
 #endif
 
-        /* no default */
-        }
-    } /* end of IE_FOR_EACH */
+			/* no default */
+		}
+	}			/* end of IE_FOR_EACH */
 
-    //4 <2> Check network conditions before reply Probe Response Frame (Consider Concurrent)
-    for (eNetTypeIndex = NETWORK_TYPE_AIS_INDEX; eNetTypeIndex < NETWORK_TYPE_INDEX_NUM; eNetTypeIndex++) {
+	/* 4 <2> Check network conditions before reply Probe Response Frame (Consider Concurrent) */
+	for (eNetTypeIndex = NETWORK_TYPE_AIS_INDEX; eNetTypeIndex < NETWORK_TYPE_INDEX_NUM; eNetTypeIndex++) {
 
-        if (!IS_NET_ACTIVE(prAdapter, eNetTypeIndex)) {
-            continue;
-        }
+		if (!IS_NET_ACTIVE(prAdapter, eNetTypeIndex))
+			continue;
 
-        prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
+		prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
 
-        if (UNEQUAL_MAC_ADDR(aucBCBSSID, prMgtHdr->aucBSSID) &&
-            UNEQUAL_MAC_ADDR(prBssInfo->aucBSSID, prMgtHdr->aucBSSID)) {
-            /* BSSID not Wildcard BSSID. */
-            continue;
-        }
+		if (UNEQUAL_MAC_ADDR(aucBCBSSID, prMgtHdr->aucBSSID) &&
+		    UNEQUAL_MAC_ADDR(prBssInfo->aucBSSID, prMgtHdr->aucBSSID)) {
+			/* BSSID not Wildcard BSSID. */
+			continue;
+		}
 
-        fgReplyProbeResp = FALSE;
+		fgReplyProbeResp = FALSE;
 
-        if (NETWORK_TYPE_AIS_INDEX == eNetTypeIndex) {
+		if (NETWORK_TYPE_AIS_INDEX == eNetTypeIndex) {
 
-            if (prBssInfo->eCurrentOPMode == OP_MODE_IBSS) {
+			if (prBssInfo->eCurrentOPMode == OP_MODE_IBSS) {
 
-                /* TODO(Kevin): Check if we are IBSS Master. */
-                if (TRUE) {
-
-                    if (prIeSsid) {
-                        if ((prIeSsid->ucLength == BC_SSID_LEN) || /* WILDCARD SSID */
-                            EQUAL_SSID(prBssInfo->aucSSID, prBssInfo->ucSSIDLen,
-                                       prIeSsid->aucSSID, prIeSsid->ucLength)) {
-                            fgReplyProbeResp = TRUE;
-                        }
-                    }
-                }
-            }
-        }
+				/* TODO(Kevin): Check if we are IBSS Master. */
+				if (TRUE && prIeSsid) {
+					if ((prIeSsid->ucLength == BC_SSID_LEN) ||	/* WILDCARD SSID */
+					    EQUAL_SSID(prBssInfo->aucSSID, prBssInfo->ucSSIDLen,
+						       prIeSsid->aucSSID, prIeSsid->ucLength)) {
+						fgReplyProbeResp = TRUE;
+					}
+				}
+			}
+		}
 #if CFG_ENABLE_WIFI_DIRECT
-        else if (NETWORK_TYPE_P2P_INDEX == eNetTypeIndex) {
+		else if (NETWORK_TYPE_P2P_INDEX == eNetTypeIndex) {
 
-            // TODO(Kevin): Move following lines to p2p_fsm.c
+			/* TODO(Kevin): Move following lines to p2p_fsm.c */
 
-            if ((prIeSsid) &&
-                    ((prIeSsid->ucLength == BC_SSID_LEN) ||
-                    (EQUAL_SSID(aucP2PWildcardSSID,
-                        P2P_WILDCARD_SSID_LEN,
-                        prIeSsid->aucSSID,
-                        prIeSsid->ucLength)))) {
-//                if (p2pFsmRunEventRxProbeRequestFrame(prAdapter, prMgtHdr->aucSrcAddr, pucIE, u2IELength)) {
-                if (p2pFsmRunEventRxProbeRequestFrame(prAdapter, prSwRfb)) {
-                    /* Extand channel request time & cancel scan request. */
-                    P_P2P_FSM_INFO_T prP2pFsmInfo = (P_P2P_FSM_INFO_T)NULL;
+			if ((prIeSsid) &&
+			    ((prIeSsid->ucLength == BC_SSID_LEN) ||
+			     (EQUAL_SSID(aucP2PWildcardSSID,
+					 P2P_WILDCARD_SSID_LEN, prIeSsid->aucSSID, prIeSsid->ucLength)))) {
+				/* if (p2pFsmRunEventRxProbeRequestFrame(prAdapter, prMgtHdr->aucSrcAddr,
+					pucIE, u2IELength)) { */
+				if (p2pFsmRunEventRxProbeRequestFrame(prAdapter, prSwRfb)) {
+					/* Extand channel request time & cancel scan request. */
+					P_P2P_FSM_INFO_T prP2pFsmInfo = (P_P2P_FSM_INFO_T) NULL;
 
-                    // TODO: RX probe request may not caused by LISTEN state.
-                    // TODO: It can be GO.
-                    /* Generally speaking, cancel a non-exist scan request is fine.
-                      * We can check P2P FSM here for only LISTEN state.
-                      */
+					/* TODO: RX probe request may not caused by LISTEN state. */
+					/* TODO: It can be GO. */
+					/* Generally speaking, cancel a non-exist scan request is fine.
+					 * We can check P2P FSM here for only LISTEN state.
+					 */
 
-                    P_MSG_SCN_SCAN_CANCEL prScanCancelMsg;
+					P_MSG_SCN_SCAN_CANCEL prScanCancelMsg;
 
-                    prP2pFsmInfo = prAdapter->rWifiVar.prP2pFsmInfo;
+					prP2pFsmInfo = prAdapter->rWifiVar.prP2pFsmInfo;
 
-                    /* Abort JOIN process. */
-                    prScanCancelMsg = (P_MSG_SCN_SCAN_CANCEL)cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_SCN_SCAN_CANCEL));
-                    if (!prScanCancelMsg) {
-                        ASSERT(0); // Can't abort SCN FSM
-                        continue;
-                    }
+					/* Abort JOIN process. */
+					prScanCancelMsg =
+					    (P_MSG_SCN_SCAN_CANCEL) cnmMemAlloc(prAdapter, RAM_TYPE_MSG,
+										sizeof(MSG_SCN_SCAN_CANCEL));
+					if (!prScanCancelMsg) {
+						ASSERT(0);	/* Can't abort SCN FSM */
+						continue;
+					}
 
-                    prScanCancelMsg->rMsgHdr.eMsgId = MID_P2P_SCN_SCAN_CANCEL;
-                    prScanCancelMsg->ucSeqNum = prP2pFsmInfo->ucSeqNumOfScnMsg;
-                    prScanCancelMsg->ucNetTypeIndex = (UINT_8)NETWORK_TYPE_P2P_INDEX;
-                    prScanCancelMsg->fgIsChannelExt = TRUE;
+					prScanCancelMsg->rMsgHdr.eMsgId = MID_P2P_SCN_SCAN_CANCEL;
+					prScanCancelMsg->ucSeqNum = prP2pFsmInfo->ucSeqNumOfScnMsg;
+					prScanCancelMsg->ucNetTypeIndex = (UINT_8) NETWORK_TYPE_P2P_INDEX;
+					prScanCancelMsg->fgIsChannelExt = TRUE;
 
-                    mboxSendMsg(prAdapter,
-                            MBOX_ID_0,
-                            (P_MSG_HDR_T) prScanCancelMsg,
-                            MSG_SEND_METHOD_BUF);
-              }
-            }
-            else {
-                /* 1. Probe Request without SSID.
-                  * 2. Probe Request with SSID not Wildcard SSID & not P2P Wildcard SSID.
-                  */
-                continue;
-            }
+					mboxSendMsg(prAdapter,
+						    MBOX_ID_0, (P_MSG_HDR_T) prScanCancelMsg, MSG_SEND_METHOD_BUF);
+				}
+			} else {
+				/* 1. Probe Request without SSID.
+				 * 2. Probe Request with SSID not Wildcard SSID & not P2P Wildcard SSID.
+				 */
+				continue;
+			}
 
-#if 0 // Frog
-            if (prAdapter->rWifiVar.prP2pFsmInfo->eCurrentState == P2P_STATE_LISTEN) {
-                // P2P 2.4.1 - P2P Devices shall not respond to Probe Request frames which only contain 11b rates only.
-                if (prIeSupportedRate || prIeExtSupportedRate) {
-                    UINT_16 u2OperationalRateSet, u2BSSBasicRateSet;
-                    BOOLEAN fgIsUnknownBssBasicRate;
+#if 0				/* Frog */
+			if (prAdapter->rWifiVar.prP2pFsmInfo->eCurrentState == P2P_STATE_LISTEN) {
+				/* P2P 2.4.1 - P2P Devices shall not respond to Probe Request frames
+				which only contain 11b rates only. */
+				if (prIeSupportedRate || prIeExtSupportedRate) {
+					UINT_16 u2OperationalRateSet, u2BSSBasicRateSet;
+					BOOLEAN fgIsUnknownBssBasicRate;
 
-                    rateGetRateSetFromIEs(prIeSupportedRate,
-                                          prIeExtSupportedRate,
-                                          &u2OperationalRateSet,
-                                          &u2BSSBasicRateSet, /* Ignore any Basic Bit */
-                                          &fgIsUnknownBssBasicRate);
+					rateGetRateSetFromIEs(prIeSupportedRate, prIeExtSupportedRate,
+							      &u2OperationalRateSet,
+							      &u2BSSBasicRateSet,	/* Ignore any Basic Bit */
+							      &fgIsUnknownBssBasicRate);
 
-                    if (u2OperationalRateSet & ~RATE_SET_HR_DSSS) {
-                        continue;
-                    }
-                }
-            }
+					if (u2OperationalRateSet & ~RATE_SET_HR_DSSS)
+						continue;
+				}
+			}
+			/* TODO: Check channel time before first check point to: */
+			/* If Target device is selected:
+			 *     1. Send XXXX request frame.
+			 * else
+			 *     1. Send Probe Response frame.
+			 */
 
-            // TODO: Check channel time before first check point to:
-            /* If Target device is selected:
-              *     1. Send XXXX request frame.
-              * else
-              *     1. Send Probe Response frame.
-              */
+			if (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) {
+				/* TODO(Kevin): During PROVISION state, can we reply Probe Response ? */
 
-            if (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) {
-                /* TODO(Kevin): During PROVISION state, can we reply Probe Response ? */
+				/* TODO(Kevin):
+				 * If we are GO, accept legacy client --> accept Wildcard SSID
+				 * If we are in Listen State, accept only P2P Device --> check P2P IE and WPS IE
+				 */
+				if (TRUE /* We are GO */ && prIeSsid) {
+					UINT_8 aucSSID[] = P2P_WILDCARD_SSID;
 
-                /* TODO(Kevin):
-                           * If we are GO, accept legacy client --> accept Wildcard SSID
-                           * If we are in Listen State, accept only P2P Device --> check P2P IE and WPS IE
-                           */
-                if (TRUE /* We are GO */) {
-                    if (prIeSsid) {
-                        UINT_8 aucSSID[]=P2P_WILDCARD_SSID;
+					if ((prIeSsid->ucLength == BC_SSID_LEN) ||	/* WILDCARD SSID */
+					    EQUAL_SSID(prBssInfo->aucSSID, prBssInfo->ucSSIDLen,
+						       prIeSsid->aucSSID, prIeSsid->ucLength) ||
+					    EQUAL_SSID(aucSSID, P2P_WILDCARD_SSID_LEN,
+						       prIeSsid->aucSSID, prIeSsid->ucLength)) {
+						fgReplyProbeResp = TRUE;
+					}
+				}
+/* else if (FALSE) { */ /* We are in Listen State */
+/* } */
 
-                        if ((prIeSsid->ucLength == BC_SSID_LEN) || /* WILDCARD SSID */
-                            EQUAL_SSID(prBssInfo->aucSSID, prBssInfo->ucSSIDLen,
-                                       prIeSsid->aucSSID, prIeSsid->ucLength) ||
-                            EQUAL_SSID(aucSSID, P2P_WILDCARD_SSID_LEN,
-                                       prIeSsid->aucSSID, prIeSsid->ucLength)) {
-                            fgReplyProbeResp = TRUE;
-                        }
-                    }
-                }
-//                else if (FALSE /* We are in Listen State */) {
-//                }
-
-                /* TODO(Kevin): Check P2P IE and WPS IE */
-            }
+				/* TODO(Kevin): Check P2P IE and WPS IE */
+			}
 #endif
-        }
+		}
 #endif
 #if CFG_ENABLE_BT_OVER_WIFI
-        else if (NETWORK_TYPE_BOW_INDEX == eNetTypeIndex) {
+		else if (NETWORK_TYPE_BOW_INDEX == eNetTypeIndex) {
 
-            if (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) {
-                /* TODO(Kevin): TBD */
-            }
-        }
+			if (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) {
+				/* Do nothing */
+				/* TODO(Kevin): TBD */
+			}
+		}
 #endif
-        else {
-            ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
-        }
+		else
+			ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
 
-        if (fgReplyProbeResp) {
-            bssSendBeaconProbeResponse(prAdapter, eNetTypeIndex, prMgtHdr->aucSrcAddr);
-        }
+		if (fgReplyProbeResp)
+			bssSendBeaconProbeResponse(prAdapter, eNetTypeIndex, prMgtHdr->aucSrcAddr);
 
-    }
+	}
 
-    return WLAN_STATUS_SUCCESS;
+	return WLAN_STATUS_SUCCESS;
 
-} /* end of bssProcessProbeRequest() */
+}				/* end of bssProcessProbeRequest() */
 #endif
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1974,33 +1797,26 @@ bssProcessProbeRequest (
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssClearClientList (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_BSS_INFO_T prBssInfo
-    )
+VOID bssClearClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 {
-    P_LINK_T prStaRecOfClientList;
+	P_LINK_T prStaRecOfClientList;
 
+	ASSERT(prBssInfo);
 
-    ASSERT(prBssInfo);
+	prStaRecOfClientList = &prBssInfo->rStaRecOfClientList;
 
-    prStaRecOfClientList = &prBssInfo->rStaRecOfClientList;
+	if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
+		P_STA_RECORD_T prPeerStaRec;
 
-    if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
-        P_STA_RECORD_T prPeerStaRec;
+		LINK_FOR_EACH_ENTRY(prPeerStaRec, prStaRecOfClientList, rLinkEntry, STA_RECORD_T) {
+			cnmStaRecChangeState(prAdapter, prPeerStaRec, STA_STATE_1);
+		}
 
-        LINK_FOR_EACH_ENTRY(prPeerStaRec, prStaRecOfClientList, rLinkEntry, STA_RECORD_T) {
-            cnmStaRecChangeState(prAdapter, prPeerStaRec, STA_STATE_1);
-        }
+		LINK_INITIALIZE(prStaRecOfClientList);
+	}
 
-        LINK_INITIALIZE(prStaRecOfClientList);
-    }
-
-    return;
-} /* end of bssClearClientList() */
-
-
+	return;
+}				/* end of bssClearClientList() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2013,38 +1829,32 @@ bssClearClientList (
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssAddStaRecToClientList (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_BSS_INFO_T prBssInfo,
-    IN P_STA_RECORD_T prStaRec
-    )
+VOID bssAddStaRecToClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN P_STA_RECORD_T prStaRec)
 {
-    P_LINK_T prStaRecOfClientList;
+	P_LINK_T prStaRecOfClientList;
 
+	ASSERT(prBssInfo);
 
-    ASSERT(prBssInfo);
+	prStaRecOfClientList = &prBssInfo->rStaRecOfClientList;
 
-    prStaRecOfClientList = &prBssInfo->rStaRecOfClientList;
+	if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
+		P_STA_RECORD_T prCurrStaRec;
 
-    if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
-        P_STA_RECORD_T prCurrStaRec;
+		LINK_FOR_EACH_ENTRY(prCurrStaRec, prStaRecOfClientList, rLinkEntry, STA_RECORD_T) {
 
-        LINK_FOR_EACH_ENTRY(prCurrStaRec, prStaRecOfClientList, rLinkEntry, STA_RECORD_T) {
+			if (prCurrStaRec == prStaRec) {
+				DBGLOG(BSS, WARN,
+				       "Current Client List already contains that STA_RECORD_T[%pM]\n",
+					prStaRec->aucMacAddr);
+				return;
+			}
+		}
+	}
 
-            if (prCurrStaRec == prStaRec) {
-                DBGLOG(BSS, WARN, ("Current Client List already contains that STA_RECORD_T["MACSTR"]\n",
-                    MAC2STR(prStaRec->aucMacAddr)));
-                return;
-            }
-        }
-    }
+	LINK_INSERT_TAIL(prStaRecOfClientList, &prStaRec->rLinkEntry);
 
-    LINK_INSERT_TAIL(prStaRecOfClientList, &prStaRec->rLinkEntry);
-
-    return;
-} /* end of bssAddStaRecToClientList() */
-
+	return;
+}				/* end of bssAddStaRecToClientList() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2056,56 +1866,48 @@ bssAddStaRecToClientList (
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssRemoveStaRecFromClientList (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_BSS_INFO_T prBssInfo,
-    IN P_STA_RECORD_T prStaRec
-    )
+VOID bssRemoveStaRecFromClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN P_STA_RECORD_T prStaRec)
 {
-    P_LINK_T prStaRecOfClientList;
+	P_LINK_T prStaRecOfClientList;
 
+	ASSERT(prBssInfo);
 
-    ASSERT(prBssInfo);
-
-    prStaRecOfClientList = &prBssInfo->rStaRecOfClientList;
+	prStaRecOfClientList = &prBssInfo->rStaRecOfClientList;
 
 #if 0
-    if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
-        P_STA_RECORD_T prCurrStaRec;
+	if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
+		P_STA_RECORD_T prCurrStaRec;
 
-        LINK_FOR_EACH_ENTRY(prCurrStaRec, prStaRecOfClientList, rLinkEntry, STA_RECORD_T) {
+		LINK_FOR_EACH_ENTRY(prCurrStaRec, prStaRecOfClientList, rLinkEntry, STA_RECORD_T) {
 
-            if (prCurrStaRec == prStaRec) {
+			if (prCurrStaRec == prStaRec) {
 
-                LINK_REMOVE_KNOWN_ENTRY(prStaRecOfClientList, &prStaRec->rLinkEntry);
+				LINK_REMOVE_KNOWN_ENTRY(prStaRecOfClientList, &prStaRec->rLinkEntry);
 
-                return;
-            }
-        }
-    }
+				return;
+			}
+		}
+	}
 #endif
-    if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
-           
-           P_LINK_ENTRY_T prLinkEntry = (P_LINK_ENTRY_T)NULL;
+	if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
 
-           LINK_FOR_EACH(prLinkEntry, prStaRecOfClientList) {
-                    if ((ULONG)prStaRec == (ULONG)prLinkEntry) {
-                        LINK_REMOVE_KNOWN_ENTRY(prStaRecOfClientList, &prStaRec->rLinkEntry);
-                       return;
-                    }
-           }
-    }
+		P_LINK_ENTRY_T prLinkEntry = (P_LINK_ENTRY_T) NULL;
 
+		LINK_FOR_EACH(prLinkEntry, prStaRecOfClientList) {
+			if ((ULONG) prStaRec == (ULONG) prLinkEntry) {
+				LINK_REMOVE_KNOWN_ENTRY(prStaRecOfClientList, &prStaRec->rLinkEntry);
+				return;
+			}
+		}
+	}
 
-    DBGLOG(BSS, INFO, ("Current Client List didn't contain that STA_RECORD_T["MACSTR"] before removing.\n",
-        MAC2STR(prStaRec->aucMacAddr)));
+	DBGLOG(BSS, INFO, "Current Client List didn't contain that STA_RECORD_T[%pM] before removing.\n",
+			   prStaRec->aucMacAddr);
 
-    return;
-} /* end of bssRemoveStaRecFromClientList() */
+	return;
+}				/* end of bssRemoveStaRecFromClientList() */
 
-/*----------------------------------------------------------------------------*
-/
+/*----------------------------------------------------------------------------*/
 /*!
 * @brief Get station record by Address for AP mode
 *
@@ -2122,24 +1924,19 @@ P_STA_RECORD_T bssGetClientByAddress(IN P_BSS_INFO_T prBssInfo, PUINT_8 pucMacAd
 
 	ASSERT(prBssInfo);
 	ASSERT(pucMacAddr);
-	
+
 	prStaRecOfClientList = &prBssInfo->rStaRecOfClientList;
 	if (!LINK_IS_EMPTY(prStaRecOfClientList)) {
 		P_STA_RECORD_T prCurrStaRec;
 
 		LINK_FOR_EACH_ENTRY(prCurrStaRec, prStaRecOfClientList, rLinkEntry, STA_RECORD_T) {
-			if (EQUAL_MAC_ADDR(prCurrStaRec->aucMacAddr, pucMacAddr)) {
-				DBGLOG(BSS, TRACE, ("found station record for mac %pM\n", pucMacAddr));
+			if (EQUAL_MAC_ADDR(prCurrStaRec->aucMacAddr, pucMacAddr))
 				return prCurrStaRec;
-			}
 		}
 	}
-	DBGLOG(BSS, TRACE, ("not found station record for mac %pM\n", pucMacAddr));
 	return NULL;
 }
-
 #endif /* CFG_SUPPORT_ADHOC || CFG_SUPPORT_AAA */
-
 
 #if CFG_SUPPORT_ADHOC
 /*----------------------------------------------------------------------------*/
@@ -2159,235 +1956,207 @@ P_STA_RECORD_T bssGetClientByAddress(IN P_BSS_INFO_T prBssInfo, PUINT_8 pucMacAd
 */
 /*----------------------------------------------------------------------------*/
 VOID
-ibssProcessMatchedBeacon (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_BSS_INFO_T prBssInfo,
-    IN P_BSS_DESC_T prBssDesc,
-    IN UINT_8       ucRCPI
-    )
+ibssProcessMatchedBeacon(IN P_ADAPTER_T prAdapter,
+			 IN P_BSS_INFO_T prBssInfo, IN P_BSS_DESC_T prBssDesc, IN UINT_8 ucRCPI)
 {
-    P_STA_RECORD_T prStaRec = NULL;
+	P_STA_RECORD_T prStaRec = NULL;
 
-    BOOLEAN fgIsCheckCapability = FALSE;
-    BOOLEAN fgIsCheckTSF = FALSE;
-    BOOLEAN fgIsGoingMerging = FALSE;
-    BOOLEAN fgIsSameBSSID;
+	BOOLEAN fgIsCheckCapability = FALSE;
+	BOOLEAN fgIsCheckTSF = FALSE;
+	BOOLEAN fgIsGoingMerging = FALSE;
+	BOOLEAN fgIsSameBSSID;
 
+	ASSERT(prBssInfo);
+	ASSERT(prBssDesc);
 
-    ASSERT(prBssInfo);
-    ASSERT(prBssDesc);
+	/* 4 <1> Process IBSS Beacon only after we create or merge with other IBSS. */
+	if (!prBssInfo->fgIsBeaconActivated)
+		return;
+	/* 4 <2> Get the STA_RECORD_T of TA. */
+	prStaRec = cnmGetStaRecByAddress(prAdapter, (UINT_8) NETWORK_TYPE_AIS_INDEX, prBssDesc->aucSrcAddr);
 
-    //4 <1> Process IBSS Beacon only after we create or merge with other IBSS.
-    if (!prBssInfo->fgIsBeaconActivated) {
-        return;
-    }
+	fgIsSameBSSID = UNEQUAL_MAC_ADDR(prBssInfo->aucBSSID, prBssDesc->aucBSSID) ? FALSE : TRUE;
 
-    //4 <2> Get the STA_RECORD_T of TA.
-    prStaRec = cnmGetStaRecByAddress(prAdapter,
-                            (UINT_8) NETWORK_TYPE_AIS_INDEX,
-                            prBssDesc->aucSrcAddr);
+	/* 4 <3> IBSS Merge Decision Flow for Processing Beacon. */
+	if (fgIsSameBSSID) {
 
-    fgIsSameBSSID = UNEQUAL_MAC_ADDR(prBssInfo->aucBSSID, prBssDesc->aucBSSID) ? FALSE : TRUE;
+		/* Same BSSID:
+		 * Case I.  This is a new TA and it has decide to merged with us.
+		 *      a)  If fgIsMerging == FALSE - we will send msg to notify AIS.
+		 *      b)  If fgIsMerging == TRUE - already notify AIS.
+		 * Case II. This is an old TA and we've already merged together.
+		 */
+		if (!prStaRec) {
 
+			/* For Case I - Check this IBSS's capability first before adding this Sta Record. */
+			fgIsCheckCapability = TRUE;
 
-    //4 <3> IBSS Merge Decision Flow for Processing Beacon.
-    if (fgIsSameBSSID) {
+			/* If check is passed, then we perform merging with this new IBSS */
+			fgIsGoingMerging = TRUE;
 
-        /* Same BSSID:
-         * Case I.  This is a new TA and it has decide to merged with us.
-         *      a)  If fgIsMerging == FALSE - we will send msg to notify AIS.
-         *      b)  If fgIsMerging == TRUE - already notify AIS.
-         * Case II. This is an old TA and we've already merged together.
-         */
-        if (!prStaRec) {
+		} else {
 
-            /* For Case I - Check this IBSS's capability first before adding this Sta Record. */
-            fgIsCheckCapability = TRUE;
+			ASSERT((prStaRec->ucNetTypeIndex == NETWORK_TYPE_AIS_INDEX) && IS_ADHOC_STA(prStaRec));
 
-            /* If check is passed, then we perform merging with this new IBSS */
-            fgIsGoingMerging = TRUE;
+			if (prStaRec->ucStaState != STA_STATE_3) {
 
-        }
-        else {
+				if (!prStaRec->fgIsMerging) {
 
-            ASSERT((prStaRec->ucNetTypeIndex == NETWORK_TYPE_AIS_INDEX) &&
-                IS_ADHOC_STA(prStaRec));
+					/* For Case I - Check this IBSS's capability first
+					 * before adding this Sta Record. */
+					fgIsCheckCapability = TRUE;
 
-            if (prStaRec->ucStaState != STA_STATE_3) {
+					/* If check is passed, then we perform merging with this new IBSS */
+					fgIsGoingMerging = TRUE;
+				} else {
+					/* For Case II - Update rExpirationTime of Sta Record */
+					GET_CURRENT_SYSTIME(&prStaRec->rUpdateTime);
+				}
+			} else {
+				/* For Case II - Update rExpirationTime of Sta Record */
+				GET_CURRENT_SYSTIME(&prStaRec->rUpdateTime);
+			}
 
-                if (!prStaRec->fgIsMerging) {
+		}
+	} else {
 
-                    /* For Case I - Check this IBSS's capability first before adding this Sta Record. */
-                    fgIsCheckCapability = TRUE;
+		/* Unequal BSSID:
+		 * Case III. This is a new TA and we need to compare the TSF and get the winner.
+		 * Case IV.  This is an old TA and it merge into a new IBSS before we do the same thing.
+		 *           We need to compare the TSF to get the winner.
+		 * Case V.   This is an old TA and it restart a new IBSS. We also need to
+		 *           compare the TSF to get the winner.
+		 */
 
-                    /* If check is passed, then we perform merging with this new IBSS */
-                    fgIsGoingMerging = TRUE;
-                }
-                else {
-                    /* For Case II - Update rExpirationTime of Sta Record */
-                    GET_CURRENT_SYSTIME(&prStaRec->rUpdateTime);
-                }
-            }
-            else {
-                /* For Case II - Update rExpirationTime of Sta Record */
-                GET_CURRENT_SYSTIME(&prStaRec->rUpdateTime);
-            }
+		/* For Case III, IV & V - We'll always check this new IBSS's capability first
+		 * before merging into new IBSS.
+		 */
+		fgIsCheckCapability = TRUE;
 
-        }
-    }
-    else {
+		/* If check is passed, we need to perform TSF check to decide the major BSSID */
+		fgIsCheckTSF = TRUE;
 
-        /* Unequal BSSID:
-         * Case III. This is a new TA and we need to compare the TSF and get the winner.
-         * Case IV.  This is an old TA and it merge into a new IBSS before we do the same thing.
-         *           We need to compare the TSF to get the winner.
-         * Case V.   This is an old TA and it restart a new IBSS. We also need to
-         *           compare the TSF to get the winner.
-         */
+		/* For Case IV & V - We won't update rExpirationTime of Sta Record */
+	}
 
-        /* For Case III, IV & V - We'll always check this new IBSS's capability first
-         * before merging into new IBSS.
-         */
-        fgIsCheckCapability = TRUE;
+	/* 4 <7> Check this BSS_DESC_T's capability. */
+	if (fgIsCheckCapability) {
+		BOOLEAN fgIsCapabilityMatched = FALSE;
 
-        /* If check is passed, we need to perform TSF check to decide the major BSSID */
-        fgIsCheckTSF = TRUE;
+		do {
+			if (!(prBssDesc->ucPhyTypeSet & (prAdapter->rWifiVar.ucAvailablePhyTypeSet))) {
+				DBGLOG(BSS, LOUD,
+				       "IBSS MERGE: Ignore Peer MAC: %pM - Unsupported Phy.\n",
+					prBssDesc->aucSrcAddr);
 
-        /* For Case IV & V - We won't update rExpirationTime of Sta Record */
-    }
+				break;
+			}
 
+			if (prBssDesc->fgIsUnknownBssBasicRate) {
+				DBGLOG(BSS, LOUD,
+				       "IBSS MERGE: Ignore Peer MAC: %pM - Unknown Basic Rate.\n",
+					prBssDesc->aucSrcAddr);
 
-    //4 <7> Check this BSS_DESC_T's capability.
-    if (fgIsCheckCapability) {
-        BOOLEAN fgIsCapabilityMatched = FALSE;
+				break;
+			}
 
-        do {
-            if (!(prBssDesc->ucPhyTypeSet & (prAdapter->rWifiVar.ucAvailablePhyTypeSet))) {
-                DBGLOG(BSS, LOUD,
-                    ("IBSS MERGE: Ignore Peer MAC: "MACSTR" - Unsupported Phy.\n",
-                     MAC2STR(prBssDesc->aucSrcAddr)));
+			if (ibssCheckCapabilityForAdHocMode(prAdapter, prBssDesc) == WLAN_STATUS_FAILURE) {
+				DBGLOG(BSS, LOUD,
+				       "IBSS MERGE: Ignore Peer MAC: %pM - Capability is not matched.\n",
+					prBssDesc->aucSrcAddr);
 
-                break;
-            }
+				break;
+			}
 
-            if (prBssDesc->fgIsUnknownBssBasicRate) {
-                DBGLOG(BSS, LOUD,
-                    ("IBSS MERGE: Ignore Peer MAC: "MACSTR" - Unknown Basic Rate.\n",
-                     MAC2STR(prBssDesc->aucSrcAddr)));
+			fgIsCapabilityMatched = TRUE;
+		} while (FALSE);
 
-                break;
-            }
+		if (!fgIsCapabilityMatched) {
 
-            if (ibssCheckCapabilityForAdHocMode(prAdapter, prBssDesc) == WLAN_STATUS_FAILURE) {
-                DBGLOG(BSS, LOUD,
-                    ("IBSS MERGE: Ignore Peer MAC: "MACSTR" - Capability is not matched.\n",
-                     MAC2STR(prBssDesc->aucSrcAddr)));
+			if (prStaRec) {
+				/* For Case II - We merge this STA_RECORD in RX Path.
+				 *     Case IV & V - They change their BSSID after we merge with them.
+				 */
 
-                break;
-            }
+				DBGLOG(BSS, LOUD,
+				       "IBSS MERGE: Ignore Peer MAC: %pM - Capability is not matched.\n",
+					prBssDesc->aucSrcAddr);
+			}
 
-            fgIsCapabilityMatched = TRUE;
-        }
-        while (FALSE);
+			return;
+		}
 
-        if (!fgIsCapabilityMatched) {
+		DBGLOG(BSS, LOUD,
+		       "IBSS MERGE: Peer MAC: %pM - Check capability was passed.\n",
+			prBssDesc->aucSrcAddr);
+	}
 
-            if (prStaRec) {
-                /* For Case II - We merge this STA_RECORD in RX Path.
-                 *     Case IV & V - They change their BSSID after we merge with them.
-                 */
-
-                DBGLOG(BSS, LOUD,
-                    ("IBSS MERGE: Ignore Peer MAC: "MACSTR" - Capability is not matched.\n",
-                     MAC2STR(prBssDesc->aucSrcAddr)));
-            }
-
-            return;
-        }
-
-        DBGLOG(BSS, LOUD,
-            ("IBSS MERGE: Peer MAC: "MACSTR" - Check capability was passed.\n",
-             MAC2STR(prBssDesc->aucSrcAddr)));
-    }
-
-
-    if (fgIsCheckTSF) {
+	if (fgIsCheckTSF) {
 #if CFG_SLT_SUPPORT
-        fgIsGoingMerging = TRUE;
+		fgIsGoingMerging = TRUE;
 #else
-        if (prBssDesc->fgIsLargerTSF) {
-            fgIsGoingMerging = TRUE;
-        }
-        else {
-            return;
-        }
+		if (prBssDesc->fgIsLargerTSF)
+			fgIsGoingMerging = TRUE;
+		else
+			return;
 #endif
-    }
+	}
 
+	if (fgIsGoingMerging) {
+		P_MSG_AIS_IBSS_PEER_FOUND_T prAisIbssPeerFoundMsg;
 
-    if (fgIsGoingMerging) {
-        P_MSG_AIS_IBSS_PEER_FOUND_T prAisIbssPeerFoundMsg;
+		/* 4 <1> We will merge with to this BSS immediately. */
+		prBssDesc->fgIsConnecting = TRUE;
+		prBssDesc->fgIsConnected = FALSE;
 
+		/* 4 <2> Setup corresponding STA_RECORD_T */
+		prStaRec = bssCreateStaRecFromBssDesc(prAdapter,
+						      STA_TYPE_ADHOC_PEER, NETWORK_TYPE_AIS_INDEX, prBssDesc);
 
-        //4 <1> We will merge with to this BSS immediately.
-        prBssDesc->fgIsConnecting = TRUE;
-        prBssDesc->fgIsConnected = FALSE;
+		if (!prStaRec) {
+			/* no memory ? */
+			return;
+		}
 
-        //4 <2> Setup corresponding STA_RECORD_T
-        prStaRec = bssCreateStaRecFromBssDesc(prAdapter,
-                                              STA_TYPE_ADHOC_PEER,
-                                              NETWORK_TYPE_AIS_INDEX,
-                                              prBssDesc);
+		prStaRec->fgIsMerging = TRUE;
 
-        if(!prStaRec) {
-            // no memory ?
-            return;
-        }
+		/* update RCPI */
+		prStaRec->ucRCPI = ucRCPI;
 
-        prStaRec->fgIsMerging = TRUE;
+		/* 4 <3> Send Merge Msg to CNM to obtain the channel privilege. */
+		prAisIbssPeerFoundMsg = (P_MSG_AIS_IBSS_PEER_FOUND_T)
+		    cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_AIS_IBSS_PEER_FOUND_T));
 
-        /* update RCPI */
-        prStaRec->ucRCPI = ucRCPI;
+		if (!prAisIbssPeerFoundMsg) {
 
-        //4 <3> Send Merge Msg to CNM to obtain the channel privilege.
-        prAisIbssPeerFoundMsg = (P_MSG_AIS_IBSS_PEER_FOUND_T)
-            cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_AIS_IBSS_PEER_FOUND_T));
+			ASSERT(0);	/* Can't send Merge Msg */
+			return;
+		}
 
-        if (!prAisIbssPeerFoundMsg) {
+		prAisIbssPeerFoundMsg->rMsgHdr.eMsgId = MID_SCN_AIS_FOUND_IBSS;
+		prAisIbssPeerFoundMsg->ucNetTypeIndex = (UINT_8) NETWORK_TYPE_AIS_INDEX;
+		prAisIbssPeerFoundMsg->prStaRec = prStaRec;
 
-            ASSERT(0); // Can't send Merge Msg
-            return;
-        }
-
-        prAisIbssPeerFoundMsg->rMsgHdr.eMsgId = MID_SCN_AIS_FOUND_IBSS;
-        prAisIbssPeerFoundMsg->ucNetTypeIndex = (UINT_8)NETWORK_TYPE_AIS_INDEX;
-        prAisIbssPeerFoundMsg->prStaRec = prStaRec;
-
-        /* Inform AIS to do STATE TRANSITION
-         * For Case I - If AIS in IBSS_ALONE, let it jump to NORMAL_TR after we know the new member.
-         * For Case III, IV - Now this new BSSID wins the TSF, follow it.
-         */
-        if (fgIsSameBSSID) {
-            prAisIbssPeerFoundMsg->fgIsMergeIn = TRUE;
-        }
-        else {
+		/* Inform AIS to do STATE TRANSITION
+		 * For Case I - If AIS in IBSS_ALONE, let it jump to NORMAL_TR after we know the new member.
+		 * For Case III, IV - Now this new BSSID wins the TSF, follow it.
+		 */
+		if (fgIsSameBSSID) {
+			prAisIbssPeerFoundMsg->fgIsMergeIn = TRUE;
+		} else {
 #if CFG_SLT_SUPPORT
-            prAisIbssPeerFoundMsg->fgIsMergeIn = TRUE;
+			prAisIbssPeerFoundMsg->fgIsMergeIn = TRUE;
 #else
-            prAisIbssPeerFoundMsg->fgIsMergeIn = (prBssDesc->fgIsLargerTSF) ? FALSE: TRUE;
+			prAisIbssPeerFoundMsg->fgIsMergeIn = (prBssDesc->fgIsLargerTSF) ? FALSE : TRUE;
 #endif
-        }
+		}
 
-        mboxSendMsg(prAdapter,
-                MBOX_ID_0,
-                (P_MSG_HDR_T) prAisIbssPeerFoundMsg,
-                MSG_SEND_METHOD_BUF);
+		mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prAisIbssPeerFoundMsg, MSG_SEND_METHOD_BUF);
 
-    }
+	}
 
-    return;
-} /* end of ibssProcessMatchedBeacon() */
-
+	return;
+}				/* end of ibssProcessMatchedBeacon() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2400,64 +2169,52 @@ ibssProcessMatchedBeacon (
 * @retval WLAN_STATUS_SUCCESS   Pass the check of Capability.
 */
 /*----------------------------------------------------------------------------*/
-WLAN_STATUS
-ibssCheckCapabilityForAdHocMode (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_BSS_DESC_T prBssDesc
-    )
+WLAN_STATUS ibssCheckCapabilityForAdHocMode(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBssDesc)
 {
-    P_CONNECTION_SETTINGS_T prConnSettings;
-    WLAN_STATUS rStatus = WLAN_STATUS_FAILURE;
+	P_CONNECTION_SETTINGS_T prConnSettings;
+	WLAN_STATUS rStatus = WLAN_STATUS_FAILURE;
 
+	ASSERT(prBssDesc);
+	prConnSettings = &(prAdapter->rWifiVar.rConnSettings);
 
-    ASSERT(prBssDesc);
-    prConnSettings = &(prAdapter->rWifiVar.rConnSettings);
-
-    do {
-        //4 <1> Check the BSS Basic Rate Set for current AdHoc Mode
-        if ((prConnSettings->eAdHocMode == AD_HOC_MODE_11B) &&
-            (prBssDesc->u2BSSBasicRateSet & ~RATE_SET_HR_DSSS)) {
-            break;
-        }
-        else if ((prConnSettings->eAdHocMode == AD_HOC_MODE_11A) &&
-            (prBssDesc->u2BSSBasicRateSet & ~RATE_SET_OFDM)) {
-            break;
-        }
-
-        //4 <2> Check the Short Slot Time.
-#if 0 // Do not check ShortSlotTime until Wi-Fi define such policy
-        if (prConnSettings->eAdHocMode == AD_HOC_MODE_11G) {
-            if (((prConnSettings->fgIsShortSlotTimeOptionEnable) &&
-                 !(prBssDesc->u2CapInfo & CAP_INFO_SHORT_SLOT_TIME)) ||
-                (!(prConnSettings->fgIsShortSlotTimeOptionEnable) &&
-                 (prBssDesc->u2CapInfo & CAP_INFO_SHORT_SLOT_TIME))) {
-                break;
-            }
-        }
+	do {
+		/* 4 <1> Check the BSS Basic Rate Set for current AdHoc Mode */
+		if ((prConnSettings->eAdHocMode == AD_HOC_MODE_11B) &&
+		    (prBssDesc->u2BSSBasicRateSet & ~RATE_SET_HR_DSSS)) {
+			break;
+		} else if ((prConnSettings->eAdHocMode == AD_HOC_MODE_11A) &&
+			   (prBssDesc->u2BSSBasicRateSet & ~RATE_SET_OFDM)) {
+			break;
+		}
+		/* 4 <2> Check the Short Slot Time. */
+#if 0				/* Do not check ShortSlotTime until Wi-Fi define such policy */
+		if (prConnSettings->eAdHocMode == AD_HOC_MODE_11G) {
+			if (((prConnSettings->fgIsShortSlotTimeOptionEnable) &&
+			     !(prBssDesc->u2CapInfo & CAP_INFO_SHORT_SLOT_TIME)) ||
+			    (!(prConnSettings->fgIsShortSlotTimeOptionEnable) &&
+			     (prBssDesc->u2CapInfo & CAP_INFO_SHORT_SLOT_TIME))) {
+				break;
+			}
+		}
 #endif
 
-        //4 <3> Check the ATIM window setting.
-        if (prBssDesc->u2ATIMWindow) {
-            DBGLOG(BSS, INFO, ("AdHoc PS was not supported(ATIM Window: %d)\n",
-                prBssDesc->u2ATIMWindow));
-            break;
-        }
-
+		/* 4 <3> Check the ATIM window setting. */
+		if (prBssDesc->u2ATIMWindow) {
+			DBGLOG(BSS, INFO, "AdHoc PS was not supported(ATIM Window: %d)\n", prBssDesc->u2ATIMWindow);
+			break;
+		}
 #if CFG_RSN_MIGRATION
-        //4 <4> Check the Security setting.
-        if (!rsnPerformPolicySelection(prAdapter, prBssDesc)) {
-            break;
-        }
+		/* 4 <4> Check the Security setting. */
+		if (!rsnPerformPolicySelection(prAdapter, prBssDesc))
+			break;
 #endif
 
-        rStatus = WLAN_STATUS_SUCCESS;
-    }
-    while (FALSE);
+		rStatus = WLAN_STATUS_SUCCESS;
+	} while (FALSE);
 
-    return rStatus;
+	return rStatus;
 
-} /* end of ibssCheckCapabilityForAdHocMode() */
-
+}				/* end of ibssCheckCapabilityForAdHocMode() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2468,97 +2225,73 @@ ibssCheckCapabilityForAdHocMode (
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-ibssInitForAdHoc (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_BSS_INFO_T prBssInfo
-    )
+VOID ibssInitForAdHoc(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 {
-    UINT_8 ucLowestBasicRateIndex;
-    UINT_8 aucBSSID[MAC_ADDR_LEN];
-    PUINT_16 pu2BSSID = (PUINT_16)&aucBSSID[0];
-    UINT_32 i;
+	UINT_8 ucLowestBasicRateIndex;
+	UINT_8 aucBSSID[MAC_ADDR_LEN];
+	PUINT_16 pu2BSSID = (PUINT_16) &aucBSSID[0];
+	UINT_32 i;
 
+	ASSERT(prBssInfo);
+	ASSERT(prBssInfo->eCurrentOPMode == OP_MODE_IBSS);
 
-    ASSERT(prBssInfo);
-    ASSERT(prBssInfo->eCurrentOPMode == OP_MODE_IBSS);
+	/* 4 <1> Setup PHY Attributes and Basic Rate Set/Operational Rate Set */
+	prBssInfo->ucNonHTBasicPhyType = (UINT_8)
+	    rNonHTAdHocModeAttributes[prBssInfo->ucConfigAdHocAPMode].ePhyTypeIndex;
+	prBssInfo->u2BSSBasicRateSet = rNonHTAdHocModeAttributes[prBssInfo->ucConfigAdHocAPMode].u2BSSBasicRateSet;
 
+	prBssInfo->u2OperationalRateSet = rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].u2SupportedRateSet;
 
-    //4 <1> Setup PHY Attributes and Basic Rate Set/Operational Rate Set
-    prBssInfo->ucNonHTBasicPhyType = (UINT_8)
-        rNonHTAdHocModeAttributes[prBssInfo->ucConfigAdHocAPMode].ePhyTypeIndex;
-    prBssInfo->u2BSSBasicRateSet =
-        rNonHTAdHocModeAttributes[prBssInfo->ucConfigAdHocAPMode].u2BSSBasicRateSet;
+	rateGetDataRatesFromRateSet(prBssInfo->u2OperationalRateSet,
+				    prBssInfo->u2BSSBasicRateSet,
+				    prBssInfo->aucAllSupportedRates, &prBssInfo->ucAllSupportedRatesLen);
 
+	/* 4 <2> Setup BSSID */
+	if (!prBssInfo->fgHoldSameBssidForIBSS) {
 
-    prBssInfo->u2OperationalRateSet =
-        rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].u2SupportedRateSet;
+		for (i = 0; i < sizeof(aucBSSID) / sizeof(UINT_16); i++)
+			pu2BSSID[i] = (UINT_16) (kalRandomNumber() & 0xFFFF);
 
-    rateGetDataRatesFromRateSet(prBssInfo->u2OperationalRateSet,
-                                prBssInfo->u2BSSBasicRateSet,
-                                prBssInfo->aucAllSupportedRates,
-                                &prBssInfo->ucAllSupportedRatesLen);
+		aucBSSID[0] &= ~0x01;	/* 7.1.3.3.3 - The individual/group bit of the address is set to 0. */
+		aucBSSID[0] |= 0x02;	/* 7.1.3.3.3 - The universal/local bit of the address is set to 1. */
 
-    //4 <2> Setup BSSID
-    if (!prBssInfo->fgHoldSameBssidForIBSS) {
+		COPY_MAC_ADDR(prBssInfo->aucBSSID, aucBSSID);
+	}
+	/* 4 <3> Setup Capability - Short Preamble */
+	if (rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].fgIsShortPreambleOptionImplemented &&
+	   ((prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_SHORT) || /* Short Preamble Option Enable is TRUE */
+	    (prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_AUTO))) {
+		prBssInfo->fgIsShortPreambleAllowed = TRUE;
+		prBssInfo->fgUseShortPreamble = TRUE;
+	} else {
+		prBssInfo->fgIsShortPreambleAllowed = FALSE;
+		prBssInfo->fgUseShortPreamble = FALSE;
+	}
 
-        for (i = 0; i < sizeof(aucBSSID)/sizeof(UINT_16); i++) {
-            pu2BSSID[i] = (UINT_16)(kalRandomNumber() & 0xFFFF);
-        }
+	/* 4 <4> Setup Capability - Short Slot Time */
+	/* 7.3.1.4 For IBSS, the Short Slot Time subfield shall be set to 0. */
+	prBssInfo->fgUseShortSlotTime = FALSE;	/* Set to FALSE for AdHoc */
 
-        aucBSSID[0] &= ~0x01; // 7.1.3.3.3 - The individual/group bit of the address is set to 0.
-        aucBSSID[0] |= 0x02; // 7.1.3.3.3 - The universal/local bit of the address is set to 1.
+	/* 4 <5> Compoase Capability */
+	prBssInfo->u2CapInfo = CAP_INFO_IBSS;
 
-        COPY_MAC_ADDR(prBssInfo->aucBSSID, aucBSSID);
-    }
+	if (prBssInfo->fgIsProtection)
+		prBssInfo->u2CapInfo |= CAP_INFO_PRIVACY;
 
+	if (prBssInfo->fgIsShortPreambleAllowed)
+		prBssInfo->u2CapInfo |= CAP_INFO_SHORT_PREAMBLE;
 
-    //4 <3> Setup Capability - Short Preamble
-    if (rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].fgIsShortPreambleOptionImplemented &&
-        ((prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_SHORT) || /* Short Preamble Option Enable is TRUE */
-         (prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_AUTO)) ) {
+	if (prBssInfo->fgUseShortSlotTime)
+		prBssInfo->u2CapInfo |= CAP_INFO_SHORT_SLOT_TIME;
+	/* 4 <6> Find Lowest Basic Rate Index for default TX Rate of MMPDU */
+	rateGetLowestRateIndexFromRateSet(prBssInfo->u2BSSBasicRateSet, &ucLowestBasicRateIndex);
 
-        prBssInfo->fgIsShortPreambleAllowed = TRUE;
-        prBssInfo->fgUseShortPreamble = TRUE;
-    }
-    else {
-        prBssInfo->fgIsShortPreambleAllowed = FALSE;
-        prBssInfo->fgUseShortPreamble = FALSE;
-    }
+	prBssInfo->ucHwDefaultFixedRateCode = aucRateIndex2RateCode[PREAMBLE_DEFAULT_LONG_NONE][ucLowestBasicRateIndex];
 
-
-    //4 <4> Setup Capability - Short Slot Time
-    // 7.3.1.4 For IBSS, the Short Slot Time subfield shall be set to 0.
-    prBssInfo->fgUseShortSlotTime = FALSE; /* Set to FALSE for AdHoc */
-
-
-    //4 <5> Compoase Capability
-    prBssInfo->u2CapInfo = CAP_INFO_IBSS;
-
-    if (prBssInfo->fgIsProtection) {
-        prBssInfo->u2CapInfo |= CAP_INFO_PRIVACY;
-    }
-
-    if (prBssInfo->fgIsShortPreambleAllowed) {
-        prBssInfo->u2CapInfo |= CAP_INFO_SHORT_PREAMBLE;
-    }
-
-    if (prBssInfo->fgUseShortSlotTime) {
-        prBssInfo->u2CapInfo |= CAP_INFO_SHORT_SLOT_TIME;
-    }
-
-
-    //4 <6> Find Lowest Basic Rate Index for default TX Rate of MMPDU
-    rateGetLowestRateIndexFromRateSet(prBssInfo->u2BSSBasicRateSet, &ucLowestBasicRateIndex);
-
-    prBssInfo->ucHwDefaultFixedRateCode =
-        aucRateIndex2RateCode[PREAMBLE_DEFAULT_LONG_NONE][ucLowestBasicRateIndex];
-
-    return;
-} /* end of ibssInitForAdHoc() */
+	return;
+}				/* end of ibssInitForAdHoc() */
 
 #endif /* CFG_SUPPORT_ADHOC */
-
 
 #if CFG_SUPPORT_AAA
 
@@ -2574,152 +2307,127 @@ ibssInitForAdHoc (
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssInitForAP (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_BSS_INFO_T prBssInfo,
-    IN BOOLEAN fgIsRateUpdate
-    )
+VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEAN fgIsRateUpdate)
 {
-    UINT_8 ucLowestBasicRateIndex;
+	UINT_8 ucLowestBasicRateIndex;
 
-    P_AC_QUE_PARMS_T          prACQueParms;
+	P_AC_QUE_PARMS_T prACQueParms;
 
-    ENUM_WMM_ACI_T eAci;
+	ENUM_WMM_ACI_T eAci;
 
-    UINT_8 auCWminLog2ForBcast[WMM_AC_INDEX_NUM] = {  4/*BE*/, 4 /*BK*/, 3/*VO*/, 2/*VI*/};
-    UINT_8 auCWmaxLog2ForBcast[WMM_AC_INDEX_NUM] = { 10, 10, 4, 3};
-    UINT_8 auAifsForBcast[WMM_AC_INDEX_NUM] = { 3, 7, 2, 2 };
-    UINT_8 auTxopForBcast[WMM_AC_INDEX_NUM] = { 0, 0, 94, 47 }; /* If the AP is OFDM */
+	UINT_8 auCWminLog2ForBcast[WMM_AC_INDEX_NUM] = { 4 /*BE*/, 4 /*BK*/, 3 /*VO*/, 2 /*VI*/ };
+	UINT_8 auCWmaxLog2ForBcast[WMM_AC_INDEX_NUM] = { 10, 10, 4, 3 };
+	UINT_8 auAifsForBcast[WMM_AC_INDEX_NUM] = { 3, 7, 2, 2 };
+	UINT_8 auTxopForBcast[WMM_AC_INDEX_NUM] = { 0, 0, 94, 47 };	/* If the AP is OFDM */
 
-    UINT_8 auCWminLog2[WMM_AC_INDEX_NUM] = {  4 /*BE*/, 4 /*BK*/, 3 /*VO*/, 2 /*VI*/};
-    UINT_8 auCWmaxLog2[WMM_AC_INDEX_NUM] = { 7, 10, 4, 3};
-    UINT_8 auAifs[WMM_AC_INDEX_NUM] = { 3, 7, 1, 1 };
-    UINT_8 auTxop[WMM_AC_INDEX_NUM] = { 0, 0, 94, 47 }; /* If the AP is OFDM */
+	UINT_8 auCWminLog2[WMM_AC_INDEX_NUM] = { 4 /*BE*/, 4 /*BK*/, 3 /*VO*/, 2 /*VI*/ };
+	UINT_8 auCWmaxLog2[WMM_AC_INDEX_NUM] = { 7, 10, 4, 3 };
+	UINT_8 auAifs[WMM_AC_INDEX_NUM] = { 3, 7, 1, 1 };
+	UINT_8 auTxop[WMM_AC_INDEX_NUM] = { 0, 0, 94, 47 };	/* If the AP is OFDM */
 
-    DEBUGFUNC("bssInitForAP");
-    DBGLOG(BSS, LOUD,("\n"));
+	DEBUGFUNC("bssInitForAP");
+	DBGLOG(BSS, LOUD, "\n");
 
-    ASSERT(prBssInfo);
-    ASSERT((prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) || (prBssInfo->eCurrentOPMode == OP_MODE_BOW));
+	ASSERT(prBssInfo);
+	ASSERT((prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) || (prBssInfo->eCurrentOPMode == OP_MODE_BOW));
 
 #if 0
-    prAdapter->rWifiVar.rConnSettings.fgRxShortGIDisabled = TRUE;
-    prAdapter->rWifiVar.rConnSettings.uc2G4BandwidthMode = CONFIG_BW_20M;
-    prAdapter->rWifiVar.rConnSettings.uc5GBandwidthMode = CONFIG_BW_20M;
+	prAdapter->rWifiVar.rConnSettings.fgRxShortGIDisabled = TRUE;
+	prAdapter->rWifiVar.rConnSettings.uc2G4BandwidthMode = CONFIG_BW_20M;
+	prAdapter->rWifiVar.rConnSettings.uc5GBandwidthMode = CONFIG_BW_20M;
 #endif
 
+	/* 4 <1> Setup PHY Attributes and Basic Rate Set/Operational Rate Set */
+	prBssInfo->ucNonHTBasicPhyType = (UINT_8)
+	    rNonHTApModeAttributes[prBssInfo->ucConfigAdHocAPMode].ePhyTypeIndex;
+	prBssInfo->u2BSSBasicRateSet = rNonHTApModeAttributes[prBssInfo->ucConfigAdHocAPMode].u2BSSBasicRateSet;
 
-    //4 <1> Setup PHY Attributes and Basic Rate Set/Operational Rate Set
-    prBssInfo->ucNonHTBasicPhyType = (UINT_8)
-            rNonHTApModeAttributes[prBssInfo->ucConfigAdHocAPMode].ePhyTypeIndex;
-    prBssInfo->u2BSSBasicRateSet =
-            rNonHTApModeAttributes[prBssInfo->ucConfigAdHocAPMode].u2BSSBasicRateSet;
+	prBssInfo->u2OperationalRateSet = rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].u2SupportedRateSet;
 
+	if (fgIsRateUpdate) {
+		rateGetDataRatesFromRateSet(prBssInfo->u2OperationalRateSet,
+					    prBssInfo->u2BSSBasicRateSet,
+					    prBssInfo->aucAllSupportedRates, &prBssInfo->ucAllSupportedRatesLen);
+	}
+	/* 4 <2> Setup BSSID */
+	COPY_MAC_ADDR(prBssInfo->aucBSSID, prBssInfo->aucOwnMacAddr);
 
-    prBssInfo->u2OperationalRateSet =
-            rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].u2SupportedRateSet;
+	/* 4 <3> Setup Capability - Short Preamble */
+	if (rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].fgIsShortPreambleOptionImplemented &&
+	   ((prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_SHORT) || /* Short Preamble Option Enable is TRUE */
+	    (prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_AUTO))) {
+		prBssInfo->fgIsShortPreambleAllowed = TRUE;
+		prBssInfo->fgUseShortPreamble = TRUE;
+	} else {
+		prBssInfo->fgIsShortPreambleAllowed = FALSE;
+		prBssInfo->fgUseShortPreamble = FALSE;
+	}
 
-    if (fgIsRateUpdate) {
-            rateGetDataRatesFromRateSet(prBssInfo->u2OperationalRateSet,
-                                        prBssInfo->u2BSSBasicRateSet,
-                                        prBssInfo->aucAllSupportedRates,
-                                        &prBssInfo->ucAllSupportedRatesLen);
-    }
+	/* 4 <4> Setup Capability - Short Slot Time */
+	prBssInfo->fgUseShortSlotTime = TRUE;
 
-    //4 <2> Setup BSSID
-    COPY_MAC_ADDR(prBssInfo->aucBSSID, prBssInfo->aucOwnMacAddr);
+	/* 4 <5> Compoase Capability */
+	prBssInfo->u2CapInfo = CAP_INFO_ESS;
 
+	if (prBssInfo->fgIsProtection)
+		prBssInfo->u2CapInfo |= CAP_INFO_PRIVACY;
 
-    //4 <3> Setup Capability - Short Preamble
-    if (rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].fgIsShortPreambleOptionImplemented &&
-        ((prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_SHORT) || /* Short Preamble Option Enable is TRUE */
-         (prAdapter->rWifiVar.ePreambleType == PREAMBLE_TYPE_AUTO)) ) {
+	if (prBssInfo->fgIsShortPreambleAllowed)
+		prBssInfo->u2CapInfo |= CAP_INFO_SHORT_PREAMBLE;
 
-        prBssInfo->fgIsShortPreambleAllowed = TRUE;
-        prBssInfo->fgUseShortPreamble = TRUE;
-    }
-    else {
-        prBssInfo->fgIsShortPreambleAllowed = FALSE;
-        prBssInfo->fgUseShortPreamble = FALSE;
-    }
+	if (prBssInfo->fgUseShortSlotTime)
+		prBssInfo->u2CapInfo |= CAP_INFO_SHORT_SLOT_TIME;
+	/* 4 <6> Find Lowest Basic Rate Index for default TX Rate of MMPDU */
+	rateGetLowestRateIndexFromRateSet(prBssInfo->u2BSSBasicRateSet, &ucLowestBasicRateIndex);
 
+	prBssInfo->ucHwDefaultFixedRateCode = aucRateIndex2RateCode[PREAMBLE_DEFAULT_LONG_NONE][ucLowestBasicRateIndex];
 
-    //4 <4> Setup Capability - Short Slot Time
-    prBssInfo->fgUseShortSlotTime = TRUE;
+	/* 4 <7> Fill the EDCA */
 
-    //4 <5> Compoase Capability
-    prBssInfo->u2CapInfo = CAP_INFO_ESS;
+	prACQueParms = prBssInfo->arACQueParmsForBcast;
 
-    if (prBssInfo->fgIsProtection) {
-        prBssInfo->u2CapInfo |= CAP_INFO_PRIVACY;
-    }
+	for (eAci = 0; eAci < WMM_AC_INDEX_NUM; eAci++) {
 
-    if (prBssInfo->fgIsShortPreambleAllowed) {
-        prBssInfo->u2CapInfo |= CAP_INFO_SHORT_PREAMBLE;
-    }
+		prACQueParms[eAci].fgIsACMSet = FALSE;
+		prACQueParms[eAci].u2Aifsn = auAifsForBcast[eAci];
+		prACQueParms[eAci].u2CWmin = BIT(auCWminLog2ForBcast[eAci]) - 1;
+		prACQueParms[eAci].u2CWmax = BIT(auCWmaxLog2ForBcast[eAci]) - 1;
+		prACQueParms[eAci].u2TxopLimit = auTxopForBcast[eAci];
 
-    if (prBssInfo->fgUseShortSlotTime) {
-        prBssInfo->u2CapInfo |= CAP_INFO_SHORT_SLOT_TIME;
-    }
+		prBssInfo->aucCWminLog2ForBcast[eAci] = auCWminLog2ForBcast[eAci];	/* used to send WMM IE */
+		prBssInfo->aucCWmaxLog2ForBcast[eAci] = auCWmaxLog2ForBcast[eAci];
 
+		DBGLOG(BSS, INFO, "Bcast: eAci = %d, ACM = %d, Aifsn = %d, CWmin = %d, CWmax = %d, TxopLimit = %d\n",
+				   eAci, prACQueParms[eAci].fgIsACMSet,
+				   prACQueParms[eAci].u2Aifsn,
+				   prACQueParms[eAci].u2CWmin,
+				   prACQueParms[eAci].u2CWmax, prACQueParms[eAci].u2TxopLimit);
 
-    //4 <6> Find Lowest Basic Rate Index for default TX Rate of MMPDU
-    rateGetLowestRateIndexFromRateSet(prBssInfo->u2BSSBasicRateSet, &ucLowestBasicRateIndex);
+	}
 
-    prBssInfo->ucHwDefaultFixedRateCode =
-        aucRateIndex2RateCode[PREAMBLE_DEFAULT_LONG_NONE][ucLowestBasicRateIndex];
+	prACQueParms = prBssInfo->arACQueParms;
 
+	for (eAci = 0; eAci < WMM_AC_INDEX_NUM; eAci++) {
 
-    //4 <7> Fill the EDCA
+		prACQueParms[eAci].fgIsACMSet = FALSE;
+		prACQueParms[eAci].u2Aifsn = auAifs[eAci];
+		prACQueParms[eAci].u2CWmin = BIT(auCWminLog2[eAci]) - 1;
+		prACQueParms[eAci].u2CWmax = BIT(auCWmaxLog2[eAci]) - 1;
+		prACQueParms[eAci].u2TxopLimit = auTxop[eAci];
 
-    prACQueParms = prBssInfo->arACQueParmsForBcast;
+		DBGLOG(BSS, INFO, "eAci = %d, ACM = %d, Aifsn = %d, CWmin = %d, CWmax = %d, TxopLimit = %d\n",
+				   eAci, prACQueParms[eAci].fgIsACMSet,
+				   prACQueParms[eAci].u2Aifsn,
+				   prACQueParms[eAci].u2CWmin,
+				   prACQueParms[eAci].u2CWmax, prACQueParms[eAci].u2TxopLimit);
+	}
 
-    for(eAci = 0; eAci < WMM_AC_INDEX_NUM; eAci++){
+	/* Note: Caller should update the EDCA setting to HW by nicQmUpdateWmmParms() it there is no AIS network */
+	/* Note: In E2, only 4 HW queues. The the Edca parameters should be folow by AIS network */
+	/* Note: In E3, 8 HW queues.  the Wmm parameters should be updated to right queues  according to BSS */
 
-        prACQueParms[eAci].fgIsACMSet = FALSE;
-        prACQueParms[eAci].u2Aifsn = auAifsForBcast[eAci];
-        prACQueParms[eAci].u2CWmin = BIT(auCWminLog2ForBcast[eAci])-1;
-        prACQueParms[eAci].u2CWmax = BIT(auCWmaxLog2ForBcast[eAci])-1;
-        prACQueParms[eAci].u2TxopLimit = auTxopForBcast[eAci];
-
-        prBssInfo->aucCWminLog2ForBcast[eAci] = auCWminLog2ForBcast[eAci] ; /* used to send WMM IE */
-        prBssInfo->aucCWmaxLog2ForBcast[eAci] = auCWmaxLog2ForBcast[eAci] ;
-
-        DBGLOG(BSS, INFO, ("Bcast: eAci = %d, ACM = %d, Aifsn = %d, CWmin = %d, CWmax = %d, TxopLimit = %d\n",
-                   eAci,prACQueParms[eAci].fgIsACMSet ,
-                   prACQueParms[eAci].u2Aifsn,
-                   prACQueParms[eAci].u2CWmin,
-                   prACQueParms[eAci].u2CWmax,
-                   prACQueParms[eAci].u2TxopLimit));
-
-    }
-
-    prACQueParms = prBssInfo->arACQueParms;
-
-    for(eAci = 0; eAci < WMM_AC_INDEX_NUM; eAci++){
-
-        prACQueParms[eAci].fgIsACMSet = FALSE;
-        prACQueParms[eAci].u2Aifsn = auAifs[eAci];
-        prACQueParms[eAci].u2CWmin = BIT(auCWminLog2[eAci])-1;
-        prACQueParms[eAci].u2CWmax = BIT(auCWmaxLog2[eAci])-1;
-        prACQueParms[eAci].u2TxopLimit = auTxop[eAci];
-
-        DBGLOG(BSS, INFO, ("eAci = %d, ACM = %d, Aifsn = %d, CWmin = %d, CWmax = %d, TxopLimit = %d\n",
-                   eAci,prACQueParms[eAci].fgIsACMSet ,
-                   prACQueParms[eAci].u2Aifsn,
-                   prACQueParms[eAci].u2CWmin,
-                   prACQueParms[eAci].u2CWmax,
-                   prACQueParms[eAci].u2TxopLimit));
-    }
-
-    /* Note: Caller should update the EDCA setting to HW by nicQmUpdateWmmParms() it there is no AIS network */
-    /* Note: In E2, only 4 HW queues. The the Edca parameters should be folow by AIS network */
-    /* Note: In E3, 8 HW queues.  the Wmm parameters should be updated to right queues  according to BSS */
-
-
-    return;
-} /* end of bssInitForAP() */
+	return;
+}				/* end of bssInitForAP() */
 
 #if 0
 /*----------------------------------------------------------------------------*/
@@ -2731,36 +2439,29 @@ bssInitForAP (
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssUpdateDTIMCount (
-    IN P_ADAPTER_T  prAdapter,
-    IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex
-    )
+VOID bssUpdateDTIMCount(IN P_ADAPTER_T prAdapter, IN ENUM_NETWORK_TYPE_INDEX_T eNetTypeIndex)
 {
-    P_BSS_INFO_T prBssInfo;
+	P_BSS_INFO_T prBssInfo;
 
+	ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
 
-    ASSERT(eNetTypeIndex < NETWORK_TYPE_INDEX_NUM);
+	prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
 
-    prBssInfo = &(prAdapter->rWifiVar.arBssInfo[eNetTypeIndex]);
+	if (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) {
 
-    if (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT) {
+		/* Setup DTIM Count for next TBTT. */
+		if (prBssInfo->ucDTIMCount > 0) {
+			prBssInfo->ucDTIMCount--;
+		} else {
 
-        // Setup DTIM Count for next TBTT.
-        if (prBssInfo->ucDTIMCount > 0) {
-            prBssInfo->ucDTIMCount--;
-        }
-        else {
+			ASSERT(prBssInfo->ucDTIMPeriod > 0);
 
-            ASSERT(prBssInfo->ucDTIMPeriod > 0);
+			prBssInfo->ucDTIMCount = prBssInfo->ucDTIMPeriod - 1;
+		}
+	}
 
-            prBssInfo->ucDTIMCount = prBssInfo->ucDTIMPeriod - 1;
-        }
-    }
-
-    return;
-} /* end of bssUpdateDTIMIE() */
-
+	return;
+}				/* end of bssUpdateDTIMIE() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2772,77 +2473,60 @@ bssUpdateDTIMCount (
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-bssSetTIMBitmap (
-    IN P_ADAPTER_T  prAdapter,
-    IN P_BSS_INFO_T prBssInfo,
-    IN UINT_16 u2AssocId
-    )
+VOID bssSetTIMBitmap(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN UINT_16 u2AssocId)
 {
 
-    ASSERT(prBssInfo);
+	ASSERT(prBssInfo);
 
-    if (prBssInfo->ucNetTypeIndex == NETWORK_TYPE_P2P_INDEX) {
-        P_P2P_SPECIFIC_BSS_INFO_T prP2pSpecificBssInfo;
+	if (prBssInfo->ucNetTypeIndex == NETWORK_TYPE_P2P_INDEX) {
+		P_P2P_SPECIFIC_BSS_INFO_T prP2pSpecificBssInfo;
 
+		prP2pSpecificBssInfo = &(prAdapter->rWifiVar.rP2pSpecificBssInfo);
 
-        prP2pSpecificBssInfo = &(prAdapter->rWifiVar.rP2pSpecificBssInfo);
+		/* Use Association ID == 0 for BMCAST indication */
+		if (u2AssocId == 0) {
 
-        /* Use Association ID == 0 for BMCAST indication */
-        if (u2AssocId == 0) {
+			prP2pSpecificBssInfo->ucBitmapCtrl |= (UINT_8) BIT(0);
+		} else {
+			PUINT_8 pucPartialVirtualBitmap;
+			UINT_8 ucBitmapToSet;
 
-            prP2pSpecificBssInfo->ucBitmapCtrl |= (UINT_8)BIT(0);
-        }
-        else {
-            PUINT_8 pucPartialVirtualBitmap;
-            UINT_8 ucBitmapToSet;
+			/* (u2AssocId / 8) */
+			pucPartialVirtualBitmap = &prP2pSpecificBssInfo->aucPartialVirtualBitmap[(u2AssocId >> 3)];
+			ucBitmapToSet = (UINT_8) BIT((u2AssocId % 8));
 
+			if (*pucPartialVirtualBitmap & ucBitmapToSet) {
+				/* The virtual bitmap has been set */
+				return;
+			}
 
-            pucPartialVirtualBitmap = &prP2pSpecificBssInfo->aucPartialVirtualBitmap[(u2AssocId >> 3)]; // (u2AssocId / 8)
-            ucBitmapToSet = (UINT_8) BIT((u2AssocId % 8));
+			*pucPartialVirtualBitmap |= ucBitmapToSet;
 
-            if (*pucPartialVirtualBitmap & ucBitmapToSet) {
-                /* The virtual bitmap has been set */
-                return;
-            }
+			/* Update u2SmallestAID and u2LargestAID */
+			if ((u2AssocId < prP2pSpecificBssInfo->u2SmallestAID) ||
+			    (prP2pSpecificBssInfo->u2SmallestAID == 0)) {
+				prP2pSpecificBssInfo->u2SmallestAID = u2AssocId;
+			}
 
-            *pucPartialVirtualBitmap |= ucBitmapToSet;
+			if ((u2AssocId > prP2pSpecificBssInfo->u2LargestAID) ||
+			    (prP2pSpecificBssInfo->u2LargestAID == 0)) {
+				prP2pSpecificBssInfo->u2LargestAID = u2AssocId;
+			}
+		}
+	}
 
-            // Update u2SmallestAID and u2LargestAID
-            if ((u2AssocId < prP2pSpecificBssInfo->u2SmallestAID) ||
-                (prP2pSpecificBssInfo->u2SmallestAID == 0)) {
-                prP2pSpecificBssInfo->u2SmallestAID = u2AssocId;
-            }
-
-            if ((u2AssocId > prP2pSpecificBssInfo->u2LargestAID) ||
-                (prP2pSpecificBssInfo->u2LargestAID == 0)) {
-                prP2pSpecificBssInfo->u2LargestAID = u2AssocId;
-            }
-        }
-    }
-
-    return;
-} /* end of bssSetTIMBitmap() */
+	return;
+}				/* end of bssSetTIMBitmap() */
 #endif
 
 #endif /* CFG_SUPPORT_AAA */
 
-
-VOID
-bssCreateStaRecFromAuth (
-    IN P_ADAPTER_T  prAdapter
-    )
+VOID bssCreateStaRecFromAuth(IN P_ADAPTER_T prAdapter)
 {
 
 }
 
-
-VOID
-bssUpdateStaRecFromAssocReq (
-    IN P_ADAPTER_T  prAdapter
-    )
+VOID bssUpdateStaRecFromAssocReq(IN P_ADAPTER_T prAdapter)
 {
 
 }
-
-

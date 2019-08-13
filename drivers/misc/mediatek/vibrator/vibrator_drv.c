@@ -3,6 +3,7 @@
  *
  * Copyright 2009-2010 MediaTek Co.,Ltd.
  * Copyright (C) 2018 XiaoMi, Inc.
+ * Copyright 2019 i.bilux@gmail.com.
  *
  * DESCRIPTION:
  *     This file provid the other drivers vibrator relative functions
@@ -32,7 +33,6 @@
 
 #include <cust_vibrator.h>
 #include <vibrator_hal.h>
-
 #include <mach/mt_pwm.h>
 
 #define VERSION					        "v 0.1"
@@ -83,27 +83,25 @@ static int vibe_state;
 static int ldo_state=0;
 static int shutdown_flag;
 
-extern unsigned int g_call_state;
-static int force_backup=500;
-static void mt_vibrator_set_pwm_new(int force)
+
+static void mt_vibrator_set_pwm(int force)
 {
     struct pwm_spec_config pwm_setting;
-    int temp_force=0;
-    int THRESH=1160;  
+    int temp_force = 0;
+    int THRESH = 1160;
 
 	pwm_setting.pwm_no = PWM3;
 	pwm_setting.mode = PWM_MODE_OLD;
 	pwm_setting.clk_src = PWM_CLK_OLD_MODE_BLOCK;
-    pwm_setting.pmic_pad=0;
+    pwm_setting.pmic_pad = 0;
 	pwm_setting.clk_div = CLK_DIV1;
-	
-        
-    temp_force=force+128;  //1-255  128=50%   0-100
 
+	// calculate the THRESH
+    temp_force=force+128;  //1-255  128=50%   0-100
     if(temp_force==128)
     {
         //THRESH=1478;
-        // THRESH=1318;
+        //THRESH=1318;
         THRESH=1160/2;
     }else  if(temp_force>=255)
     {
@@ -151,118 +149,45 @@ static void mt_vibrator_set_pwm_new(int force)
 	pwm_setting.PWM_MODE_FIFO_REGS.GUARD_VALUE = 0;
 	pwm_setting.PWM_MODE_FIFO_REGS.GDURATION = 0;
 	pwm_setting.PWM_MODE_FIFO_REGS.WAVE_NUM = 0;
-
     mt_set_gpio_mode(GPIO_VIBRATOR_PWM_PIN, GPIO_MODE_03);
     udelay(10);
 	pwm_set_spec_config(&pwm_setting);
     //mt_pwm_dump_regs();
     udelay(10);
-
-             
-        mt_set_gpio_mode(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_MODE_00);
-		mt_set_gpio_dir(GPIO_VIBRATOR_POWER_EN_PIN,GPIO_DIR_OUT);
-		mt_set_gpio_out(GPIO_VIBRATOR_POWER_EN_PIN,GPIO_OUT_ONE);
-		udelay(10);
-                   
-		mt_set_gpio_mode(GPIO_VIBRATOR_EN_PIN, GPIO_MODE_00);
-		mt_set_gpio_dir(GPIO_VIBRATOR_EN_PIN,GPIO_DIR_OUT);
-		mt_set_gpio_out(GPIO_VIBRATOR_EN_PIN,GPIO_OUT_ONE);
-
+    mt_set_gpio_mode(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_MODE_00);
+	mt_set_gpio_dir(GPIO_VIBRATOR_POWER_EN_PIN,GPIO_DIR_OUT);
+	mt_set_gpio_out(GPIO_VIBRATOR_POWER_EN_PIN,GPIO_OUT_ONE);
+	udelay(10);
+	mt_set_gpio_mode(GPIO_VIBRATOR_EN_PIN, GPIO_MODE_00);
+	mt_set_gpio_dir(GPIO_VIBRATOR_EN_PIN,GPIO_DIR_OUT);
+	mt_set_gpio_out(GPIO_VIBRATOR_EN_PIN,GPIO_OUT_ONE);
 }
-
-static void mt_vibrator_set_pwm(void)
-{
-	struct pwm_spec_config pwm_setting;
-	pwm_setting.pwm_no = PWM3;
-	pwm_setting.mode = PWM_MODE_OLD;
-	pwm_setting.clk_src = PWM_CLK_OLD_MODE_BLOCK;
-        pwm_setting.pmic_pad=0;
-	pwm_setting.clk_div = CLK_DIV1;
-	pr_info(KERN_INFO "[vibrator] mt_vibrator_set_pwm enter, ldo_state =  %d \n", ldo_state );
-	if(ldo_state){
-		pwm_setting.PWM_MODE_OLD_REGS.THRESH = 2452;
-        }else{
-		pwm_setting.PWM_MODE_OLD_REGS.THRESH = 0;
-	}
-        pwm_setting.PWM_MODE_OLD_REGS.DATA_WIDTH = 2476;
-	pwm_setting.PWM_MODE_FIFO_REGS.IDLE_VALUE = 0;
-	pwm_setting.PWM_MODE_FIFO_REGS.GUARD_VALUE = 0;
-	pwm_setting.PWM_MODE_FIFO_REGS.GDURATION = 0;
-	pwm_setting.PWM_MODE_FIFO_REGS.WAVE_NUM = 0;
-	pwm_set_spec_config(&pwm_setting);
-}
-
 
 static int vibr_Enable(void)
 {
-#ifdef CONFIG_CM865_MAINBOARD //modify longcheer_liml_0922
-	if (!ldo_state)
-	{
-		ldo_state=1;	
+	if (!ldo_state) {
+		ldo_state = 1;
 		vibr_Enable_HW();
-		#if 0			
-		vibr_Enable_HW();
-		if(g_call_state == 40)
-		{
-		udelay(10*1200);
-		vibr_Disable_HW();
-		}
-		else if(g_call_state == 80)
-		{
-		udelay(10*1500);
-		vibr_Disable_HW();
-		}
-		else if(g_call_state == 120)
-		{
-		udelay(10*1100);
-		 udelay(10*1100);
-		vibr_Disable_HW();
-		}
-		#endif
 	}
-
-#else
-    if (!ldo_state)
-	{
-		ldo_state=1;
-		mt_vibrator_set_pwm_new(90);//120 
-	}
-#endif
-
 	return 0;
 }
 
 static int vibr_Disable(void)
 {
-#ifdef CONFIG_CM865_MAINBOARD //modify longcheer_liml_0922
-
-	if (ldo_state) 
-	{
-       // mt_vibrator_set_pwm_new(0-g_call_state);
-       //udelay(30);
+	if (ldo_state) {
 		vibr_Disable_HW();
-		ldo_state=0;
+		ldo_state = 0;
+		mt_set_gpio_out(GPIO_VIBRATOR_EN_PIN, GPIO_OUT_ZERO);
+		udelay(10);
+		mt_set_gpio_mode(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_MODE_00);
+		mt_set_gpio_dir(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_DIR_OUT);
+		mt_set_gpio_out(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_OUT_ZERO);
+		udelay(10);
+		mt_pwm_disable(PWM3, 0);
+		mt_set_gpio_mode(GPIO_VIBRATOR_PWM_PIN, GPIO_MODE_00);
+		mt_set_gpio_dir(GPIO_VIBRATOR_PWM_PIN, GPIO_DIR_OUT);
+		mt_set_gpio_out(GPIO_VIBRATOR_PWM_PIN, GPIO_OUT_ZERO);
 	}
-#else
-	if (ldo_state) 
-	{
-		vibr_Disable_HW();
-		ldo_state=0;
-	    mt_set_gpio_out(GPIO_VIBRATOR_EN_PIN,GPIO_OUT_ZERO);
-        udelay(10);
-        mt_set_gpio_mode(GPIO_VIBRATOR_POWER_EN_PIN, GPIO_MODE_00);
-        mt_set_gpio_dir(GPIO_VIBRATOR_POWER_EN_PIN,GPIO_DIR_OUT);
-        mt_set_gpio_out(GPIO_VIBRATOR_POWER_EN_PIN,GPIO_OUT_ZERO);
-        udelay(10);
-        mt_pwm_disable(PWM3, 0);
-        mt_set_gpio_mode(GPIO_VIBRATOR_PWM_PIN, GPIO_MODE_00);
-        mt_set_gpio_dir(GPIO_VIBRATOR_PWM_PIN,GPIO_DIR_OUT);
-        mt_set_gpio_out(GPIO_VIBRATOR_PWM_PIN,GPIO_OUT_ZERO);   
-	}
-#endif
-
-
-
 	return 0;
 }
 

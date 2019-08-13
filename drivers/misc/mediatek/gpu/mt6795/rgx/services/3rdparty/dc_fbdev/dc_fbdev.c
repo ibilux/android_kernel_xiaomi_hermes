@@ -354,7 +354,7 @@ void DC_FBDEV_ContextConfigure(IMG_HANDLE hDisplayContext,
 		/* If the pipe count is zero, we're tearing down. Don't record
 		 * any new configurations, but still allow the display to pan
 		 * back to buffer 0.
-		 */
+		 */ 
 		psDeviceContext->hLastConfigData = IMG_NULL;
 
 		/*
@@ -450,7 +450,7 @@ IMG_BOOL DC_FBDEV_GetBufferID(DC_FBDEV_CONTEXT *psDeviceContext, IMG_UINT32 *pui
 		if ((psDeviceContext->ui32AllocUseMask & (1UL << ui32BufferID)) == 0)
 		{
 			psDeviceContext->ui32AllocUseMask |= (1UL << ui32BufferID);
-
+			
 			*pui32BufferID = ui32BufferID;
 
 			return IMG_TRUE;

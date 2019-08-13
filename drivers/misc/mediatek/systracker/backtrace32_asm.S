@@ -100,7 +100,9 @@ for_each_frame:	tst	frame, mask		@ Check for address exceptions
 
 1006:		adr	r0, .Lbad
 		mov	r1, frame
+#ifdef CONFIG_MTK_RAM_CONSOLE
 		bl	aee_sram_fiq_log
+#endif
 no_frame:	ldmfd	sp!, {r4 - r8, pc}
 ENDPROC(c_backtrace_ramconsole_print)
 		
@@ -139,7 +141,9 @@ ENDPROC(c_backtrace_ramconsole_print)
 		bpl	1b
 		teq	r7, #0
 		adrne	r0, .Lcr
+#ifdef CONFIG_MTK_RAM_CONSOLE
 		blne	aee_sram_fiq_log
+#endif
 		ldmfd	sp!, {instr, reg, stack, r7, pc}
 
 .Lfp:		.asciz	"%cr%d:%08x"

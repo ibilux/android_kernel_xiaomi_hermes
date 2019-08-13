@@ -96,6 +96,31 @@ static PINT8 _stp_pkt_type(INT32 type)
 }
 #endif
 
+static INT32 stp_btm_dump_send_retry_handler(PINT8 tmp, INT32 len)
+{
+	if (NULL == tmp)
+		return -1;
+	INT32 rc = 0, nl_retry = 0;
+	rc = stp_dbg_nl_send(tmp, 2, len+5);
+	while (rc) {
+		nl_retry++;
+		if (rc == 32) {
+			STP_BTM_ERR_FUNC("**dump send timeout : %d**\n", rc);
+			return 1;
+		}
+		if (nl_retry > 1000) {
+			STP_BTM_ERR_FUNC("**dump send fails, and retry more than 1000: %d.**\n", rc);
+			return 2;
+		}
+		STP_BTM_WARN_FUNC("**dump send fails, and retry again.**\n");
+		osal_sleep_ms(3);
+		rc = stp_dbg_nl_send(tmp, 2, len+5);
+		if (!rc)
+			STP_BTM_DBG_FUNC("****retry again ok!**\n");
+	}
+	return rc;
+}
+
 static INT32 _stp_btm_put_dump_to_nl(VOID)
 {
 #define NUM_FETCH_ENTRY 8
@@ -107,7 +132,7 @@ static INT32 _stp_btm_put_dump_to_nl(VOID)
 	STP_PACKET_T *pkt;
 	STP_DBG_HDR_T *hdr;
 	INT32 remain = 0, index = 0;
-	INT32 retry = 0, rc = 0, nl_retry = 0;
+	INT32 retry = 0, rc = 0;
 	INT32 len;
 
 	STP_BTM_INFO_FUNC("Enter..\n");
@@ -127,37 +152,24 @@ static INT32 _stp_btm_put_dump_to_nl(VOID)
 			osal_memcpy(&tmp[index], &len, 2);
 			index += 2;
 			if (hdr->dbg_type == STP_DBG_FW_DMP) {
-					osal_memcpy(&tmp[index], pkt->raw, len);
+				osal_memcpy(&tmp[index], pkt->raw, pkt->hdr.len);
 
-					if (len <= 1500) {
-						/* pr_warn("\n%s\n+++\n", tmp); */
-						/* pr_warn("send coredump len:%d\n", len); */
-						/* pr_warn("send coredump:%s\n", tmp); */
-						rc = stp_dbg_nl_send((PINT8) &tmp, 2, len+5);
-						while (rc) {
-							nl_retry++;
-							if (rc == 32) {
-								STP_BTM_ERR_FUNC("**dump send timeout : %d**\n", rc);
-								goto exit;
-							}
-							if (nl_retry > 1000) {
-								STP_BTM_ERR_FUNC("**dump send fails, and retry more than 1000: %d.**\n", rc);
-								goto exit;
-							}
-							osal_sleep_ms(3);
-							rc = stp_dbg_nl_send((PINT8) &tmp, 2, len+5);
-							if (!rc) {
-								STP_BTM_DBG_FUNC
-									("****retry again ok!**\n");
-							}
-						}
-						/* schedule(); */
-					} else {
-						STP_BTM_INFO_FUNC("dump entry length is over long\n");
-						osal_bug_on(0);
-					}
-					retry = 0;
+				if (pkt->hdr.len <= 1500) {
+					tmp[index + pkt->hdr.len] = '\n';
+					tmp[index + pkt->hdr.len + 1] = '\0';
+
+					/* pr_warn("\n%s\n+++\n", tmp); */
+					rc = stp_btm_dump_send_retry_handler((PINT8)&tmp, len);
+					if (rc)
+						goto exit;
+
+					/* schedule(); */
+				} else {
+					STP_BTM_INFO_FUNC("dump entry length is over long\n");
+					osal_bug_on(0);
 				}
+				retry = 0;
+			}
 		} else {
 			retry++;
 			osal_sleep_ms(100);
@@ -239,9 +251,6 @@ static INT32 _stp_btm_handler(MTKSTP_BTM_T *stp_btm, P_STP_BTM_OP pStpOp)
 
 		/*whole chip reset */
 	case STP_OPID_BTM_RST:
-		/* Flush dump data, and reset compressor */
-		STP_BTM_INFO_FUNC("Flush dump data\n");
-		wcn_core_dump_flush(0);
 		STP_BTM_INFO_FUNC("whole chip reset start!\n");
 		STP_BTM_INFO_FUNC("....+\n");
 		if (stp_btm->wmt_notify) {
@@ -274,6 +283,9 @@ static INT32 _stp_btm_handler(MTKSTP_BTM_T *stp_btm, P_STP_BTM_OP pStpOp)
 
 
 	case STP_OPID_BTM_DUMP_TIMEOUT:
+		/* Flush dump data, and reset compressor */
+		STP_BTM_INFO_FUNC("Flush dump data\n");
+		wcn_core_dump_flush(0);
 		ret = mtk_wcn_stp_coredump_timeout_handle();
 		break;
 
@@ -330,25 +342,22 @@ static INT32 _stp_btm_put_op(MTKSTP_BTM_T *stp_btm, P_OSAL_OP_Q pOpQ, P_OSAL_OP 
 	osal_lock_unsleepable_lock(&(stp_btm->wq_spinlock));
 	/* acquire lock success */
 	if (&stp_btm->rFreeOpQ == pOpQ) {
-		if (!RB_FULL(pOpQ)) {
+		if (!RB_FULL(pOpQ))
 			RB_PUT(pOpQ, pOp);
-		} else {
+		else
 			ret = -1;
-		}
-	} else if (pOp->op.opId == STP_OPID_BTM_RST ||
-			   pOp->op.opId == STP_OPID_BTM_DUMP_TIMEOUT) {
-		if (!RB_FULL(pOpQ)) {
-			RB_PUT(pOpQ, pOp);
-			STP_BTM_DBG_FUNC("RB_PUT: 0x%d\n", pOp->op.opId);
-		} else {
-			ret = -1;
-		}
+	} else if (pOp->op.opId == STP_OPID_BTM_RST || pOp->op.opId == STP_OPID_BTM_DUMP_TIMEOUT) {
+			if (!RB_FULL(pOpQ)) {
+				RB_PUT(pOpQ, pOp);
+				STP_BTM_ERR_FUNC("RB_PUT: 0x%d\n", pOp->op.opId);
+			} else
+				ret = -1;
 	} else {
 		pOp_current = stp_btm_get_current_op(stp_btm);
 		if (pOp_current) {
 			if (pOp_current->op.opId == STP_OPID_BTM_RST ||
-				pOp_current->op.opId == STP_OPID_BTM_DUMP_TIMEOUT) {
-				STP_BTM_DBG_FUNC("current: 0x%d\n", pOp_current->op.opId);
+			    pOp_current->op.opId == STP_OPID_BTM_DUMP_TIMEOUT) {
+				STP_BTM_ERR_FUNC("current: 0x%d\n", pOp_current->op.opId);
 				flag_current = 0;
 			}
 		}
@@ -357,31 +366,30 @@ static INT32 _stp_btm_put_op(MTKSTP_BTM_T *stp_btm, P_OSAL_OP_Q pOpQ, P_OSAL_OP 
 		if (pOp_latest) {
 			if (pOp_latest->op.opId == STP_OPID_BTM_RST ||
 				pOp_latest->op.opId == STP_OPID_BTM_DUMP_TIMEOUT) {
-				STP_BTM_DBG_FUNC("latest: 0x%d\n", pOp_latest->op.opId);
+				STP_BTM_ERR_FUNC("latest: 0x%d\n", pOp_latest->op.opId);
 				flag_latest = 0;
 			}
 			if (pOp_latest->op.opId == pOp->op.opId) {
 				flag_latest = 0;
-				STP_BTM_DBG_FUNC("With the latest a command repeat: latest 0x%d, current 0x%d\n", pOp_latest->op.opId, pOp->op.opId);
+				STP_BTM_DBG_FUNC("With the latest a command repeat: latest 0x%d,current 0x%d\n",
+						pOp_latest->op.opId, pOp->op.opId);
 			}
 		}
-
 		if (flag_current && flag_latest) {
 			if (!RB_FULL(pOpQ)) {
 				RB_PUT(pOpQ, pOp);
 				STP_BTM_DBG_FUNC("RB_PUT: 0x%d\n", pOp->op.opId);
-			} else {
+			} else
 				ret = -1;
-			}
-		} else {
+		} else
 			ret = -1;
-		}
+
 	}
 	osal_unlock_unsleepable_lock(&(stp_btm->wq_spinlock));
 
 	if (ret) {
-		STP_BTM_DBG_FUNC("RB_FULL(0x%p) %d ,rFreeOpQ = %p, rActiveOpQ = %p\n", pOpQ,
-				  RB_COUNT(pOpQ), &stp_btm->rFreeOpQ, &stp_btm->rActiveOpQ);
+		STP_BTM_DBG_FUNC("RB_FULL(0x%p) %d ,rFreeOpQ = %p, rActiveOpQ = %p\n",
+			pOpQ, RB_COUNT(pOpQ), &stp_btm->rFreeOpQ, &stp_btm->rActiveOpQ);
 		return 0;
 	} else {
 		/* STP_BTM_WARN_FUNC("RB_COUNT = %d\n",RB_COUNT(pOpQ)); */
@@ -399,9 +407,8 @@ P_OSAL_OP _stp_btm_get_free_op(MTKSTP_BTM_T *stp_btm)
 			osal_memset(&pOp->op, 0, sizeof(pOp->op));
 		}
 		return pOp;
-	} else {
+	} else
 		return NULL;
-	}
 }
 
 INT32 _stp_btm_put_act_op(MTKSTP_BTM_T *stp_btm, P_OSAL_OP pOp)
@@ -499,9 +506,8 @@ static INT32 _stp_btm_proc(PVOID pvData)
 #if 1
 		if (gDumplogflag) {
 			/* pr_warn("enter place1\n"); */
-#if WMT_PLAT_ALPS
-			dump_uart_history();
-#endif
+			if (mtk_wcn_stp_is_uart_mand_mode() || mtk_wcn_stp_is_uart_fullset_mode())
+				dump_uart_history();
 			gDumplogflag = 0;
 			continue;
 		}
@@ -538,8 +544,8 @@ static INT32 _stp_btm_proc(PVOID pvData)
  handler_done:
 
 		if (result) {
-			STP_BTM_WARN_FUNC("opid id(0x%x)(%s) error(%d)\n", id,
-					  (id >= 4) ? ("???") : (g_btm_op_name[id]), result);
+			STP_BTM_WARN_FUNC("opid id(0x%x)(%s) error(%d)\n",
+				id, (id >= 4) ? ("???") : (g_btm_op_name[id]), result);
 		}
 
 		if (osal_op_is_wait_for_signal(pOp)) {
@@ -621,7 +627,6 @@ static inline INT32 _stp_btm_notify_coredump_timeout_wq(MTKSTP_BTM_T *stp_btm)
 	INT32 retval;
 
 	stp_btm_reset_btm_wq(stp_btm);
-
 	if (!stp_btm) {
 		return STP_BTM_OPERATION_FAIL;
 	} else {
@@ -861,14 +866,14 @@ INT32 wmt_btm_trigger_reset(VOID)
 
 INT32 stp_btm_set_current_op(MTKSTP_BTM_T *stp_btm, P_OSAL_OP pOp)
 {
-	if (stp_btm) {
-		stp_btm->pCurOP = pOp;
-		STP_BTM_DBG_FUNC("pOp=0x%p\n", pOp);
-		return 0;
-	} else {
-		STP_BTM_ERR_FUNC("Invalid pointer\n");
-		return -1;
-	}
+		if (stp_btm) {
+			stp_btm->pCurOP = pOp;
+			STP_BTM_DBG_FUNC("pOp=0x%p\n", pOp);
+			return 0;
+		} else {
+			STP_BTM_ERR_FUNC("Invalid pointer\n");
+			return -1;
+		}
 }
 
 P_OSAL_OP stp_btm_get_current_op(MTKSTP_BTM_T *stp_btm)

@@ -27,8 +27,7 @@ static fm_s32 fm_bop_write(fm_u8 addr, fm_u16 value, fm_u8 *buf, fm_s32 size)
 	buf[3] = (fm_u8) ((value) & 0x00FF);
 	buf[4] = (fm_u8) ((value >> 8) & 0x00FF);
 
-	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3],
-		buf[4]);
+	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 
 	return (FM_WRITE_BASIC_OP_SIZE + 2);
 }
@@ -50,8 +49,7 @@ static fm_s32 fm_bop_udelay(fm_u32 value, fm_u8 *buf, fm_s32 size)
 	buf[4] = (fm_u8) ((value >> 16) & 0x000000FF);
 	buf[5] = (fm_u8) ((value >> 24) & 0x000000FF);
 
-	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3],
-		buf[4], buf[5]);
+	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
 
 	return (FM_UDELAY_BASIC_OP_SIZE + 2);
 }
@@ -122,8 +120,7 @@ static fm_s32 fm_bop_msleep(fm_u32 value, fm_u8 *buf, fm_s32 size)
 	buf[4] = (fm_u8) ((value >> 16) & 0x000000FF);
 	buf[5] = (fm_u8) ((value >> 24) & 0x000000FF);
 
-	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3],
-		buf[4], buf[5]);
+	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
 
 	return (FM_MSLEEP_BASIC_OP_SIZE + 2);
 }
@@ -322,8 +319,7 @@ fm_s32 mt6626_hwcoeff_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8
  * @seg_len - segment size: segment that will now be sent
  * return package size
  */
-fm_s32 mt6626_rom_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8 seg_id,
-			   const fm_u8 *src, fm_s32 seg_len)
+fm_s32 mt6626_rom_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8 seg_id, const fm_u8 *src, fm_s32 seg_len)
 {
 	fm_s32 pkt_size = 0;
 	fm_u8 *dst = NULL;
@@ -541,8 +537,7 @@ fm_s32 mt6626_tune(fm_u8 *buf, fm_s32 buf_size, fm_u16 freq)
  * @min_freq - lower bound
  * return package size
  */
-fm_s32 mt6626_seek(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq,
-		   fm_u16 min_freq)
+fm_s32 mt6626_seek(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq)
 {
 	fm_s32 pkt_size = 0;
 
@@ -573,12 +568,10 @@ fm_s32 mt6626_seek(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm
 	pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFFFF, 0x0800, &buf[pkt_size], buf_size - pkt_size);	/* 0x66[11] = 1, wrap */
 	/* 0x66[9:0] freq upper bound */
 	max_freq = (max_freq - 640) * 2;
-	pkt_size +=
-	    fm_bop_modify(FM_MAIN_CFG1, 0xFC00, max_freq, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFC00, max_freq, &buf[pkt_size], buf_size - pkt_size);
 	/* 0x67[9:0] freq lower bound */
 	min_freq = (min_freq - 640) * 2;
-	pkt_size +=
-	    fm_bop_modify(FM_MAIN_CFG2, 0xFC00, min_freq, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(FM_MAIN_CFG2, 0xFC00, min_freq, &buf[pkt_size], buf_size - pkt_size);
 	/* Enable hardware controlled seeking sequence */
 	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFFF, SEEK, &buf[pkt_size], buf_size - pkt_size);	/* 0x63[1] = 1 */
 	/* Wait for STC_DONE interrupt */
@@ -602,8 +595,7 @@ fm_s32 mt6626_seek(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm
  * @min_freq - lower bound
  * return package size
  */
-fm_s32 mt6626_scan(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq,
-		   fm_u16 min_freq)
+fm_s32 mt6626_scan(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq)
 {
 	fm_s32 pkt_size = 0;
 
@@ -634,12 +626,10 @@ fm_s32 mt6626_scan(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm
 	pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xF7FF, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* 0x66[11] = 0, no wrap */
 	/* 0x66[9:0] freq upper bound */
 	max_freq = (max_freq - 640) * 2;
-	pkt_size +=
-	    fm_bop_modify(FM_MAIN_CFG1, 0xFC00, max_freq, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFC00, max_freq, &buf[pkt_size], buf_size - pkt_size);
 	/* 0x67[9:0] freq lower bound */
 	min_freq = (min_freq - 640) * 2;
-	pkt_size +=
-	    fm_bop_modify(FM_MAIN_CFG2, 0xFC00, min_freq, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(FM_MAIN_CFG2, 0xFC00, min_freq, &buf[pkt_size], buf_size - pkt_size);
 	/* Enable hardware controlled scanning sequence */
 	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFFF, SCAN, &buf[pkt_size], buf_size - pkt_size);	/* 0x63[1] = 1 */
 	/* Wait for STC_DONE interrupt */
@@ -665,8 +655,7 @@ fm_s32 mt6626_get_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr)
 	buf[3] = 0x00;
 	buf[4] = addr;
 
-	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3],
-		buf[4]);
+	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 	return 5;
 }
 

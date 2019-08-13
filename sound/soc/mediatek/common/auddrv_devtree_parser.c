@@ -38,7 +38,7 @@
  *
  *
  *******************************************************************************/
-#include <sound/mt_auddrv_devtree_parser.h>
+#include "mt_auddrv_devtree_parser.h"
 
 static int bAuddrv_Dev_Tree_Init = false;
 static AUDDRV_I2S_ATTRIBUTE Auddrv_I2S_Setting[Auddrv_I2S_Num][Auddrv_I2S_Attribute_Num] ;

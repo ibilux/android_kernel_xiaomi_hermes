@@ -29,6 +29,7 @@
 #include <net/pkt_sched.h>
 #include <net/dst.h>
 #include <net/ip.h>
+#include <net/ipv6.h>
 
 /* Main transmission queue. */
 
@@ -454,6 +455,23 @@ static int pfifo_fast_enqueue(struct sk_buff *skb, struct Qdisc *qdisc)
 				band = 0;
 			}
 		}
+		if(skb->protocol == htons(ETH_P_IPV6)){
+			if(skb->len <= 128 ){
+				struct tcphdr *tcph;
+				__be16 frag_off;
+				struct ipv6hdr *iph = ipv6_hdr(skb);
+				u8 nexthdr = iph->nexthdr;
+				u32 total_len = sizeof(struct ipv6hdr) + ntohs(iph->payload_len);
+				u32 l4_off = ipv6_skip_exthdr(skb, sizeof(struct ipv6hdr), &nexthdr, &frag_off);
+				//tcph = (struct tcphdr *)(skb->data + l4_off);
+				tcph = (struct tcphdr *)(skb_network_header(skb) + l4_off);
+				if (nexthdr == IPPROTO_TCP && 
+						!tcph->syn && !tcph->fin && !tcph->rst && ((total_len - l4_off) == (tcph->doff << 2))) {
+	    			band = 0;
+				}
+			}
+		}
+
 		priv = qdisc_priv(qdisc);
 		list = band2list(priv, band);
 

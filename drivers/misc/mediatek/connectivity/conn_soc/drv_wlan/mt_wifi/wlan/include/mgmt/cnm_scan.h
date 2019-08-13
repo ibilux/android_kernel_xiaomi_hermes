@@ -1,5 +1,5 @@
 /*
-** $Id: @(#)
+** Id: @(#)
 */
 
 /*! \file   "cnm_scan.h"
@@ -7,37 +7,35 @@
 
 */
 
-
-
 /*
-** $Log: cnm_scan.h $
+** Log: cnm_scan.h
  *
  * 09 03 2010 kevin.huang
  * NULL
  * Refine #include sequence and solve recursive/nested #include issue
  *
  * 07 08 2010 cp.wu
- * 
+ *
  * [WPD00003833] [MT6620 and MT5931] Driver migration - move to new repository.
  *
  * 07 05 2010 cp.wu
- * [WPD00003833][MT6620 and MT5931] Driver migration 
+ * [WPD00003833][MT6620 and MT5931] Driver migration
  * remove unused definitions.
  *
  * 07 01 2010 cp.wu
- * [WPD00003833][MT6620 and MT5931] Driver migration 
+ * [WPD00003833][MT6620 and MT5931] Driver migration
  * implementation of DRV-SCN and related mailbox message handling.
  *
  * 06 07 2010 cp.wu
- * [WPD00003833][MT6620 and MT5931] Driver migration 
+ * [WPD00003833][MT6620 and MT5931] Driver migration
  * merge cnm_scan.h and hem_mbox.h
  *
  * 05 12 2010 kevin.huang
- * [BORA00000794][WIFISYS][New Feature]Power Management Support 
+ * [BORA00000794][WIFISYS][New Feature]Power Management Support
  * Add Power Management - Legacy PS-POLL support.
  *
  * 03 30 2010 cm.chang
- * [BORA00000018]Integrate WIFI part into BORA for the 1st time 
+ * [BORA00000018]Integrate WIFI part into BORA for the 1st time
  * Support 2.4G OBSS scan
  *
  * 03 16 2010 kevin.huang
@@ -93,8 +91,7 @@
 #define SCN_TOTAL_PROBEREQ_NUM_FOR_PARTIAL      2
 #define SCN_SPECIFIC_PROBEREQ_NUM_FOR_PARTIAL   1
 
-
-#define SCN_INTERLACED_CHANNEL_GROUPS_NUM       3   /* Used by partial scan */
+#define SCN_INTERLACED_CHANNEL_GROUPS_NUM       3	/* Used by partial scan */
 
 #define SCN_PARTIAL_SCAN_NUM                    3
 
@@ -108,19 +105,19 @@
 */
 /* The type of Scan Source */
 typedef enum _ENUM_SCN_REQ_SOURCE_T {
-    SCN_REQ_SOURCE_HEM = 0,
-    SCN_REQ_SOURCE_NET_FSM,
-    SCN_REQ_SOURCE_ROAMING, /* ROAMING Module is independent of AIS FSM */
-    SCN_REQ_SOURCE_OBSS,    /* 2.4G OBSS scan */
-    SCN_REQ_SOURCE_NUM
+	SCN_REQ_SOURCE_HEM = 0,
+	SCN_REQ_SOURCE_NET_FSM,
+	SCN_REQ_SOURCE_ROAMING,	/* ROAMING Module is independent of AIS FSM */
+	SCN_REQ_SOURCE_OBSS,	/* 2.4G OBSS scan */
+	SCN_REQ_SOURCE_NUM
 } ENUM_SCN_REQ_SOURCE_T, *P_ENUM_SCN_REQ_SOURCE_T;
 
 typedef enum _ENUM_SCAN_PROFILE_T {
-    SCAN_PROFILE_FULL = 0,
-    SCAN_PROFILE_PARTIAL,
-    SCAN_PROFILE_VOIP,
-    SCAN_PROFILE_FULL_2G4,
-    SCAN_PROFILE_NUM
+	SCAN_PROFILE_FULL = 0,
+	SCAN_PROFILE_PARTIAL,
+	SCAN_PROFILE_VOIP,
+	SCAN_PROFILE_FULL_2G4,
+	SCAN_PROFILE_NUM
 } ENUM_SCAN_PROFILE_T, *P_ENUM_SCAN_PROFILE_T;
 
 /*******************************************************************************
@@ -148,59 +145,25 @@ typedef enum _ENUM_SCAN_PROFILE_T {
 ********************************************************************************
 */
 #if 0
-VOID
-cnmScanInit (
-    VOID
-    );
+VOID cnmScanInit(VOID);
 
-VOID
-cnmScanRunEventScanRequest (
-    IN P_MSG_HDR_T prMsgHdr
-    );
+VOID cnmScanRunEventScanRequest(IN P_MSG_HDR_T prMsgHdr);
 
-BOOLEAN
-cnmScanRunEventScanAbort (
-    IN P_MSG_HDR_T prMsgHdr
-    );
+BOOLEAN cnmScanRunEventScanAbort(IN P_MSG_HDR_T prMsgHdr);
 
-VOID
-cnmScanProfileSelection (
-    VOID
-    );
+VOID cnmScanProfileSelection(VOID);
 
-VOID
-cnmScanProcessStart (
-    VOID
-    );
+VOID cnmScanProcessStart(VOID);
 
-VOID
-cnmScanProcessStop (
-    VOID
-    );
+VOID cnmScanProcessStop(VOID);
 
-VOID
-cnmScanRunEventReqAISAbsDone (
-    IN P_MSG_HDR_T prMsgHdr
-    );
+VOID cnmScanRunEventReqAISAbsDone(IN P_MSG_HDR_T prMsgHdr);
 
-VOID
-cnmScanRunEventCancelAISAbsDone (
-    IN P_MSG_HDR_T prMsgHdr
-    );
+VOID cnmScanRunEventCancelAISAbsDone(IN P_MSG_HDR_T prMsgHdr);
 
-VOID
-cnmScanPartialScanTimeout (
-    UINT_32 u4Param
-    );
+VOID cnmScanPartialScanTimeout(UINT_32 u4Param);
 
-VOID
-cnmScanRunEventScnFsmComplete (
-    IN P_MSG_HDR_T prMsgHdr
-    );
+VOID cnmScanRunEventScnFsmComplete(IN P_MSG_HDR_T prMsgHdr);
 #endif
 
-
-
 #endif /* _CNM_SCAN_H */
-
-

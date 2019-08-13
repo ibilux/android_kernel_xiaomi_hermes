@@ -79,6 +79,9 @@ static INT32 wmt_dbg_ap_reg_write(INT32 par1, INT32 par2, INT32 par3);
 #if CFG_WMT_LTE_COEX_HANDLING
 static INT32 wmt_dbg_lte_coex_test(INT32 par1, INT32 par2, INT32 par3);
 #endif
+#ifdef CONFIG_TRACING
+static INT32 wmt_dbg_ftrace_dbg_log_ctrl(INT32 par1, INT32 par2, INT32 par3);
+#endif
 
 
 const static WMT_DEV_DBG_FUNC wmt_dev_dbg_func[] = {
@@ -109,6 +112,9 @@ const static WMT_DEV_DBG_FUNC wmt_dev_dbg_func[] = {
 	[0x18] = wmt_dbg_ap_reg_write,
 #if CFG_WMT_LTE_COEX_HANDLING
 	[0x20] = wmt_dbg_lte_coex_test,
+#endif
+#ifdef CONFIG_TRACING
+	[0x21] = wmt_dbg_ftrace_dbg_log_ctrl,
 #endif
 };
 
@@ -185,7 +191,7 @@ INT32 wmt_dbg_cmd_test_api(ENUM_WMTDRV_CMD_T cmd)
 
 	pOp = wmt_lib_get_free_op();
 	if (!pOp) {
-		WMT_WARN_FUNC("get_free_lxop fail\n");
+		WMT_DBG_FUNC("get_free_lxop fail\n");
 		return MTK_WCN_BOOL_FALSE;
 	}
 
@@ -451,6 +457,13 @@ static INT32 wmt_dbg_ap_reg_write(INT32 par1, INT32 par2, INT32 par3)
 	return 0;
 }
 
+#ifdef CONFIG_TRACING
+static INT32 wmt_dbg_ftrace_dbg_log_ctrl(INT32 par1, INT32 par2, INT32 par3)
+{
+	WMT_INFO_FUNC("%s ftrace print!!\n", 0 == par2 ? "disable" : "enable");
+	return osal_ftrace_print_ctrl(0 == par2 ? 0 : 1);
+}
+#endif
 
 
 INT32 wmt_dbg_coex_test(INT32 par1, INT32 par2, INT32 par3)

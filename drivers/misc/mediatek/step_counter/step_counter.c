@@ -168,7 +168,7 @@ static int step_d_real_enable(int enable)
   if(0==enable)
   {
     
-     err = cxt->step_c_ctl.enable_nodata(0);
+     err = cxt->step_c_ctl.enable_step_detect(0);
      if(err)
      { 
         	STEP_C_ERR("step_d enable(%d) err = %d\n", enable, err);
@@ -624,13 +624,11 @@ static int step_c_real_driver_init(void)
     int i =0;
 	int err=0;
 	STEP_C_LOG(" step_c_real_driver_init +\n");
-	printk("lct1, %s, %d \n", __func__, __LINE__);
 	for(i = 0; i < MAX_CHOOSE_STEP_C_NUM; i++)
 	{
 	  STEP_C_LOG(" i=%d\n",i);
 	  if(0 != step_counter_init_list[i])
 	  {
-	printk("lct1, %s, %d \n", __func__, __LINE__);
 	    STEP_C_LOG(" step_c try to init driver %s\n", step_counter_init_list[i]->name);
 	    err = step_counter_init_list[i]->init();
 		if(0 == err)
@@ -669,7 +667,6 @@ static int step_c_real_driver_init(void)
 		
 	    if(NULL == step_counter_init_list[i])
 	    {
-	printk("lct1, %s, %d i=%d \n", __func__, __LINE__, i);
 	      obj->platform_diver_addr = &step_counter_driver;
 	      step_counter_init_list[i] = obj;
 		  break;
@@ -846,18 +843,15 @@ static int step_c_probe(struct platform_device *pdev)
 	int err;
 	STEP_C_LOG("+++++++++++++step_c_probe!!\n");
 
-	printk("lct1, %s, %d \n", __func__, __LINE__);
 	step_c_context_obj = step_c_context_alloc_object();
 	if (!step_c_context_obj)
 	{
 		err = -ENOMEM;
-	printk("lct1, %s, %d \n", __func__, __LINE__);
 		STEP_C_ERR("unable to allocate devobj!\n");
 		goto exit_alloc_data_failed;
 	}
 
 	//init real step_c driver
-	printk("lct1, %s, %d \n", __func__, __LINE__);
     	err = step_c_real_driver_init();
 	if(err)
 	{
@@ -866,7 +860,6 @@ static int step_c_probe(struct platform_device *pdev)
 	}
 
 	//init input dev
-	printk("lct1, %s, %d \n", __func__, __LINE__);
 	err = step_c_input_init(step_c_context_obj);
 	if(err)
 	{
@@ -985,7 +978,7 @@ static int __init step_c_init(void)
                 return -ENODEV;
          }
 
-	if( platform_driver_register(&step_c_driver) != 0);
+	if(platform_driver_register(&step_c_driver))
 	{
 		STEP_C_ERR("failed to register step_c driver\n");
 		return -ENODEV;

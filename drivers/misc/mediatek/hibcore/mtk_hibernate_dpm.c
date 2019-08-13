@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "[HIB/SwSuspHlper] " fmt
+
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/fs.h>
@@ -23,14 +25,14 @@
 #define HIB_SWSUSP_DEBUG 0
 #if (HIB_SWSUSP_DEBUG)
 #undef hib_log
-#define hib_log(fmt, args...)	pr_debug("[HIB/SwSuspHlper] " fmt, ##args);
+#define hib_log(fmt, args...)	pr_debug(fmt, ##args);
 #else
 #define hib_log(fmt, args...) ((void)0)
 #endif
 #undef hib_warn
-#define hib_warn(fmt, args...)  pr_warn("[HIB/SwSuspHlper] " fmt, ##args);
+#define hib_warn(fmt, args...)  pr_warn(fmt, ##args);
 #undef hib_err
-#define hib_err(fmt, args...)   pr_err("[HIB/SwSuspHlper] " fmt, ##args);
+#define hib_err(fmt, args...)   pr_err(fmt, ##args);
 
 #define SWSUSP_HELPER_NAME "swsusp-helper"
 

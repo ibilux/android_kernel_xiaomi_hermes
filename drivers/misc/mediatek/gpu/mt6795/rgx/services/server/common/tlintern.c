@@ -79,7 +79,7 @@ TLMakeSNode(IMG_HANDLE f2, TL_STREAM *f3, TL_STREAM_DESC *f4)
 	}
 	ps->hDataEventObj = f2;
 	ps->psStream = f3;
-	ps->psDesc = f4;
+	ps->psRDesc = f4;
 	f3->psNode = ps;
 	return ps;
 }
@@ -100,6 +100,8 @@ TL_GLOBAL_DATA *TLGGD(IMG_VOID)	// TLGetGlobalData()
 PVRSRV_ERROR
 TLInit(PVRSRV_DEVICE_NODE *psDevNode)
 {
+	PVRSRV_ERROR eError;
+
 	PVR_DPF_ENTERED;
 
 	PVR_ASSERT(psDevNode);
@@ -108,10 +110,30 @@ TLInit(PVRSRV_DEVICE_NODE *psDevNode)
 	/* Store the RGX device node for later use in devmem buffer allocations */
 	sTLGlobalData.psRgxDevNode = (IMG_VOID*)psDevNode;
 
+	/* Allocate a lock for TL global data, to be used while updating the TL data.
+	 * This is for making TL global data muti-thread safe */
+	eError = OSLockCreate (&sTLGlobalData.hTLGDLock, LOCK_TYPE_PASSIVE);
+	if (eError != PVRSRV_OK)
+	{
+		goto e0;
+	}
+	
 	/* Allocate the event object used to signal global TL events such as
-	 * - new stream created
-	 * Don't allow the driver to start up on error */
-	PVR_DPF_RETURN_RC( OSEventObjectCreate("TLGlobalEventObj", &sTLGlobalData.hTLEventObj) );
+	 * new stream created */
+	eError = OSEventObjectCreate("TLGlobalEventObj", &sTLGlobalData.hTLEventObj);
+	if (eError != PVRSRV_OK)
+	{
+		goto e1;
+	}
+	
+	PVR_DPF_RETURN_OK;
+
+/* Don't allow the driver to start up on error */
+e1:
+	OSLockDestroy (sTLGlobalData.hTLGDLock);
+	sTLGlobalData.hTLGDLock = NULL;
+e0:
+	PVR_DPF_RETURN_RC (eError);
 }
 
 static IMG_VOID RemoveAndFreeStreamNode(PTL_SNODE psRemove)
@@ -131,9 +153,9 @@ static IMG_VOID RemoveAndFreeStreamNode(PTL_SNODE psRemove)
 		if (psn == psRemove)
 		{
 			/* Other calling code may have freed and zero'd the pointers */
-			if (psn->psDesc)
+			if (psn->psRDesc)
 			{
-				OSFREEMEM(psn->psDesc);
+				OSFREEMEM(psn->psRDesc);
 			}
 			if (psn->psStream)
 			{
@@ -188,6 +210,13 @@ TLDeInit(IMG_VOID)
 		sTLGlobalData.hTLEventObj = NULL;
 	}
 
+	/* Destroy the TL global data lock */
+	if (sTLGlobalData.hTLGDLock)
+	{
+		OSLockDestroy (sTLGlobalData.hTLGDLock);
+		sTLGlobalData.hTLGDLock = NULL;
+	}
+
 	sTLGlobalData.psRgxDevNode = NULL;
 
 	PVR_DPF_RETURN;
@@ -237,18 +266,18 @@ PTL_SNODE TLFindStreamNodeByName(IMG_PCHAR pszName)
 	PVR_DPF_RETURN_VAL(IMG_NULL);
 }
 
-PTL_SNODE TLFindStreamNodeByDesc(PTL_STREAM_DESC psDesc)
+PTL_SNODE TLFindStreamNodeByDesc(PTL_STREAM_DESC psRDesc)
 {
 	TL_GLOBAL_DATA*  psGD = TLGGD();
 	PTL_SNODE 		 psn;
 
 	PVR_DPF_ENTERED;
 
-	PVR_ASSERT(psDesc);
+	PVR_ASSERT(psRDesc);
 
 	for (psn = psGD->psHead; psn; psn=psn->psNext)
 	{
-		if (psn->psDesc == psDesc)
+		if (psn->psRDesc == psRDesc)
 		{
 			PVR_DPF_RETURN_VAL(psn);
 		}
@@ -256,46 +285,45 @@ PTL_SNODE TLFindStreamNodeByDesc(PTL_STREAM_DESC psDesc)
 	PVR_DPF_RETURN_VAL(IMG_NULL);
 }
 
-IMG_VOID TLRemoveStreamAndTryFreeStreamNode(PTL_SNODE psRemove)
+IMG_BOOL TLTryRemoveStreamAndFreeStreamNode(PTL_SNODE psRemove)
 {
 	PVR_DPF_ENTERED;
 
 	PVR_ASSERT(psRemove);
-	psRemove->psStream = IMG_NULL;
 
-	if (psRemove->psDesc != IMG_NULL)
+	/* If there is a client connected to this stream, defer stream's deletion */
+	if (psRemove->psRDesc != IMG_NULL)
 	{
-		PVRSRV_ERROR     eError;
-
-		// Signal client if waiting...so they detect stream has been
-		// destroyed and can return an error.
-		eError = OSEventObjectSignal(psRemove->hDataEventObj);
-		PVR_LOG_IF_ERROR(eError, "OSEventObjectSignal");
-
-		PVR_DPF_RETURN;
+		PVR_DPF_RETURN_VAL (IMG_FALSE);
 	}
 
+	/* Remove stream from TL_GLOBAL_DATA's list and free stream node */	
+	psRemove->psStream = IMG_NULL;
 	RemoveAndFreeStreamNode(psRemove);
 
-	PVR_DPF_RETURN;
+	PVR_DPF_RETURN_VAL (IMG_TRUE);
 }
 
-IMG_VOID TLRemoveDescAndTryFreeStreamNode(PTL_SNODE psRemove)
+IMG_BOOL TLRemoveDescAndTryFreeStreamNode(PTL_SNODE psRemove)
 {
 	PVR_DPF_ENTERED;
 
 	PVR_ASSERT(psRemove);
 
-	psRemove->psDesc = IMG_NULL;
+	/* Remove stream descriptor (i.e. stream reader context) */
+	psRemove->psRDesc = IMG_NULL;
 
-	// First check is node is really no longer needed
-	if (psRemove->psStream != IMG_NULL)
+	/* Do not Free Stream Node if there is a write reference (a producer context) to the stream */
+	if (0 != psRemove->uiWRefCount)
 	{
-		PVR_DPF_RETURN;
+		PVR_DPF_RETURN_VAL (IMG_FALSE);
 	}
 
+	/* Make stream pointer NULL to prevent it from being destroyed in RemoveAndFreeStreamNode
+	 * Cleanup of stream should be done by the calling context */
+	psRemove->psStream = IMG_NULL;
 	RemoveAndFreeStreamNode(psRemove);
-
-	PVR_DPF_RETURN;
+	
+	PVR_DPF_RETURN_VAL (IMG_TRUE);
 }
 

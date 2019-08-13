@@ -1,14 +1,11 @@
 /*
-** $Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/include/mgmt/p2p_assoc.h#1 $
+** Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/include/mgmt/p2p_assoc.h#1
 */
 
 /*! \file  p2p_assoc.h
     \brief This file contains the Wi-Fi Direct ASSOC REQ/RESP of
-           IEEE 802.11 family for MediaTek 802.11 Wireless LAN Adapters.
+	   IEEE 802.11 family for MediaTek 802.11 Wireless LAN Adapters.
 */
-
-
-
 
 #ifndef _P2P_ASSOC_H
 #define _P2P_ASSOC_H
@@ -53,12 +50,6 @@
 ********************************************************************************
 */
 
-PUINT_8
-p2pBuildReAssocReqFrameCommonIEs (
-    IN P_ADAPTER_T prAdapter,
-    IN P_MSDU_INFO_T prMsduInfo,
-    IN PUINT_8 pucBuffer
-    );
-
+PUINT_8 p2pBuildReAssocReqFrameCommonIEs(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN PUINT_8 pucBuffer);
 
 #endif

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/ehpi/ehpi.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/ehpi/ehpi.c#1
 */
 
 /*! \file   "ehpi.c"
@@ -8,10 +8,8 @@
     Detail description.
 */
 
-
-
 /*
-** $Log: ehpi.c $
+** Log: ehpi.c
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -73,12 +71,9 @@
 *              F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-static BOOL
-kalDevRegRead_impl(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT_32 pu4Value);
+static BOOL kalDevRegRead_impl(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT_32 pu4Value);
 
-static BOOL
-kalDevRegWrite_impl(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_32 u4Value);
-
+static BOOL kalDevRegWrite_impl(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_32 u4Value);
 
 /*******************************************************************************
 *                          F U N C T I O N S
@@ -116,7 +111,6 @@ BOOL kalDevRegRead(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT
 	return TRUE;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to write a 32 bit register value to device.
@@ -147,7 +141,6 @@ BOOL kalDevRegWrite(P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_32 
 	return TRUE;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to read port data from device in unit of byte.
@@ -164,8 +157,7 @@ BOOL kalDevRegWrite(P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_32 
 /*----------------------------------------------------------------------------*/
 BOOL
 kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
-	       IN UINT_16 u2Port,
-	       IN UINT_16 u2Len, OUT PUINT_8 pucBuf, IN UINT_16 u2ValidOutBufSize)
+	       IN UINT_16 u2Port, IN UINT_16 u2Len, OUT PUINT_8 pucBuf, IN UINT_16 u2ValidOutBufSize)
 {
 	UINT_32 i;
 	GLUE_SPIN_LOCK_DECLARATION();
@@ -190,19 +182,13 @@ kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
 	/* 3. data cycle */
 	for (i = 0; i < ALIGN_4(u2Len); i += 4) {
 #if EHPI16
-		*((PUINT_16) & (pucBuf[i])) =
-		    (UINT_16) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFFFF);
-		*((PUINT_16) & (pucBuf[i + 2])) =
-		    (UINT_16) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFFFF);
+		*((PUINT_16) & (pucBuf[i])) = (UINT_16) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFFFF);
+		*((PUINT_16) & (pucBuf[i + 2])) = (UINT_16) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFFFF);
 #elif EHPI8
-		*((PUINT_8) & (pucBuf[i])) =
-		    (UINT_8) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFF);
-		*((PUINT_8) & (pucBuf[i + 1])) =
-		    (UINT_8) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFF);
-		*((PUINT_8) & (pucBuf[i + 2])) =
-		    (UINT_8) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFF);
-		*((PUINT_8) & (pucBuf[i + 3])) =
-		    (UINT_8) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFF);
+		*((PUINT_8) & (pucBuf[i])) = (UINT_8) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFF);
+		*((PUINT_8) & (pucBuf[i + 1])) = (UINT_8) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFF);
+		*((PUINT_8) & (pucBuf[i + 2])) = (UINT_8) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFF);
+		*((PUINT_8) & (pucBuf[i + 3])) = (UINT_8) (readw(prGlueInfo->rHifInfo.mcr_data_base) & 0xFF);
 #endif
 	}
 
@@ -215,7 +201,6 @@ kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
 
 	return TRUE;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -259,16 +244,12 @@ kalDevPortWrite(P_GLUE_INFO_T prGlueInfo,
 	for (i = 0; i < ALIGN_4(u2Len); i += 4) {
 #if EHPI16
 		writew((UINT_32) (*((PUINT_16) & (pucBuf[i]))), prGlueInfo->rHifInfo.mcr_data_base);
-		writew((UINT_32) (*((PUINT_16) & (pucBuf[i + 2]))),
-		       prGlueInfo->rHifInfo.mcr_data_base);
+		writew((UINT_32) (*((PUINT_16) & (pucBuf[i + 2]))), prGlueInfo->rHifInfo.mcr_data_base);
 #elif EHPI8
 		writew((UINT_32) (*((PUINT_8) & (pucBuf[i]))), prGlueInfo->rHifInfo.mcr_data_base);
-		writew((UINT_32) (*((PUINT_8) & (pucBuf[i + 1]))),
-		       prGlueInfo->rHifInfo.mcr_data_base);
-		writew((UINT_32) (*((PUINT_8) & (pucBuf[i + 2]))),
-		       prGlueInfo->rHifInfo.mcr_data_base);
-		writew((UINT_32) (*((PUINT_8) & (pucBuf[i + 3]))),
-		       prGlueInfo->rHifInfo.mcr_data_base);
+		writew((UINT_32) (*((PUINT_8) & (pucBuf[i + 1]))), prGlueInfo->rHifInfo.mcr_data_base);
+		writew((UINT_32) (*((PUINT_8) & (pucBuf[i + 2]))), prGlueInfo->rHifInfo.mcr_data_base);
+		writew((UINT_32) (*((PUINT_8) & (pucBuf[i + 3]))), prGlueInfo->rHifInfo.mcr_data_base);
 #endif
 	}
 
@@ -281,7 +262,6 @@ kalDevPortWrite(P_GLUE_INFO_T prGlueInfo,
 
 	return TRUE;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -323,7 +303,6 @@ BOOL kalDevWriteWithSdioCmd52(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Addr, IN
 	return bRet;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to read a 32 bit register value from device
@@ -337,8 +316,7 @@ BOOL kalDevWriteWithSdioCmd52(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Addr, IN
 * \retval FALSE
 */
 /*----------------------------------------------------------------------------*/
-static BOOL
-kalDevRegRead_impl(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT_32 pu4Value)
+static BOOL kalDevRegRead_impl(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT_32 pu4Value)
 {
 	ASSERT(prGlueInfo);
 
@@ -364,7 +342,6 @@ kalDevRegRead_impl(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT
 	return TRUE;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to write a 32 bit register value to device.
@@ -378,8 +355,7 @@ kalDevRegRead_impl(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, OUT PUINT
 * \retval FALSE
 */
 /*----------------------------------------------------------------------------*/
-static BOOL
-kalDevRegWrite_impl(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_32 u4Value)
+static BOOL kalDevRegWrite_impl(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_32 u4Value)
 {
 	ASSERT(prGlueInfo);
 

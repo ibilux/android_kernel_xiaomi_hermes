@@ -1,0 +1,3 @@
+config MTK_STK3X1X
+	bool "STK3X1X for MediaTek package"
+	default n

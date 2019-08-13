@@ -3,8 +3,6 @@
  *  \brief This file contains the function declaration for hs20.c.
  */
 
-
-
 #ifndef _HS20_H
 #define _HS20_H
 
@@ -34,8 +32,8 @@
 #if CFG_ENABLE_GTK_FRAME_FILTER
 /*For GTK Frame Filter*/
 typedef struct _IPV4_NETWORK_ADDRESS_LIST {
-	UINT_8			ucAddrCount;
-	IPV4_NETWORK_ADDRESS	arNetAddr[1];
+	UINT_8 ucAddrCount;
+	IPV4_NETWORK_ADDRESS arNetAddr[1];
 } IPV4_NETWORK_ADDRESS_LIST, *P_IPV4_NETWORK_ADDRESS_LIST;
 #endif
 
@@ -44,14 +42,13 @@ typedef struct _BSSID_ENTRY_T {
 	UINT_8 aucBSSID[MAC_ADDR_LEN];
 } BSSID_ENTRY_T, P_HS20_BSSID_POOL_ENTRY_T;
 
-
 struct _HS20_INFO_T {
 	/*Hotspot 2.0 Information */
-	UINT_8	aucHESSID[MAC_ADDR_LEN];
-	UINT_8	ucAccessNetworkOptions;
-	UINT_8	ucVenueGroup;	/* VenueInfo - Group */
-	UINT_8	ucVenueType;
-	UINT_8	ucHotspotConfig;
+	UINT_8 aucHESSID[MAC_ADDR_LEN];
+	UINT_8 ucAccessNetworkOptions;
+	UINT_8 ucVenueGroup;	/* VenueInfo - Group */
+	UINT_8 ucVenueType;
+	UINT_8 ucHotspotConfig;
 
 	/*Roaming Consortium Information */
 	/* PARAM_HS20_ROAMING_CONSORTIUM_INFO rRCInfo; */
@@ -65,11 +62,10 @@ struct _HS20_INFO_T {
 
 	/* For SIGMA Test */
 	/* BSSID Pool */
-	BSSID_ENTRY_T	arBssidPool[BSSID_POOL_MAX_SIZE];
-	UINT_8		ucNumBssidPoolEntry;
-	BOOLEAN		fgIsHS2SigmaMode;
+	BSSID_ENTRY_T arBssidPool[BSSID_POOL_MAX_SIZE];
+	UINT_8 ucNumBssidPoolEntry;
+	BOOLEAN fgIsHS2SigmaMode;
 };
-
 
 /*******************************************************************************
  *                            P U B L I C   D A T A
@@ -122,26 +118,21 @@ VOID hs20FillHS20IE(IN P_ADAPTER_T prAdapter, OUT PUINT_8 pucIE);
 
 UINT_32 hs20CalculateHS20RelatedIEForProbeReq(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucTargetBSSID);
 
-WLAN_STATUS
-hs20GenerateHS20RelatedIEForProbeReq(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucTargetBSSID, OUT PUINT_8 prIE);
+WLAN_STATUS hs20GenerateHS20RelatedIEForProbeReq(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucTargetBSSID, OUT PUINT_8 prIE);
 
 BOOLEAN hs20IsGratuitousArp(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prCurrSwRfb);
 
 BOOLEAN hs20IsUnsolicitedNeighborAdv(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prCurrSwRfb);
 
 #if CFG_ENABLE_GTK_FRAME_FILTER
-BOOLEAN
-hs20IsForgedGTKFrame(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN P_SW_RFB_T prCurrSwRfb);
+BOOLEAN hs20IsForgedGTKFrame(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN P_SW_RFB_T prCurrSwRfb);
 #endif
 
-BOOLEAN
-hs20IsUnsecuredFrame(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN P_SW_RFB_T prCurrSwRfb);
+BOOLEAN hs20IsUnsecuredFrame(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN P_SW_RFB_T prCurrSwRfb);
 
 BOOLEAN hs20IsFrameFilterEnabled(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo);
 
-WLAN_STATUS
-hs20SetBssidPool(IN P_ADAPTER_T prAdapter, IN PVOID pvBuffer, IN ENUM_KAL_NETWORK_TYPE_INDEX_T eNetTypeIdx);
+WLAN_STATUS hs20SetBssidPool(IN P_ADAPTER_T prAdapter, IN PVOID pvBuffer, IN ENUM_KAL_NETWORK_TYPE_INDEX_T eNetTypeIdx);
 
-
-#endif				/* CFG_SUPPORT_PASSPOINT */
+#endif /* CFG_SUPPORT_PASSPOINT */
 #endif

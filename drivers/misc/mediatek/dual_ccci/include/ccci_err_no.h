@@ -1,14 +1,14 @@
 #ifndef __CCCI_ERR_NO_H__
 #define __CCCI_ERR_NO_H__
 
-// CCCI error number region
+/*  CCCI error number region */
 #define CCCI_ERR_MODULE_INIT_START_ID   (0)
 #define CCCI_ERR_COMMON_REGION_START_ID    (100)
 #define CCCI_ERR_CCIF_REGION_START_ID    (200)
 #define CCCI_ERR_CCCI_REGION_START_ID    (300)
 #define CCCI_ERR_LOAD_IMG_START_ID        (400)
 
-// CCCI error number
+/*  CCCI error number */
 #define CCCI_ERR_MODULE_INIT_OK                      (CCCI_ERR_MODULE_INIT_START_ID+0)
 #define CCCI_ERR_INIT_DEV_NODE_FAIL                 (CCCI_ERR_MODULE_INIT_START_ID+1)
 #define CCCI_ERR_INIT_PLATFORM_FAIL                 (CCCI_ERR_MODULE_INIT_START_ID+2)
@@ -23,7 +23,7 @@
 #define CCCI_ERR_INIT_CCMNI_FAIL                    (CCCI_ERR_MODULE_INIT_START_ID+11)
 #define CCCI_ERR_INIT_VIR_CHAR_FAIL                 (CCCI_ERR_MODULE_INIT_START_ID+12)
 
-// ---- Common
+/*  ---- Common */
 #define CCCI_ERR_FATAL_ERR                            (CCCI_ERR_COMMON_REGION_START_ID+0)
 #define CCCI_ERR_ASSERT_ERR                            (CCCI_ERR_COMMON_REGION_START_ID+1)
 #define CCCI_ERR_MD_IN_RESET                        (CCCI_ERR_COMMON_REGION_START_ID+2)
@@ -36,7 +36,7 @@
 #define CCCI_ERR_MEM_CHECK_FAIL                        (CCCI_ERR_COMMON_REGION_START_ID+9)
 #define CCCI_IPO_H_RESTORE_FAIL                        (CCCI_ERR_COMMON_REGION_START_ID+10)
 
-// ---- CCIF
+/*  ---- CCIF */
 #define CCCI_ERR_CCIF_NOT_READY                        (CCCI_ERR_CCIF_REGION_START_ID+0)
 #define CCCI_ERR_CCIF_CALL_BACK_HAS_REGISTERED        (CCCI_ERR_CCIF_REGION_START_ID+1)
 #define CCCI_ERR_CCIF_GET_NULL_POINTER                (CCCI_ERR_CCIF_REGION_START_ID+2)
@@ -46,7 +46,7 @@
 #define CCCI_ERR_CCIF_INVALID_MD_SYS_ID                (CCCI_ERR_CCIF_REGION_START_ID+6)
 #define CCCI_ERR_CCIF_GET_HW_INFO_FAIL                (CCCI_ERR_CCIF_REGION_START_ID+9)
 
-// ---- CCCI
+/*  ---- CCCI */
 #define CCCI_ERR_INVALID_LOGIC_CHANNEL_ID            (CCCI_ERR_CCCI_REGION_START_ID+0)
 #define CCCI_ERR_PUSH_RX_DATA_TO_TX_CHANNEL            (CCCI_ERR_CCCI_REGION_START_ID+1)
 #define CCCI_ERR_REG_CALL_BACK_FOR_TX_CHANNEL        (CCCI_ERR_CCCI_REGION_START_ID+2)
@@ -64,7 +64,7 @@
 #define CCCI_ERR_MD_AT_EXCEPTION                    (CCCI_ERR_CCCI_REGION_START_ID+14)
 #define CCCI_ERR_MD_CB_HAS_REGISTER                    (CCCI_ERR_CCCI_REGION_START_ID+15)
 
-// ---- Load image error
+/*  ---- Load image error */
 #define CCCI_ERR_LOAD_IMG_NOMEM                        (CCCI_ERR_LOAD_IMG_START_ID+0)
 #define CCCI_ERR_LOAD_IMG_FILE_OPEN                    (CCCI_ERR_LOAD_IMG_START_ID+1)
 #define CCCI_ERR_LOAD_IMG_FILE_READ                    (CCCI_ERR_LOAD_IMG_START_ID+2)
@@ -80,4 +80,4 @@
 #define CCCI_ERR_LOAD_IMG_DSP_CHECK                    (CCCI_ERR_LOAD_IMG_START_ID+12)
 #define CCCI_ERR_LOAD_IMG_ABNORAL_SIZE                (CCCI_ERR_LOAD_IMG_START_ID+13)
 
-#endif  //__CCCi_ERR_NO_H__
+#endif				/* __CCCi_ERR_NO_H__ */

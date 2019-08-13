@@ -44,10 +44,10 @@ void sbchk_dump(unsigned char* buf, unsigned int len)
 
     for (i =1; i <len+1; i++)
     {                
-        printk("%02x",buf[i-1]);        
+        pr_debug("%02x",buf[i-1]);        
     }
     
-    printk("\n");    
+    pr_debug("\n");    
 }
 
 void sbchk_hex_string(unsigned char* buf, unsigned int len)
@@ -56,10 +56,10 @@ void sbchk_hex_string(unsigned char* buf, unsigned int len)
 
     for (i =1; i <len+1; i++)
     {                
-        printk("%c",buf[i-1]);        
+        pr_debug("%c",buf[i-1]);        
     }
     
-    printk("\n");    
+    pr_debug("\n");    
 }
 
 /**************************************************************************
@@ -116,31 +116,31 @@ void sbchk_test(void)
     sbchk_sha1(code2,strlen(code2),hash_rs2);
     sbchk_sha1(code3,strlen(code3),hash_rs3);    
 
-    printk("[%s] dump result 1:\n",MOD);
+    pr_debug("[%s] dump result 1:\n",MOD);
     sbchk_dump(hash_rs1,HASH_OUTPUT_LEN);
-    printk("[%s] dump result 2:\n",MOD);    
+    pr_debug("[%s] dump result 2:\n",MOD);    
     sbchk_dump(hash_rs2,HASH_OUTPUT_LEN);        
-    printk("[%s] dump result 3:\n",MOD);    
+    pr_debug("[%s] dump result 3:\n",MOD);    
     sbchk_dump(hash_rs3,HASH_OUTPUT_LEN);            
 
     if(memcmp(hash_rs1,hash_rs2,HASH_OUTPUT_LEN) != 0)
     {
-        printk("[%s] <1>code1 != code2. TEST PASS\n",MOD);
+        pr_debug("[%s] <1>code1 != code2. TEST PASS\n",MOD);
     }
     else
     {
-        printk("[%s] <1>code1 == code2. TEST FAIL (KERNEL SHA1 FAIL)\n",MOD);
+        pr_debug("[%s] <1>code1 == code2. TEST FAIL (KERNEL SHA1 FAIL)\n",MOD);
         ASSERT(0);
     }
 
     if(memcmp(hash_rs1,hash_rs3,HASH_OUTPUT_LEN) != 0)
     {
-        printk("[%s] <1>code1 != code3. TEST FAIL (KERNEL SHA1 FAIL)\n",MOD);
+        pr_debug("[%s] <1>code1 != code3. TEST FAIL (KERNEL SHA1 FAIL)\n",MOD);
         ASSERT(0);        
     }
     else
     {
-        printk("[%s] <1>code1 == code3. TEST PASS\n",MOD);
+        pr_debug("[%s] <1>code1 == code3. TEST PASS\n",MOD);
     }
     
     kfree(hash_rs1);
@@ -171,7 +171,7 @@ unsigned int sbchk_verify(char* file_path, char* hash_val)
     fd = filp_open(file_path, O_RDONLY, 0);
     if (fd < 0) 
     {
-        printk("[%s] Open '%s' fail\n",MOD,file_path);     
+        pr_debug("[%s] Open '%s' fail\n",MOD,file_path);     
         ret = SBCHK_BASE_OPEN_FAIL;
         goto _end;        
     }
@@ -186,7 +186,7 @@ unsigned int sbchk_verify(char* file_path, char* hash_val)
     /* ----------------------- */    
     inode=fd->f_dentry->d_inode;  
     file_size=inode->i_size; 
-    printk("[%s] '%s' exists ('%d' byets)\n",MOD,file_path,file_size);
+    pr_debug("[%s] '%s' exists ('%d' byets)\n",MOD,file_path,file_size);
     buf = (char *)kmalloc(file_size,GFP_KERNEL);
     hash_rs = (char *)kmalloc(HASH_OUTPUT_LEN,GFP_KERNEL);
     bBufAllocated = TRUE;
@@ -198,17 +198,17 @@ unsigned int sbchk_verify(char* file_path, char* hash_val)
     if(0 >= (file_size = fd->f_op->read(fd,buf,file_size,&fd->f_pos)))
     {        
         ret = SBCHK_BASE_READ_FAIL;
-        printk("[%s] Read '%s' '%d' byets fail\n",MOD,file_path,file_size);
+        pr_debug("[%s] Read '%s' '%d' byets fail\n",MOD,file_path,file_size);
         goto _end;
     }
 
-    printk("[%s] Read '%s' '%d' byets\n",MOD,file_path,file_size);     
+    pr_debug("[%s] Read '%s' '%d' byets\n",MOD,file_path,file_size);     
 
     /* ----------------------- */
     /* calculate hash          */
     /* ----------------------- */
     sbchk_sha1(buf,file_size,hash_rs);
-    printk("[%s] Calculate the hash value of '%s' = \n",MOD,file_path);     
+    pr_debug("[%s] Calculate the hash value of '%s' = \n",MOD,file_path);     
     sbchk_dump(hash_rs,HASH_OUTPUT_LEN); 
 
 
@@ -233,14 +233,14 @@ unsigned int sbchk_verify(char* file_path, char* hash_val)
         /* compare hash value */
         if(memcmp(hash_rsn,hash_val,HASH_OUTPUT_LEN) != 0)
         {            
-            printk("[%s] Hash check fail. The value should be \n",MOD);
+            pr_debug("[%s] Hash check fail. The value should be \n",MOD);
             sbchk_hex_string(hash_val,HASH_OUTPUT_LEN*2); 
             ret = SBCHK_BASE_HASH_CHECK_FAIL;
             goto _end;
         }
         else
         {
-            printk("[%s] Hash check pass\n",MOD);
+            pr_debug("[%s] Hash check pass\n",MOD);
             sbchk_hex_string(hash_val,HASH_OUTPUT_LEN*2); 
         }
     }
@@ -274,7 +274,7 @@ void sbchk_base(void)
     if(FALSE == bIsChecked)
     {
         bIsChecked = TRUE;
-        printk("[%s] Enter\n",MOD);     
+        pr_debug("[%s] Enter\n",MOD);     
 
         /* --------------------------------- */ 
         /* test sbchk_sha1                   */
@@ -289,7 +289,7 @@ void sbchk_base(void)
         if(SEC_OK != (ret = sbchk_verify(SBCHK_ENGINE_PATH,SBCHK_ENGINE_HASH)))
         {            
             msleep(20000);
-            printk("[%s] Verify '%s' fail. ret '%x'\n",MOD,SBCHK_ENGINE_PATH,ret);
+            pr_debug("[%s] Verify '%s' fail. ret '%x'\n",MOD,SBCHK_ENGINE_PATH,ret);
             /* punishment can be customized */
             ASSERT(0);
         }    
@@ -300,7 +300,7 @@ void sbchk_base(void)
         if(SEC_OK != (ret = sbchk_verify(SBCHK_MODULE_PATH,SBCHK_MODULE_HASH)))
         {            
             msleep(20000);
-            printk("[%s] Verify '%s' fail. ret '%x'\n",MOD,SBCHK_MODULE_PATH,ret);
+            pr_debug("[%s] Verify '%s' fail. ret '%x'\n",MOD,SBCHK_MODULE_PATH,ret);
             /* punishment can be customized */
             ASSERT(0);
         }
@@ -311,7 +311,7 @@ void sbchk_base(void)
         if(SEC_OK != (ret = sbchk_verify(MODEM_CORE_MODULE_PATH,MODEM_CORE_MODULE_HASH)))
         {            
             msleep(20000);
-            printk("[%s] Verify '%s' fail. ret '%x'\n",MOD,MODEM_CORE_MODULE_PATH,ret);
+            pr_debug("[%s] Verify '%s' fail. ret '%x'\n",MOD,MODEM_CORE_MODULE_PATH,ret);
             /* punishment can be customized */
             ASSERT(0);
         }
@@ -322,7 +322,7 @@ void sbchk_base(void)
         if(SEC_OK != (ret = sbchk_verify(MODEM_PLAT_MODULE_PATH,MODEM_PLAT_MODULE_HASH)))
         {            
             msleep(20000);
-            printk("[%s] Verify '%s' fail. ret '%x'\n",MOD,MODEM_PLAT_MODULE_PATH,ret);
+            pr_debug("[%s] Verify '%s' fail. ret '%x'\n",MOD,MODEM_PLAT_MODULE_PATH,ret);
             /* punishment can be customized */
             ASSERT(0);
         }
@@ -334,7 +334,7 @@ void sbchk_base(void)
         if(SEC_OK != (ret = sbchk_verify(INIT_RC_PATH,INIT_RC_HASH)))
         {            
             msleep(20000);
-            printk("[%s] Verify '%s' fail. ret '%x'\n",MOD,INIT_RC_PATH,ret);
+            pr_debug("[%s] Verify '%s' fail. ret '%x'\n",MOD,INIT_RC_PATH,ret);
             /* punishment can be customized */
             ASSERT(0);
         }        
