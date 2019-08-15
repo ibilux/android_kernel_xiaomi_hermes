@@ -287,6 +287,10 @@ static int call_undef_hook(struct pt_regs *regs, unsigned int instr)
 	return fn ? fn(regs, instr) : 1;
 }
 
+volatile static void __user *prev_undefinstr_pc=0;
+volatile static int prev_undefinstr_counter=0;
+volatile static unsigned long prev_undefinstr_curr=0;
+ 
 asmlinkage void __exception do_undefinstr(struct pt_regs *regs)
 {
 	u32 instr;
@@ -325,6 +329,54 @@ die_sig:
 		pr_info("%s[%d]: undefined instruction: pc=%p\n",
 			current->comm, task_pid_nr(current), pc);
 		dump_instr(KERN_INFO, regs);
+	}
+
+	/* Place the SIGILL ICache Invalidate after the Debugger Undefined-Instruction Solution. */
+	if ((user_mode(regs)) || processor_mode(regs) == PSR_MODE_EL1h) {
+                /* Only do it for User-Space Application. */
+		pr_alert("USR_MODE / SVC_MODE Undefined Instruction Address curr:%p pc=%p:%p, compat: %s\n",
+			(void *)current, (void *)pc, (void *)prev_undefinstr_pc,
+			is_compat_task() ? "yes" : "no");
+		if ((prev_undefinstr_pc != pc) || (prev_undefinstr_curr != (unsigned long)current)) {
+			/* If the current process or program counter is changed......renew the counter. */
+			pr_alert("First Time Recovery curr:%p pc=%p:%p\n",
+				(void *)current, (void *)pc, (void *)prev_undefinstr_pc);
+			prev_undefinstr_pc = pc;
+			prev_undefinstr_curr = (unsigned long)current;
+			prev_undefinstr_counter = 0;
+			__flush_icache_all();
+			flush_cache_all();
+			/* 
+			 * undo cpu_excp to cancel nest_panic code, see entry.S
+			 */
+			if (!user_mode(regs)) {
+				thread->cpu_excp--;
+			}
+			return;
+		}
+		else if(prev_undefinstr_counter < 1) {
+			pr_alert("2nd Time Recovery curr:%p pc=%p:%p\n",
+				(void *)current, (void *)pc, (void *)prev_undefinstr_pc);
+			prev_undefinstr_counter++;
+			__flush_icache_all();
+			flush_cache_all();
+			/* 
+			 * undo cpu_excp to cancel nest_panic code, see entry.S
+			 */
+			if (!user_mode(regs)) {
+				thread->cpu_excp--;
+			}
+			return;
+		}
+		prev_undefinstr_counter++;
+		if(prev_undefinstr_counter >= 4) {
+			/* 2=first time SigILL,3=2nd time NE-SigILL,4=3rd time CoreDump-SigILL */
+			prev_undefinstr_pc = 0;
+			prev_undefinstr_curr = 0;
+			prev_undefinstr_counter = 0;
+		}
+		pr_alert("Go to ARM Notify Die curr:%p pc=%p:%p\n",
+			(void *)current, (void *)pc, (void *)prev_undefinstr_pc);
 	}
 
 	info.si_signo = SIGILL;

@@ -63,6 +63,7 @@ static void acc_work_func(struct work_struct *work)
 {
 
 	struct acc_context *cxt = NULL;
+	/* hwm_sensor_data sensor_data; */
 	int x, y, z, status;
 	int64_t pre_ns, cur_ns;
 	int64_t delay_ms;

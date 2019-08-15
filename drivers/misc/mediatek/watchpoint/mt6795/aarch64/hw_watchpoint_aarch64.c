@@ -18,7 +18,7 @@ struct wp_trace_context_t wp_tracer;
 #ifdef WATCHPOINT_TEST_SUIT
 struct wp_event wp_event;
 int err;
-int my_watch_data;
+volatile int my_watch_data;
 int wp_flag;
 
 int my_wp_handler1(unsigned long addr)

@@ -20,10 +20,8 @@ struct swtp_sysfs_obj {
 
 struct swtp_sysfs_attribute {
 	struct attribute attr;
-	 ssize_t(*show) (struct swtp_sysfs_obj *swtp_sysfs, struct swtp_sysfs_attribute *attr,
-			 char *buf);
-	 ssize_t(*store) (struct swtp_sysfs_obj *swtp_sysfs, struct swtp_sysfs_attribute *attr,
-			  const char *buf, size_t len);
+	ssize_t (*show)(struct swtp_sysfs_obj *swtp_sysfs, struct swtp_sysfs_attribute *attr, char *buf);
+	ssize_t (*store)(struct swtp_sysfs_obj *swtp_sysfs, struct swtp_sysfs_attribute *attr, const char *buf, size_t len);
 };
 
 #define to_swtp_sysfs_attr(x)	container_of(x, struct swtp_sysfs_attribute, attr)

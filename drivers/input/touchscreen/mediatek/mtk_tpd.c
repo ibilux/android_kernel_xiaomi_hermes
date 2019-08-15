@@ -323,6 +323,8 @@ static int tpd_remove(struct platform_device *pdev);
 #ifndef CONFIG_HAS_EARLYSUSPEND
 static int tpd_suspend_flag = 0;
 #endif
+extern void tpd_suspend(struct early_suspend *h);
+extern void tpd_resume(struct early_suspend *h);
 extern void tpd_button_init(void);
 
 /* int tpd_load_status = 0; //0: failed, 1: sucess */
@@ -356,9 +358,11 @@ static struct platform_driver tpd_driver = {
 	.shutdown = NULL,
 	.probe = tpd_probe,
 	.driver = {
-		   .name = TPD_DEVICE,		   	
+		   .name = TPD_DEVICE,
 #ifndef CONFIG_HAS_EARLYSUSPEND
 		   .pm = &tpd_pm_ops,
+		   .suspend = NULL,
+		   .resume = NULL,
 #endif
 		   	.owner = THIS_MODULE,
 #if !defined(CONFIG_MTK_LEGACY)
@@ -416,6 +420,7 @@ static int tpd_fb_notifier_callback(struct notifier_block *self, unsigned long e
 	return 0;
 }
 #endif
+
 /* Add driver: if find TPD_TYPE_CAPACITIVE driver sucessfully, loading it */
 int tpd_driver_add(struct tpd_driver_t *tpd_drv)
 {

@@ -170,9 +170,9 @@ struct mmc_blk_data {
 	unsigned int usage;
 	unsigned int read_only;
 };
-static bool emmc_sleep_failed;
+static bool emmc_sleep_failed = 0;
 
-static int emmc_do_sleep_awake;
+static int emmc_do_sleep_awake = 0;
 
 #if defined(FEATURE_MET_MMC_INDEX)
 static unsigned int met_mmc_bdnum;
@@ -3693,6 +3693,7 @@ static bool msdc_cal_offset(struct msdc_host *host)
 #endif
 #endif
 
+int g_rom_size1 = 0;
 u64 msdc_get_capacity(int get_emmc_total)
 {
 	u64 user_size = 0;
@@ -3702,6 +3703,8 @@ u64 msdc_get_capacity(int get_emmc_total)
 	for (index = 0; index < HOST_MAX_NUM; ++index) {
 		if ((mtk_msdc_host[index] != NULL) && (mtk_msdc_host[index]->hw->boot)) {
 			user_size = msdc_get_user_capacity(mtk_msdc_host[index]);
+			g_rom_size1 = user_size/(1024*1024);
+			pr_debug("%s, g_rom_size1 = %d \n", __func__, g_rom_size1);
 #ifdef CONFIG_MTK_EMMC_SUPPORT
 			if (get_emmc_total) {
 				if (mmc_card_mmc(mtk_msdc_host[index]->mmc->card))

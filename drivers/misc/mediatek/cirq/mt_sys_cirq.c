@@ -845,3 +845,8 @@ int __init mt_cirq_init(void)
 }
 
 arch_initcall(mt_cirq_init);
+EXPORT_SYMBOL(mt_cirq_enable);
+EXPORT_SYMBOL(mt_cirq_disable);
+EXPORT_SYMBOL(mt_cirq_clone_gic);
+EXPORT_SYMBOL(mt_cirq_flush);
+

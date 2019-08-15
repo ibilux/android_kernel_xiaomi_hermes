@@ -88,9 +88,21 @@ static int __cpuinit boot_secondary(unsigned int cpu, struct task_struct *idle)
 
 static DECLARE_COMPLETION(cpu_running);
 
+#define mt_reg_sync_writel(v, a)	mt65xx_reg_sync_writel(v, a)
+
+#define mt65xx_reg_sync_writel(v, a) \
+        do {    \
+            __raw_writel((v), IOMEM((a)));   \
+            dsb();  \
+        } while (0)
+
+#define REG_READ(addr)   (*(volatile u32 *)(addr))
+#define REG_WRITE(addr, value) mt_reg_sync_writel(value, addr)
+
 extern int check_pmic_wrap_init(void);
 extern void mt_pwrap_hal_init(void);
 extern void pmic_full_reset(void);
+
 int __cpuinit __cpu_up(unsigned int cpu, struct task_struct *idle)
 {
 	int ret,res;

@@ -43,6 +43,8 @@
 #define TPD_DEBUG(arg...)
 #endif
 
+#define CONFIG_DEVINFO_CTP	//add by lizhiye, for tp info
+
 /* register, address, configurations */
 #define TPD_DEVICE            "mtk-tpd"
 #define TPD_X                  0

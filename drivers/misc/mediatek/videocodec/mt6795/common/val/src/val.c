@@ -1,3 +1,22 @@
+/**
+ * @file
+ *   val.c
+ *
+ * @par Project:
+ *   MFlexVideo
+ *
+ * @par Description:
+ *   Video Abstraction Layer API implementations
+ *
+ * @par Author:
+ *   Jackal Chen (mtk02532)
+ *
+ * @par $Revision: #2 $
+ * @par $Modtime:$
+ * @par $Log:$
+ *
+ */
+
 /*=============================================================================
  *                              Include Files
  *===========================================================================*/

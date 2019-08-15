@@ -1,6 +1,6 @@
 
 config CUSTOM_KERNEL_STEP_COUNTER
-	bool "CUSTOM_KERNEL_STEP_COUNTER"
+	string "CUSTOM_KERNEL_STEP_COUNTER"
 	help
 	  Kernel space step counter driver.
           A pedometer is a device, usually portable and electronic
@@ -8,7 +8,7 @@ config CUSTOM_KERNEL_STEP_COUNTER
           by detecting the motion of the person's hands or hips.
 
 config CUSTOM_KERNEL_SIGNIFICANT_MOTION_SENSOR
-	bool "CUSTOM_KERNEL_SIGNIFICANT_MOTION_SENSOR"
+	string "CUSTOM_KERNEL_SIGNIFICANT_MOTION_SENSOR"
 	help
 	  Kernel space sigificant motion sensor driver.
           A motion detector is often integrated as a component

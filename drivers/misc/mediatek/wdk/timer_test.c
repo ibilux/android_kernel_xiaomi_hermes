@@ -45,20 +45,20 @@
 
 /* extern int nr_cpu_ids; */
 /* int enable_clock(int id, unsigned char *name); */
-static int test_case;
+static int test_case  = 0;
 
-static int ts_msleep;
-static int msleep_times;
+static int ts_msleep  = 0;
+static int msleep_times = 0;
 
-static int ts_mdelay;
-static int mdelay_times;
+static int ts_mdelay  = 0;
+static int mdelay_times = 0;
 
-static int ts_udelay;
-static int udelay_times;
+static int ts_udelay  = 0;
+static int udelay_times = 0;
 
-static long ts_hrtimer_sec;
-static unsigned long ts_hrtimer_nsecs;
-static int ts_hrtimer_times;
+static long ts_hrtimer_sec  = 0;
+static unsigned long ts_hrtimer_nsecs = 0;
+static int ts_hrtimer_times = 0;
 
 static struct hrtimer hrtimer_test;
 u64 hr_t1 = 0;
@@ -178,8 +178,17 @@ static int mdelay_test(int length, int times)
 
 }
 
-
-static int phycical_count_test(void)
+/*
+#define read_cntpct(cntpct_lo, cntpct_hi)   \
+do {    \
+    __asm__ __volatile__(   \
+    "MRRC p15, 0, %0, %1, c14\n"    \
+    :"=r"(cntpct_lo), "=r"(cntpct_hi)   \
+    :   \
+    :"memory"); \
+} while (0)
+*/
+static int phycical_count_test()
 {
 	unsigned int cntpct_lo1 = 0;
 	unsigned int cntpct_hi1 = 0;

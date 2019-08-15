@@ -41,7 +41,7 @@
 #include "kd_imgsensor_errcode.h"
 
 #include "ov5670_flt_2nd_mipi_Sensor.h"
-//#include <linux/dev_info.h>
+#include <linux/dev_info.h>
 
 #define PFX "ov5670_camera_sensor"
 
@@ -1615,7 +1615,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 	kal_uint8 i = 0;
 	kal_uint8 retry = 2;
 	//kal_uint16 module_id;
-	//struct devinfo_struct *dev_ofilm, *dev_sunny;//(struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
+	struct devinfo_struct *dev_ofilm, *dev_sunny;//(struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
     static kal_uint8 devinfo_add = 2;
     // dev->device_type = "Camera";
     // dev->device_vendor = "Ofilm";
@@ -1645,7 +1645,8 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 				    dev_ofilm->device_version = DEVINFO_NULL;
 				    dev_ofilm->device_module = DEVINFO_NULL;
 				    dev_ofilm->device_info = DEVINFO_NULL;
-				    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);
+				    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);*/
+				    
 				    dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 				    dev_sunny->device_type = "Camera";
 				    dev_sunny->device_vendor = &Module_information;//"Sunny_flt";
@@ -1653,7 +1654,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 				    dev_sunny->device_version = DEVINFO_NULL;
 				    dev_sunny->device_module = DEVINFO_NULL;
 				    dev_sunny->device_info = DEVINFO_NULL;
-				    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_sunny);*/
+				    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_sunny);
 				    LOG_INF("<%s:%d>Module_Id:%x\n", __func__, __LINE__, Module_Id);
 				    LOG_INF("<%s:%d>IR_Id_flt:%x\n", __func__, __LINE__, IR_Id);
 				if (IR_Id == 0x02)
@@ -1666,23 +1667,23 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 				    	// 	break;
 				    	case 0x01:
 				    		//dev_ofilm->device_used = DEVINFO_UNUSED;
-				    		//dev_sunny->device_used = DEVINFO_USED;
+				    		dev_sunny->device_used = DEVINFO_USED;
 				    		*sensor_id = OV5670_FLT_2ND_MIPI_RAW_SENSOR_ID;
 				    		break;
 				    	default :
-				    		//dev_sunny->device_used = DEVINFO_UNUSED;
+				    		dev_sunny->device_used = DEVINFO_UNUSED;
 				    		*sensor_id = 0xFFFFFFFF;
 				    		break;
 				    }
 				}
 				else
 				{
-						//dev_sunny->device_used = DEVINFO_UNUSED;
-				    		*sensor_id = 0xFFFFFFFF;
+						dev_sunny->device_used = DEVINFO_UNUSED;
+				    	*sensor_id = 0xFFFFFFFF;
 				}
 			    	//dev_ofilm->device_used = DEVINFO_USED;
 			    	//DEVINFO_CHECK_ADD_DEVICE(dev_ofilm);
-			    	//DEVINFO_CHECK_ADD_DEVICE(dev_sunny);
+			    	DEVINFO_CHECK_ADD_DEVICE(dev_sunny);
 			    	devinfo_add = 0;
 			    }	  
 				return ERROR_NONE;
@@ -1707,7 +1708,8 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		    dev_ofilm->device_version = DEVINFO_NULL;
 		    dev_ofilm->device_module = DEVINFO_NULL;
 		    dev_ofilm->device_info = DEVINFO_NULL;
-		    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);
+		    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);*/
+		    
 		    dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 		    dev_sunny->device_type = "Camera";
 		    dev_sunny->device_vendor = &Module_information;//"Sunny_flt";
@@ -1715,13 +1717,13 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		    dev_sunny->device_version = DEVINFO_NULL;
 		    dev_sunny->device_module = DEVINFO_NULL;
 		    dev_sunny->device_info = DEVINFO_NULL;
-		    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_sunny);*/
+		    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_sunny);
 		    //dev_ofilm->device_used = DEVINFO_UNUSED;
-		    //dev_sunny->device_used = DEVINFO_UNUSED;
+		    dev_sunny->device_used = DEVINFO_UNUSED;
 		    
 	    	//dev_ofilm->device_used = DEVINFO_USED;
 	    	//DEVINFO_CHECK_ADD_DEVICE(dev_ofilm);
-	    	//DEVINFO_CHECK_ADD_DEVICE(dev_sunny);
+	    	DEVINFO_CHECK_ADD_DEVICE(dev_sunny);
     		devinfo_add = 0;
     	}
     	else

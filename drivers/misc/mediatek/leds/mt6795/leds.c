@@ -43,10 +43,10 @@ static unsigned int bl_duty_hal = 21;
 static unsigned int bl_div_hal = CLK_DIV1;
 static unsigned int bl_frequency_hal = 32000;
 /* for button led don't do ISINK disable first time */
-static int button_flag_isink0;
-static int button_flag_isink1;
-static int button_flag_isink2;
-static int button_flag_isink3;
+static int button_flag_isink0 = 0;
+static int button_flag_isink1 = 0;
+static int button_flag_isink2 = 0;
+static int button_flag_isink3 = 0;
 /* for backlight to remember the last backlight level status */
 #ifdef IWLED_SUPPORT
 static int last_level = 1;

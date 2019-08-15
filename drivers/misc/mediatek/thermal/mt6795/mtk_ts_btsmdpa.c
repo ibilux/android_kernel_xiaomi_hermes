@@ -18,14 +18,14 @@
 #include "mach/mt_thermal.h"
 #include "tmp_bts.h"
 
-static unsigned int interval;	/* seconds, 0 : no auto polling */
+static unsigned int interval = 0;	/* seconds, 0 : no auto polling */
 static int trip_temp[10] = { 120000, 110000, 100000, 90000, 80000, 70000, 65000, 60000, 55000, 50000 };
 static struct thermal_zone_device *thz_dev;
-static int mtkts_btsmdpa_debug_log;
-static int kernelmode;
+static int mtkts_btsmdpa_debug_log = 0;
+static int kernelmode = 0;
 static int g_THERMAL_TRIP[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-static int num_trip;
+static int num_trip = 0;
 static char g_bind0[20] = { 0 };
 static char g_bind1[20] = { 0 };
 static char g_bind2[20] = { 0 };

@@ -1,6 +1,44 @@
 # TODO naming refine
 menu "Kernel Configurations"
 
+menu "MTK Cluster MultiProcessor Scheduler"
+config MTK_SCHED_CMP
+        bool "Enable CMP scheduler"
+        depends on SMP && SCHED_MC
+        default n
+        help
+          CMP Scheduler Enhancement for MTK SoC.
+          Attempts to introspectively select tasks to optimize
+          energy and performance.
+          say no if not sure.
+
+config MTK_SCHED_CMP_TGS
+        bool "Enable thread group scheduling"
+        depends on MTK_SCHED_CMP
+        default n
+
+config MTK_SCHED_CMP_TGS_WAKEUP
+        bool "Enable thread group scheduling"
+        depends on MTK_SCHED_CMP_TGS
+        default n
+
+config MTK_SCHED_CMP_PACK_SMALL_TASK
+        bool "Packing small task"
+        depends on MTK_SCHED_CMP && MTK_SCHED_CMP_TGS
+        default n
+
+config MTK_SCHED_CMP_LAZY_BALANCE
+        bool "Enable CMP lazy balance"
+        depends on MTK_SCHED_CMP_PACK_SMALL_TASK
+        default n
+
+config MTK_SCHED_CMP_POWER_AWARE_CONTROLLER
+	bool "(EXPERIMENTAL) Power-aware Scheduler for MP Controller"
+	depends on MTK_SCHED_CMP_PACK_SMALL_TASK && MTK_SCHED_CMP_LAZY_BALANCE
+	help
+		Power-aware scheduler for MP controller and status interface
+endmenu
+
 menu "Tracer Related"
 config MTK_SCHED_TRACERS
 	bool "MTK Sched Tracers"
@@ -25,11 +63,22 @@ config MTK_KERNEL_MARKER
 	  Mark the user-defined points, such as systrace events in
 	  user space, to visualize via systrace html files
 
+config FUNCTION_DURATION_TRACER
+	bool "Kernel Function Duration Tracer"
+	depends on FUNCTION_GRAPH_TRACER
+	help
+	  Enable the kernel to record function durations, with
+	  filtering.  Can also be used in early startup.
+	  See Documentation/trace/func-duration.txt
+
 config MT65XX_TRACER
 	bool "MT65XX Tracer"
 	select CONTEXT_SWITCH_TRACER
 	select GENERIC_TRACER
 	default n
+
+config GENERIC_TRACER
+	bool "Scheduler Switch Tracer"
 
 menu "MET"
 
@@ -97,6 +146,9 @@ config MTPROF_CPUTIME
 
 endmenu
 
+config MTPROF_IRQ_DURATION
+	bool "mt IRQ/ISR profiling"
+
 config MTK_AEE_FEATURE
 	tristate "Enable Android Exception Enhancement"
 	default n
@@ -124,6 +176,15 @@ config ANDROID_VMEM
 	tristate "Virutally continuous memory allocator"
 	default y
 
+config CPUTIME_SUPPORT
+	bool "cputime profiling support for functions"
+	default n
+
+config CPUTIME_STATS
+	tristate "cputime profiling module for functions"
+	select CPUTIME_SUPPORT
+	default n
+	
 config MTK_RAM_CONSOLE
 	bool "mt ram console" 
 
@@ -245,8 +306,13 @@ config MTK_MEMCFG
 	bool "Support enhanced memory configurations"
 	depends on MTK_MEM
 	default n
+	help
 
 menu "MT load balance and schedule enhancement"
+config MT_SCHED
+	bool "Enhance CPU affinity in hotplug"	
+ 	depends on HOTPLUG
+
 config MT_LOAD_BALANCE_ENHANCEMENT
 	bool "mt load balance enhancement"
 	depends on  SMP
@@ -274,6 +340,13 @@ config MT_SCHED_INTEROP
 config MT_SCHED_TRACE
 	bool "mt scheduling trace, output mtk schedule trace into FTRACE"
 	default n
+
+config MT_SCHED_NOTICE
+	bool "mt scheduling log, output important log into FTRACE, ftrace event: sched_log, default ENABLE"
+
+config MT_SCHED_INFO
+	bool "mt scheduling log, output detail flow info info FTRACE, ftrace event: sched_log"
+	depends on MT_SCHED_NOTICE
 
 config MT_SCHED_DEBUG
 	bool "mt scheduling log, also output the scheduling log into Kernel log"
@@ -342,10 +415,29 @@ config MTK_HIBERNATION
 	default y
 	help
 
+config MT_PRIO_TRACER
+	bool "Record priority changes"
+	default n
+	help
+	  Export device node under debugfs/prio_tracer
+
 config MTK_WQ_DEBUG
 	bool "mtk workqueue debug"
 	default n
 
+config MTK_SCHED_RQAVG_US
+	bool "Enable runqueue staticsic calculation used in user space operation"
+	depends on SMP
+	default n
+	help
+	  TLP estimation for user space CPUfreq governors
+
+config MTK_SCHED_RQAVG_KS
+	bool "Enable runqueue staticsic calculation used in kernel space operation"
+	depends on SMP
+	default n
+	help
+	  TLP estimation for kernel space CPUfreq governors, e.g., hotplug
 
 config MTK_STORAGE_PID_LOGGER
 	bool "support MTK storage pid logger"
@@ -386,6 +478,12 @@ config MTK_IPV6_TETHER_NDP_MODE
 	  is NDP mode or RADVD mode during IPv6 tethering yes: enable NDP
 	  mode during IPv6 tethering no: disable enable NDP mode during IPv6
 	  tethering
+
+config MTK_EMMC_SUPPORT_OTP
+	tristate "MediaTek eMMC Card OTP support"
+	depends on MTK_EMMC_SUPPORT
+	help
+	  support ont time program on EMMC
 
 config MTK_TETHERINGIPV6_SUPPORT
 	bool "MTK_TETHERINGIPV6_SUPPORT"

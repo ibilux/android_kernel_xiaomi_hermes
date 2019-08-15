@@ -48,12 +48,12 @@ static unsigned int _almk_int_status;
 /* device and driver */
 static dev_t almk_devno;
 static struct cdev *almk_cdev;
-static struct class *almk_class;
+static struct class *almk_class = NULL;
 
 
 /* static wait_queue_head_t enc_wait_queue; */
 static spinlock_t almk_lock;
-static int almk_status;
+static int almk_status = 0;
 
 
 

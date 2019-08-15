@@ -4,6 +4,7 @@
  * A Logging Subsystem
  *
  * Copyright (C) 2007-2008 Google, Inc.
+ * Copyright (C) 2018 XiaoMi, Inc.
  *
  * Robert Love <rlove@google.com>
  *
@@ -928,7 +929,7 @@ static long logger_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
             break;
         }
         reader = file->private_data;
-	pr_err("logger_ioctl LOGGER_SET_INTERVAL\n");
+		pr_err("logger_ioctl LOGGER_SET_INTERVAL\n");
         ret = logger_set_interval(reader, argp);
         reader->r_ver = 2;
         break;
@@ -1054,6 +1055,10 @@ static int __init logger_init(void)
 	if (unlikely(ret))
 		goto out;
 
+	ret = create_log(LOGGER_WS_EVENTS, 256*1024);
+	if (unlikely(ret))
+		goto out;
+
 out:
 	return ret;
 }
@@ -1073,8 +1078,8 @@ static void __exit logger_exit(void)
 }
 
 int panic_dump_main(char *buf, size_t size) {
-	static size_t offset; /* offset of log buffer */
-	static int isFirst;
+	static size_t offset = 0; /* offset of log buffer */
+	static int isFirst = 0;
 	size_t len = 0;
 	size_t distance = 0;
 	size_t realsize = 0;
@@ -1108,8 +1113,8 @@ int panic_dump_main(char *buf, size_t size) {
 }
 
 int panic_dump_events(char *buf, size_t size) {
-	static size_t offset; /* offset of log buffer */
-	static int isFirst;
+	static size_t offset = 0; /* offset of log buffer */
+	static int isFirst = 0;
 	size_t len = 0;
 	size_t distance = 0;
 	size_t realsize = 0;
@@ -1143,8 +1148,8 @@ int panic_dump_events(char *buf, size_t size) {
 }
 
 int panic_dump_radio(char *buf, size_t size) {
-	static size_t offset; /* offset of log buffer */
-	static int isFirst;
+	static size_t offset = 0; /* offset of log buffer */
+	static int isFirst = 0;
 	size_t len = 0;
 	size_t distance = 0;
 	size_t realsize = 0;
@@ -1178,8 +1183,8 @@ int panic_dump_radio(char *buf, size_t size) {
 }
 
 int panic_dump_system(char *buf, size_t size) {
-	static size_t offset; /* offset of log buffer */
-	static int isFirst;
+	static size_t offset = 0; /* offset of log buffer */
+	static int isFirst = 0;
 	size_t len = 0;
 	size_t distance = 0;
 	size_t realsize = 0;

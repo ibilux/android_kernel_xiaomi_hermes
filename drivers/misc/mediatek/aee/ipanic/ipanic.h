@@ -51,8 +51,8 @@ struct ipanic_data_header {
 	u32 total;		/* allocated partition size */
 	u32 encrypt;		/* data encrypted */
 	u64 id;
-				/* u32 raw;		raw data or plain text */
-				/* u32 compact;		data and header in same block, to save space */
+	/* u32 raw;		raw data or plain text */
+	/* u32 compact;		data and header in same block, to save space */
 	u8 name[32];
 };
 
@@ -196,6 +196,7 @@ typedef struct ipanic_atf_log_rec {
 
 #define OOPS_LOG_LEN	__LOG_BUF_LEN
 #define WDT_LOG_LEN	__LOG_BUF_LEN
+#define WQ_LOG_LEN	32*1024
 #define LAST_LOG_LEN	(AEE_LOG_LEVEL == 8 ? __LOG_BUF_LEN : 32*1024)
 
 #define ATF_LOG_SIZE	(32*1024)

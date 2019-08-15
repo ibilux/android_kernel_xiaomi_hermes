@@ -70,7 +70,7 @@ config MTK_SVLTE_SUPPORT
 	  The option default disabled.
 
 config EVDO_DT_VIA_SUPPORT
-	bool "EVDO_DT_VIA_SUPPORT"
+	tristate "EVDO_DT_VIA_SUPPORT"
 	depends on MTK_C2K_SUPPORT
 	default n
 	help

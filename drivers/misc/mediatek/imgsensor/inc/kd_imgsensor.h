@@ -97,19 +97,23 @@ NSFeature :  : RAWSensorInfo < _id >  :  : getFlickerPara \
 *
 ********************************************************************************/
 /* SENSOR CHIP VERSION */
-#define OV5670_MIPI_RAW_SENSOR_ID                   0x5670
-#define OV5670_2ND_MIPI_RAW_SENSOR_ID               0x5671
-#define OV5670_FLT_2ND_MIPI_RAW_SENSOR_ID           0x5673
-#define S5K3M2_MIPI_RAW_SENSOR_ID                        0x30D2
-#define S5K3M2_2ND_MIPI_RAW_SENSOR_ID                    0x30D3
+/*OV*/
+#define OV5670_MIPI_RAW_SENSOR_ID               0x5670
+#define OV5670_2ND_MIPI_RAW_SENSOR_ID           0x5671
+#define OV5670_FLT_2ND_MIPI_RAW_SENSOR_ID       0x5673
+/*S5K*/
+#define S5K3M2_MIPI_RAW_SENSOR_ID               0x30D2
+#define S5K3M2_2ND_MIPI_RAW_SENSOR_ID           0x30D3
 
 /* CAMERA DRIVER NAME */
 #define CAMERA_HW_DEVNAME                       "kd_camera_hw"
 
 /* SENSOR DEVICE DRIVER NAME */
+/*OV*/
 #define SENSOR_DRVNAME_OV5670_MIPI_RAW          "ov5670_mipi_raw"
 #define SENSOR_DRVNAME_OV5670_2ND_MIPI_RAW      "ov5670_2nd_mipi_raw"
 #define SENSOR_DRVNAME_OV5670_FLT_2ND_MIPI_RAW  "ov5670_flt_2nd_mipi_raw"
+/*S5K*/
 #define SENSOR_DRVNAME_S5K3M2_MIPI_RAW          "s5k3m2_mipi_raw"
 #define SENSOR_DRVNAME_S5K3M2_2ND_MIPI_RAW      "s5k3m2_2nd_mipi_raw"
 

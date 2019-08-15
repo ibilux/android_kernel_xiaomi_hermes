@@ -87,7 +87,11 @@ struct cpufreq_interactive_tunables {
 	 * The minimum amount of time to spend at a frequency before we can ramp
 	 * down.
 	 */
+#ifdef CONFIG_CPU_LOW_POWER
+#define DEFAULT_MIN_SAMPLE_TIME (20 * USEC_PER_MSEC)
+#else
 #define DEFAULT_MIN_SAMPLE_TIME (80 * USEC_PER_MSEC)
+#endif
 	unsigned long min_sample_time;
 	/*
 	 * The sample rate of the timer used to increase frequency
@@ -1215,9 +1219,15 @@ static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
 		mutex_lock(&gov_lock);
 
 		freq_table = cpufreq_frequency_get_table(policy->cpu);
+//charge by zhoulingyun for cx861 powersave (wufangqi 20150906) start
+#if 1
 		if (!tunables->hispeed_freq)
 			tunables->hispeed_freq = policy->max;
-
+#else
+        if (!tunables->hispeed_freq)
+			tunables->hispeed_freq = 1183000;
+#endif
+//charge by zhoulingyun for cx861 powersave (wufangqi 20150906) end
 		for_each_cpu(j, policy->cpus) {
 			pcpu = &per_cpu(cpuinfo, j);
 			pcpu->policy = policy;

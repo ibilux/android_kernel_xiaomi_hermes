@@ -23,9 +23,9 @@ ifneq ($(CONFIG_MTK_COMBO),)
 	ifneq ($(filter "MT6630",$(CONFIG_MTK_COMBO_CHIP)),)
 		obj-y   +=  combo/
 		subdir-ccflags-y += -D MT6630
-ifneq ($(CONFIG_ARCH_MT2601),y)
+	ifneq ($(CONFIG_ARCH_MT2601),y)
 		subdir-ccflags-y += -D MTK_MERGE_INTERFACE_SUPPORT
-endif
+	endif
 	endif
 	ifneq ($(filter "CONSYS_6572",$(CONFIG_MTK_COMBO_CHIP)),)
 		obj-y   +=  conn_soc/

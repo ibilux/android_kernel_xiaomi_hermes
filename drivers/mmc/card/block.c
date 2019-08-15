@@ -2,6 +2,7 @@
  * Block driver for media (i.e., flash cards)
  *
  * Copyright 2002 Hewlett-Packard Company
+ * Copyright (C) 2018 XiaoMi, Inc.
  * Copyright 2005-2008 Pierre Ossman
  *
  * Use consistent with the GNU GPL is permitted,
@@ -2276,7 +2277,7 @@ static void mmc_blk_revert_packed_req(struct mmc_queue *mq,
 	mmc_blk_clear_packed(mq_rq);
 }
 #if defined(FEATURE_STORAGE_PERF_INDEX)
-#define PRT_TIME_PERIOD	1000000000
+#define PRT_TIME_PERIOD	500000000
 #define UP_LIMITS_4BYTE		4294967295UL	//((4*1024*1024*1024)-1)
 #define ID_CNT 10
 pid_t mmcqd[ID_CNT]={0};
@@ -2622,7 +2623,6 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *rqc)
 				do {
 					int i;
 					for(index=0; index<PID_ID_CNT; index++) {
-
 						if( g_pid_logger[index].current_pid!=0 && g_pid_logger[index].current_pid == mmcqd_pid)
 							break;
 					}
@@ -3367,6 +3367,7 @@ static const struct mmc_fixup blk_fixups[] =
      /*
      * Toshiba eMMC after enable cache feature, write performance drop, because flush operation waste much time
      */
+	 // del by dingyin for Toshiba eMMC performence
 	//MMC_FIXUP(CID_NAME_ANY, CID_MANFID_TOSHIBA, CID_OEMID_ANY, add_quirk_mmc,
 	//	  MMC_QUIRK_DISABLE_CACHE),
 #endif

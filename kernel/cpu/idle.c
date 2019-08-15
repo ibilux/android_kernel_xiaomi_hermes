@@ -90,6 +90,10 @@ static void cpu_idle_loop(void)
 			mt_lbprof_update_state(smp_processor_id(), MT_LBPROF_IDLE_STATE);
 #endif
 
+#ifdef CONFIG_MT_LOAD_BALANCE_PROFILER
+			mt_lbprof_update_state(smp_processor_id(), MT_LBPROF_IDLE_STATE);
+#endif
+
 			local_irq_disable();
 			arch_cpu_idle_enter();
 

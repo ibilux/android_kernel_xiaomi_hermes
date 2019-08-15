@@ -473,6 +473,26 @@ static int Audio_Mode_Set(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_val
     return 0;
 }
 
+static int Audio_Irqcnt1_Get(struct snd_kcontrol *kcontrol,
+                             struct snd_ctl_elem_value *ucontrol)
+{
+    printk("Audio_Irqcnt1_Get \n");
+    AudDrv_Clk_On();
+    ucontrol->value.integer.value[0] =   Afe_Get_Reg(AFE_IRQ_MCU_CNT1);
+    AudDrv_Clk_Off();
+    return 0;
+}
+
+static int Audio_Irqcnt1_Set(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
+{
+    uint32 irq1_cnt =  ucontrol->value.integer.value[0];
+    printk("%s()\n", __func__);
+    AudDrv_Clk_On();
+    Afe_Set_Reg(AFE_IRQ_MCU_CNT1, irq1_cnt, 0xffffffff);
+    AudDrv_Clk_Off();
+    return 0;
+}
+
 static int Audio_Irqcnt2_Get(struct snd_kcontrol *kcontrol,
                              struct snd_ctl_elem_value *ucontrol)
 {
@@ -570,7 +590,6 @@ static void GetAudioTrimOffset(int channels)
         default:
             break;
     }
-
 
     // calibrate HPL offset trim
     setOffsetTrimMux(AUDIO_OFFSET_TRIM_MUX_HPL);
@@ -713,6 +732,7 @@ static const struct snd_kcontrol_new Audio_snd_routing_controls[] =
     SOC_ENUM_EXT("Audio_SideGen_Amplitude", Audio_Routing_Enum[2], Audio_SideGen_Amplitude_Get, Audio_SideGen_Amplitude_Set),
     SOC_ENUM_EXT("Audio_Sidetone_Switch", Audio_Routing_Enum[3], Audio_SideTone_Get, Audio_SideTone_Set),
     SOC_ENUM_EXT("Audio_Mode_Switch", Audio_Routing_Enum[4], Audio_Mode_Get, Audio_Mode_Set),
+    SOC_SINGLE_EXT("Audio IRQ1 CNT", SND_SOC_NOPM, 0, 65536, 0, Audio_Irqcnt1_Get, Audio_Irqcnt1_Set),
     SOC_SINGLE_EXT("Audio IRQ2 CNT", SND_SOC_NOPM, 0, 65536, 0, Audio_Irqcnt2_Get, Audio_Irqcnt2_Set),
     SOC_SINGLE_EXT("Audio HPL Offset", SND_SOC_NOPM, 0 , 0x20000, 0, Audio_Hpl_Offset_Get, Audio_Hpl_Offset_Set),
     SOC_SINGLE_EXT("Audio HPR Offset", SND_SOC_NOPM, 0, 0x20000, 0, Audio_Hpr_Offset_Get, Audio_Hpr_Offset_Set),

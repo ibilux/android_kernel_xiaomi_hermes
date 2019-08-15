@@ -260,6 +260,8 @@ static const struct file_operations boot_mode_proc_fops = {
 	.release = single_release,
 };
 
+//extern struct proc_dir_entry proc_root;
+
 static int __init boot_common_core(void)
 {
 	init_boot_common(__LINE__);
@@ -284,3 +286,6 @@ core_initcall(boot_common_core);
 module_init(boot_common_init);
 MODULE_DESCRIPTION("MTK Boot Information Common Driver");
 MODULE_LICENSE("GPL");
+EXPORT_SYMBOL(is_meta_mode);
+EXPORT_SYMBOL(is_advanced_meta_mode);
+EXPORT_SYMBOL(get_boot_mode);

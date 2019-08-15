@@ -13,6 +13,8 @@ endif
 obj-$(CONFIG_THERMAL) += mtk_cooler_kshutdown.o
 obj-$(CONFIG_THERMAL) += mtk_cooler_cam.o
 obj-$(CONFIG_THERMAL) += mtk_cooler_vrt.o
+obj-$(CONFIG_THERMAL) += mtk_cooler_spkrvol.o
+obj-$(CONFIG_THERMAL) += mtk_cooler_dropcall.o
 
 
 ifneq (,$(filter $(CONFIG_MTK_PLATFORM), "mt6582" "mt6592"))

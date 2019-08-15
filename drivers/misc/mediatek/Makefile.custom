@@ -50,6 +50,7 @@ ccflags-y += -I$(MTK_CUSTOM_PATH)/accdet/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/cam_cal/inc \
              -I$(MTK_CUSTOM_PATH)/camera/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/m4u/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/cmdq/v2/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/devinfo/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/dual_ccci/$(MTK_PLATFORM)/include \
              -I$(MTK_CUSTOM_PATH)/dual_ccci/include \
@@ -148,6 +149,9 @@ ccflags-y += -I$(objtree)/PTGEN/inc
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/ptgen/$(MTK_PLATFORM)
 
 # Add for Sensor Hub
+ifeq ($(CONFIG_CUSTOM_KERNEL_SENSORHUB),"SCP_shf SCP_sensorHub")
+ccflags-y += -DCUSTOM_KERNEL_SENSORHUB
+endif
 ccflags-$(CONFIG_MTK_SCP_SENSORHUB) += -DCUSTOM_KERNEL_SENSORHUB
 
 ifeq ($(CONFIG_ARCH_MT6735),y)

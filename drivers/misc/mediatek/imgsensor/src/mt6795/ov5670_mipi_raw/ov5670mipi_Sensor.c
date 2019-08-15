@@ -41,7 +41,7 @@
 #include "kd_imgsensor_errcode.h"
 
 #include "ov5670mipi_Sensor.h"
-//#include <linux/dev_info.h>
+#include <linux/dev_info.h>
 
 #define PFX "ov5670_camera_sensor"
 
@@ -1577,7 +1577,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 	kal_uint8 i = 0;
 	kal_uint8 retry = 2;
 	//kal_uint16 module_id;
-	//struct devinfo_struct *dev_ofilm, *dev_sunny;//(struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
+	struct devinfo_struct *dev_ofilm, *dev_sunny;//(struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
     static kal_uint8 devinfo_add = 2;
     // dev->device_type = "Camera";
     // dev->device_vendor = "Ofilm";
@@ -1600,14 +1600,15 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			    	sensor_init();
 			    	//Module_Id = read_otp_module_id();
 
-/*			    	dev_ofilm = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
+			    	dev_ofilm = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 				    dev_ofilm->device_type = "Camera";
 				    dev_ofilm->device_vendor = "Ofilm";
 				    dev_ofilm->device_ic = "OV5670";
 				    dev_ofilm->device_version = DEVINFO_NULL;
 				    dev_ofilm->device_module = DEVINFO_NULL;
 				    dev_ofilm->device_info = DEVINFO_NULL;
-				    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);*/
+				    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);
+				    
 				    // dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 				    // dev_sunny->device_type = "Camera";
 				    // dev_sunny->device_vendor = "Sunny";
@@ -1620,17 +1621,17 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 				    switch(Module_Id)
 				    {
 				    	case 0x07:
-				    		//dev_ofilm->device_used = DEVINFO_USED;
+				    		dev_ofilm->device_used = DEVINFO_USED;
 				    		//dev_sunny->device_used = DEVINFO_UNUSED;
 				    		break;
 				    	default:
-				    		//dev_ofilm->device_used = DEVINFO_UNUSED;
+				    		dev_ofilm->device_used = DEVINFO_UNUSED;
 				    		//dev_sunny->device_used = DEVINFO_USED;
 				    		*sensor_id = 0xFFFFFFFF;
 				    		break;
 				    }
 			    	//dev_ofilm->device_used = DEVINFO_USED;
-			    	//DEVINFO_CHECK_ADD_DEVICE(dev_ofilm);
+			    	DEVINFO_CHECK_ADD_DEVICE(dev_ofilm);
 			    	//DEVINFO_CHECK_ADD_DEVICE(dev_sunny);
 			    	devinfo_add = 0;
 			    }	  
@@ -1649,14 +1650,15 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		
         if(devinfo_add == 1)
     	{
-    		/*dev_ofilm = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
+    		dev_ofilm = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 		    dev_ofilm->device_type = "Camera";
 		    dev_ofilm->device_vendor = "Ofilm";
 		    dev_ofilm->device_ic = "OV5670";
 		    dev_ofilm->device_version = DEVINFO_NULL;
 		    dev_ofilm->device_module = DEVINFO_NULL;
 		    dev_ofilm->device_info = DEVINFO_NULL;
-		    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);*/
+		    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);
+		    
 		    // dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 		    // dev_sunny->device_type = "Camera";
 		    // dev_sunny->device_vendor = "Sunny";
@@ -1665,11 +1667,11 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		    // dev_sunny->device_module = DEVINFO_NULL;
 		    // dev_sunny->device_info = DEVINFO_NULL;
 		    // LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_sunny);
-		    //dev_ofilm->device_used = DEVINFO_UNUSED;
+		    dev_ofilm->device_used = DEVINFO_UNUSED;
 		    //dev_sunny->device_used = DEVINFO_UNUSED;
 		    
 	    	//dev_ofilm->device_used = DEVINFO_USED;
-	    	//DEVINFO_CHECK_ADD_DEVICE(dev_ofilm);
+	    	DEVINFO_CHECK_ADD_DEVICE(dev_ofilm);
 	    	//DEVINFO_CHECK_ADD_DEVICE(dev_sunny);
     		devinfo_add = 0;
     	}

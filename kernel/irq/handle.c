@@ -25,6 +25,7 @@
 #endif
 #ifdef CONFIG_MTPROF_CPUTIME
 #include "mt_cputime.h"
+#include "mt_sched_mon.h"
 /*  cputime monitor en/disable value */
 #ifdef CONFIG_MT_ENG_BUILD
 /* max debug thread count, if reach the level, stop store new thread informaiton. */

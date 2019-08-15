@@ -50,23 +50,23 @@
 static int kwdt_thread(void *arg);
 static int start_kicker(void);
 
-static int g_kicker_init;
-static int debug_sleep;
+static int g_kicker_init =0;
+static int debug_sleep = 0;
 
 static DEFINE_SPINLOCK(lock);
 
 #define CPU_NR (nr_cpu_ids)
 struct task_struct *wk_tsk[16] = { 0 };	/* max cpu 16 */
 
-static unsigned long kick_bit;
+static unsigned long kick_bit = 0;
 
 
 enum ext_wdt_mode g_wk_wdt_mode = WDT_DUAL_MODE;
-static struct wd_api *g_wd_api;
+static struct wd_api*g_wd_api = NULL;
 static int g_kinterval = -1;
 static int g_timeout = -1;
-static int g_need_config;
-static int wdt_start;
+static int g_need_config = 0;
+static int wdt_start = 0;
 static int g_enable = 1;
 
 static char cmd_buf[256];
@@ -204,7 +204,7 @@ static int start_kicker_thread_with_default_setting(void)
 	return ret;
 }
 
-static unsigned int cpus_kick_bit;
+static unsigned int cpus_kick_bit = 0;
 void wk_start_kick_cpu(int cpu)
 {
 	if (IS_ERR(wk_tsk[cpu])) {
@@ -413,6 +413,7 @@ static int start_kicker(void)
 		/* wk_cpu_update_bit_flag(i,1); */
 		wk_start_kick_cpu(i);
 	}
+	wk_cpu_update_bit_flag(0, 1);
 	g_kicker_init = 1;
 	pr_debug("[WDK] WDT start kicker  done\n");
 	return 0;
@@ -471,9 +472,8 @@ ssize_t mtk_rgu_pause_wdt_show(struct kobject *kobj, char *buffer)
 
 	ptr += len;
 	remain -= len;
-	len = (PAGE_SIZE - remain);
 
-	return len;
+	return (PAGE_SIZE - remain);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -620,6 +620,7 @@ static int __init init_wk(void)
 #endif
 
 	wk_proc_init();
+    //cpu_hotplug_disable();
 	register_cpu_notifier(&cpu_nfb);
 
 	for (i = 0; i < CPU_NR; i++) {

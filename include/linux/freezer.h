@@ -7,7 +7,9 @@
 #include <linux/sched.h>
 #include <linux/wait.h>
 #include <linux/atomic.h>
-
+#ifdef CONFIG_CGROUP_FREEZER
+#include <linux/cgroup.h>
+#endif
 #ifdef CONFIG_FREEZER
 extern atomic_t system_freezing_cnt;	/* nr of freezing conds in effect */
 extern bool pm_freezing;		/* PM freezing in effect */
@@ -71,10 +73,17 @@ extern bool set_freezable(void);
 
 #ifdef CONFIG_CGROUP_FREEZER
 extern bool cgroup_freezing(struct task_struct *task);
+/* set cgroup state thawed */
+extern void cgroup_thawed_by_pid(int pid_nr);
+extern void freezer_change_state_to_thawed(struct cgroup *cgroup);
 #else /* !CONFIG_CGROUP_FREEZER */
 static inline bool cgroup_freezing(struct task_struct *task)
 {
 	return false;
+}
+static inline void cgroup_thawed_by_pid(int pid_nr)
+{
+	return;
 }
 #endif /* !CONFIG_CGROUP_FREEZER */
 

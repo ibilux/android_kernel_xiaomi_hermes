@@ -1,6 +1,6 @@
 #ifndef _MTK_ADC_HW_H
 #define _MTK_ADC_HW_H
- 
+
 #ifdef CONFIG_OF
 extern void __iomem *auxadc_base;
 extern void __iomem *auxadc_apmix_base;

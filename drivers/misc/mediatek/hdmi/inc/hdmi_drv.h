@@ -1,7 +1,7 @@
 #ifndef __HDMI_DRV_H__
 #define __HDMI_DRV_H__
 
-#ifdef HDMI_MT8193_SUPPORT
+#ifdef CONFIG_MTK_MT8193_HDMI_SUPPORT
 
 #include "mt8193hdmictrl.h"
 #include "mt8193edid.h"
@@ -46,7 +46,7 @@ typedef enum {
 	IO_DRIVING_CURRENT_SLEW_CNTL = (1 << 3),
 } IO_DRIVING_CURRENT;
 
-#if !defined(HDMI_MT8193_SUPPORT)
+#if !defined(CONFIG_MTK_MT8193_HDMI_SUPPORT)
 typedef enum {
 	HDMI_VIDEO_720x480p_60Hz = 0,
 	HDMI_VIDEO_1280x720p_60Hz = 2,
@@ -213,7 +213,7 @@ typedef struct {
 #define SINK_1080P23976   (1 << 21)
 #define SINK_1080P2997   (1 << 22)
 
-#if !defined(HDMI_MT8193_SUPPORT)
+#if !defined(CONFIG_MTK_MT8193_HDMI_SUPPORT)
 typedef struct _HDMI_EDID_INFO_T {
 	unsigned int ui4_ntsc_resolution;	/* use EDID_VIDEO_RES_T, there are many resolution */
 	unsigned int ui4_pal_resolution;	/* use EDID_VIDEO_RES_T */
@@ -289,7 +289,7 @@ typedef struct {
     void (*force_on)(int from_uart_drv);
 	void (*register_callback)(CABLE_INSERT_CALLBACK cb);
 	void (*unregister_callback)(CABLE_INSERT_CALLBACK cb);
-#if !defined(HDMI_MT8193_SUPPORT)
+#if !defined(CONFIG_MTK_MT8193_HDMI_SUPPORT)
 	void (*read) (unsigned char u8Reg);
 	void (*write) (unsigned char u8Reg, unsigned char u8Data);
 	void (*log_enable) (bool enable);

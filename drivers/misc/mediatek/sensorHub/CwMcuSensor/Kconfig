@@ -1,5 +1,0 @@
-
-config INPUT_CWSTM32
-	bool "CONFIG_INPUT_CWSTM32"
-	help
-	  Cywee on STM32

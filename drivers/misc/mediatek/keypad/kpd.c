@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2010 MediaTek, Inc.
+ * Copyright (C) 2018 XiaoMi, Inc.
  *
  * Author: Terry Chang <terry.chang@mediatek.com>
  *
@@ -31,10 +32,10 @@ void __iomem *kp_base;
 static unsigned int kp_irqnr;
 #endif
 struct input_dev *kpd_input_dev;
-static bool kpd_suspend;
+static bool kpd_suspend = false;
 static int kpd_show_hw_keycode = 1;
 static int kpd_show_register = 1;
-static int call_status;
+static volatile int call_status = 0;
 struct wake_lock kpd_suspend_lock;	/* For suspend usage */
 
 /*for kpd_memory_setting() function*/

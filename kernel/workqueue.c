@@ -508,6 +508,13 @@ static inline void debug_work_activate(struct work_struct *work) { }
 static inline void debug_work_deactivate(struct work_struct *work) { }
 #endif
 
+#ifdef CONFIG_MTK_WQ_DEBUG
+extern void mttrace_workqueue_execute_work(struct work_struct *work);
+extern void mttrace_workqueue_activate_work(struct work_struct *work);
+extern void mttrace_workqueue_queue_work(unsigned int req_cpu, struct work_struct *work);
+extern void mttrace_workqueue_execute_end(struct work_struct *work);
+#endif //CONFIG_MTK_WQ_DEBUG
+
 /* allocate ID and assign it to @pool */
 static int worker_pool_assign_id(struct worker_pool *pool)
 {
@@ -1078,6 +1085,9 @@ static void pwq_activate_delayed_work(struct work_struct *work)
 	struct pool_workqueue *pwq = get_work_pwq(work);
 
 	trace_workqueue_activate_work(work);
+#ifdef CONFIG_MTK_WQ_DEBUG
+	mttrace_workqueue_activate_work(work);
+#endif //CONFIG_MTK_WQ_DEBUG
 	move_linked_works(work, &pwq->pool->worklist, NULL);
 	__clear_bit(WORK_STRUCT_DELAYED_BIT, work_data_bits(work));
 	pwq->nr_active++;
@@ -1365,6 +1375,9 @@ retry:
 
 	/* pwq determined, queue */
 	trace_workqueue_queue_work(req_cpu, pwq, work);
+#ifdef CONFIG_MTK_WQ_DEBUG
+	mttrace_workqueue_queue_work(cpu, work);
+#endif //CONFIG_MTK_WQ_DEBUG
 
 	if (WARN_ON(!list_empty(&work->entry))) {
 		spin_unlock(&pwq->pool->lock);
@@ -1376,6 +1389,9 @@ retry:
 
 	if (likely(pwq->nr_active < pwq->max_active)) {
 		trace_workqueue_activate_work(work);
+#ifdef CONFIG_MTK_WQ_DEBUG
+		mttrace_workqueue_activate_work(work);
+#endif //CONFIG_MTK_WQ_DEBUG
 		pwq->nr_active++;
 		worklist = &pwq->pool->worklist;
 	} else {
@@ -2105,6 +2121,7 @@ __acquires(&pool->lock)
 	int work_color;
 	struct worker *collision;
 	unsigned long long exec_start;
+	char func[128];
 
 #ifdef CONFIG_LOCKDEP
 	/*
@@ -2177,17 +2194,27 @@ __acquires(&pool->lock)
 	lock_map_acquire(&lockdep_map);
 
 	exec_start = sched_clock();
+	sprintf(func, "%pf", work->func);
 
 	trace_workqueue_execute_start(work);
+#ifdef CONFIG_MTK_WQ_DEBUG
+	mttrace_workqueue_execute_work(work);
+#endif //CONFIG_MTK_WQ_DEBUG
+
 	worker->current_func(work);
+		
 	/*
 	 * While we must be careful to not use "work" after this, the trace
 	 * point will only record its address.
 	 */
 	trace_workqueue_execute_end(work);
-	if ((sched_clock() - exec_start)> 1000000000) // dump log if execute more than 1 sec
-		pr_debug("WQ warning! work (%pf, %p) execute more than 1 sec, time: %llu ns\n", work->func, work, sched_clock() - exec_start);
+#ifdef CONFIG_MTK_WQ_DEBUG
+	mttrace_workqueue_execute_end(work);
+#endif //CONFIG_MTK_WQ_DEBUG
 
+	if ((sched_clock() - exec_start)> 1000000000) // dump log if execute more than 1 sec
+		pr_warning("WQ warning! work (%s, %p) execute more than 1 sec, time: %llu ns\n", func, work, sched_clock() - exec_start);
+	
 	lock_map_release(&lockdep_map);
 	lock_map_release(&pwq->wq->lockdep_map);
 

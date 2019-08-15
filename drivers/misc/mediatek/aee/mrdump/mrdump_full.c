@@ -23,7 +23,6 @@
 #include <linux/kdebug.h>
 #include "mrdump_private.h"
 
-
 #define KEXEC_NOTE_HEAD_BYTES ALIGN(sizeof(struct elf_note), 4)
 #define KEXEC_CORE_NOTE_NAME "CORE"
 #define KEXEC_CORE_NOTE_NAME_BYTES ALIGN(sizeof(KEXEC_CORE_NOTE_NAME), 4)
@@ -128,6 +127,7 @@ static void save_current_task(void)
 
 void mrdump_platform_init(struct mrdump_control_block *cblock, const struct mrdump_platform *plat)
 {
+	mrdump_cb = cblock;
 	mrdump_plat = plat;
 }
 

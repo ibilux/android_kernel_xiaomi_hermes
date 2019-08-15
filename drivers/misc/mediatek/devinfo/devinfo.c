@@ -15,7 +15,19 @@
 #include <asm/setup.h>
 #include "devinfo.h"
 
+#define DEVINFO_TAG "DEVINFO"
+
+u32 get_devinfo_with_index(u32 index);
 u32 g_devinfo_data[DEVINFO_MAX_SIZE];
+u32 g_devinfo_data_size = 0;
+
+EXPORT_SYMBOL(g_devinfo_data);
+EXPORT_SYMBOL(g_devinfo_data_size);
+EXPORT_SYMBOL(get_devinfo_with_index);
+
+/***************************************************************************** 
+* FUNCTION DEFINITION 
+*****************************************************************************/
 static struct cdev devinfo_cdev;
 static struct class *devinfo_class;
 static dev_t devinfo_dev;
@@ -26,6 +38,64 @@ static int devinfo_open(struct inode *inode, struct file *filp);
 static int devinfo_release(struct inode *inode, struct file *filp);
 static long devinfo_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
 
+
+#define SLT_DEVINFO_KERNEL_SUPPORT
+#ifdef SLT_DEVINFO_KERNEL_SUPPORT
+#include <linux/dev_info.h>
+static DEFINE_SPINLOCK(dev_lock);
+static struct list_head active_devinfo_list ;
+
+int devinfo_ram_size;
+static ssize_t devinfo_show(struct device *dev1, struct device_attribute *attr, char *buf)
+{
+	char *p;
+	size_t   info_length = 0;
+	unsigned long irqflags;
+	struct devinfo_struct *devinfo;
+
+	spin_lock_irqsave(&dev_lock, irqflags);
+	p = buf;
+	info_length = sprintf(p, "type\t\t\tmodule\t\t\tvender\t\t\tic\t\t\tversion\t\t\tinfo\t\t\tused\n");
+	p += info_length;
+
+      list_for_each_entry(devinfo, &active_devinfo_list, device_link) {
+		info_length = sprintf(p, "%s\t\t\t%s\t\t\t%s\t\t\t%s\t\t\t%s\t\t\t%s\t\t\t%s\n",
+			devinfo->device_type, devinfo->device_module, devinfo->device_vendor,
+			devinfo->device_ic, devinfo->device_version, devinfo->device_info, devinfo->device_used);
+		p += info_length;
+      }
+      spin_unlock_irqrestore(&dev_lock, irqflags);
+	return (p-buf);
+}
+static ssize_t raw_show(struct device *dev1, struct device_attribute *attr, char *buf)
+
+{
+		sprintf(buf, "%d\n", devinfo_ram_size);
+	return strlen(buf);
+}
+
+static DEVICE_ATTR(devinfo, S_IRUGO , devinfo_show, NULL);
+static DEVICE_ATTR(raw, S_IRUGO , raw_show, NULL);
+
+
+/*********************************************************************************
+ * add new device if not yet;
+ * Input:	devinfo_struct
+ * Output:  1 / 0
+ * Note: return 0 for there have a same device registed, not add. return 1 for add new device
+ * *******************************************************************************/
+int devinfo_check_add_device(struct devinfo_struct *dev)
+{
+	int result = 0;
+      unsigned long irqflags;
+	struct devinfo_struct *dev_all;
+	printk("[DEVINFO] devinfo_check!\n");
+	spin_lock_irqsave(&dev_lock, irqflags);
+       list_add_tail(&dev->device_link, &active_devinfo_list);
+       spin_unlock_irqrestore(&dev_lock, irqflags);
+	return 1;
+}
+#endif
 /**************************************************************************
 *EXTERN FUNCTION
 **************************************************************************/
@@ -34,6 +104,9 @@ u32 devinfo_get_size(void)
 	return ARRAY_SIZE(g_devinfo_data);
 }
 
+/**************************************************************************
+ *  GET devinfo info with index
+ **************************************************************************/
 u32 get_devinfo_with_index(u32 index)
 {
 	int size = devinfo_get_size();
@@ -45,6 +118,27 @@ u32 get_devinfo_with_index(u32 index)
 	pr_warn("devinfo data size:%d\n", size);
 	return 0xFFFFFFFF;
 }
+
+u32 get_segment(void)
+{
+    int function_code = (g_devinfo_data[24] &  0x0F000000) >> 24;
+
+    if(function_code == 0) {/*RD*/ 
+        return 0;
+    }
+    else if(function_code >= 1 && function_code <= 5) {/*M*/
+        return 1;
+    }
+    else if(function_code >= 6 && function_code <= 10) {/*Normal*/
+        return 2;
+    }
+    else if(function_code >= 11 && function_code <= 15) {/*T*/
+        return 3;
+    }
+    else
+       return -1;
+}
+
 /**************************************************************************
 *STATIC FUNCTION
 **************************************************************************/
@@ -78,7 +172,7 @@ static long devinfo_ioctl(struct file *file, unsigned int cmd, unsigned long arg
 	u32 index = 0;
 	int err   = 0;
 	int ret   = 0;
-	u32 data_size = ARRAY_SIZE(g_devinfo_data);
+	u32 data_size = g_devinfo_data_size;
 	u32 data_read = 0;
 
 	/* ---------------------------------- */
@@ -164,6 +258,11 @@ static int __init devinfo_init(void)
 	}
 	/*create device*/
 	device = device_create(devinfo_class, NULL, devinfo_dev, NULL, "devmap");
+#ifdef SLT_DEVINFO_KERNEL_SUPPORT
+	device_create_file(device, &dev_attr_devinfo);
+	device_create_file(device, &dev_attr_raw);
+	INIT_LIST_HEAD(&active_devinfo_list);
+#endif
 	if (IS_ERR(device)) {
 		ret = PTR_ERR(device);
 		pr_warn("[%s]device create fail\n", MODULE_NAME);
@@ -185,13 +284,13 @@ static int __init devinfo_parse_dt(unsigned long node, const char *uname, int de
 	if (depth != 1 || (strcmp(uname, "chosen") != 0 && strcmp(uname, "chosen@0") != 0))
 		return 0;
 
-	tags = (struct devinfo_tag *) of_get_flat_dt_prop(node, "atag,devinfo", NULL);
+	tags = (struct devinfo_tag *) of_get_flat_dt_prop(node, "atag,devinfo", &size);
 	if (tags) {
-		size = tags->data_size;
-		for (i = 0; i < size; i++)
+		g_devinfo_data_size = tags->data_size;
+		for (i = 0; i < g_devinfo_data_size; i++)
 			g_devinfo_data[i] = tags->data[i];
 		/* print chip id for debugging purpose */
-		pr_debug("tag_devinfo_data size:%d\n", size);
+		pr_debug("tag_devinfo_data size:%d\n", g_devinfo_data_size);
 	}
 	return 1;
 }

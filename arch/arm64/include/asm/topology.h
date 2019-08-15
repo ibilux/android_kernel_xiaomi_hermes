@@ -83,6 +83,7 @@ extern void arch_build_cpu_topology_domain(void);
 extern int arch_cpu_is_big(unsigned int cpu);
 extern int arch_cpu_is_little(unsigned int cpu);
 extern int arch_is_multi_cluster(void);
+extern int arch_is_big_little(void);
 extern int arch_is_smp(void);
 extern int arch_get_nr_clusters(void);
 extern int arch_get_cluster_id(unsigned int cpu);
@@ -101,6 +102,7 @@ static inline void arch_build_cpu_topology_domain(void) {}
 static inline int arch_cpu_is_big(unsigned int cpu) { return 0; }
 static inline int arch_cpu_is_little(unsigned int cpu) { return 1; }
 static inline int arch_is_multi_cluster(void) { return 0; }
+static inline int arch_is_big_little(void) { return 0; }
 static inline int arch_is_smp(void) { return 1; }
 static inline int arch_get_nr_clusters(void) { return 1; }
 static inline int arch_get_cluster_id(unsigned int cpu) { return 0; }

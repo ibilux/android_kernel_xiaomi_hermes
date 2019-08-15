@@ -2393,7 +2393,7 @@ static int ltr559_local_init(void)
 
 #endif
 
-//#include <linux/dev_info.h>
+#include <linux/dev_info.h>
 /*----------------------------------------------------------------------------*/
 static int ltr559_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
@@ -2502,23 +2502,21 @@ static int ltr559_i2c_probe(struct i2c_client *client, const struct i2c_device_i
 	obj->early_drv.resume   = ltr559_late_resume,    
 	register_early_suspend(&obj->early_drv);
 #endif
-/*		struct devinfo_struct *dev = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);;
-		dev->device_type = "ALSPS";
-		dev->device_vendor = "LTR"; 
-		dev->device_ic = "ltr559";
-		dev->device_version = DEVINFO_NULL;
-		dev->device_module = DEVINFO_NULL; 
-		dev->device_info = DEVINFO_NULL;
-		dev->device_used = DEVINFO_USED;	
-		  DEVINFO_CHECK_ADD_DEVICE(dev);*/
 
-
-
+	struct devinfo_struct *dev = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);;
+	dev->device_type = "ALSPS";
+	dev->device_vendor = "LTR"; 
+	dev->device_ic = "ltr559";
+	dev->device_version = DEVINFO_NULL;
+	dev->device_module = DEVINFO_NULL; 
+	dev->device_info = DEVINFO_NULL;
+	dev->device_used = DEVINFO_USED;
+	DEVINFO_CHECK_ADD_DEVICE(dev);
 
 	APS_LOG("%s: OK\n", __func__);
 #if defined(MTK_AUTO_DETECT_ALSPS)
     ltr559_init_flag = -1;
-#endif	
+#endif
 	return 0;
 
 	exit_create_attr_failed:

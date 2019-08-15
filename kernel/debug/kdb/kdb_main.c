@@ -2871,6 +2871,10 @@ static void __init kdb_cmd_init(void)
 	}
 }
 
+#ifdef CONFIG_MTK_EXTMEM
+extern void init_debug_alloc_pool_aligned(void);
+#endif
+
 /* Initialize kdb_printf, breakpoint tables and kdb state */
 void __init kdb_init(int lvl)
 {

@@ -206,11 +206,13 @@ static DEFINE_MUTEX(charger_type_mutex);
 static DECLARE_WAIT_QUEUE_HEAD(bat_routine_wq);
 static DECLARE_WAIT_QUEUE_HEAD(bat_update_wq);
 static struct hrtimer charger_hv_detect_timer;
-static struct task_struct *charger_hv_detect_thread;
+static struct task_struct *charger_hv_detect_thread = NULL;
 static kal_bool charger_hv_detect_flag = KAL_FALSE;
 static DECLARE_WAIT_QUEUE_HEAD(charger_hv_detect_waiter);
 static struct hrtimer battery_kthread_timer;
 kal_bool g_battery_soc_ready = KAL_FALSE;
+extern BOOL bat_spm_timeout;
+extern U32 sleep_total_time;
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* FOR ADB CMD */
@@ -334,9 +336,20 @@ kal_uint32 mt_battery_get_duration_time(BATTERY_TIME_ENUM duration_type)
 /* // extern function */
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
 /* extern void mt_power_off(void); */
+extern bool mt_usb_is_device(void);
+#if defined(CONFIG_USB_MTK_HDRC) || defined(CONFIG_USB_MU3D_DRV)
+extern void mt_usb_connect(void);
+extern void mt_usb_disconnect(void);
+#else
+#define mt_usb_connect() do { } while (0)
+#define mt_usb_disconnect() do { } while (0)
+#endif
+extern void reset_parameter_dod_full(void);
+extern void reset_parameter_dod_empty(void);
+extern void reset_parameter_dod_charger_plug_event(void);
 /* extern int set_rtc_spare_fg_value(int val); */
 
-
+void check_battery_exist(void);
 void charging_suspend_enable(void)
 {
 	U32 charging_enable = true;
@@ -1620,8 +1633,8 @@ static void battery_update(struct battery_data *bat_data)
 {
 	struct power_supply *bat_psy = &bat_data->psy;
 	kal_uint32 shutdown_cond = 0;
-	static kal_uint32 shutdown_cnt;
-	static kal_uint32 shutdown_cnt_chr;
+	static kal_uint32 shutdown_cnt=0;
+	static kal_uint32 shutdown_cnt_chr=0;
 
 	bat_data->BAT_TECHNOLOGY = POWER_SUPPLY_TECHNOLOGY_LION;
 	bat_data->BAT_HEALTH = POWER_SUPPLY_HEALTH_GOOD;
@@ -1955,7 +1968,7 @@ void mt_battery_GetBatteryData(void)
 	static kal_int32 batteryVoltageBuffer[BATTERY_AVERAGE_SIZE];
 	static kal_int32 batteryCurrentBuffer[BATTERY_AVERAGE_SIZE];
 	static kal_int32 batteryTempBuffer[BATTERY_AVERAGE_SIZE];
-	static kal_uint8 batteryIndex;
+	static kal_uint8 batteryIndex = 0;
 	static kal_int32 previous_SOC = -1;
 
 	bat_vol = battery_meter_get_battery_voltage(KAL_TRUE);

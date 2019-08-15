@@ -2,6 +2,7 @@
 * mt_pwm.c PWM Drvier                                                     
 *                                                                                             
 * Copyright (c) 2012, Media Teck.inc                                           
+* Copyright (C) 2018 XiaoMi, Inc.
 *                                                                             
 * This program is free software; you can redistribute it and/or modify it     
 * under the terms and conditions of the GNU General Public Licence,            
@@ -559,6 +560,7 @@ static S32 mt_set_pwm_GuardDur ( U32 pwm_no, U16 DurVal )
 	return RSUCCESS;
 }
 
+#if 1	//modify by lizhiye
 /*****************************************************
 * Set pwm_buf0_addr register
 * pwm_no: pwm1~pwm7 (0~6)
@@ -580,8 +582,9 @@ S32 mt_set_pwm_buf0_addr (U32 pwm_no, U32 addr )
 	}
 
 	spin_lock_irqsave ( &dev->lock, flags );
-	mt_set_pwm_buf0_addr_hal (pwm_no, addr);
+	mt_set_pwm_buf0_addr_hal (pwm_no, addr);//   add by mtk
 	spin_unlock_irqrestore ( &dev->lock, flags );
+
 	return RSUCCESS;
 }
 
@@ -589,7 +592,7 @@ S32 mt_set_pwm_buf0_addr (U32 pwm_no, U32 addr )
 * Set pwm_buf0_size register
 * pwm_no: pwm1~pwm7 (0~6)
 * size: size of data
-******************************************************/
+*****************************************************/
 S32 mt_set_pwm_buf0_size ( U32 pwm_no, U16 size)
 {
 	unsigned long flags;
@@ -606,10 +609,12 @@ S32 mt_set_pwm_buf0_size ( U32 pwm_no, U16 size)
 	}
 
 	spin_lock_irqsave ( &dev->lock, flags );
-	mt_set_pwm_buf0_size_hal( pwm_no, size);
+	mt_set_pwm_buf0_size_hal( pwm_no, size);//    add by mtk
 	spin_unlock_irqrestore ( &dev->lock, flags );
+
 	return RSUCCESS;
 }
+#endif
 
 /*****************************************************
 * Set pwm_buf1_addr register
@@ -1211,7 +1216,7 @@ EXPORT_SYMBOL(pwm_set_easy_config);
 	
 S32 pwm_set_spec_config(struct pwm_spec_config *conf)
 {
-
+	//PWMDBG("pwm_set_spec_config\n");
 	if ( conf->pwm_no >= PWM_MAX ) {
 		PWMDBG("pwm number excess PWM_MAX\n");
 		return -EEXCESSPWMNO;
@@ -1288,7 +1293,7 @@ S32 pwm_set_spec_config(struct pwm_spec_config *conf)
 			mt_set_pwm_wave_num(conf->pwm_no, conf->PWM_MODE_MEMORY_REGS.WAVE_NUM);
 			mt_set_pwm_con_stpbit(conf->pwm_no, conf->PWM_MODE_MEMORY_REGS.STOP_BITPOS_VALUE,MEMORY);
 			break;
-/*
+#if 0
 		case PWM_MODE_RANDOM:
 			PWMDBG("PWM_MODE_RANDOM\n");
 			mt_set_pwm_disable(conf->pwm_no);
@@ -1336,7 +1341,7 @@ S32 pwm_set_spec_config(struct pwm_spec_config *conf)
 			mt_set_pwm_enable(PWM4);
 			mt_set_pwm_enable(PWM5);
 			break;
-*/			
+#endif			
 		default:
 			break;
 		}
@@ -1383,6 +1388,7 @@ struct platform_device pwm_plat_dev={
 	.name = "mt-pwm",
 };
 
+/****/
 static ssize_t pwm_debug_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
 	printk("<0>""pwm power_flag: 0x%x\n", (unsigned int)pwm_dev->power_flag); 

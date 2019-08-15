@@ -2,6 +2,7 @@
 * mt6575_pwm.h PWM Drvier
 *
 * Copyright (c) 2010, Media Teck.inc
+* Copyright (C) 2018 XiaoMi, Inc.
 *
 * This program is free software; you can redistribute it and/or modify it
 * under the terms and conditions of the GNU General Public Licence,
@@ -109,8 +110,6 @@ struct pwm_spec_config {
 
 S32 pwm_set_easy_config(struct pwm_easy_config *conf);
 S32 pwm_set_spec_config(struct pwm_spec_config *conf);
-
-
 
 void mt_pwm_dump_regs(void);
 void mt_pwm_disable(U32 pwm_no, BOOL pmic_pad);

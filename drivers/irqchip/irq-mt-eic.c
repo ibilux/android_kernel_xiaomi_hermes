@@ -27,6 +27,11 @@
 #define dbgmsg(...)
 #endif
 
+/* Check if NR_IRQS is enough */
+//#if (EINT_IRQ_BASE + EINT_MAX_CHANNEL) > (NR_IRQS)
+//#error NR_IRQS not enough.
+//#endif
+
 static unsigned int EINT_IRQ_BASE;
 
 #if 0
@@ -799,6 +804,8 @@ static unsigned int mt_can_en_debounce(unsigned int eint_num)
 		return 0;
 	}
 }
+
+unsigned int mt_gpio_to_irq(unsigned gpio);
 
 /*
  * mt_eint_set_hw_debounce: Set the de-bounce time for the specified EINT number.
@@ -1744,11 +1751,7 @@ void mt_eint_normal_test_based_on_sw_debounce(void)
 	gpio_set_debounce(EINT_GPIO(eint_num), debounce_time);
 	pr_notice("EINT %d debounce enable %d\n", eint_num,
 	       mt_eint_is_debounce_en(eint_num));
-	ret =
-	    request_irq(EINT_IRQ(eint_num),
-			(irq_handler_t) mt_eint_soft_debounce_isr,
-			mt_eint_get_polarity(eint_num), "EINT-SWDEBOUNCE",
-			NULL);
+	ret = request_irq(EINT_IRQ(eint_num), (irq_handler_t) mt_eint_soft_debounce_isr, mt_eint_get_polarity(eint_num), "EINT-SWDEBOUNCE", NULL);
 	if (ret > 0)
 		pr_err("EINT IRQ LINE NOT AVAILABLE!!\n");
 	pr_notice("EINT %d request_irq done\n", eint_num);
@@ -2356,6 +2359,15 @@ void mt_eint_print_status(void)
 	}
 	pr_notice("\n");
 }
-EXPORT_SYMBOL(mt_eint_print_status);
-
 arch_initcall(mt_eint_init);
+
+EXPORT_SYMBOL(mt_eint_dis_debounce);
+EXPORT_SYMBOL(mt_eint_registration);
+EXPORT_SYMBOL(mt_eint_set_hw_debounce);
+EXPORT_SYMBOL(mt_eint_set_polarity);
+EXPORT_SYMBOL(mt_eint_set_sens);
+EXPORT_SYMBOL(mt_eint_mask);
+EXPORT_SYMBOL(mt_eint_unmask);
+EXPORT_SYMBOL(mt_eint_print_status);
+EXPORT_SYMBOL(mt_gpio_set_debounce);
+EXPORT_SYMBOL(mt_gpio_to_irq);

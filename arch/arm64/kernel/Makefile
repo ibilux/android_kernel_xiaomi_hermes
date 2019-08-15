@@ -1,7 +1,7 @@
 #
 # Makefile for the linux kernel.
 #
-subdir-ccflags-y += -Idrivers/misc/mediatek/mtprof/
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/mtprof/
 
 CPPFLAGS_vmlinux.lds	:= -DTEXT_OFFSET=$(TEXT_OFFSET)
 AFLAGS_head.o		:= -DTEXT_OFFSET=$(TEXT_OFFSET)

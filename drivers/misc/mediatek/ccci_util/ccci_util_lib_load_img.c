@@ -1172,7 +1172,7 @@ int ccci_init_security(void)
 {
 	int ret = 0;
 #ifdef ENABLE_MD_IMG_SECURITY_FEATURE
-	static int security_init;	/* for multi-modem support */
+	static int security_init = 0;	/* for multi-modem support */
 	if (security_init)
 		return ret;
 	security_init = 1;

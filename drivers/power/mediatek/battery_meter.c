@@ -48,6 +48,7 @@
 /* ============================================================ // */
 #define PROFILE_SIZE 4
 
+#define SOC_BY_HW_FG
 static DEFINE_MUTEX(FGADC_mutex);
 
 int Enable_FGADC_LOG = 1;
@@ -178,12 +179,12 @@ struct timespec last_oam_run_time;
 /* aging mechanism */
 #ifdef MTK_ENABLE_AGING_ALGORITHM
 
-static kal_int32 aging_ocv_1;
-static kal_int32 aging_ocv_2;
-static kal_int32 aging_car_1;
-static kal_int32 aging_car_2;
-static kal_int32 aging_dod_1;
-static kal_int32 aging_dod_2;
+static kal_int32 aging_ocv_1 = 0;
+static kal_int32 aging_ocv_2 = 0;
+static kal_int32 aging_car_1 = 0;
+static kal_int32 aging_car_2 = 0;
+static kal_int32 aging_dod_1 = 0;
+static kal_int32 aging_dod_2 = 0;
 #ifdef MD_SLEEP_CURRENT_CHECK
 static kal_int32 columb_before_sleep = 0x123456;
 #endif
@@ -232,12 +233,14 @@ kal_int32 gFG_min_temperature = 100;
 
 #endif				/* battery info */
 
+extern char* saved_command_line;
 /* Temperature window size */
 #define TEMP_AVERAGE_SIZE	30
 
 kal_bool  gFG_Is_offset_init = KAL_FALSE;
 
 #ifdef MTK_MULTI_BAT_PROFILE_SUPPORT
+extern int IMM_GetOneChannelValue_Cali(int Channel, int *voltage);
 kal_uint32 g_fg_battery_id = 0;
 
 #ifdef MTK_GET_BATTERY_ID_BY_AUXADC
@@ -301,7 +304,7 @@ void fgauge_get_profile_id(void)
 /* ============================================================ // */
 int get_r_fg_value(void)
 {
-	return R_FG_VALUE + CUST_R_FG_OFFSET;
+	return (R_FG_VALUE + CUST_R_FG_OFFSET);
 }
 
 #ifdef MTK_MULTI_BAT_PROFILE_SUPPORT
@@ -701,43 +704,50 @@ int fgauge_get_saddles_r_table(void)
 
 BATTERY_PROFILE_STRUC_P fgauge_get_profile(kal_uint32 temperature)
 {
-	if (temperature == TEMPERATURE_T0)
+	switch (temperature) {
+	case TEMPERATURE_T0:
 		return &battery_profile_t0[0];
-
-	if (temperature == TEMPERATURE_T1)
+		break;
+	case TEMPERATURE_T1:
 		return &battery_profile_t1[0];
-
-	if (temperature == TEMPERATURE_T2)
+		break;
+	case TEMPERATURE_T2:
 		return &battery_profile_t2[0];
-
-	if (temperature == TEMPERATURE_T3)
+		break;
+	case TEMPERATURE_T3:
 		return &battery_profile_t3[0];
-
-	if (temperature == TEMPERATURE_T)
+		break;
+	case TEMPERATURE_T:
 		return &battery_profile_temperature[0];
-
-
+		break;
+	default:
 		return NULL;
+		break;
+	}
 }
 
 R_PROFILE_STRUC_P fgauge_get_profile_r_table(kal_uint32 temperature)
 {
-	if (temperature == TEMPERATURE_T0)
+	switch (temperature) {
+	case TEMPERATURE_T0:
 		return &r_profile_t0[0];
-
-	if (temperature == TEMPERATURE_T1)
+		break;
+	case TEMPERATURE_T1:
 		return &r_profile_t1[0];
-
-	if (temperature == TEMPERATURE_T2)
+		break;
+	case TEMPERATURE_T2:
 		return &r_profile_t2[0];
-
-	if (temperature == TEMPERATURE_T3)
+		break;
+	case TEMPERATURE_T3:
 		return &r_profile_t3[0];
-
-	if (temperature == TEMPERATURE_T)
+		break;
+	case TEMPERATURE_T:
 		return &r_profile_temperature[0];
-
+		break;
+	default:
 		return NULL;
+		break;
+	}
 }
 #endif
 
@@ -2829,6 +2839,29 @@ kal_int32 battery_meter_set_columb_interrupt(kal_uint32 val)
 }
 #endif /* #if defined(FG_BAT_INT) */
 
+/*add by heliang for 3rd_fg begin */
+#if defined(SOC_BY_3RD_FG) 
+kal_int32 battery_meter_set_3rd_fg_temp(kal_int32 val)
+{
+    int ret=0;
+    
+    battery_meter_ctrl(BATTERY_METER_CMD_SET_FG_TEMP, val);
+
+    return ret;
+
+}
+kal_int32 battery_meter_get_3rd_fg_soc(void)
+{
+    int ret=0;
+    int val=0;
+    
+    ret = battery_meter_ctrl(BATTERY_METER_CMD_GET_FG_SOC, &val);
+
+    return val;
+}	
+#endif
+/*add by heliang for 3rd_fg end */
+
 kal_int32 battery_meter_get_battery_percentage(void)
 {
 #if defined(CONFIG_POWER_EXT)
@@ -3651,6 +3684,62 @@ static ssize_t store_FG_g_fg_dbg_percentage_voltmode(struct device *dev,
 static DEVICE_ATTR(FG_g_fg_dbg_percentage_voltmode, 0664, show_FG_g_fg_dbg_percentage_voltmode,
 		   store_FG_g_fg_dbg_percentage_voltmode);
 
+
+
+int Boardid_value=1;
+static ssize_t show_Boardid(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	bm_print(BM_LOG_CRTI, "[FG] Boardid  : %d\n", Boardid_value);
+	return sprintf(buf, "%d\n", Boardid_value);
+}
+
+static ssize_t store_Boardid(struct device *dev, struct device_attribute *attr,
+				      const char *buf, size_t size)
+{
+
+	return size;
+}
+
+static DEVICE_ATTR(Boardid, 0664, show_Boardid, store_Boardid);
+#ifdef CONFIG_MTK_CW2015_BATTERY
+extern int CW2015_test_init;
+static ssize_t show_Cwtest(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	bm_print(BM_LOG_CRTI, "[FG] CW2015_test  : %d\n", CW2015_test_init);
+	return sprintf(buf, "%d\n", CW2015_test_init);
+}
+
+static ssize_t store_Cwtest(struct device *dev, struct device_attribute *attr,
+				      const char *buf, size_t size)
+{
+
+	return size;
+}
+
+static DEVICE_ATTR(Cwtest, 0664, show_Cwtest, store_Cwtest);
+extern int cw2015_check;
+static ssize_t show_Cwcheck(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	bm_print(BM_LOG_CRTI, "[FG] CW2015_test  : %d\n", cw2015_check);
+	return sprintf(buf, "%d\n", cw2015_check);
+}
+
+static ssize_t store_Cwcheck(struct device *dev, struct device_attribute *attr,
+				      const char *buf, size_t size)
+{
+	return size;
+}
+
+static DEVICE_ATTR(Cwcheck, 0664, show_Cwcheck, store_Cwcheck);;
+
+// lg add 
+static ssize_t show_is_charging(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", gFG_Is_Charging);
+}
+static DEVICE_ATTR(is_charging, 0664, show_is_charging, NULL);;
+
+#endif
 /* ============================================================ // */
 static int battery_meter_probe(struct platform_device *dev)
 {
@@ -3704,7 +3793,13 @@ static int battery_meter_probe(struct platform_device *dev)
 	ret_device_file = device_create_file(&(dev->dev), &dev_attr_FG_Max_Battery_Temperature);
 	ret_device_file = device_create_file(&(dev->dev), &dev_attr_FG_Min_Battery_Temperature);
 #endif
-
+	ret_device_file = device_create_file(&(dev->dev), &dev_attr_Boardid);
+#ifdef CONFIG_MTK_CW2015_BATTERY
+	ret_device_file = device_create_file(&(dev->dev), &dev_attr_Cwtest);
+	ret_device_file = device_create_file(&(dev->dev), &dev_attr_Cwcheck);
+#endif
+// lg add
+	ret_device_file = device_create_file(&(dev->dev), &dev_attr_is_charging);
 	return 0;
 }
 

@@ -70,12 +70,12 @@
 #define SW_OVERHEAD_MS 1
 static VAL_BOOL_T gMMDFVFSMonitorStarts = VAL_FALSE;
 static VAL_BOOL_T gFirstDvfsLock = VAL_FALSE;
-static VAL_UINT32_T gMMDFVFSMonitorCounts;
+static VAL_UINT32_T gMMDFVFSMonitorCounts = 0;
 static VAL_TIME_T gMMDFVFSMonitorStartTime;
 static VAL_TIME_T gMMDFVFSLastLockTime;
 static VAL_TIME_T gMMDFVFSMonitorEndTime;
-static VAL_UINT32_T gHWLockInterval;
-static VAL_INT32_T gHWLockMaxDuration;
+static VAL_UINT32_T gHWLockInterval = 0;
+static VAL_INT32_T gHWLockMaxDuration = 0;
 
 VAL_UINT32_T TimeDiffMs(VAL_TIME_T timeOld, VAL_TIME_T timeNew)
 {
@@ -199,8 +199,8 @@ void VdecDvfsMonitorStart(void)
 
 static dev_t vcodec_devno = MKDEV(VCODEC_DEV_MAJOR_NUMBER, 0);
 static struct cdev *vcodec_cdev;
-static struct class *vcodec_class;
-static struct device *vcodec_device;
+static struct class *vcodec_class = NULL;
+static struct device *vcodec_device = NULL;
 
 static DEFINE_MUTEX(IsOpenedLock);
 static DEFINE_MUTEX(PWRLock);

@@ -1,19 +1,11 @@
 #$(call all-subdir-src-or-makefile)
+
 include $(srctree)/drivers/misc/mediatek/Makefile.custom
 
 # For MT6795 FPGA bring-up
 ifeq ($(CONFIG_ARCH_MT6795),y)
 include $(srctree)/drivers/misc/mediatek/Makefile.mt6795
 else
-
-ifneq (,$(filter $(CONFIG_ARCH_MT6735) $(CONFIG_ARCH_MT6735M) $(CONFIG_ARCH_MT6753), y))
-include $(srctree)/drivers/misc/mediatek/Makefile.mt6735
-else
-
-ifneq (,$(filter $(CONFIG_ARCH_MT6580), y))
-include $(srctree)/drivers/misc/mediatek/Makefile.mt6580
-else
-
 
 ifeq ($(CONFIG_MTK_L2C_SHARE),y)
 obj-y   += l2c_share/
@@ -60,6 +52,7 @@ obj-$(CONFIG_MTK_FB) += video/
 obj-$(CONFIG_MTK_AUXADC)	+= auxadc/
 
 #obj-y	+= bthid/
+#obj-y	+= ccmni/
 
 ifdef CONFIG_CUSTOM_KERNEL_EXTMD
 ifneq ($(strip $(CONFIG_CUSTOM_KERNEL_EXTMD)),"")
@@ -67,8 +60,12 @@ obj-y	+= emd_ctl/
 endif
 endif
 
-ifneq ($(wildcard $(srctree)/$(src)/met/),)
- 
+obj-$(CONFIG_MTK_WFD_SUPPORT)  += uibc/
+
+ifneq ($(CONFIG_GATOR_DRIVER),)
+ ifneq ($(wildcard $(srctree)/$(src)/gator-driver/),)
+  obj-$(CONFIG_GATOR_DRIVER) += gator-driver/
+ endif
 endif
 
 obj-$(CONFIG_MTK_XHCI)   +=  xhci/
@@ -84,6 +81,7 @@ ifneq ($(filter y, $(CONFIG_ARM_PSCI) $(CONFIG_ARM64)),)
 	obj-y   +=  atf_log/
 endif
 obj-$(CONFIG_MTK_WD_KICKER)		+= wdk/
+#obj-y	+= evdo_support/
 obj-$(CONFIG_MTK_MT_LOGGER)	+= mt_logger/
 obj-$(CONFIG_MD32_SUPPORT)   += md32/
 obj-y += dramc/
@@ -121,7 +119,7 @@ endif
 
 #obj-y	+= matv/
 #obj-y	+= touchpanel/
-# 
+#
 
 obj-$(CONFIG_MTK_VOW_SUPPORT)	+= vow/
 
@@ -135,13 +133,12 @@ obj-$(CONFIG_MTK_CCCI_DRIVER)  +=  ccci/
 obj-$(CONFIG_MTK_CCCI_EXT)     +=  dual_ccci/
 obj-$(CONFIG_MTK_ECCCI_DRIVER) +=  eccci/
 obj-$(CONFIG_MTK_EEMCS_DRIVER) +=  eemcs/
-obj-$(CONFIG_MTK_NFC) += nfc/
 obj-$(CONFIG_ZRAM)	+= mlog/
 
+#obj-y	+= cam_cal/src/$(MTK_PLATFORM)/dummy_eeprom/
 
 obj-$(CONFIG_MTK_LENS)   += lens/
 obj-$(CONFIG_MTK_IMGSENSOR)	+= imgsensor/src/
-
 
 ifeq ($(wildcard $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/cam_cal),)
 obj-$(CONFIG_MTK_CAM_CAL)	+= cam_cal/src/
@@ -160,9 +157,12 @@ obj-$(CONFIG_MTK_BOOT)	+= boot/
 obj-$(CONFIG_MTK_BOOT_REASON)	+= boot_reason/
 obj-$(CONFIG_MTK_CHIP)	+= chip/
 obj-$(CONFIG_MTK_GPIO)	+= gpio/
-obj-y	+= eint/
 obj-$(CONFIG_MTK_SERIAL)	+= uart/
 obj-y	+= pmic_wrap/
+
+ifneq ($(CONFIG_MTK_EIC),y)
+obj-y	+= eint/
+endif
 
 ifeq ($(CONFIG_MTK_HDMI_SUPPORT),y)
 obj-y	+= hdmi/
@@ -195,12 +195,10 @@ obj-$(CONFIG_MTK_JPEG)	+= jpeg/
 obj-$(CONFIG_MTK_LEDS)	+= leds/
 obj-$(CONFIG_MTK_SECURITY_SW_SUPPORT) +=masp/
 obj-$(CONFIG_MTK_MMC)	+= mmc-host/
-obj-$(CONFIG_MTK_MMC)	+= pmt/
 obj-$(CONFIG_MTK_MTD_NAND)	+= nand/
 obj-$(CONFIG_MTK_GPT_SCHEME_SUPPORT)	+= partition/
+obj-$(CONFIG_MTK_MMC)	+= pmt/
 obj-$(CONFIG_MTK_SOUND) += smartpa/
-
-obj-$(CONFIG_MTK_DUM_CHAR)	+= dum-char/
 
 #charge pump
 ifeq ($(CONFIG_CUSTOM_KERNEL_CHARGEPUMP),y)
@@ -247,23 +245,35 @@ obj-$(CONFIG_MTK_VCOREFS)	+= vcorefs/
 
 obj-$(CONFIG_TRUSTONIC_TEE_SUPPORT) += gud/
 obj-$(CONFIG_TRUSTONIC_TEE_SUPPORT) += secmem/
+#obj-$(CONFIG_EVDO_DT_VIA_SUPPORT) += misc_via/
 obj-$(CONFIG_MTK_C2K_SUPPORT) += c2k_ccci/
 obj-$(CONFIG_MTK_SCHED_CMP_POWER_AWARE_CONTROLLER)	+=  pa/
 obj-$(CONFIG_HMP_POWER_AWARE_CONTROLLER)	+=  pa_hmp/
+
+#widevine drm
+#$(warning "CONFIG_TRUSTONIC_TEE_SUPPORT = $(CONFIG_TRUSTONIC_TEE_SUPPORT)")
+obj-$(CONFIG_TRUSTONIC_TEE_SUPPORT) += secwidevine/
 
 obj-$(CONFIG_MTK_IN_HOUSE_TEE_SUPPORT) += trustzone/
 
 #power-loss-test
 obj-$(CONFIG_PWR_LOSS_MTK_TEST) += power-loss-test/
 
-endif           # end of CONFIG_ARCH_MT6735
 endif		# end of CONFIG_ARCH_MT6795
-endif       # end of CONFIG_ARCH_MT6580
 
 
 ifneq (,$(filter $(CONFIG_MTK_PLATFORM), "mt6752"))
-obj-y	+= ddr/$(MTK_PLATFORM)/
+obj-y	+= ddr/$(CONFIG_MTK_PLATFORM)/
 endif
+
+#add by lizhiye for hongwai
+obj-y		+= consumerir/
+
+obj-y		+= sltdevinfo/
+
+obj-$(CONFIG_MTK_HALL_AH1903)           += hall/
+
+obj-y	+= step_counter/
 
 obj-$(CONFIG_TRUSTONIC_TEE_SUPPORT) += gcpu/
 

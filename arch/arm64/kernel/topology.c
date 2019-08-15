@@ -72,6 +72,7 @@
  */
 static DEFINE_PER_CPU(unsigned long, cpu_scale);
 #ifdef CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY
+static DEFINE_PER_CPU(unsigned long, base_cpu_capacity);
 static DEFINE_PER_CPU(unsigned long, invariant_cpu_capacity);
 static DEFINE_PER_CPU(unsigned long, prescaled_cpu_capacity);
 #endif /* CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY */
@@ -102,18 +103,21 @@ static void set_power_scale(unsigned int cpu, unsigned long power)
 	per_cpu(cpu_scale, cpu) = power;
 }
 
-unsigned long arch_get_max_cpu_capacity(int cpu)
-{
-	return per_cpu(cpu_scale, cpu);
-}
-
 #ifdef CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY
 unsigned long arch_get_cpu_capacity(int cpu)
 {
 	return per_cpu(invariant_cpu_capacity, cpu);
 }
+unsigned long arch_get_max_cpu_capacity(int cpu)
+{
+	return per_cpu(base_cpu_capacity, cpu);
+}
 #else
 unsigned long arch_get_cpu_capacity(int cpu)
+{
+	return per_cpu(cpu_scale, cpu);
+}
+unsigned long arch_get_max_cpu_capacity(int cpu)
 {
 	return per_cpu(cpu_scale, cpu);
 }
@@ -311,6 +315,521 @@ void update_siblings_masks(unsigned int cpuid)
 	smp_wmb();
 }
 
+#ifdef CONFIG_MTK_CPU_TOPOLOGY
+
+enum {
+	ARCH_UNKNOWN = 0,
+	ARCH_SINGLE_CLUSTER,
+	ARCH_MULTI_CLUSTER,
+	ARCH_BIG_LITTLE,
+};
+
+struct cpu_cluster {
+	int cluster_id;
+	cpumask_t siblings;
+	void *next;
+};
+
+struct cpu_compatible {
+	const char *name;
+	const unsigned int cpuidr;
+	struct cpu_cluster *cluster;
+	int clscnt;
+};
+
+struct cpu_arch_info {
+	struct cpu_compatible *compat_big;
+	struct cpu_compatible *compat_ltt;
+	bool arch_ready;
+	int arch_type;
+	int nr_clusters;
+};
+
+/* NOTE: absolute decending ordered by cpu capacity */
+struct cpu_compatible cpu_compat_table[] = {
+	{ "arm,cortex-a57", ARM_CPU_PART_CORTEX_A57, NULL, 0 },
+	{ "arm,cortex-a53", ARM_CPU_PART_CORTEX_A53, NULL, 0 },
+	{ NULL, 0, NULL, 0 }
+};
+
+static struct cpu_compatible* compat_cputopo[NR_CPUS];
+
+static struct cpu_arch_info default_cpu_arch = {
+	NULL,
+	NULL,
+	0,
+	ARCH_UNKNOWN,
+	0,
+};
+static struct cpu_arch_info *glb_cpu_arch = &default_cpu_arch;
+
+static int __arch_type(void)
+{
+	int i, num_compat = 0;
+
+	if (!glb_cpu_arch->arch_ready)
+		return ARCH_UNKNOWN;
+
+	// return the cached setting if query more than once.
+	if (glb_cpu_arch->arch_type != ARCH_UNKNOWN)
+		return glb_cpu_arch->arch_type;
+
+	for (i = 0; i < ARRAY_SIZE(cpu_compat_table); i++) {
+		struct cpu_compatible *mc = &cpu_compat_table[i];
+		if (mc->clscnt != 0)
+			num_compat++;
+	}
+
+	if (num_compat > 1)
+		glb_cpu_arch->arch_type = ARCH_BIG_LITTLE;
+	else if (glb_cpu_arch->nr_clusters > 1)
+		glb_cpu_arch->arch_type = ARCH_MULTI_CLUSTER;
+	else if (num_compat == 1 && glb_cpu_arch->nr_clusters == 1)
+		glb_cpu_arch->arch_type = ARCH_SINGLE_CLUSTER;
+
+	return glb_cpu_arch->arch_type;
+}
+
+static DEFINE_SPINLOCK(__cpu_cluster_lock);
+static void __setup_cpu_cluster(const unsigned int cpu,
+								struct cpu_compatible * const cpt,
+								const u32 mpidr)
+{
+	struct cpu_cluster *prev_cls, *cls;
+	u32 cls_id = -1;
+
+	if (mpidr & MPIDR_MT_BITMASK)
+		cls_id = MPIDR_AFFINITY_LEVEL(mpidr, 2);
+	else
+		cls_id = MPIDR_AFFINITY_LEVEL(mpidr, 1);
+
+	spin_lock(&__cpu_cluster_lock);
+
+	cls = cpt->cluster;
+	prev_cls = cls;
+	while (cls) {
+		if (cls->cluster_id == cls_id)
+			break;
+		prev_cls = cls;
+		cls = (struct cpu_cluster *)cls->next;
+	}
+
+	if (!cls) {
+		cls = kzalloc(sizeof(struct cpu_cluster), GFP_ATOMIC);
+		BUG_ON(!cls);
+		cls->cluster_id = cls_id;
+		cpt->clscnt++;
+		glb_cpu_arch->nr_clusters++;
+		/* link it */
+		if (!cpt->cluster)
+			cpt->cluster = cls;
+		else
+			prev_cls->next = cls;
+	}
+	BUG_ON(cls->cluster_id != cls_id);
+
+	cpumask_set_cpu(cpu, &cls->siblings);
+	smp_wmb();
+
+	spin_unlock(&__cpu_cluster_lock);
+}
+
+static void setup_cputopo(const unsigned int cpu,
+						  struct cpu_compatible * const cpt,
+						  const u32 mpidr)
+
+{
+	if (compat_cputopo[cpu])
+		return;
+
+	compat_cputopo[cpu] = cpt;
+
+	if (!glb_cpu_arch->compat_big || glb_cpu_arch->compat_big > cpt)
+		glb_cpu_arch->compat_big = cpt;
+
+	if (!glb_cpu_arch->compat_ltt || glb_cpu_arch->compat_ltt < cpt)
+		glb_cpu_arch->compat_ltt = cpt;
+
+	__setup_cpu_cluster(cpu, cpt, mpidr);
+}
+
+static void setup_cputopo_def(const unsigned int cpu)
+{
+	struct cpu_compatible *idx = NULL;
+	unsigned int cpuidr = 0, mpidr;
+
+	BUG_ON(cpu != smp_processor_id());
+	cpuidr = read_cpuid_part_number();
+	mpidr = read_cpuid_mpidr();
+	for (idx = cpu_compat_table; idx->name; idx++) {
+		if (idx->cpuidr == cpuidr)
+			break;
+	}
+	BUG_ON(!idx || !idx->name);
+	setup_cputopo(cpu, idx, mpidr);
+}
+
+static void reset_cputopo(void)
+{
+	struct cpu_compatible *idx;
+
+	memset(glb_cpu_arch, 0, sizeof(struct cpu_arch_info));
+	glb_cpu_arch->arch_type = ARCH_UNKNOWN;
+
+	memset(&compat_cputopo, 0, sizeof(compat_cputopo));
+
+	spin_lock(&__cpu_cluster_lock);
+	for (idx = cpu_compat_table; idx->name; idx++) {
+		struct cpu_cluster *curr, *next;
+
+		if (idx->clscnt == 0)
+			continue;
+		BUG_ON(!idx->cluster);
+
+		curr = idx->cluster;
+		next = (struct cpu_cluster *)curr->next;
+		kfree(curr);
+
+		while (next) {
+			curr = next;
+			next = (struct cpu_cluster *)curr->next;
+			kfree(curr);
+		}
+		idx->cluster = NULL;
+		idx->clscnt = 0;
+	}
+	spin_unlock(&__cpu_cluster_lock);
+}
+
+/* verify cpu topology correctness by device tree.
+ * This function is called when current CPU is cpuid!
+ */
+static void verify_cputopo(const unsigned int cpuid, const u32 mpidr)
+{
+	struct cputopo_arm *cpuid_topo = &cpu_topology[cpuid];
+	struct cpu_compatible *cpt;
+	struct cpu_cluster *cls;
+
+	if (!glb_cpu_arch->arch_ready) {
+		int i;
+
+		setup_cputopo_def(cpuid);
+		for (i = 0; i < nr_cpu_ids; i++)
+			if (!compat_cputopo[i])
+				break;
+		if (i == nr_cpu_ids)
+			glb_cpu_arch->arch_ready = true;
+
+		return;
+	}
+
+	cpt = compat_cputopo[cpuid];
+	BUG_ON(!cpt);
+	cls = cpt->cluster;
+	while (cls) {
+		if (cpu_isset(cpuid, cls->siblings))
+			break;
+		cls = cls->next;
+	}
+	BUG_ON(!cls);
+	WARN(cls->cluster_id != cpuid_topo->socket_id,
+		 "[%s] cpu id: %d, cluster id (%d) != socket id (%d)\n",
+		 __func__, cpuid, cls->cluster_id, cpuid_topo->socket_id);
+}
+
+/*
+ * return 1 while every cpu is recognizible
+ */
+void arch_build_cpu_topology_domain(void)
+{
+	struct device_node *cn = NULL;
+	unsigned int cpu = 0;
+	u32 mpidr;
+
+	memset(&compat_cputopo, 0, sizeof(compat_cputopo));
+	// default by device tree parsing
+	while ((cn = of_find_node_by_type(cn, "cpu"))) {
+		struct cpu_compatible *idx;
+		const u32 *reg;
+		int len;
+
+		if (unlikely(cpu >= nr_cpu_ids)) {
+			pr_err("[CPUTOPO][%s] device tree cpu%d is over possible's\n",
+			       __func__, cpu);
+			break;
+		}
+
+		for (idx = cpu_compat_table; idx->name; idx++)
+			if (of_device_is_compatible(cn, idx->name))
+				break;
+
+		if (!idx || !idx->name) {
+			int cplen;
+			const char *cp;
+			cp = (char *) of_get_property(cn, "compatible", &cplen);
+			pr_err("[CPUTOPO][%s] device tree cpu%d (%s) is not compatible!!\n",
+			       __func__, cpu, cp);
+			break;
+		}
+
+		reg = of_get_property(cn, "reg", &len);
+		if (!reg || len != 4) {
+			pr_err("[CPUTOPO][%s] missing reg property\n", cn->full_name);
+			break;
+		}
+		mpidr = be32_to_cpup(reg);
+		setup_cputopo(cpu, idx, mpidr);
+		cpu++;
+	}
+	glb_cpu_arch->arch_ready = (cpu == nr_cpu_ids);
+
+	if (!glb_cpu_arch->arch_ready) {
+		pr_warn("[CPUTOPO][%s] build cpu topology failed, to be handled by mpidr/cpuidr regs!\n", __func__);
+		reset_cputopo();
+		setup_cputopo_def(smp_processor_id());
+	}
+}
+
+int arch_cpu_is_big(unsigned int cpu)
+{
+	int type;
+
+	if (unlikely(cpu >= nr_cpu_ids))
+		BUG();
+
+	type = __arch_type();
+	switch(type) {
+	case ARCH_BIG_LITTLE:
+		return (compat_cputopo[cpu] == glb_cpu_arch->compat_big);
+	default:
+		/* treat as little */
+		return 0;
+	}
+}
+
+int arch_cpu_is_little(unsigned int cpu)
+{
+	int type;
+
+	if (unlikely(cpu >= nr_cpu_ids))
+		BUG();
+
+	type = __arch_type();
+	switch(type) {
+	case ARCH_BIG_LITTLE:
+		return (compat_cputopo[cpu] == glb_cpu_arch->compat_ltt);
+	default:
+		/* treat as little */
+		return 1;
+	}
+}
+
+int arch_is_multi_cluster(void)
+{
+	return (__arch_type() == ARCH_MULTI_CLUSTER || __arch_type() == ARCH_BIG_LITTLE);
+}
+
+int arch_is_big_little(void)
+{
+	return (__arch_type() == ARCH_BIG_LITTLE);
+}
+
+int arch_get_nr_clusters(void)
+{
+	return glb_cpu_arch->nr_clusters;
+}
+
+int arch_get_cluster_id(unsigned int cpu)
+{
+	struct cputopo_arm *arm_cputopo = &cpu_topology[cpu];
+	struct cpu_compatible *cpt;
+	struct cpu_cluster *cls;
+
+	BUG_ON(cpu >= nr_cpu_ids);
+	if (!glb_cpu_arch->arch_ready) {
+		WARN_ONCE(!glb_cpu_arch->arch_ready, "[CPUTOPO][%s] cpu(%d), socket_id(%d) topology is not ready!\n",
+				  __func__, cpu, arm_cputopo->socket_id);
+		if (unlikely(arm_cputopo->socket_id < 0))
+			return 0;
+		return arm_cputopo->socket_id;
+	}
+
+	cpt = compat_cputopo[cpu];
+	BUG_ON(!cpt);
+	cls = cpt->cluster;
+	while (cls) {
+		if (cpu_isset(cpu, cls->siblings))
+			break;
+		cls = cls->next;
+	}
+	BUG_ON(!cls);
+	WARN_ONCE(cls->cluster_id != arm_cputopo->socket_id, "[CPUTOPO][%s] cpu(%d): cluster_id(%d) != socket_id(%d) !\n",
+			  __func__, cpu, cls->cluster_id, arm_cputopo->socket_id);
+
+	return cls->cluster_id;
+}
+
+static struct cpu_cluster *__get_cluster_slowpath(int cluster_id)
+{
+	int i = 0;
+	struct cpu_compatible *cpt;
+	struct cpu_cluster *cls;
+
+	for (i = 0; i < nr_cpu_ids; i++) {
+		cpt = compat_cputopo[i];
+		BUG_ON(!cpt);
+		cls = cpt->cluster;
+		while (cls) {
+			if (cls->cluster_id == cluster_id)
+				return cls;
+			cls = cls->next;
+		}
+	}
+	return NULL;
+}
+
+void arch_get_cluster_cpus(struct cpumask *cpus, int cluster_id)
+{
+	struct cpu_cluster *cls = NULL;
+
+	cpumask_clear(cpus);
+
+	if (likely(glb_cpu_arch->compat_ltt)) {
+		cls = glb_cpu_arch->compat_ltt->cluster;
+		while (cls) {
+			if (cls->cluster_id == cluster_id)
+				goto found;
+			cls = cls->next;
+		}
+	}
+	if (likely(glb_cpu_arch->compat_big)) {
+		cls = glb_cpu_arch->compat_big->cluster;
+		while (cls) {
+			if (cls->cluster_id == cluster_id)
+				goto found;
+			cls = cls->next;
+		}
+	}
+
+	cls = __get_cluster_slowpath(cluster_id);
+	BUG_ON(!cls); // debug only.. remove later...
+	if (!cls)
+		return;
+
+found:
+	cpumask_copy(cpus, &cls->siblings);
+}
+
+/*
+ * arch_get_big_little_cpus - get big/LITTLE cores in cpumask
+ * @big: the cpumask pointer of big cores
+ * @little: the cpumask pointer of little cores
+ *
+ * Treat it as little cores, if it's not big.LITTLE architecture
+ */
+void arch_get_big_little_cpus(struct cpumask *big, struct cpumask *little)
+{
+	int type;
+	struct cpu_cluster *cls = NULL;
+	struct cpumask tmpmask;
+	unsigned int cpu;
+
+	if (unlikely(!glb_cpu_arch->arch_ready))
+		BUG();
+
+	type = __arch_type();
+	spin_lock(&__cpu_cluster_lock);
+	switch(type) {
+	case ARCH_BIG_LITTLE:
+		if (likely(1 == glb_cpu_arch->compat_big->clscnt)) {
+			cls = glb_cpu_arch->compat_big->cluster;
+			cpumask_copy(big, &cls->siblings);
+		} else {
+			cls = glb_cpu_arch->compat_big->cluster;
+			while (cls) {
+				cpumask_or(&tmpmask, big, &cls->siblings);
+				cpumask_copy(big, &tmpmask);
+				cls = cls->next;
+			}
+		}
+		if (likely(1 == glb_cpu_arch->compat_ltt->clscnt)) {
+			cls = glb_cpu_arch->compat_ltt->cluster;
+			cpumask_copy(little, &cls->siblings);
+		} else {
+			cls = glb_cpu_arch->compat_ltt->cluster;
+			while (cls) {
+				cpumask_or(&tmpmask, little, &cls->siblings);
+				cpumask_copy(little, &tmpmask);
+				cls = cls->next;
+			}
+		}
+		break;
+	default:
+		/* treat as little */
+		cpumask_clear(big);
+		cpumask_clear(little);
+		for_each_possible_cpu(cpu)
+			cpumask_set_cpu(cpu, little);
+	}
+	spin_unlock(&__cpu_cluster_lock);
+}
+#else /* !CONFIG_MTK_CPU_TOPOLOGY */
+int arch_cpu_is_big(unsigned int cpu) { return 0; }
+int arch_cpu_is_little(unsigned int cpu) { return 1; }
+int arch_is_big_little(void) { return 0; }
+
+int arch_get_nr_clusters(void)
+{
+	int max_id = 0;
+	unsigned int cpu;
+
+	// assume socket id is monotonic increasing without gap.
+	for_each_possible_cpu(cpu) {
+		struct cputopo_arm *arm_cputopo = &cpu_topology[cpu];
+		if (arm_cputopo->socket_id > max_id)
+			max_id = arm_cputopo->socket_id;
+	}
+	return max_id+1;
+}
+
+int arch_is_multi_cluster(void)
+{
+	return (arch_get_nr_clusters() > 1 ? 1 : 0);
+}
+
+int arch_get_cluster_id(unsigned int cpu)
+{
+	struct cputopo_arm *arm_cputopo = &cpu_topology[cpu];
+	return arm_cputopo->socket_id < 0 ? 0 : arm_cputopo->socket_id;
+}
+
+void arch_get_cluster_cpus(struct cpumask *cpus, int cluster_id)
+{
+	unsigned int cpu, found_id = -1;
+
+	for_each_possible_cpu(cpu) {
+		struct cputopo_arm *arm_cputopo = &cpu_topology[cpu];
+		if (arm_cputopo->socket_id == cluster_id) {
+			found_id = cluster_id;
+			break;
+		}
+	}
+	if (-1 == found_id || cluster_to_logical_mask(found_id, cpus)) {
+		cpumask_clear(cpus);
+		for_each_possible_cpu(cpu)
+			cpumask_set_cpu(cpu, cpus);
+	}
+}
+void arch_get_big_little_cpus(struct cpumask *big, struct cpumask *little)
+{
+    unsigned int cpu;
+    cpumask_clear(big);
+    cpumask_clear(little);
+    for_each_possible_cpu(cpu)
+        cpumask_set_cpu(cpu, little);
+}
+#endif /* CONFIG_MTK_CPU_TOPOLOGY */
+
 /*
  * store_cpu_topology is called at boot when only one cpu is running
  * and with the mutex cpu_hotplug.lock locked, when several cpus have booted,
@@ -355,6 +874,10 @@ void store_cpu_topology(unsigned int cpuid)
 		cpuid_topo->core_id = 0;
 		cpuid_topo->socket_id = -1;
 	}
+
+#ifdef CONFIG_MTK_CPU_TOPOLOGY
+	verify_cputopo(cpuid, (u32)mpidr);
+#endif
 
 topology_populated:
 	update_siblings_masks(cpuid);
@@ -491,13 +1014,6 @@ void __init init_cpu_topology(void)
 
 	parse_dt_topology();
 }
-
-void __init arch_build_cpu_topology_domain(void)
-{
-	init_cpu_topology();
-	cpu_topology_init = 1;
-}
-
 
 #ifdef CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY
 #include <linux/cpufreq.h>
@@ -689,61 +1205,6 @@ int arch_is_smp(void)
 	__arch_smp = (max_capacity != min_capacity) ? 0 : 1;
 
 	return __arch_smp;
-}
-
-int arch_get_nr_clusters(void)
-{
-	static int __arch_nr_clusters = -1;
-	int max_id = 0;
-	unsigned int cpu;
-
-	if (__arch_nr_clusters != -1)
-		return __arch_nr_clusters;
-
-	/* assume socket id is monotonic increasing without gap. */
-	for_each_possible_cpu(cpu) {
-		struct cputopo_arm *arm_cputopo = &cpu_topology[cpu];
-		if (arm_cputopo->socket_id > max_id)
-			max_id = arm_cputopo->socket_id;
-	}
-	__arch_nr_clusters = max_id + 1;
-	return __arch_nr_clusters;
-}
-
-int arch_is_multi_cluster(void)
-{
-	return arch_get_nr_clusters() > 1 ? 1 : 0;
-}
-
-int arch_get_cluster_id(unsigned int cpu)
-{
-	struct cputopo_arm *arm_cputopo = &cpu_topology[cpu];
-	return arm_cputopo->socket_id < 0 ? 0 : arm_cputopo->socket_id;
-}
-
-void arch_get_cluster_cpus(struct cpumask *cpus, int cluster_id)
-{
-	unsigned int cpu;
-
-	cpumask_clear(cpus);
-	for_each_possible_cpu(cpu) {
-		struct cputopo_arm *arm_cputopo = &cpu_topology[cpu];
-		if (arm_cputopo->socket_id == cluster_id)
-			cpumask_set_cpu(cpu, cpus);
-	}
-}
-
-void arch_get_big_little_cpus(struct cpumask *big, struct cpumask *little)
-{
-	unsigned int cpu;
-	cpumask_clear(big);
-	cpumask_clear(little);
-	for_each_possible_cpu(cpu) {
-		if (cpu_capacity[cpu].capacity > min_capacity)
-			cpumask_set_cpu(cpu, big);
-		else
-			cpumask_set_cpu(cpu, little);
-	}
 }
 
 int arch_better_capacity(unsigned int cpu)

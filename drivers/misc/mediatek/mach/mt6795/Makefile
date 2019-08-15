@@ -158,6 +158,7 @@ obj-y += mt_mem_bw.o
 obj-y += fliper/
 
 endif
+
 ifneq ($(wildcard $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/cam_cal),)
 obj-$(CONFIG_MTK_CAM_CAL)   +=  $(ARCH_MTK_PROJECT)/cam_cal/
 endif
@@ -165,5 +166,3 @@ endif
 ifneq ($(wildcard $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/imgsensor),)
 obj-y   +=  $(ARCH_MTK_PROJECT)/imgsensor/
 endif
-
-

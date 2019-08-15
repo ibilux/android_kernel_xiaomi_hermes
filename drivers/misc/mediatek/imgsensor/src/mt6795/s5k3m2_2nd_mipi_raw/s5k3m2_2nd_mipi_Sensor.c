@@ -35,7 +35,7 @@
 #include "kd_imgsensor_errcode.h"
 
 #include "s5k3m2_2nd_mipi_Sensor.h"
-//#include <linux/dev_info.h>
+#include <linux/dev_info.h>
 #define PFX "S5k3M2_2ND_camera_sensor"
 #define LOG_1 LOG_INF("S5k3M2_2ND,MIPI 4LANE\n")
 #define LOG_2 LOG_INF("preview 2096*1552@30fps,1260Mbps/lane; video 4192*3104@30fps,1260Mbps/lane; capture 13M@30fps,1260Mbps/lane\n")
@@ -3079,7 +3079,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 	kal_uint8 i = 0;
     kal_uint8 retry = 1;
     kal_uint16 Module_id = 0;
-    //struct devinfo_struct *dev_sunny;// = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
+    struct devinfo_struct *dev_sunny;// = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
     static kal_uint8 devinfo_add = 2;
     
    
@@ -3100,7 +3100,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
                 {
 	                if(devinfo_add !=0)
 				    {
-				    	/*dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
+				    	dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
     
 					    dev_sunny->device_type = "Camera";
 					    dev_sunny->device_vendor = "Sunny";
@@ -3110,7 +3110,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 					    dev_sunny->device_info = DEVINFO_NULL;
 					    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_sunny);
 				    	dev_sunny->device_used = DEVINFO_USED;
-				    	DEVINFO_CHECK_ADD_DEVICE(dev_sunny);*/
+				    	DEVINFO_CHECK_ADD_DEVICE(dev_sunny);
 				    	devinfo_add = 0;
 				    } 
 				    *sensor_id =	imgsensor_info.sensor_id;
@@ -3135,7 +3135,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
         
         if(devinfo_add == 1)
     	{
-    		/*dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
+    		dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 
 		    dev_sunny->device_type = "Camera";
 		    dev_sunny->device_vendor = "Sunny";
@@ -3145,7 +3145,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		    dev_sunny->device_info = DEVINFO_NULL;
 		    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_sunny);
 	    	dev_sunny->device_used = DEVINFO_UNUSED;
-	    	DEVINFO_CHECK_ADD_DEVICE(dev_sunny);*/
+	    	DEVINFO_CHECK_ADD_DEVICE(dev_sunny);
     		devinfo_add = 0;
     	}
     	else

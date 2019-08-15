@@ -421,6 +421,11 @@ static void accdet_eint_work_callback(struct work_struct *work)
     }
 #else
    //KE under fastly plug in and plug out
+#ifdef CONFIG_OF
+    disable_irq(accdet_irq);
+#else
+    mt_eint_mask(CUST_EINT_ACCDET_NUM);
+#endif
     if (cur_eint_state == EINT_PIN_PLUG_IN) {
 		ACCDET_DEBUG("[Accdet]EINT func :plug-in\n");
 		mutex_lock(&accdet_eint_irq_sync_mutex);
@@ -623,7 +628,7 @@ static inline int accdet_setup_eint(void)
 		accdet_irq = irq_of_parse_and_map(node,0);
 		ret = request_irq(accdet_irq,accdet_eint_func,IRQF_TRIGGER_NONE,"ACCDET-eint",NULL);
 		if(ret>0){
-            ACCDET_DEBUG("[Accdet]EINT IRQ LINE£NNOT AVAILABLE\n");
+            ACCDET_DEBUG("[Accdet]EINT IRQ LINEï¿½NNOT AVAILABLE\n");
 		}
 	}
 	else {
@@ -661,7 +666,7 @@ static DEFINE_MUTEX(accdet_multikey_mutex);
 
         MD              UP                DW
 |---------|-----------|----------|
-     MD< 0.09V<= UP<0.24V<=DW <0.5V
+0V<=MD< 0.09V<= UP<0.24V<=DW <0.5V
 
 */
 
@@ -685,7 +690,9 @@ static int key_check(int b)
 	{
 		ACCDET_DEBUG("[accdet]adc_data: %d mv\n",b);
 		return UP_KEY;
-	} else if (b < UP_KEY_THR) {/*add efuse maybe mid-key value is below zero*/
+	}
+	else if ((b < UP_KEY_THR) && (b >= MD_KEY_THR))
+	{
 		ACCDET_DEBUG("[accdet]adc_data: %d mv\n",b);
 		return MD_KEY;
 	}
@@ -694,9 +701,7 @@ static int key_check(int b)
 }
 static void send_key_event(int keycode,int flag)
 {
-#if 0
-    if(call_status == 0)
-    {
+
                 switch (keycode)
                 {
                 case DW_KEY:
@@ -715,10 +720,14 @@ static void send_key_event(int keycode,int flag)
 					ACCDET_DEBUG("[accdet]KEY_PLAYPAUSE %d\n",flag);
 		   	        break;
                 }
+#if 0
+    if(call_status == 0)
+    {
+
      }
 	else
 	{
-#endif
+
 	          switch (keycode)
               {
                 case DW_KEY:
@@ -738,7 +747,7 @@ static void send_key_event(int keycode,int flag)
 					break;
 	          }
 //	}
-
+#endif
 }
 static void multi_key_detection(int current_status)
 {

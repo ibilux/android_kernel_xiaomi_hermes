@@ -1109,7 +1109,7 @@ PMU_STATUS BAT_TopOffModeAction(void)
 {
 	kal_uint32 charging_enable = KAL_FALSE;
 #ifdef HIGH_BATTERY_VOLTAGE_SUPPORT
-	kal_uint32 cv_voltage = 4350;
+	kal_uint32 cv_voltage = 4400;
 #else
 	kal_uint32 cv_voltage = 4200;
 #endif

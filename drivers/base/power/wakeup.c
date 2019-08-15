@@ -2,6 +2,7 @@
  * drivers/base/power/wakeup.c - System wakeup events framework
  *
  * Copyright (c) 2010 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
+ * Copyright (C) 2018 XiaoMi, Inc.
  *
  * This file is released under the GPLv2.
  */
@@ -19,7 +20,7 @@
 #include "power.h"
 //#ifndef CONFIG_ARM64
 #if 1
-int wakeup_debug = 0;
+int wakeup_debug = 0;// = 1;add by zhaofei - 2015-05-26-13-53
 #define _TAG_WAKEUP "WAKEUP"
 #define wakeup_log(fmt, ...)    do { if (wakeup_debug) pr_info("[%s][%s]" fmt, _TAG_WAKEUP, __func__, ##__VA_ARGS__); } while (0)
 #define wakeup_warn(fmt, ...)   do { if (wakeup_debug) pr_warn("[%s][%s]" fmt, _TAG_WAKEUP, __func__, ##__VA_ARGS__); } while (0)
@@ -558,6 +559,7 @@ static void wakeup_source_deactivate(struct wakeup_source *ws)
  *
  * It is safe to call it from interrupt context.
  */
+static void print_active_wakeup_sources(void);// add by zhaofei - 2015-05-26-13-56
 void __pm_relax(struct wakeup_source *ws)
 {
 	unsigned long flags;
@@ -572,6 +574,8 @@ void __pm_relax(struct wakeup_source *ws)
 	if (ws->active)
 		wakeup_source_deactivate(ws);
 	spin_unlock_irqrestore(&ws->lock, flags);
+
+	//print_active_wakeup_sources();// add by zhaofei - 2015-05-26-13-56
 }
 EXPORT_SYMBOL_GPL(__pm_relax);
 

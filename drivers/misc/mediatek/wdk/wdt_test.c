@@ -164,7 +164,6 @@ static int start_kicker(void)
 		wk_tsk[i] = kthread_create(kwdt_thread_test, &data, name);
 		if (IS_ERR(wk_tsk[i])) {
 			int ret = PTR_ERR(wk_tsk[i]);
-
 			wk_tsk[i] = NULL;
 			return ret;
 		}

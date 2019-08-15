@@ -63,7 +63,7 @@ int Enable_FGADC_LOG = 1;
 
 #define NETLINK_FGD 26
 #define CUST_SETTING_VERSION 0x100000
-#define FGD_CHECK_VERSION	0x100001
+#define FGD_CHECK_VERSION	 0x100001
 
 /* ============================================================ // */
 /* global variable */
@@ -88,11 +88,11 @@ kal_uint32 add_time = 0;
 kal_int32 g_booting_vbat = 0;
 static U32 temperature_change = 1;
 
-static struct sock *daemo_nl_sk;
+static struct sock *daemo_nl_sk = NULL;
 static void nl_send_to_user(int pid, int seq, struct fgd_nl_msg_t *reply_msg);
-static u_int g_fgd_pid;
-static kal_uint32 g_fgd_version;
-static kal_bool init_flag;
+static u_int g_fgd_pid = 0;
+static kal_uint32 g_fgd_version = 0;
+static kal_bool init_flag = false;
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
 /* // PMIC AUXADC Related Variable */
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
@@ -135,11 +135,11 @@ int gFG_result_soc = 0;
 #define DIFFERENCE_HWOCV_VBAT			30
 #endif
 /* smooth time tracking */
-kal_int32 gFG_coulomb_act_time = -1;
-kal_int32 gFG_coulomb_act_pre = 0;
-kal_int32 gFG_coulomb_act_diff = 0;
-kal_int32 gFG_coulomb_act_diff_time = 0;
-kal_int32 gFG_coulomb_is_charging = 0;
+kal_int32 gFG_coulomb_act_time=-1;
+kal_int32 gFG_coulomb_act_pre=0;
+kal_int32 gFG_coulomb_act_diff=0;
+kal_int32 gFG_coulomb_act_diff_time=0;
+kal_int32 gFG_coulomb_is_charging=0;
 
 
 kal_int32 gFG_DOD0_init = 0;
@@ -245,34 +245,34 @@ struct timespec suspend_time, car_time;
 kal_int32 g_sw_vbat_temp = 0;
 struct timespec last_oam_run_time;
 static kal_int32 coulomb_before_sleep = 0x123456;
-static kal_int32 last_time;
+static kal_int32 last_time=0;
 /* aging mechanism */
 #ifdef MTK_ENABLE_AGING_ALGORITHM
-static kal_int32 aging_ocv_1;
-static kal_int32 aging_ocv_2;
-static kal_int32 aging_car_1;
-static kal_int32 aging_car_2;
+static kal_int32 aging_ocv_1 = 0;
+static kal_int32 aging_ocv_2 = 0;
+static kal_int32 aging_car_1 = 0;
+static kal_int32 aging_car_2 = 0;
 static kal_int32 aging_dod_1 = 100;
 static kal_int32 aging_dod_2 = 100;
-static kal_int32 aging_temp_1;
-static kal_int32 aging_temp_2;
-static kal_int32 aging_temp_3;
-static kal_int32 aging_temp_4;
+static kal_int32 aging_temp_1 = 0;
+static kal_int32 aging_temp_2 = 0;
+static kal_int32 aging_temp_3 = 0;
+static kal_int32 aging_temp_4 = 0;
 static kal_bool aging_stage1_enable = KAL_FALSE;
 static kal_bool aging_stage2_enable = KAL_FALSE;
-static kal_int32 aging2_dod;
-static kal_int32 qmax_aging;
+static kal_int32 aging2_dod = 0;
+static kal_int32 qmax_aging = 0;
 #ifdef MD_SLEEP_CURRENT_CHECK
 static kal_int32 DOD_hwocv = 100;
 static kal_int32 DOD_now = 100;
-static kal_uint32 volt_now;
-static kal_int32 cal_vbat;
-static kal_int32 cal_ocv;
-static kal_int32 cal_r_1 = 0, cal_r_2;
-static kal_int32 cal_current;
-static kal_int32 cal_current_avg;
-static kal_int32 cal_car;
-static kal_int32 gFG_aft_soc;
+static kal_uint32 volt_now = 0;
+static kal_int32 cal_vbat = 0;
+static kal_int32 cal_ocv = 0;
+static kal_int32 cal_r_1 = 0, cal_r_2 = 0;
+static kal_int32 cal_current = 0;
+static kal_int32 cal_current_avg = 0;
+static kal_int32 cal_car = 0;
+static kal_int32 gFG_aft_soc = 0;
 #endif
 
 #ifndef SUSPEND_CURRENT_CHECK_THRESHOLD
@@ -333,13 +333,13 @@ static kal_int32 recharge_tolerance = RECHARGE_TOLERANCE;
 #ifdef SHUTDOWN_GAUGE0
 static kal_int32 shutdown_gauge0 = 1;
 #else
-static kal_int32 shutdown_gauge0;
+static kal_int32 shutdown_gauge0 = 0;
 #endif
 
 #ifdef SHUTDOWN_GAUGE1_MINS
 static kal_int32 shutdown_gauge1_xmins = 1;
 #else
-static kal_int32 shutdown_gauge1_xmins;
+static kal_int32 shutdown_gauge1_xmins = 0;
 #endif
 
 static kal_int32 shutdown_gauge1_mins = SHUTDOWN_GAUGE1_MINS;
@@ -371,8 +371,98 @@ static kal_int32 gFG_daemon_log_level = BM_DAEMON_DEFAULT_LOG_LEVEL;
 /* function prototype */
 /* ============================================================ // */
 
+struct battery_meter_custom_data{
 
-struct battery_meter_table_custom_data {
+	/* cust_battery_meter.h */
+	int soc_flow;
+
+	int hw_fg_force_use_sw_ocv;
+
+	/* ADC resister */
+	int r_bat_sense;
+	int r_i_sense;
+	int r_charger_1;
+	int r_charger_2;
+
+	int temperature_t0;
+	int temperature_t1;
+	int temperature_t2;
+	int temperature_t3;
+	int temperature_t;
+
+	int fg_meter_resistance;
+
+	/* Qmax for battery  */
+	int q_max_pos_50;
+	int q_max_pos_25;
+	int q_max_pos_0;
+	int q_max_neg_10;
+	int q_max_pos_50_h_current;
+	int q_max_pos_25_h_current;
+	int q_max_pos_0_h_current;
+	int q_max_neg_10_h_current;
+
+	int oam_d5; /* 1 : D5,   0: D2 */
+
+	int change_tracking_point;
+	int cust_tracking_point;
+	int cust_r_sense;
+	int cust_hw_cc;
+	int aging_tuning_value;
+	int cust_r_fg_offset;
+	int ocv_board_compesate;
+	int r_fg_board_base;
+	int r_fg_board_slope;
+	int car_tune_value;
+
+	/* HW Fuel gague  */
+	int current_detect_r_fg;
+	int minerroroffset;
+	int fg_vbat_average_size;
+	int r_fg_value;
+	int difference_hwocv_rtc;
+	int difference_hwocv_swocv;
+	int difference_swocv_rtc;
+	int max_swocv;
+
+	int max_hwocv;
+	int max_vbat;
+	int difference_hwocv_vbat;
+
+	int suspend_current_threshold;
+	int ocv_check_time;
+	int shutdown_system_voltage;
+	int recharge_tolerance;
+	int fixed_tbat_25;
+
+	int batterypseudo100;
+	int batterypseudo1;
+
+	/* Dynamic change wake up period of battery thread when suspend*/
+	int vbat_normal_wakeup;
+	int vbat_low_power_wakeup;
+	int normal_wakeup_period;
+	int low_power_wakeup_period;
+	int close_poweroff_wakeup_period;
+
+	int init_soc_by_sw_soc;
+	int sync_ui_soc_imm;                  //3. ui soc sync to fg soc immediately
+	int mtk_enable_aging_algorithm; //6. q_max aging algorithm
+	int md_sleep_current_check;     //5. gauge adjust by ocv 9. md sleep current check
+	int q_max_by_current;           //7. qmax varient by current loading.
+	int q_max_sys_voltage;		//8. qmax variant by sys voltage.
+
+	int shutdown_gauge0;
+	int shutdown_gauge1_xmins;
+	int shutdown_gauge1_mins;
+
+	//int fg_bat_int;
+	//int is_battery_remove_by_pmic;
+
+};
+
+
+struct battery_meter_table_custom_data{
 	/* cust_battery_meter_table.h */
 	int battery_profile_t0_size;
 	BATTERY_PROFILE_STRUC battery_profile_t0[100];
@@ -400,12 +490,21 @@ struct battery_meter_table_custom_data {
 struct battery_meter_custom_data batt_meter_cust_data;
 struct battery_meter_table_custom_data batt_meter_table_cust_data;
 
+extern char* saved_command_line;
 /* Temperature window size */
 #define TEMP_AVERAGE_SIZE	30
 
-kal_bool gFG_Is_offset_init = KAL_FALSE;
+kal_bool  gFG_Is_offset_init = KAL_FALSE;
 
+extern PMU_ChargerStruct BMT_status;
+extern BATTERY_VOLTAGE_ENUM cv_voltage;
+extern kal_uint32 battery_tracking_time;
+extern kal_uint32 wake_up_smooth_time;
+extern kal_bool g_battery_soc_ready;
+extern void mt_battery_update_status(void);
+extern void bat_update_thread_wakeup(void);
 #ifdef CONFIG_MTK_MULTI_BAT_PROFILE_SUPPORT
+extern int IMM_GetOneChannelValue_Cali(int Channel, int *voltage);
 kal_uint32 g_fg_battery_id = 0;
 
 #ifdef MTK_GET_BATTERY_ID_BY_AUXADC

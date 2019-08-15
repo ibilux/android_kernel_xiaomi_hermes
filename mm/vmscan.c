@@ -2,6 +2,7 @@
  *  linux/mm/vmscan.c
  *
  *  Copyright (C) 1991, 1992, 1993, 1994  Linus Torvalds
+ *  Copyright (C) 2018 XiaoMi, Inc.
  *
  *  Swap reorganised 29.12.95, Stephen Tweedie.
  *  kswapd added: 7.1.96  sct
@@ -3332,6 +3333,10 @@ static void kswapd_try_to_sleep(pg_data_t *pgdat, int order, int classzone_idx)
 	finish_wait(&pgdat->kswapd_wait, &wait);
 }
 
+#if defined(CONFIG_ANDROID_WHETSTONE)
+extern void wakeup_kmemsw_chkd(void);
+#endif
+
 /*
  * The background pageout daemon, started as a kernel thread
  * from the init process.
@@ -3431,6 +3436,9 @@ static int kswapd(void *p)
 			balanced_classzone_idx = classzone_idx;
 			balanced_order = balance_pgdat(pgdat, order,
 						&balanced_classzone_idx);
+#if defined(CONFIG_ANDROID_WHETSTONE)
+			wakeup_kmemsw_chkd();
+#endif
 		}
 	}
 
@@ -3949,6 +3957,9 @@ void scan_unevictable_unregister_node(struct node *node)
 #endif
 
 #ifdef CONFIG_MTKPASR
+#ifdef CONFIG_64BIT
+#define SHRINKER_IGNORE_TAG 0xffffffc008000000UL
+#endif
 void try_to_shrink_slab(void)
 {
 	struct shrinker *shrinker;
@@ -3968,6 +3979,11 @@ void try_to_shrink_slab(void)
 		num_objs = do_shrinker_shrink(shrinker, &shrink, 0);
 		if (num_objs <= 0)
 			continue;
+
+#ifdef CONFIG_64BIT
+		if ((unsigned long)shrinker < SHRINKER_IGNORE_TAG)
+			continue;
+#endif
 
 		do {
 			/* To shrink */
@@ -4084,6 +4100,7 @@ int mtkpasr_drop_page(struct page *page)
 	 * Try to allocate it some swap space here.
 	 */
 	if (PageAnon(page) && !PageSwapCache(page)) {
+#ifndef CONFIG_64BIT
 		/* Check whether we have enough free memory */
 		if (vm_swap_full()) {
 			goto unlock;
@@ -4093,6 +4110,9 @@ int mtkpasr_drop_page(struct page *page)
 		if (!add_to_swap(page, NULL)){
 			goto unlock;
 		}
+#else
+		goto unlock;
+#endif
 	}
 	
 	/* We don't handle dirty file cache here (Related devices may be suspended) */

@@ -1,6 +1,6 @@
 
 config CUSTOM_KERNEL_HEART_RATE_SENSOR
-	bool "CUSTOM_KERNEL_HEART_RATE_SENSOR"
+	string "CUSTOM_KERNEL_HEART_RATE_SENSOR"
 	help
 	  Kernel space heart rate sensor driver.
           A heart rate monitor is a personal monitoring device

@@ -3,6 +3,7 @@
  * drivers/gpu/ion/ion.c
  *
  * Copyright (C) 2011 Google, Inc.
+ * Copyright (C) 2018 XiaoMi, Inc.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -804,6 +805,7 @@ void ion_unmap_kernel(struct ion_client *client, struct ion_handle *handle)
 }
 EXPORT_SYMBOL(ion_unmap_kernel);
 
+// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 begin
 static int ion_client_validate(struct ion_device *dev,
 				struct ion_client *client)
 {
@@ -820,21 +822,27 @@ static int ion_client_validate(struct ion_device *dev,
 }
 
 extern struct ion_device *g_ion_device;
+// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 end
+
 static int ion_debug_client_show(struct seq_file *s, void *unused)
 {
 	struct ion_client *client = s->private;
-        struct ion_device *dev = g_ion_device;
+	// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 begin
+	struct ion_device *dev = g_ion_device;
+	// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 end
 	struct rb_node *n;
 	size_t sizes[ION_NUM_HEAP_IDS] = {0};
 	const char *names[ION_NUM_HEAP_IDS] = {NULL};
 	int i;
 
+	// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 begin
 	down_read(&dev->lock);
         if (!ion_client_validate(dev, client)) {
             pr_err("%s: client is invlaid.\n", __func__);
             up_read(&dev->lock);
             return -1;
         }
+    // Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 end
 
         seq_printf(s, "%16.s %8.s %8.s %8.s %8.s %8.s\n", "heap_name","pid", "size", "handle_count","handle","buffer");
 
@@ -863,7 +871,9 @@ static int ion_debug_client_show(struct seq_file *s, void *unused)
 		seq_printf(s, "%16.16s: %16zu\n", names[i], sizes[i]);
 	}
 
+	// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 begin
 	up_read(&dev->lock);
+	// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 end
 
 	return 0;
 }
@@ -1680,7 +1690,6 @@ static int ion_debug_heap_show(struct seq_file *s, void *unused)
 		}
 	}
 	up_read(&dev->lock);
-
 	seq_printf(s, "----------------------------------------------------\n");
 	seq_printf(s, "orphaned allocations (info is from last known client):"
 		   "\n");
@@ -1732,7 +1741,15 @@ static int ion_debug_heap_pool_show(struct seq_file *s, void *unused)
 	struct ion_heap *heap = s->private;
 	struct ion_device *dev = heap->dev;
 	struct rb_node *n;
+
+	// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 begin
+	if (!heap->ops->page_pool_total) {
+		pr_err("%s: ion page pool total is not implemented by heap(%s).\n", __func__, heap->name);
+		return -ENODEV;
+	}
+
 	size_t total_size = heap->ops->page_pool_total(heap);
+	// Fix ALPS02444806 ION Apanic Exception by LCT xuwenda 2015-12-04 end
 
 	seq_printf(s, "%16.s %16zu\n", "total_in_pool ", total_size);
 

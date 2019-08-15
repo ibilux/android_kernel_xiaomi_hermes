@@ -1,6 +1,7 @@
 /* include/linux/logger.h
  *
  * Copyright (C) 2007-2008 Google, Inc.
+ * Copyright (C) 2018 XiaoMi, Inc.
  * Author: Robert Love <rlove@android.com>
  *
  * This software is licensed under the terms of the GNU General Public
@@ -114,6 +115,7 @@ struct logger_entry {
 #define LOGGER_LOG_EVENTS	"log_events"	/* system/hardware events */
 #define LOGGER_LOG_SYSTEM	"log_system"	/* system/framework messages */
 #define LOGGER_LOG_MAIN		"log_main"	/* everything else */
+#define LOGGER_WS_EVENTS     "xiaomi_wsevents"  /* whetstone event */
 
 #define LOGGER_ENTRY_MAX_PAYLOAD	4076
 

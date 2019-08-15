@@ -2,6 +2,7 @@
  *  linux/init/version.c
  *
  *  Copyright (C) 1992  Theodore Ts'o
+ *  Copyright (C) 2018 XiaoMi, Inc.
  *
  *  May be freely distributed as part of Linux.
  */
@@ -41,10 +42,10 @@ EXPORT_SYMBOL_GPL(init_uts_ns);
 
 /* FIXED STRINGS! Don't touch! */
 const char linux_banner[] =
-	"Linux version " UTS_RELEASE " (" LINUX_COMPILE_BY "@"
+	"Linux version " UTS_RELEASE KERNEL_GIT_COMMIT_ID " (" LINUX_COMPILE_BY "@"
 	LINUX_COMPILE_HOST ") (" LINUX_COMPILER ") " UTS_VERSION "\n";
-
+//add by dingyin for kernel version commit id
 const char linux_proc_banner[] =
-	"%s version %s"
+	"%s version %s" KERNEL_GIT_COMMIT_ID
 	" (" LINUX_COMPILE_BY "@" LINUX_COMPILE_HOST ")"
 	" (" LINUX_COMPILER ") %s\n";

@@ -13,17 +13,30 @@
 #include "devinfo.h"
 #include "mach/mt_devinfo.h"
 
+#define DEVINFO_TAG "DEVINFO"
 
-/**************************************************************************
-*  DEV DRIVER SYSFS
-**************************************************************************/
+/***************************************************************************** 
+* FUNCTION DEFINITION 
+*****************************************************************************/
+extern u32 get_devinfo_with_index(u32 index);
+extern u32 g_devinfo_data_size;
 
-static struct platform_driver dev_info = {
-	.driver  = {
-		.name = "dev_info",
-		.bus = &platform_bus_type,
-		.owner = THIS_MODULE,
-	}
+/************************************************************************** 
+*  DEV DRIVER SYSFS 
+**************************************************************************/ 
+
+struct devinfo_driver {
+    struct device_driver driver;
+    const struct platform_device_id *id_table;
+};
+
+static struct devinfo_driver dev_info = {
+    .driver  = {
+        .name = "dev_info",
+        .bus = &platform_bus_type,
+        .owner = THIS_MODULE,
+   },
+   .id_table = NULL,
 };
 
 static ssize_t devinfo_show(struct device_driver *driver, char *buf)
@@ -31,10 +44,11 @@ static ssize_t devinfo_show(struct device_driver *driver, char *buf)
 	unsigned int i;
 	unsigned int *output = (unsigned int *)buf;
 
-	output[0] = devinfo_get_size();
-	for (i = 0; i < output[0]; i++)
+	output[0] = g_devinfo_data_size;
+
+	for (i = 0; i < g_devinfo_data_size; i++)
 		output[i + 1] = get_devinfo_with_index(i);
-	return (output[0] + 1) * sizeof(unsigned int);
+	return (g_devinfo_data_size + 1) * sizeof(unsigned int);
 }
 
 DRIVER_ATTR(dev_info, 0444, devinfo_show, NULL);
@@ -59,4 +73,3 @@ static int __init devinfo_init(void)
 	return 0;
 }
 module_init(devinfo_init);
-

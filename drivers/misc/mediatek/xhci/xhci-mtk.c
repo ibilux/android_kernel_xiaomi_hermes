@@ -234,13 +234,12 @@ void mtk_disable_pmic_otg_mode(void)
 	int cnt = 0;
 
 	vbus_on--;
-    
+
 	if(vbus_on < 0 || vbus_on > 0) {
 		if(vbus_on < 0)
 			vbus_on = 0;
 		return;
 	}
-    
 
 	pmic_config_interface(0x8068, 0x0, 0x1, 0);
 	pmic_config_interface(0x8084, 0x0, 0x1, 0);

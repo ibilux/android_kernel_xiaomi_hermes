@@ -80,10 +80,14 @@
 #if defined(CONFIG_MTK_DUAL_INPUT_CHARGER_SUPPORT)
 #include <mach/diso.h>
 #endif
-
+#ifdef CONFIG_MTK_CW2015_BATTERY
+#include <mach/cw2015_battery.h>
+#endif
 #if defined(CONFIG_MTK_PUMP_EXPRESS_PLUS_SUPPORT)
 #include "cust_pe.h"
 #endif
+
+#define SOC_BY_HW_FG
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* Battery Logging Entry */
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -198,8 +202,9 @@ static struct task_struct *charger_hv_detect_thread = NULL;
 static kal_bool charger_hv_detect_flag = KAL_FALSE;
 static DECLARE_WAIT_QUEUE_HEAD(charger_hv_detect_waiter);
 static struct hrtimer battery_kthread_timer;
+//static kal_bool g_battery_soc_ready = KAL_FALSE;
+//extern bool bat_spm_timeout;
 kal_bool g_battery_soc_ready = KAL_FALSE;
-
 extern U32 _g_bat_sleep_total_time;
 
 /* ////////////////////////////////////////////////////////////////////////////// */
@@ -213,6 +218,7 @@ int g_present_smb = 0;
 static int cmd_discharging = -1;
 static int adjust_power = -1;
 static int suspend_discharging = -1;
+int Charger_enable_Flag=1; //add by longcheer_liml_2015_09_02
 
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* FOR ANDROID BATTERY SERVICE */
@@ -256,7 +262,9 @@ struct battery_data {
 	int capacity_smb;
 	int present_smb;
 	int adjust_power;
+	//add for charge full design
 	int charge_full_design;
+	int current_max;
 	int current_now;
 };
 
@@ -296,6 +304,7 @@ static enum power_supply_property battery_props[] = {
 	/* ADB CMD Discharging */
 	POWER_SUPPLY_PROP_adjust_power,
 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+	POWER_SUPPLY_PROP_CURRENT_MAX,
 	POWER_SUPPLY_PROP_CURRENT_NOW,
 };
 
@@ -619,6 +628,9 @@ static int battery_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 		val->intval = data->charge_full_design;
 		break;
+	case POWER_SUPPLY_PROP_CURRENT_MAX:
+		val->intval = data->current_max;
+		break;
 	case POWER_SUPPLY_PROP_CURRENT_NOW:
 		val->intval = data->current_now;
 		break;
@@ -690,6 +702,8 @@ static struct battery_data battery_main = {
 	.present_smb = 0,
 	/* ADB CMD discharging*/
 	.adjust_power = -1,
+	//add for charge ful design
+	.charge_full_design = 3020*1000,
 #else
 	.BAT_STATUS = POWER_SUPPLY_STATUS_NOT_CHARGING,
 	.BAT_HEALTH = POWER_SUPPLY_HEALTH_GOOD,
@@ -708,6 +722,7 @@ static struct battery_data battery_main = {
 	.present_smb = 0,
 	/* ADB CMD discharging*/
 	.adjust_power = -1,
+	//add for charge ful design
 	.charge_full_design = 3020*1000,
 #endif
 };
@@ -1449,6 +1464,52 @@ static ssize_t store_FG_Battery_CurrentConsumption(struct device *dev,
 static DEVICE_ATTR(FG_Battery_CurrentConsumption, 0664, show_FG_Battery_CurrentConsumption,
 		   store_FG_Battery_CurrentConsumption);
 
+/***=====================adb get battery UI_SOC====add by longcheer_liml_2015_10_21==========================***/
+static ssize_t show_Battery_UI_Soc(struct device *dev, struct device_attribute *attr,
+						  char *buf)
+{
+	int battery_capacity = 10;
+	battery_capacity = g_cw2015_capacity;
+	battery_xlog_printk(BAT_LOG_CRTI, "[EM] battery_capacity UI_soc: %d\n",
+			    battery_capacity);
+	return sprintf(buf, "%u\n", battery_capacity);
+}
+
+static ssize_t store_Battery_UI_Soc(struct device *dev,
+						   struct device_attribute *attr, const char *buf,
+						   size_t size)
+{
+	battery_xlog_printk(BAT_LOG_CRTI, "[EM] Not Support Write Function\n");
+	return size;
+}
+
+static DEVICE_ATTR(Battery_UI_Soc, 0664, show_Battery_UI_Soc,store_Battery_UI_Soc);
+
+
+/***=====================adb control battery charger enable====add by longcheer_liml_2015_09_02==========================***/
+
+static ssize_t show_ChargerEnable(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", Charger_enable_Flag);
+}
+
+static ssize_t store_ChargerEnable(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+{
+	
+	int charger_enable=0;
+	sscanf(buf, "%u", &charger_enable);
+	if(charger_enable<=0)
+	{
+		Charger_enable_Flag=0;
+	}else{
+		Charger_enable_Flag=1;
+	}		
+	return size;
+}
+
+static DEVICE_ATTR(ChargerEnable, 0664, show_ChargerEnable, store_ChargerEnable);
+
+
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
 /* // Create File For EM : FG_SW_CoulombCounter */
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
@@ -1552,7 +1613,11 @@ static DEVICE_ATTR(Pump_Express, 0664, show_Pump_Express, store_Pump_Express);
 
 static void mt_battery_update_EM(struct battery_data *bat_data)
 {
-	bat_data->BAT_CAPACITY = BMT_status.UI_SOC;
+#ifdef CONFIG_MTK_CW2015_BATTERY
+	bat_data->BAT_CAPACITY = g_cw2015_capacity;//BMT_status.UI_SOC;//liuchao
+#else
+	bat_data->BAT_CAPACITY = BMT_status.UI_SOC;//liuchao
+#endif
 	bat_data->BAT_TemperatureR = BMT_status.temperatureR;	/* API */
 	bat_data->BAT_TempBattVoltage = BMT_status.temperatureV;	/* API */
 	bat_data->BAT_InstatVolt = BMT_status.bat_vol;	/* VBAT */
@@ -1762,6 +1827,7 @@ static void mt_battery_Sync_UI_Percentage_to_Real(void)
 	}
 }
 
+int get_bat_charging_current_level(void);
 static void battery_update(struct battery_data *bat_data)
 {
 	struct power_supply *bat_psy = &bat_data->psy;
@@ -1773,7 +1839,7 @@ static void battery_update(struct battery_data *bat_data)
 	bat_data->BAT_batt_temp = BMT_status.temperature * 10;
 	bat_data->BAT_PRESENT = BMT_status.bat_exist;
 	bat_data->current_now = BMT_status.ICharging;
-
+	bat_data->current_max = get_bat_charging_current_level() / 100;
 	if ((BMT_status.charger_exist == KAL_TRUE) && (BMT_status.bat_charging_state != CHR_ERROR)) {
 		if (BMT_status.bat_exist) {	/* charging */
 			if (BMT_status.bat_vol <= V_0PERCENT_TRACKING) {
@@ -1829,6 +1895,20 @@ static void battery_update(struct battery_data *bat_data)
 
 	battery_log(BAT_LOG_FULL, "RTC_SOC=(%d)\n", get_rtc_spare_fg_value());
 #endif
+
+/* add by heliang for 3rd_fg begin */
+	#if defined(SOC_BY_3RD_FG)
+	battery_meter_set_3rd_fg_temp(BMT_status.temperature);
+	BMT_status.UI_SOC = battery_meter_get_3rd_fg_soc();
+	if ((BMT_status.UI_SOC <= 0) ||(BMT_status.UI_SOC >100)) {
+	    BMT_status.UI_SOC = 50;
+	}
+	resetBatteryMeter=mt_battery_100Percent_tracking_check();
+	if (resetBatteryMeter == KAL_TRUE) {
+	    battery_meter_reset();
+	}
+	#endif
+/* add by heliang for 3rd_fg end */
 
 	mt_battery_update_EM(bat_data);
 
@@ -2237,6 +2317,9 @@ void mt_battery_GetBatteryData(void)
 					      batteryIndex);
 	}
 
+#ifdef CONFIG_MTK_CW2015_BATTERY
+	BMT_status.bat_vol = g_cw2015_vol;
+#endif
 
 	if (battery_cmd_thermal_test_mode == 1)
 	{
@@ -2720,12 +2803,11 @@ CHARGER_TYPE mt_charger_type_detection(void)
 			BMT_status.bat_charging_state = CHR_BATFULL;
 			BMT_status.bat_full = KAL_TRUE;
 			g_charging_full_reset_bat_meter = KAL_TRUE;
-		}	
+		}
 
 		 if(g_battery_soc_ready == KAL_FALSE) {
 			if(BMT_status.nPercent_ZCV == 0)
 				battery_meter_initial();
-					
 			BMT_status.SOC = battery_meter_get_battery_percentage();
 		}
 #endif
@@ -2769,7 +2851,6 @@ static void mt_battery_charger_detect_check(void)
 		    (DISO_data.diso_state.cur_vusb_state == DISO_ONLINE)) {
 		#endif
 			mt_charger_type_detection();
-
 			if ((BMT_status.charger_type == STANDARD_HOST)
 			    || (BMT_status.charger_type == CHARGING_HOST)) {
 				mt_usb_connect();
@@ -3494,8 +3575,6 @@ int charger_hv_detect_sw_thread_handler(void *unused)
 					    "[charger_hv_detect_sw_thread_handler] upmu_chr_get_vcdt_hv_det() != 1\n");
 		}
 
-
-
 		if (chargin_hw_init_done)
 			battery_charging_control(CHARGING_CMD_RESET_WATCH_DOG_TIMER, NULL);
 
@@ -3751,6 +3830,8 @@ static int battery_probe(struct platform_device *dev)
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_FG_SW_CoulombCounter);
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_Charging_CallState);
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_Charger_Type);
+		ret_device_file = device_create_file(&(dev->dev), &dev_attr_ChargerEnable);
+		ret_device_file = device_create_file(&(dev->dev), &dev_attr_Battery_UI_Soc);	//add by longcheer_liml	
 #if defined(CONFIG_MTK_PUMP_EXPRESS_SUPPORT) || defined(CONFIG_MTK_PUMP_EXPRESS_PLUS_SUPPORT)
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_Pump_Express);
 #endif

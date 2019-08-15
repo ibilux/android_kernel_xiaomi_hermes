@@ -1,5 +1,0 @@
-config MTK_DUM_CHAR
-  bool CONFIG_MTK_DUM_CHAR
-  default n
-  help
-    CONFIG_MTK_DUM_CHAR

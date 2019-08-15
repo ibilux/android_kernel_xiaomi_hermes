@@ -202,11 +202,16 @@ int blk_rq_map_sg(struct request_queue *q, struct request *rq,
 					//#endif
 					tmp_logger =((struct page_pid_logger *)page_logger) + page_offset;
 					//tmp_locker =((struct page_pid_locker *)page_logger_lock) + page_offset;
-
+					#if defined(CONFIG_FLATMEM)
+					//printk(KERN_INFO"hank merge pid1:%u pid2:%u bv_page:%p vmemmap:%p pfn:%ld %s \n", tmp_logger->pid1, tmp_logger->pid2, bvec->bv_page, vmemmap, (unsigned long)(__page_to_pfn(bvec->bv_page)), q->backing_dev_info.name);
+					#else
+					//printk(KERN_INFO"hank merge pid1:%u pid2:%u bv_page:%x mem_map:%x pfn:%d %s \n", tmp_logger->pid1, tmp_logger->pid2, bvec->bv_page, mem_map, (unsigned long)(__page_to_pfn(bvec->bv_page)), q->backing_dev_info.name);
+					#endif
 					current_pid = current->pid;
 
 					//find the exactly pid record array
 					for( mmcqd_index=0; mmcqd_index<PID_ID_CNT; mmcqd_index++) {
+						//printk(KERN_INFO"hank merge mmcqd_index:%d qcurrent_pid:%d current_pid:%d", mmcqd_index, g_pid_logger[mmcqd_index].current_pid, current_pid);
 						if( g_pid_logger[mmcqd_index].current_pid==0 || g_pid_logger[mmcqd_index].current_pid == current_pid ) {
 							g_pid_logger[mmcqd_index].current_pid = current_pid;
 							break;
@@ -215,6 +220,15 @@ int blk_rq_map_sg(struct request_queue *q, struct request *rq,
 					//no match array
 					if( mmcqd_index == PID_ID_CNT )
 						break;
+					/*
+					if( tmp_logger->pid1 == 0XFFFF && tmp_logger->pid2 == 0XFFFF)
+                                        {
+                                           printk(KERN_INFO"hank merge fail offset:%d of:%d bytes:%d rw:%d", page_offset, bvec->bv_offset, nbytes, (rq->cmd_flags & REQ_WRITE));
+                                        }else
+                                        {
+                                           printk(KERN_INFO"hank merge success offset:%d of:%d bytes:%d rw:%d", page_offset, bvec->bv_offset, nbytes, (rq->cmd_flags & REQ_WRITE));
+                                        }
+					*/
 					if( tmp_logger->pid1 != 0xFFFF) {
 						spin_lock_irqsave(&g_locker, flags);
 						for( index=0; index<PID_LOGGER_COUNT; index++) {

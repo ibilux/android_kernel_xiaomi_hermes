@@ -25,7 +25,7 @@ static struct ccci_attribute ccci_attr_##_name = {		\
 	.store = _store,					\
 }
 
-static struct ccci_info *ccci_sys_info;
+static struct ccci_info *ccci_sys_info = NULL;
 
 static void ccci_obj_release(struct kobject *kobj)
 {

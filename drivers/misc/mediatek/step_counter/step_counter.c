@@ -734,12 +734,22 @@ static int step_c_input_init(struct step_c_context *cxt)
 	return 0;
 }
 
+#if 0
 DEVICE_ATTR(step_cenablenodata,     	S_IWUSR | S_IRUGO, step_c_show_enable_nodata, step_c_store_enable_nodata);
 DEVICE_ATTR(step_cactive,     		S_IWUSR | S_IRUGO, step_c_show_active, step_c_store_active);
 DEVICE_ATTR(step_cdelay,      		S_IWUSR | S_IRUGO, step_c_show_delay,  step_c_store_delay);
 DEVICE_ATTR(step_cbatch,      		S_IWUSR | S_IRUGO, step_c_show_batch,  step_c_store_batch);
 DEVICE_ATTR(step_cflush,      			S_IWUSR | S_IRUGO, step_c_show_flush,  step_c_store_flush);
 DEVICE_ATTR(step_cdevnum,      			S_IWUSR | S_IRUGO, step_c_show_devnum,  NULL);
+#endif
+
+///////////////////////////////////
+DEVICE_ATTR(step_cenablenodata, S_IRUGO|S_IWUSR|S_IWGRP  | S_IWOTH, step_c_show_enable_nodata, step_c_store_enable_nodata);
+DEVICE_ATTR(step_cactive, S_IRUGO|S_IWUSR|S_IWGRP|S_IWOTH, step_c_show_active, step_c_store_active);
+DEVICE_ATTR(step_cdelay,S_IRUGO|S_IWUSR|S_IWGRP|S_IWOTH, step_c_show_delay,  step_c_store_delay);
+DEVICE_ATTR(step_cbatch, S_IRUGO|S_IWUSR|S_IWGRP|S_IWOTH, step_c_show_batch,  step_c_store_batch);
+DEVICE_ATTR(step_cflush, S_IRUGO|S_IWUSR|S_IWGRP|S_IWOTH, step_c_show_flush,  step_c_store_flush);
+DEVICE_ATTR(step_cdevnum, S_IRUGO|S_IWUSR|S_IWGRP|S_IWOTH, step_c_show_devnum,  NULL);
 
 
 static struct attribute *step_c_attributes[] = {
@@ -954,9 +964,19 @@ static struct platform_driver step_c_driver =
 	}
 };
 
+static struct platform_device platform_device1 = {
+                 .name = STEP_C_PL_DEV_NAME,
+                 .id = 0,
+};
+
 static int __init step_c_init(void) 
 {
 	STEP_C_FUN();
+
+	if( platform_device_register(&platform_device1) != 0 ) {
+		printk("fail to register platform device. \n");
+                return -ENODEV;
+         }
 
 	if(platform_driver_register(&step_c_driver))
 	{

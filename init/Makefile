@@ -2,7 +2,7 @@
 # Makefile for the linux kernel.
 #
 
-subdir-ccflags-y += -Idrivers/misc/mediatek/mtprof/
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/mtprof/
 
 obj-y                          := main.o version.o mounts.o
 ifneq ($(CONFIG_BLK_DEV_INITRD),y)

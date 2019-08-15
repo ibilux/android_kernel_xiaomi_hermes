@@ -3,22 +3,22 @@
 
 /* stop charging while in talking mode */
 #define STOP_CHARGING_IN_TAKLING
-#define TALKING_RECHARGE_VOLTAGE 3800
-#define TALKING_SYNC_TIME		   60
+#define TALKING_RECHARGE_VOLTAGE 				3800
+#define TALKING_SYNC_TIME		   				60
 
 /* Battery Temperature Protection */
 #define MTK_TEMPERATURE_RECHARGE_SUPPORT
-#define MAX_CHARGE_TEMPERATURE  55
+#define MAX_CHARGE_TEMPERATURE  				55
 #define MAX_CHARGE_TEMPERATURE_MINUS_X_DEGREE	47
-#define MIN_CHARGE_TEMPERATURE  0
+#define MIN_CHARGE_TEMPERATURE  				0
 #define MIN_CHARGE_TEMPERATURE_PLUS_X_DEGREE	6
 #define ERR_CHARGE_TEMPERATURE  0xFF
 
 /* Linear Charging Threshold */
-#define V_PRE2CC_THRES	 		3400	//mV
-#define V_CC2TOPOFF_THRES		4050
-#define RECHARGING_VOLTAGE      4110
-#define CHARGING_FULL_CURRENT    150	//mA
+#define V_PRE2CC_THRES	 			3400	//mV
+#define V_CC2TOPOFF_THRES			4050
+#define RECHARGING_VOLTAGE       	4110//4110
+#define CHARGING_FULL_CURRENT    	150	//mA
 
 /* Charging Current Setting */
 //#define CONFIG_USB_IF 						   
@@ -31,7 +31,8 @@
 #define AC_CHARGER_CURRENT					CHARGE_CURRENT_450_00_MA
 #else
 #define USB_CHARGER_CURRENT					CHARGE_CURRENT_500_00_MA	//500mA
-#define AC_CHARGER_CURRENT					CHARGE_CURRENT_1300_00_MA
+#define AC_CHARGER_CURRENT					CHARGE_CURRENT_1500_00_MA
+#define AC_CHARGER_CURRENT_1A               CHARGE_CURRENT_1000_00_MA   //add by longcheer_liml_2015_10_13
 #endif
 #define NON_STD_AC_CHARGER_CURRENT			CHARGE_CURRENT_500_00_MA
 #define CHARGING_HOST_CHARGER_CURRENT       CHARGE_CURRENT_650_00_MA
@@ -41,20 +42,20 @@
 
 
 /* Precise Tunning */
-#define BATTERY_AVERAGE_DATA_NUMBER	3	
-#define BATTERY_AVERAGE_SIZE 	30
+#define BATTERY_AVERAGE_DATA_NUMBER			3	
+#define BATTERY_AVERAGE_SIZE 				30
 
 /* charger error check */
 //#define BAT_LOW_TEMP_PROTECT_ENABLE         // stop charging if temp < MIN_CHARGE_TEMPERATURE
-#define V_CHARGER_ENABLE 0				// 1:ON , 0:OFF	
-#define V_CHARGER_MAX 6500				// 6.5 V
-#define V_CHARGER_MIN 4500				// 4.4 V
+#define V_CHARGER_ENABLE 					0		// 1:ON , 0:OFF	
+#define V_CHARGER_MAX 						6500	// 6.5 V
+#define V_CHARGER_MIN 						4500	// 4.4 V
 
 /* Tracking TIME */
 #define ONEHUNDRED_PERCENT_TRACKING_TIME	10	// 10 second
 #define NPERCENT_TRACKING_TIME	   			20	// 20 second
 #define SYNC_TO_REAL_TRACKING_TIME  		60	// 60 second
-#define V_0PERCENT_TRACKING							3450 //3450mV
+#define V_0PERCENT_TRACKING					3450 //3450mV
 
 /* Battery Notify */
 #define BATTERY_NOTIFY_CASE_0001_VCHARGER

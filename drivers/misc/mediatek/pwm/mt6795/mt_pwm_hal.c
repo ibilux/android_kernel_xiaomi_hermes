@@ -2,6 +2,7 @@
 * mt_pwm.c PWM Drvier                                                     
 *                                                                                             
 * Copyright (c) 2012, Media Teck.inc                                           
+* Copyright (C) 2018 XiaoMi, Inc.
 *                                                                             
 * This program is free software; you can redistribute it and/or modify it     
 * under the terms and conditions of the GNU General Public Licence,            
@@ -381,14 +382,14 @@ void mt_set_intr_ack_hal ( U32 pwm_intr_ack_bit )
 	SETREG32 ( PWM_INT_ACK, 1 << pwm_intr_ack_bit );
 }
 
-void mt_set_pwm_buf0_addr_hal (U32 pwm_no, U32 addr)
+void mt_set_pwm_buf0_addr_hal (U32 pwm_no, U32 addr)                      //add by mtk
 {
 	unsigned long reg_buff0_addr;
         reg_buff0_addr = PWM_register[pwm_no] + 4 * PWM_BUF0_BASE_ADDR;
 	OUTREG32 ( reg_buff0_addr, addr );	
 }
 
-void mt_set_pwm_buf0_size_hal( U32 pwm_no, U16 size)
+void mt_set_pwm_buf0_size_hal( U32 pwm_no, U16 size)                    //add by mtk
 {
 	unsigned long reg_buff0_size;
         reg_buff0_size = PWM_register[pwm_no] + 4* PWM_BUF0_SIZE;
