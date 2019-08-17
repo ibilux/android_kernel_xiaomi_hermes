@@ -26,8 +26,8 @@ struct pagedir {
 
 #ifdef CONFIG_HIGHMEM
 #define get_highmem_size(pagedir) (pagedir.size_high)
-#define set_highmem_size(pagedir, sz) do { pagedir.size_high = sz; } while (0)
-#define inc_highmem_size(pagedir) do { pagedir.size_high++; } while (0)
+#define set_highmem_size(pagedir, sz) ((pagedir).size_high = (sz))
+#define inc_highmem_size(pagedir) ((pagedir).size_high++)
 #define get_lowmem_size(pagedir) (pagedir.size - pagedir.size_high)
 #else
 #define get_highmem_size(pagedir) (0)

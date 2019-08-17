@@ -114,52 +114,52 @@ struct fm_trace_fifo_t {
 	fm_u32 in;
 	fm_u32 out;
 	fm_u32 len;
-	 fm_s32(*trace_in) (struct fm_trace_fifo_t *thiz, struct fm_trace_t *new_tra);
-	 fm_s32(*trace_out) (struct fm_trace_fifo_t *thiz, struct fm_trace_t *dst_tra);
-	 fm_bool(*is_full) (struct fm_trace_fifo_t *thiz);
-	 fm_bool(*is_empty) (struct fm_trace_fifo_t *thiz);
+	fm_s32(*trace_in) (struct fm_trace_fifo_t *thiz, struct fm_trace_t *new_tra);
+	fm_s32(*trace_out) (struct fm_trace_fifo_t *thiz, struct fm_trace_t *dst_tra);
+	fm_bool(*is_full) (struct fm_trace_fifo_t *thiz);
+	fm_bool(*is_empty) (struct fm_trace_fifo_t *thiz);
 };
 
 #define FM_TRACE_IN(fifop, tracep)  \
 ({                                    \
-    fm_s32 __ret = (fm_s32)0;              \
-    if (fifop && (fifop)->trace_in) {          \
-	__ret = (fifop)->trace_in(fifop, tracep);   \
-    }                               \
-    __ret;                          \
+	fm_s32 __ret = (fm_s32)0;              \
+	if (fifop && (fifop)->trace_in) {          \
+		__ret = (fifop)->trace_in(fifop, tracep);   \
+	}                               \
+	__ret;                          \
 })
 
 #define FM_TRACE_OUT(fifop, tracep)  \
 ({                                    \
-    fm_s32 __ret = (fm_s32)0;              \
-    if (fifop && (fifop)->trace_out) {          \
-	__ret = (fifop)->trace_out(fifop, tracep);   \
-    }                               \
-    __ret;                          \
+	fm_s32 __ret = (fm_s32)0;              \
+	if (fifop && (fifop)->trace_out) {          \
+		__ret = (fifop)->trace_out(fifop, tracep);   \
+	}                               \
+	__ret;                          \
 })
 
 #define FM_TRACE_FULL(fifop)  \
 ({                                    \
-    fm_bool __ret = (fm_bool)fm_false;      \
-    if (fifop && (fifop)->is_full) {          \
-	__ret = (fifop)->is_full(fifop);   \
-    }                               \
-    __ret;                          \
+	fm_bool __ret = (fm_bool)fm_false;      \
+	if (fifop && (fifop)->is_full) {          \
+		__ret = (fifop)->is_full(fifop);   \
+	}                               \
+	__ret;                          \
 })
 
 #define FM_TRACE_EMPTY(fifop)  \
 ({                                    \
-    fm_bool __ret = (fm_bool)fm_false;      \
-    if (fifop && (fifop)->is_empty) {          \
-	__ret = (fifop)->is_empty(fifop);   \
-    }                               \
-    __ret;                          \
+	fm_bool __ret = (fm_bool)fm_false;      \
+	if (fifop && (fifop)->is_empty) {          \
+		__ret = (fifop)->is_empty(fifop);   \
+	}                               \
+	__ret;                          \
 })
 
-#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6630_FM))
+#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6580_FM) || defined(MT6630_FM))
 #include "fm_utils.h"
 
-#define RX_BUF_SIZE 128
+#define RX_BUF_SIZE 256
 #define TX_BUF_SIZE 1024
 
 #define SW_RETRY_CNT            (1)
@@ -224,4 +224,4 @@ extern fm_s32 fm_print_cmd_fifo(void);
 
 extern fm_s32 fm_print_evt_fifo(void);
 
-#endif				/* __FM_LINK_H__ */
+#endif /* __FM_LINK_H__ */

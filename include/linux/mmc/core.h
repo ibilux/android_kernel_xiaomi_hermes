@@ -204,6 +204,11 @@ extern int mmc_stop_flush(struct mmc_card *card);
 extern void mmc_start_delayed_flush(struct mmc_card *card);
 extern void mmc_start_idle_time_flush(struct work_struct *work);
 #endif
+
+#if defined(CONFIG_MMC_FFU)
+extern int mmc_reinit_oldcard(struct mmc_host *host);
+#endif
+
 /**
  *	mmc_claim_host - exclusively claim a host
  *	@host: mmc host to claim

@@ -1,34 +1,13 @@
 #include <linux/proc_fs.h>
 #include <linux/sched.h>
-#include <linux/seq_file.h>
 #include <linux/kallsyms.h>
 #include <linux/utsname.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <asm/uaccess.h>
+#include <linux/printk.h>
 
-#define SEQ_printf(m, x...)	    \
- do {			    \
-    if (m)		    \
-	seq_printf(m, x);	\
-    else		    \
-	pr_err(x);	    \
- } while (0)
-
-
-#define MTSCHED_DEBUG_ENTRY(name) \
-static int mt_##name##_open(struct inode *inode, struct file *file) \
-{ \
-    return single_open(file, mt_##name##_show, inode->i_private); \
-} \
-\
-static const struct file_operations mt_##name##_fops = { \
-    .open = mt_##name##_open, \
-    .write = mt_##name##_write,\
-    .read = seq_read, \
-    .llseek = seq_lseek, \
-    .release = single_release, \
-}
+#include "internal.h"
 
 #define BOOT_STR_SIZE 128
 #ifdef CONFIG_MT_ENG_BUILD
@@ -44,40 +23,13 @@ struct boot_log_struct {
 int boot_log_count = 0;
 
 static DEFINE_MUTEX(mt_bootprof_lock);
-static int mt_bootprof_enabled = 0;
-static int bootprof_lk_t = 0, bootprof_pl_t = 0;
-extern unsigned int gpt_boot_time(void);
-extern void mt_cputime_switch(int on);
+static int mt_bootprof_enabled;
+static int bootprof_lk_t, bootprof_pl_t;
 int boot_finish = 0;
 
 
 module_param_named(pl_t, bootprof_pl_t, int, S_IRUGO | S_IWUSR);
 module_param_named(lk_t, bootprof_lk_t, int, S_IRUGO | S_IWUSR);
-
-/*
- * Ease the printing of nsec fields:
- */
-static long long nsec_high(unsigned long long nsec)
-{
-	if ((long long)nsec < 0) {
-		nsec = -nsec;
-		do_div(nsec, 1000000);
-		return -nsec;
-	}
-	do_div(nsec, 1000000);
-
-	return nsec;
-}
-
-static unsigned long nsec_low(unsigned long long nsec)
-{
-	if ((long long)nsec < 0)
-		nsec = -nsec;
-
-	return do_div(nsec, 1000000);
-}
-
-#define SPLIT_NS(x) nsec_high(x), nsec_low(x)
 
 void log_boot(char *str)
 {
@@ -86,17 +38,8 @@ void log_boot(char *str)
 	if (0 == mt_bootprof_enabled)
 		return;
 	ts = sched_clock();
-	pr_err("BOOTPROF:%10Ld.%06ld:%s\n", SPLIT_NS(ts), str);
-	if(strncmp("BOOT_Animation:START", str, 20) == 0)
-	{
-		mt_cputime_switch(1);
-	}
-	if(strncmp("BOOT_Animation:END", str, 17) == 0)
-	{
-		mt_cputime_switch(0);
-	}
-    if(boot_log_count >= BOOT_LOG_NUM)
-	{
+	pr_err("BOOTPROF:%10Ld.%06ld:%s\n", nsec_high(ts), nsec_low(ts), str);
+	if (boot_log_count >= BOOT_LOG_NUM) {
 		pr_err("[BOOTPROF] not enuough bootprof buffer\n");
 		return;
 	}
@@ -108,14 +51,15 @@ void log_boot(char *str)
 }
 
 #ifdef CONFIG_MT_PRINTK_UART_CONSOLE
-extern void mt_disable_uart(void);
 static void bootup_finish(void)
 {
 	mt_disable_uart();
+	set_logtoomuch_enable(1);
 }
 #else
 static void bootup_finish(void)
 {
+	set_logtoomuch_enable(1);
 }
 #endif
 /* extern void (*set_intact_mode)(void); */
@@ -163,6 +107,7 @@ static ssize_t mt_bootprof_write(struct file *filp, const char *ubuf, size_t cnt
 static int mt_bootprof_show(struct seq_file *m, void *v)
 {
 	int i;
+
 	SEQ_printf(m, "----------------------------------------\n");
 	SEQ_printf(m, "%d	    BOOT PROF (unit:msec)\n", mt_bootprof_enabled);
 	SEQ_printf(m, "----------------------------------------\n");
@@ -176,7 +121,8 @@ static int mt_bootprof_show(struct seq_file *m, void *v)
 	}
 
 	for (i = 0; i < boot_log_count; i++) {
-		SEQ_printf(m, "%10Ld.%06ld : %s\n", SPLIT_NS(mt_bootprof[i].timestamp),
+		SEQ_printf(m, "%10Ld.%06ld : %s\n",
+			   nsec_high(mt_bootprof[i].timestamp), nsec_low(mt_bootprof[i].timestamp),
 			   mt_bootprof[i].event);
 	}
 	SEQ_printf(m, "----------------------------------------\n");
@@ -184,7 +130,6 @@ static int mt_bootprof_show(struct seq_file *m, void *v)
 }
 
 /*** Seq operation of mtprof ****/
-/* MTSCHED_DEBUG_ENTRY(bootprof); */
 static int mt_bootprof_open(struct inode *inode, struct file *file)
 {
 	return single_open(file, mt_bootprof_show, inode->i_private);
@@ -210,4 +155,4 @@ static int __init init_boot_prof(void)
 	return 0;
 }
 
-__initcall(init_boot_prof);
+device_initcall(init_boot_prof);

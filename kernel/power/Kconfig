@@ -21,10 +21,12 @@ config SUSPEND_FREEZER
 config HAS_WAKELOCK
 	bool
 	default y
+	default n if !MTK_LEGACY
 
 config HAS_EARLYSUSPEND
 	bool
 	default y
+	default n if !MTK_LEGACY
 
 config HAS_SBSUSPEND
 	bool
@@ -34,6 +36,7 @@ config HAS_SBSUSPEND
 config WAKELOCK
 	bool
 	default y
+	default n if !MTK_LEGACY
 
 config EARLYSUSPEND
 	bool "Early suspend"

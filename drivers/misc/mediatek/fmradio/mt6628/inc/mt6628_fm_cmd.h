@@ -28,10 +28,8 @@ fm_s32 mt6628_pwrup_digital_init(fm_u8 *buf, fm_s32 buf_size);
 fm_s32 mt6628_pwrdown(fm_u8 *buf, fm_s32 buf_size);
 fm_s32 mt6628_rampdown(fm_u8 *buf, fm_s32 buf_size);
 fm_s32 mt6628_tune(fm_u8 *buf, fm_s32 buf_size, fm_u16 freq, fm_u16 chan_para);
-fm_s32 mt6628_seek(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq,
-		   fm_u16 min_freq);
-fm_s32 mt6628_scan(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq,
-		   fm_u16 min_freq);
+fm_s32 mt6628_seek(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq);
+fm_s32 mt6628_scan(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq);
 fm_s32 mt6628_cqi_get(fm_u8 *buf, fm_s32 buf_size);
 fm_s32 mt6628_get_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr);
 fm_s32 mt6628_set_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr, fm_u16 value);

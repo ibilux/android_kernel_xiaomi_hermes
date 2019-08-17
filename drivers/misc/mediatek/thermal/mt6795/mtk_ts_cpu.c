@@ -6,7 +6,6 @@
 #include <linux/thermal.h>
 #include <linux/platform_device.h>
 #include <linux/aee.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/delay.h>
 #include <linux/proc_fs.h>
@@ -115,6 +114,9 @@ static void tscpu_fast_initial_sw_workaround(void);
 /*==============*/
 /*Variables*/
 /*==============*/
+static int print_cunt;
+static int adaptive_limit[5][2];
+
 #if CPT_ADAPTIVE_AP_COOLER
 static int g_curr_temp = 0;
 static int g_prev_temp = 0;
@@ -268,14 +270,17 @@ static int tc_mid_trip = -275000;
 #define tscpu_dprintk(fmt, args...)   \
 do {                                    \
 	if (mtktscpu_debug_log) {                \
-		xlog_printk(ANDROID_LOG_INFO, "Power/CPU_Thermal", fmt, ##args); \
+		pr_debug("Power/CPU_Thermal" fmt, ##args); \
 	}                                   \
 } while(0)
 
 #define tscpu_printk(fmt, args...)   \
 do {                                    \
-	xlog_printk(ANDROID_LOG_INFO, "Power/CPU_Thermal", fmt, ##args); \
+	pr_debug("Power/CPU_Thermal" fmt, ##args); \
 } while(0)
+
+#define tscpu_warn(fmt, args...)  pr_warn("[Power/CPU_Thermal]" fmt, ##args)
+
 
 static int mtktscpu_switch_bank(thermal_bank_name bank);
 static void tscpu_reset_thermal(void);
@@ -437,58 +442,59 @@ void tscpu_met_unlock(unsigned long *flags)
 EXPORT_SYMBOL(tscpu_met_unlock);
 #endif
 
-#ifdef __KERNEL__
+#ifdef CONFIG_MTK_RAM_CONSOLE
+#define CONFIG_THERMAL_AEE_RR_REC (1)
+#else
 #define CONFIG_THERMAL_AEE_RR_REC (0)
 #endif
 
 #if (CONFIG_THERMAL_AEE_RR_REC==1)
+#ifdef CONFIG_ARM64
+
 enum thermal_state {
 	TSCPU_SUSPEND = 0,
-	TSCPU_RESUME,
-	TSCPU_NORMAL,
+	TSCPU_RESUME  = 1,
+	TSCPU_NORMAL  = 2,
+	TSCPU_INIT    = 3
 };
 
-extern signed int 	  *aee_rr_rec_thermal_temp1(void);
-extern signed int 	  *aee_rr_rec_thermal_temp2(void);
-extern signed int 	  *aee_rr_rec_thermal_temp3(void);
-extern signed int 	  *aee_rr_rec_thermal_temp4(void);
-extern signed int 	  *aee_rr_rec_thermal_temp5(void);
-extern unsigned char  *aee_rr_rec_thermal_state(void);
+extern void aee_rr_rec_thermal_temp1(u8 val);
+extern void aee_rr_rec_thermal_temp2(u8 val);
+extern void aee_rr_rec_thermal_temp3(u8 val);
+extern void aee_rr_rec_thermal_temp4(u8 val);
+extern void aee_rr_rec_thermal_temp5(u8 val);
+extern void aee_rr_rec_thermal_status(u8 val);
 
-static signed int *p_thermal_temp1;
-static signed int *p_thermal_temp2;
-static signed int *p_thermal_temp3;
-static signed int *p_thermal_temp4;
-static signed int *p_thermal_temp5;
-static unsigned char *p_thermal_state;
+extern u8 aee_rr_curr_thermal_temp1(void);
+extern u8 aee_rr_curr_thermal_temp2(void);
+extern u8 aee_rr_curr_thermal_temp3(void);
+extern u8 aee_rr_curr_thermal_temp4(void);
+extern u8 aee_rr_curr_thermal_temp5(void);
+extern u8 aee_rr_curr_thermal_status(void);
+
 
 static void _mt_thermal_aee_init(void)
 {
-	p_thermal_temp1=aee_rr_rec_thermal_temp1();
-    p_thermal_temp2=aee_rr_rec_thermal_temp2();
-    p_thermal_temp3=aee_rr_rec_thermal_temp3();
-    p_thermal_temp4=aee_rr_rec_thermal_temp4();
-    p_thermal_temp5=aee_rr_rec_thermal_temp5();
-    p_thermal_state=aee_rr_rec_thermal_state();
-
-	*p_thermal_temp1 = 0;
-	*p_thermal_temp2 = 0;
-	*p_thermal_temp3 = 0;
-	*p_thermal_temp4 = 0;
-	*p_thermal_temp5 = 0;
-	*p_thermal_state = 0;
+    aee_rr_rec_thermal_temp1(0xFF);
+    aee_rr_rec_thermal_temp2(0xFF);
+    aee_rr_rec_thermal_temp3(0xFF);
+    aee_rr_rec_thermal_temp4(0xFF);
+    aee_rr_rec_thermal_temp5(0xFF);
+    aee_rr_rec_thermal_status(0xFF);
 }
+#endif
 #endif
 
 void set_taklking_flag(bool flag)
 {
 	talking_flag = flag;
-	tscpu_printk("talking_flag=%d\n", talking_flag);
+	tscpu_dprintk("talking_flag=%d\n", talking_flag);
 	return;
 }
 
 static unsigned int adaptive_cpu_power_limit = 0x7FFFFFFF, static_cpu_power_limit = 0x7FFFFFFF;
 static unsigned int prv_adp_cpu_pwr_lim, prv_stc_cpu_pwr_lim;
+
 
 static void set_adaptive_cpu_power_limit(unsigned int limit)
 {
@@ -502,11 +508,28 @@ static void set_adaptive_cpu_power_limit(unsigned int limit)
         (adaptive_cpu_power_limit < max_power_budget || adaptive_cpu_power_limit == 0x7FFFFFFF))
     {
 #ifdef CONFIG_ARM64
-        tscpu_printk("set_adaptive_cpu_power_limit %d, T=%d,%d,%d,%d,%d,%d,%d,%d,%d\n", (final_limit != 0x7FFFFFFF) ? final_limit : 0,
-                     CPU_TS1_T, CPU_TS2_T, LTE_TS4_T, TS_ABB_T, GPU_TS3_T, SOC_TS1_T, SOC_TS2_T, SOC_TS3_T, SOC_TS4_T);
+		if (print_cunt < 5) {
+			adaptive_limit[print_cunt][0] = (final_limit != 0x7FFFFFFF) ? final_limit : 0;
+			adaptive_limit[print_cunt][1] = g_max_temp;
+	    } else {
+			tscpu_warn("set_adaptive_cpu_power_limit %d T=%d,%d T=%d,%d T=%d,%d T=%d,%d T=%d\n",
+				adaptive_limit[0][0] , adaptive_limit[0][1],
+				adaptive_limit[1][0] , adaptive_limit[1][1],
+				adaptive_limit[2][0] , adaptive_limit[2][1],
+				adaptive_limit[3][0] , adaptive_limit[3][1],
+				adaptive_limit[4][0] , adaptive_limit[4][1]
+				);
+
+			print_cunt = 0;
+			adaptive_limit[0][0] = (final_limit != 0x7FFFFFFF) ? final_limit : 0;
+			adaptive_limit[0][1] = g_max_temp;
+	    }
+		print_cunt++;
+
 #else
-        tscpu_printk("set_adaptive_cpu_power_limit %d, T=%d,%d,%d,%d,%d,%d,%d,%d,%d\n", (final_limit != 0x7FFFFFFF) ? final_limit : 0,
-                     CA7_TS1_T, CA15_TS1_T, CA7_TS2_T, CORE_TS2_T, CA15_TS3_T, GPU_TS3_T, GPU_TS4_T, CORE_TS4_T, CORE_TSABB_T);
+		tscpu_warn("set_adaptive_cpu_power_limit %d, T=%d\n",
+					(final_limit != 0x7FFFFFFF) ? final_limit : 0,
+					g_max_temp);
 #endif
         mt_cpufreq_thermal_protect((final_limit != 0x7FFFFFFF) ? final_limit : 0);
     }
@@ -522,10 +545,10 @@ static void set_static_cpu_power_limit(unsigned int limit)
     if (prv_stc_cpu_pwr_lim != static_cpu_power_limit)
     {
 #ifdef CONFIG_ARM64
-        tscpu_printk("set_static_cpu_power_limit %d, T=%d,%d,%d,%d,%d,%d,%d,%d,%d\n", (final_limit != 0x7FFFFFFF) ? final_limit : 0,
+        tscpu_warn("set_static_cpu_power_limit %d, T=%d,%d,%d,%d,%d,%d,%d,%d,%d\n", (final_limit != 0x7FFFFFFF) ? final_limit : 0,
                      CPU_TS1_T, CPU_TS2_T, LTE_TS4_T, TS_ABB_T, GPU_TS3_T, SOC_TS1_T, SOC_TS2_T, SOC_TS3_T, SOC_TS4_T);
 #else
-        tscpu_printk("set_static_cpu_power_limit %d, T=%d,%d,%d,%d,%d,%d,%d,%d,%d\n", (final_limit != 0x7FFFFFFF) ? final_limit : 0,
+        tscpu_warn("set_static_cpu_power_limit %d, T=%d,%d,%d,%d,%d,%d,%d,%d,%d\n", (final_limit != 0x7FFFFFFF) ? final_limit : 0,
                      CA7_TS1_T, CA15_TS1_T, CA7_TS2_T, CORE_TS2_T, CA15_TS3_T, GPU_TS3_T, GPU_TS4_T, CORE_TS4_T, CORE_TSABB_T);
 #endif
         mt_cpufreq_thermal_protect((final_limit != 0x7FFFFFFF) ? final_limit : 0);
@@ -540,7 +563,7 @@ static void set_adaptive_gpu_power_limit(unsigned int limit)
 
     adaptive_gpu_power_limit = (limit != 0) ? limit : 0x7FFFFFFF;
     final_limit = MIN(adaptive_gpu_power_limit, static_gpu_power_limit);
-    tscpu_printk("set_adaptive_gpu_power_limit %d\n", (final_limit != 0x7FFFFFFF) ? final_limit : 0);
+    tscpu_warn("set_adaptive_gpu_power_limit %d\n", (final_limit != 0x7FFFFFFF) ? final_limit : 0);
     mt_gpufreq_thermal_protect((final_limit != 0x7FFFFFFF) ? final_limit : 0);
 }
 
@@ -550,7 +573,7 @@ static void set_static_gpu_power_limit(unsigned int limit)
 
     static_gpu_power_limit = (limit != 0) ? limit : 0x7FFFFFFF;
     final_limit = MIN(adaptive_gpu_power_limit, static_gpu_power_limit);
-    tscpu_printk("set_static_gpu_power_limit %d\n", (final_limit != 0x7FFFFFFF) ? final_limit : 0);
+    tscpu_warn("set_static_gpu_power_limit %d\n", (final_limit != 0x7FFFFFFF) ? final_limit : 0);
     mt_gpufreq_thermal_protect((final_limit != 0x7FFFFFFF) ? final_limit : 0);
 }
 
@@ -740,7 +763,7 @@ void get_thermal_slope_intercept(struct TS_PTPOD *ts_info,thermal_bank_name ts_n
 
 	ts_info->ts_MTS = ts_ptpod.ts_MTS;
 	ts_info->ts_BTS = ts_ptpod.ts_BTS;
-	tscpu_printk("ts_MTS=%d, ts_BTS=%d\n",ts_ptpod.ts_MTS, ts_ptpod.ts_BTS);
+	tscpu_dprintk("ts_MTS=%d, ts_BTS=%d\n",ts_ptpod.ts_MTS, ts_ptpod.ts_BTS);
 
 	return;
 }
@@ -794,25 +817,25 @@ static void thermal_interrupt_handler(int bank)
 	//tscpu_printk("thermal_isr: [Interrupt trigger]: status = 0x%x\n", ret);
 	if (ret & THERMAL_MON_CINTSTS0)
 	{
-		tscpu_printk("thermal_isr: thermal sensor point 0 - cold interrupt trigger\n");
+		tscpu_dprintk("thermal_isr: thermal sensor point 0 - cold interrupt trigger\n");
 	}
 	if (ret & THERMAL_MON_HINTSTS0)
 	{
-		tscpu_printk("<<<thermal_isr>>>: thermal sensor point 0 - hot interrupt trigger\n");
+		tscpu_dprintk("<<<thermal_isr>>>: thermal sensor point 0 - hot interrupt trigger\n");
 	}
 
 	if (ret & THERMAL_MON_HINTSTS1)
 	{
-		tscpu_printk("<<<thermal_isr>>>: thermal sensor point 1 - hot interrupt trigger\n");
+		tscpu_dprintk("<<<thermal_isr>>>: thermal sensor point 1 - hot interrupt trigger\n");
 	}
 
 	if (ret & THERMAL_MON_HINTSTS2)
 	{
-		tscpu_printk("<<<thermal_isr>>>: thermal sensor point 2 - hot interrupt trigger\n");
+		tscpu_dprintk("<<<thermal_isr>>>: thermal sensor point 2 - hot interrupt trigger\n");
 	}
 
 	if(ret & THERMAL_tri_SPM_State0)
-		tscpu_printk("thermal_isr: Thermal state0 to trigger SPM state0\n");
+		tscpu_dprintk("thermal_isr: Thermal state0 to trigger SPM state0\n");
 	if(ret & THERMAL_tri_SPM_State1){
         //tscpu_printk("thermal_isr: Thermal state1 to trigger SPM state1\n");
 #if MTK_TS_CPU_RT
@@ -821,17 +844,17 @@ static void thermal_interrupt_handler(int bank)
  //       Temp_TS4 = MAX(tc_mid_trip, Temp_TS4);
 
 #ifdef CONFIG_ARM64
-    tscpu_printk("THERMAL_tri_SPM_State1, T=%d,%d,%d,%d,%d,%d,%d,%d,%d\n", CPU_TS1_T, CPU_TS2_T, LTE_TS4_T,
+    tscpu_dprintk("THERMAL_tri_SPM_State1, T=%d,%d,%d,%d,%d,%d,%d,%d,%d\n", CPU_TS1_T, CPU_TS2_T, LTE_TS4_T,
     		TS_ABB_T, GPU_TS3_T, SOC_TS1_T, SOC_TS2_T, SOC_TS3_T, SOC_TS4_T);
 #else
-    tscpu_printk("THERMAL_tri_SPM_State1, T=%d,%d,%d,%d,%d,%d,%d,%d,%d\n", CA7_TS1_T, CA15_TS1_T, CA7_TS2_T,
+    tscpu_dprintk("THERMAL_tri_SPM_State1, T=%d,%d,%d,%d,%d,%d,%d,%d,%d\n", CA7_TS1_T, CA15_TS1_T, CA7_TS2_T,
     		CORE_TS2_T, CA15_TS3_T, GPU_TS3_T, GPU_TS4_T, CORE_TS4_T, CORE_TSABB_T);
 #endif
         wake_up_process(ktp_thread_handle);
 #endif
     }
 	if(ret & THERMAL_tri_SPM_State2)
-		tscpu_printk("thermal_isr: Thermal state2 to trigger SPM state2\n");
+		tscpu_warn("thermal_isr: Thermal state2 to trigger SPM state2\n");
 
 	mt_ptp_unlock(&flags);
 }
@@ -1414,7 +1437,7 @@ int mtk_cpufreq_register(struct mtk_cpu_power_info *freqs, int num)
 	if (0 != Num_of_GPU_OPP && NULL != mtk_gpu_power)
         gpu_power = mtk_gpu_power[Num_of_GPU_OPP-1].gpufreq_power;
     else
-        tscpu_printk("Num_of_GPU_OPP is 0!\n");
+        tscpu_warn("Num_of_GPU_OPP is 0!\n");
 
 #if 0
 	if(Num_of_GPU_OPP==3)
@@ -1581,7 +1604,7 @@ static void thermal_cal_prepare(void)
 	}
 	else
 	{
-		tscpu_printk("This sample is not Thermal calibrated\n");
+		tscpu_warn("This sample is not Thermal calibrated\n");
         #if 1 //default
 		g_adc_ge_t     = 512;
 		g_adc_oe_t     = 512;
@@ -1603,7 +1626,7 @@ static void thermal_cal_prepare_2(U32 ret)
 {
 	S32 format_1= 0,format_2= 0, format_3= 0, format_4= 0, format_5= 0;
 
-	tscpu_printk("thermal_cal_prepare_2\n");
+	tscpu_dprintk("thermal_cal_prepare_2\n");
 
 	g_ge = ((g_adc_ge_t - 512) * 10000 ) / 4096; // ge * 10000
 	g_oe =  (g_adc_oe_t - 512);
@@ -1852,8 +1875,9 @@ static int read_tc_raw_and_temp(volatile u32 * tempmsr_name,thermal_sensor_name 
 {
 	int temp=0,raw=0;
 
-
-    tscpu_dprintk("read_tc_raw_temp,tempmsr_name=0x%x,ts_name=%d\n",tempmsr_name,ts_name);
+    //the lengths of pointer in 32bits and 64bits are different, so have a risk to open it.
+    //You could try %p, instead of %x
+    //tscpu_dprintk("read_tc_raw_temp,tempmsr_name=0x%x,ts_name=%d\n",tempmsr_name,ts_name);
 
     raw = (tempmsr_name != 0) ? (DRV_Reg32(tempmsr_name)& 0x0fff) : 0;
 	temp = (tempmsr_name != 0) ? raw_to_temperature_roomt(raw,ts_name) : 0;
@@ -2017,25 +2041,20 @@ static int tscpu_get_temp(struct thermal_zone_device *thermal,
 
 #if (CONFIG_THERMAL_AEE_RR_REC== 1)
 	#ifdef CONFIG_ARM64
-	p_thermal_temp1 = CPU_TS1_T;
-    p_thermal_temp2 = CPU_TS2_T;
-    p_thermal_temp3 = GPU_TS3_T;
-    p_thermal_temp4 = LTE_TS4_T;
-    p_thermal_temp5 = CORE_TSABB_T;
-	p_thermal_state = TSCPU_NORMAL;
-	#else
-	p_thermal_temp1 = CA7_TS1_T;
-    p_thermal_temp2 = CA7_TS2_T;
-    p_thermal_temp3 = CA15_TS3_T;
-    p_thermal_temp4 = GPU_TS4_T;
-    p_thermal_temp5 = CORE_TSABB_T;
-	p_thermal_state = TSCPU_NORMAL;
+    //tscpu_printk("CONFIG_THERMAL_AEE_RR_REC, T=%d,%d,%d,%d,%d\n", (CPU_TS1_T/1000), (CPU_TS2_T/1000), (GPU_TS3_T/1000), (LTE_TS4_T/1000), (TS_ABB_T/1000));
+
+	aee_rr_rec_thermal_temp1(CPU_TS1_T/1000);
+	aee_rr_rec_thermal_temp2(CPU_TS2_T/1000);
+	aee_rr_rec_thermal_temp3(GPU_TS3_T/1000);
+	aee_rr_rec_thermal_temp4(LTE_TS4_T/1000);
+	aee_rr_rec_thermal_temp5(TS_ABB_T/1000);
+	aee_rr_rec_thermal_status(TSCPU_NORMAL);
 	#endif
 #endif
 
 	if((curr_temp > (trip_temp[0] - 15000)) || (curr_temp < -30000) || (curr_temp > 85000) )
 	{
-		tscpu_printk("CPU T=%d\n",curr_temp);
+		tscpu_warn("CPU T=%d\n" , curr_temp);
     }
 
     temp_temp = curr_temp;
@@ -2043,7 +2062,7 @@ static int tscpu_get_temp(struct thermal_zone_device *thermal,
     {
         if ((curr_temp > 150000) || (curr_temp < -20000)) // invalid range
         {
-            tscpu_printk("CPU temp invalid=%d\n", curr_temp);
+            tscpu_warn("CPU temp invalid=%d\n", curr_temp);
             temp_temp = 50000;
             ret = -1;
         }
@@ -2051,7 +2070,7 @@ static int tscpu_get_temp(struct thermal_zone_device *thermal,
         {
             if ((curr_temp - last_cpu_real_temp > 40000) || (last_cpu_real_temp - curr_temp > 40000)) //delta 40C, invalid change
             {
-                tscpu_printk("CPU temp float hugely temp=%d, lasttemp=%d\n", curr_temp, last_cpu_real_temp);
+                tscpu_warn("CPU temp float hugely temp=%d, lasttemp=%d\n", curr_temp, last_cpu_real_temp);
                // tscpu_printk("RAW_TS2 = %d,RAW_TS3 = %d,RAW_TS4 = %d\n",RAW_TS2,RAW_TS3,RAW_TS4);
                 temp_temp = 50000;
                 ret = -1;
@@ -2266,10 +2285,10 @@ static int tscpu_bind(struct thermal_zone_device *thermal,
 	}
 
 	if (mtk_thermal_zone_bind_cooling_device(thermal, table_val, cdev)) {
-		tscpu_printk("tscpu_bind error binding cooling dev\n");
+		tscpu_warn("tscpu_bind error binding cooling dev\n");
 		return -EINVAL;
 	} else {
-		tscpu_printk("tscpu_bind binding OK, %d\n", table_val);
+		tscpu_warn("tscpu_bind binding OK, %d\n", table_val);
 	}
 
 	return 0;
@@ -2336,10 +2355,10 @@ static int tscpu_unbind(struct thermal_zone_device *thermal,
 
 
 	if (thermal_zone_unbind_cooling_device(thermal, table_val, cdev)) {
-		tscpu_printk("tscpu_unbind error unbinding cooling dev\n");
+		tscpu_warn("tscpu_unbind error unbinding cooling dev\n");
 	return -EINVAL;
 	} else {
-		tscpu_printk("tscpu_unbind unbinding OK\n");
+		tscpu_warn("tscpu_unbind unbinding OK\n");
 	}
 
 	return 0;
@@ -2422,7 +2441,7 @@ static int tscpu_set_power_consumption_state(void)
 		{
 			if(i!=previous_step)
 			{
-				tscpu_printk("previous_opp=%d, now_opp=%d\n", previous_step, i);
+				tscpu_dprintk("previous_opp=%d, now_opp=%d\n", previous_step, i);
 				previous_step=i;
 				mtktscpu_limited_dmips = tscpu_cpu_dmips[previous_step];
 				if(Num_of_GPU_OPP==3)
@@ -2469,7 +2488,7 @@ static int tscpu_set_power_consumption_state(void)
 		{
 			previous_step = -1;
 			mtktscpu_limited_dmips = tscpu_cpu_dmips[CPU_COOLER_NUM-1]; // highest dmips
-			tscpu_printk("Free all static thermal limit, previous_opp=%d\n", previous_step);
+			tscpu_dprintk("Free all static thermal limit, previous_opp=%d\n", previous_step);
 			set_static_cpu_power_limit(0);
 			set_static_gpu_power_limit(0);
 		}
@@ -2607,7 +2626,7 @@ static int _adaptive_power(long prev_temp, long curr_temp, unsigned int gpu_load
 
 	if (cl_dev_adp_cpu_state_active == 1)
 	{
-        tscpu_dprintk("%s %d %d %d %d %d %d %d\n", __func__, FIRST_STEP_TOTAL_POWER_BUDGET, PACKAGE_THETA_JA_RISE, PACKAGE_THETA_JA_FALL, MINIMUM_BUDGET_CHANGE, MINIMUM_CPU_POWER, MAXIMUM_CPU_POWER, MINIMUM_GPU_POWER, MAXIMUM_GPU_POWER);
+        tscpu_dprintk("%s %d %d %d %d %d %d %d %d\n", __func__, FIRST_STEP_TOTAL_POWER_BUDGET, PACKAGE_THETA_JA_RISE, PACKAGE_THETA_JA_FALL, MINIMUM_BUDGET_CHANGE, MINIMUM_CPU_POWER, MAXIMUM_CPU_POWER, MINIMUM_GPU_POWER, MAXIMUM_GPU_POWER);
 
 		/* Check if it is triggered */
 		if (!triggered)
@@ -2630,7 +2649,7 @@ static int _adaptive_power(long prev_temp, long curr_temp, unsigned int gpu_load
                 default: /* ATM v1 */
 			        total_power = FIRST_STEP_TOTAL_POWER_BUDGET;
                 }
-				tscpu_dprintk("%s Tp %d, Tc %d, Pt %d\n", __func__, prev_temp, curr_temp, total_power);
+				tscpu_dprintk("%s Tp %ld, Tc %ld, Pt %d\n", __func__, prev_temp, curr_temp, total_power);
 				return P_adaptive(total_power, gpu_loading);
 			}
 		}
@@ -2711,7 +2730,7 @@ static int _adaptive_power(long prev_temp, long curr_temp, unsigned int gpu_load
             break;
         }
 
-        tscpu_dprintk("%s Tp %d, Tc %d, Pt %d\n", __func__, prev_temp, curr_temp, total_power);
+        tscpu_dprintk("%s Tp %ld, Tc %ld, Pt %d\n", __func__, prev_temp, curr_temp, total_power);
 		return P_adaptive(total_power, gpu_loading);
 	}
 #if CONTINUOUS_TM
@@ -2722,7 +2741,7 @@ static int _adaptive_power(long prev_temp, long curr_temp, unsigned int gpu_load
         if (triggered)
 		{
 			triggered = 0;
-			tscpu_dprintk("%s Tp %d, Tc %d, Pt %d\n", __func__, prev_temp, curr_temp, total_power);
+			tscpu_dprintk("%s Tp %ld, Tc %ld, Pt %d\n", __func__, prev_temp, curr_temp, total_power);
 			return P_adaptive(0, 0);
 		}
 #if THERMAL_HEADROOM
@@ -2741,7 +2760,7 @@ static int _adaptive_power(long prev_temp, long curr_temp, unsigned int gpu_load
 		if (triggered)
 		{
 			triggered = 0;
-			tscpu_dprintk("%s Tp %d, Tc %d, Pt %d\n", __func__, prev_temp, curr_temp, total_power);
+			tscpu_dprintk("%s Tp %ld, Tc %ld, Pt %d\n", __func__, prev_temp, curr_temp, total_power);
 			return P_adaptive(0, 0);
 		}
 #if THERMAL_HEADROOM
@@ -2785,7 +2804,7 @@ static int decide_ttj(void)
         //tscpu_printk("cttj %d cetj %d tpcb %d\n", TARGET_TJ, current_ETJ, bts_cur_temp);
     }
 #endif
-    // atm improvement 
+    // atm improvement
     //TARGET_TJ_HIGH = TARGET_TJ + 1000;
     //TARGET_TJ_LOW = TARGET_TJ - 1000;
     TARGET_TJ_HIGH = TARGET_TJ_LOW = TARGET_TJ;
@@ -2898,10 +2917,10 @@ static int sysrst_cpu_set_cur_state(struct thermal_cooling_device *cdev,
 	if(cl_dev_sysrst_state == 1)
 	{
 	    //mtkts_dump_cali_info();
-		tscpu_printk("sysrst_cpu_set_cur_state = 1\n");
-		tscpu_printk("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
-		tscpu_printk("*****************************************\n");
-		tscpu_printk("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+		tscpu_warn("sysrst_cpu_set_cur_state = 1\n");
+		//tscpu_printk("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+		//tscpu_printk("*****************************************\n");
+		//tscpu_printk("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 
 #ifndef CONFIG_ARM64
         BUG();
@@ -3041,7 +3060,7 @@ void tscpu_set_GPIO_toggle_for_monitor(void)
 	{
 	    if(g_max_temp > g_trigger_temp){
 
-			tscpu_printk("g_max_temp %d > g_trigger_temp %d \n",g_max_temp ,g_trigger_temp);
+			tscpu_dprintk("g_max_temp %d > g_trigger_temp %d \n",g_max_temp ,g_trigger_temp);
 
 			g_GPIO_out_enable =0;//only can enter once
 			g_GPIO_already_set=1;
@@ -3050,7 +3069,7 @@ void tscpu_set_GPIO_toggle_for_monitor(void)
 		    lv_GPIO118_DIR  = thermal_readl(GPIO118_DIR);
 		    lv_GPIO118_DOUT = thermal_readl(GPIO118_DOUT);
 
-            tscpu_printk("tscpu_set_GPIO_toggle_for_monitor:lv_GPIO118_MODE=0x%x,lv_GPIO118_DIR=0x%x,lv_GPIO118_DOUT=0x%x,\n",
+            tscpu_dprintk("tscpu_set_GPIO_toggle_for_monitor:lv_GPIO118_MODE=0x%x,lv_GPIO118_DIR=0x%x,lv_GPIO118_DOUT=0x%x,\n",
                 lv_GPIO118_MODE,lv_GPIO118_DIR,lv_GPIO118_DOUT);
 
 
@@ -3118,17 +3137,17 @@ static ssize_t tscpu_write_GPIO_out(struct file *file, const char __user *buffer
 
         if (!strcmp(TEMP, "TEMP")) {
             g_trigger_temp = valTEMP;
-            tscpu_printk("g_trigger_temp=%d\n",valTEMP);
+            tscpu_dprintk("g_trigger_temp=%d\n",valTEMP);
         }else{
-			tscpu_printk("tscpu_write_GPIO_out TEMP bad argument\n");
+			tscpu_dprintk("tscpu_write_GPIO_out TEMP bad argument\n");
             return -EINVAL;
         }
 
         if (!strcmp(ENABLE, "ENABLE")) {
             g_GPIO_out_enable = valENABLE;
-            tscpu_printk("g_GPIO_out_enable=%d,g_GPIO_already_set=%d\n",valENABLE,g_GPIO_already_set);
+            tscpu_dprintk("g_GPIO_out_enable=%d,g_GPIO_already_set=%d\n",valENABLE,g_GPIO_already_set);
         }else{
-			tscpu_printk("tscpu_write_GPIO_out ENABLE bad argument\n");
+			tscpu_dprintk("tscpu_write_GPIO_out ENABLE bad argument\n");
             return -EINVAL;
         }
 
@@ -3142,7 +3161,7 @@ static ssize_t tscpu_write_GPIO_out(struct file *file, const char __user *buffer
 	}
 	else
 	{
-		tscpu_printk("tscpu_write_GPIO_out bad argument\n");
+		tscpu_dprintk("tscpu_write_GPIO_out bad argument\n");
 	}
 
 	return -EINVAL;
@@ -3261,7 +3280,7 @@ static ssize_t tscpu_set_temperature_write(struct file *file, const char __user 
 	}
 	else
 	{
-		tscpu_printk("tscpu_set_temperature_write bad argument\n");
+		tscpu_warn("tscpu_set_temperature_write bad argument\n");
 	}
 	return -EINVAL;
 }
@@ -3332,7 +3351,7 @@ static ssize_t tscpu_write_log(struct file *file, const char __user *buffer, siz
 	}
 	else
 	{
-		tscpu_printk("mtktscpu_write_log bad argument\n");
+		tscpu_warn("mtktscpu_write_log bad argument\n");
 	}
 	return -EINVAL;
 }
@@ -3395,7 +3414,7 @@ static ssize_t tscpu_write_atm(struct file *file, const char __user *buffer, siz
 	}
 	else
 	{
-		tscpu_printk("mtktscpu_write_atm bad argument\n");
+		tscpu_warn("mtktscpu_write_atm bad argument\n");
 	}
 	return -EINVAL;
 }
@@ -3456,14 +3475,14 @@ static ssize_t tscpu_write_dtm_setting(struct file *file, const char __user *buf
         }
         else
         {
-            tscpu_dprintk("tscpu_write_dtm_setting out of range\n");
+            tscpu_warn("tscpu_write_dtm_setting out of range\n");
         }
 
 		return count;
 	}
 	else
 	{
-		tscpu_dprintk("tscpu_write_dtm_setting bad argument\n");
+		tscpu_warn("tscpu_write_dtm_setting bad argument\n");
 	}
 	return -EINVAL;
 }
@@ -3502,14 +3521,14 @@ static ssize_t tscpu_write_gpu_threshold(struct file *file, const char __user *b
         }
         else
         {
-            tscpu_dprintk("tscpu_write_gpu_threshold out of range\n");
+            tscpu_warn("tscpu_write_gpu_threshold out of range\n");
         }
 
 		return count;
 	}
 	else
 	{
-		tscpu_dprintk("tscpu_write_gpu_threshold bad argument\n");
+		tscpu_warn("tscpu_write_gpu_threshold bad argument\n");
 	}
 	return -EINVAL;
 }
@@ -3539,7 +3558,7 @@ static ssize_t tscpu_write_thp(struct file *file, const char __user *buffer, siz
 
 	if (4 <= sscanf(desc, "%d %d %d %d", &tpcb_coef, &tpcb_trip, &thp_coef, &thp_threshold))
 	{
-        tscpu_printk("%s input %d %d\n", __func__, tpcb_coef, tpcb_trip, thp_coef, thp_threshold);
+        tscpu_printk("%s input %d %d %d %d\n", __func__, tpcb_coef, tpcb_trip, thp_coef, thp_threshold);
 
         p_Tpcb_correlation = tpcb_coef;
         Tpcb_trip_point = tpcb_trip;
@@ -3550,7 +3569,7 @@ static ssize_t tscpu_write_thp(struct file *file, const char __user *buffer, siz
 	}
 	else
 	{
-		tscpu_dprintk("%s bad argument\n", __func__);
+		tscpu_warn("%s bad argument\n", __func__);
 	}
 	return -EINVAL;
 }
@@ -3654,7 +3673,7 @@ static ssize_t tscpu_write_fastpoll(struct file *file, const char __user *buffer
         }
         else
         {
-            tscpu_dprintk("tscpu_write_fastpoll out of range\n");
+            tscpu_warn("tscpu_write_fastpoll out of range\n");
         }
 
 		return count;
@@ -3846,10 +3865,10 @@ int tscpu_register_thermal(void)
 	tscpu_dprintk("tscpu_register_thermal\n");
 
 	/* trips : trip 0~3 */
-    if (NULL == thz_dev) {
-	    thz_dev = mtk_thermal_zone_device_register("mtktscpu", num_trip, NULL,
-                                                   &mtktscpu_dev_ops, 0, 0, 0, interval);
-    }
+	if (NULL == thz_dev) {
+		thz_dev = mtk_thermal_zone_device_register("mtktscpu", num_trip, NULL,
+					&mtktscpu_dev_ops, 0, 0, 0, interval);
+	}
 
 	return 0;
 }
@@ -3992,7 +4011,7 @@ static int tscpu_thermal_suspend(struct platform_device *dev, pm_message_t state
 {
     int cnt=0;
     int temp=0;
-	tscpu_printk("tscpu_thermal_suspend\n");
+	tscpu_dprintk("tscpu_thermal_suspend\n");
 
 #if THERMAL_PERFORMANCE_PROFILE
 	struct timeval begin, end;
@@ -4008,8 +4027,10 @@ static int tscpu_thermal_suspend(struct platform_device *dev, pm_message_t state
     	tscpu_dprintk("tscpu_thermal_suspend no talking\n");
 
 		#if (CONFIG_THERMAL_AEE_RR_REC== 1)
-		p_thermal_state = TSCPU_SUSPEND;
+        #ifdef CONFIG_ARM64
+		aee_rr_rec_thermal_status(TSCPU_SUSPEND);
 		#endif
+        #endif
 
         while(cnt < 50)
 		{
@@ -4048,14 +4069,16 @@ static int tscpu_thermal_resume(struct platform_device *dev)
 {
 	int temp=0;
 	int cnt=0;
-	tscpu_printk("tscpu_thermal_resume\n");
+	tscpu_dprintk("tscpu_thermal_resume\n");
 	g_tc_resume = 1;//set "1", don't read temp during start resume
 
 	if(talking_flag==false)
 	{
 		#if (CONFIG_THERMAL_AEE_RR_REC== 1)
-		p_thermal_state = TSCPU_RESUME;
+        #ifdef CONFIG_ARM64
+        aee_rr_rec_thermal_status(TSCPU_RESUME);
 		#endif
+        #endif
         tscpu_reset_thermal();
 
 		temp = DRV_Reg32(TS_CON1);
@@ -4143,7 +4166,7 @@ static int ktp_thread(void *arg)
     sched_setscheduler(current, SCHED_FIFO, &param);
     set_current_state(TASK_INTERRUPTIBLE);
 
-    tscpu_printk("ktp_thread 1st run\n");
+    tscpu_dprintk("ktp_thread 1st run\n");
 
     schedule();
 
@@ -4171,12 +4194,12 @@ static int ktp_thread(void *arg)
 		curr_temp2 = MAX(bank2_T,bank3_T);
 	    max_temp   = MAX(curr_temp1,curr_temp2);
 #endif
-	    tscpu_printk("ktp_thread temp=%d\n", max_temp);
+	    tscpu_warn("ktp_thread temp=%d\n", max_temp);
 
 	    if ((temp_tc_mid_trip > -275000) && (max_temp >= (temp_tc_mid_trip-5000))) // trip_temp[1] should be shutdown point...
         {
             // Do what ever we want
-            tscpu_printk("ktp_thread overheat %d\n", max_temp);
+            tscpu_dprintk("ktp_thread overheat %d\n", max_temp);
 
             // freq/volt down or cpu down or backlight down or charging down...
             mt_cpufreq_thermal_protect(713);
@@ -4190,12 +4213,12 @@ static int ktp_thread(void *arg)
         {
             unsigned int final_limit;
             final_limit = MIN(static_cpu_power_limit, adaptive_cpu_power_limit);
-            tscpu_printk("ktp_thread unlimit cpu=%d\n", final_limit);
+            tscpu_dprintk("ktp_thread unlimit cpu=%d\n", final_limit);
             mt_cpufreq_thermal_protect((final_limit != 0x7FFFFFFF) ? final_limit : 0);
 
 
             final_limit = MIN(static_gpu_power_limit, adaptive_gpu_power_limit);
-            tscpu_printk("ktp_thread unlimit gpu=%d\n", final_limit);
+            tscpu_dprintk("ktp_thread unlimit gpu=%d\n", final_limit);
             mt_gpufreq_thermal_protect((final_limit != 0x7FFFFFFF) ? final_limit : 0);
 
             ktp_limited = -275000;
@@ -4205,13 +4228,13 @@ static int ktp_thread(void *arg)
         }
         else
         {
-            tscpu_printk("ktp_thread else temp=%d, trip=%d, ltd=%d\n", max_temp, temp_tc_mid_trip, temp_ktp_limited);
+            tscpu_dprintk("ktp_thread else temp=%d, trip=%d, ltd=%d\n", max_temp, temp_tc_mid_trip, temp_ktp_limited);
             set_current_state(TASK_INTERRUPTIBLE);
             schedule();
         }
 	}
 
-	tscpu_printk("ktp_thread stopped\n");
+	tscpu_dprintk("ktp_thread stopped\n");
 
     return 0;
 }
@@ -4507,7 +4530,7 @@ static void tscpu_config_all_tc_hw_protect( int temperature, int temperature2)
     if(wd_api_ret >=0 ){
 		wd_api->wd_thermal_direct_mode_config(WD_REQ_DIS, WD_REQ_RST_MODE);//reset mode
 	}else{
-		tscpu_printk("%d FAILED TO GET WD API\n",__LINE__);
+		tscpu_warn("%d FAILED TO GET WD API\n",__LINE__);
         BUG();
     }
 #if THERMAL_PERFORMANCE_PROFILE
@@ -4662,7 +4685,7 @@ static void tscpu_update_temperature_timer_init(void)
 {
 	ktime_t ktime;
 
-	tscpu_printk("tscpu_update_temperature_timer_init \n");
+	tscpu_dprintk("tscpu_update_temperature_timer_init \n");
 
     ktime = ktime_set(0, g_hr_timer_polling_delay);	// 50ms
 
@@ -4939,7 +4962,11 @@ static int __init tscpu_init(void)
 #endif
 
 #if (CONFIG_THERMAL_AEE_RR_REC== 1)
+#ifdef CONFIG_ARM64
 	_mt_thermal_aee_init();
+
+	aee_rr_rec_thermal_status(TSCPU_INIT);
+#endif
 #endif
 
 	//thermal spm verification
@@ -4958,7 +4985,7 @@ static int __init tscpu_init(void)
     if(wd_api_ret >=0 ){
 		wd_api->wd_thermal_direct_mode_config(WD_REQ_DIS, WD_REQ_RST_MODE);//reset mode
 	}else{
-		tscpu_printk("FAILED TO GET WD API\n");
+		tscpu_warn("FAILED TO GET WD API\n");
         BUG();
     }
 
@@ -5012,11 +5039,11 @@ static int __init tscpu_init(void)
 
 #if MTK_TS_CPU_RT
     {
-    	tscpu_printk("mtktscpu_register_thermal creates kthermp\n");
+    	tscpu_dprintk("mtktscpu_register_thermal creates kthermp\n");
         ktp_thread_handle = kthread_create(ktp_thread, (void *) NULL, "kthermp");
         if (IS_ERR(ktp_thread_handle)) {
 			ktp_thread_handle = NULL;
-			tscpu_printk("mtktscpu_register_thermal kthermp creation fails\n");
+			tscpu_warn("mtktscpu_register_thermal kthermp creation fails\n");
 		    goto err_unreg;
 		}
 		wake_up_process(ktp_thread_handle);
@@ -5026,11 +5053,11 @@ static int __init tscpu_init(void)
 #ifdef CONFIG_OF
     err= request_irq(thermal_irq_number, thermal_all_bank_interrupt_handler, IRQF_TRIGGER_LOW, THERMAL_NAME, NULL);
 	if(err)
-		tscpu_printk("tscpu_init IRQ register fail\n");
+		tscpu_warn("tscpu_init IRQ register fail\n");
 #else
     err= request_irq(THERM_CTRL_IRQ_BIT_ID, thermal_all_bank_interrupt_handler, IRQF_TRIGGER_LOW, THERMAL_NAME, NULL);
 	if(err)
-		tscpu_printk("tscpu_init IRQ register fail\n");
+		tscpu_warn("tscpu_init IRQ register fail\n");
 #endif
 
 	tscpu_config_all_tc_hw_protect(trip_temp[0], tc_mid_trip);
@@ -5038,7 +5065,7 @@ static int __init tscpu_init(void)
     err = platform_driver_register(&mtk_thermal_driver);
     if (err)
     {
-        tscpu_printk("thermal driver callback register failed..\n");
+        tscpu_warn("thermal driver callback register failed..\n");
         return err;
     }
 
@@ -5048,19 +5075,19 @@ static int __init tscpu_init(void)
 
 	err = tscpu_register_DVFS_hotplug_cooler();
 	if(err){
-        tscpu_printk("tscpu_register_DVFS_hotplug_cooler fail\n");
+        tscpu_warn("tscpu_register_DVFS_hotplug_cooler fail\n");
 		return err;
 	}
 	err = tscpu_register_thermal();
 	if(err){
-        tscpu_printk("tscpu_register_thermal fail\n");
+        tscpu_warn("tscpu_register_thermal fail\n");
 		goto err_unreg;
 	}
 
 	mtktscpu_dir = mtk_thermal_get_proc_drv_therm_dir_entry();
 	if (!mtktscpu_dir)
 	{
-		tscpu_printk("[%s]: mkdir /proc/driver/thermal failed\n", __func__);
+		tscpu_warn("[%s]: mkdir /proc/driver/thermal failed\n", __func__);
 	}
 	else
 	{
@@ -5105,7 +5132,7 @@ static int __init tscpu_init(void)
 #endif // #if CPT_ADAPTIVE_AP_COOLER
 
 #if MTKTSCPU_FAST_POLLING
-		entry = proc_create("tzcpu_fastpoll", S_IRUGO | S_IWUSR | S_IWGRP, mtktscpu_dir, &mtktscpu_fastpoll_fops);
+		entry = proc_create("tzcpu_fastpoll", S_IRUGO | S_IWUSR | S_IWGRP | S_IWGRP, mtktscpu_dir, &mtktscpu_fastpoll_fops);
 		if (entry) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
             proc_set_user(entry, 0, 1000);
@@ -5115,7 +5142,7 @@ static int __init tscpu_init(void)
 		}
 #endif // #if MTKTSCPU_FAST_POLLING
 
-		entry = proc_create("tzcpu_Tj_out_via_HW_pin", S_IRUGO | S_IWUSR, mtktscpu_dir, &mtktscpu_Tj_out_fops);
+		entry = proc_create("tzcpu_Tj_out_via_HW_pin", S_IRUGO | S_IWUSR | S_IWGRP, mtktscpu_dir, &mtktscpu_Tj_out_fops);
         if (entry) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
             proc_set_user(entry, 0, 1000);
@@ -5125,7 +5152,7 @@ static int __init tscpu_init(void)
 		}
 
 #if THERMAL_GPIO_OUT_TOGGLE
-		entry = proc_create("tzcpu_GPIO_out_monitor", S_IRUGO | S_IWUSR, mtktscpu_dir, &mtktscpu_GPIO_out_fops);
+		entry = proc_create("tzcpu_GPIO_out_monitor", S_IRUGO | S_IWUSR | S_IWGRP, mtktscpu_dir, &mtktscpu_GPIO_out_fops);
         if (entry) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
             proc_set_user(entry, 0, 1000);
@@ -5136,7 +5163,7 @@ static int __init tscpu_init(void)
 #endif
 
         /* +ASC+ */
-		entry = proc_create("clatm", S_IRUGO | S_IWUSR, mtktscpu_dir, &mtktscpu_atm_fops);
+		entry = proc_create("clatm", S_IRUGO | S_IWUSR | S_IWGRP, mtktscpu_dir, &mtktscpu_atm_fops);
         if (entry) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
             proc_set_user(entry, 0, 1000);
@@ -5147,7 +5174,7 @@ static int __init tscpu_init(void)
         /* -ASC- */
 
 #if THERMAL_HEADROOM
-        entry = proc_create("clthp", S_IRUGO | S_IWUSR, mtktscpu_dir, &mtktscpu_thp_fops);
+        entry = proc_create("clthp", S_IRUGO | S_IWUSR | S_IWGRP, mtktscpu_dir, &mtktscpu_thp_fops);
         if (entry) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
             proc_set_user(entry, 0, 1000);
@@ -5158,7 +5185,7 @@ static int __init tscpu_init(void)
 #endif
 
 #if CONTINUOUS_TM
-        entry = proc_create("clctm", S_IRUGO | S_IWUSR, mtktscpu_dir, &mtktscpu_ctm_fops);
+        entry = proc_create("clctm", S_IRUGO | S_IWUSR | S_IWGRP, mtktscpu_dir, &mtktscpu_ctm_fops);
         if (entry) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
             proc_set_user(entry, 0, 1000);

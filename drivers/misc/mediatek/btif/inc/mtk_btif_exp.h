@@ -231,6 +231,22 @@ int mtk_wcn_btif_loopback_ctrl(unsigned long u_id, ENUM_BTIF_LPBK_MODE enable);
 int mtk_wcn_btif_dbg_ctrl(unsigned long u_id, ENUM_BTIF_DBG_ID flag);
 /*-----------End of Debug Purpose API declearation------------*/
 
+/*****************************************************************************
+* FUNCTION
+*  mtk_wcn_btif_parser_wmt_evt
+* DESCRIPTION
+*  parser wmt sleep/wakeup evt in btif bbs buffer for debug
+* PARAMETERS
+*  p_btif      [IN] pointer returned by mtk_wcn_btif_open
+*  sub_str     [IN] the str to be parsered
+*  str_len     [IN] the length of sub_str
+* RETURNS
+*  bool  true = succeed;
+*        false = fail;
+*****************************************************************************/
+bool mtk_wcn_btif_parser_wmt_evt(unsigned long u_id,
+	const char *sub_str, unsigned int str_len);
+
 int mtk_btif_exp_open_test(void);
 int mtk_btif_exp_close_test(void);
 int mtk_btif_exp_write_test(void);

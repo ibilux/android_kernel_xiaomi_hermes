@@ -53,7 +53,8 @@ typedef enum {
     CMB_STUB_AIF_1 = 1, /* 0001: BT_PCM_ON & FM analog (in/out) */
     CMB_STUB_AIF_2 = 2, /* 0010: BT_PCM_OFF & FM digital (I2S) */
     CMB_STUB_AIF_3 = 3, /* 0011: BT_PCM_ON & FM digital (I2S) (invalid in 73evb & 1.2 phone configuration) */
-    CMB_STUB_AIF_MAX = 4,
+    CMB_STUB_AIF_4 = 4, /* 0100: BT_I2S & FM disable in special projects, e.g. protea*/
+    CMB_STUB_AIF_MAX = 5,
 } CMB_STUB_AIF_X;
 
 /*COMBO_CHIP_AUDIO_PIN_CTRL*/
@@ -139,7 +140,7 @@ extern int mt_combo_plt_exit_deep_idle(COMBO_IF src);
  * function on/off.
  */
 extern void mtk_wcn_cmb_stub_func_ctrl (unsigned int type, unsigned int on);
-extern signed long mtk_wcn_cmb_stub_query_ctrl(void);
+int mtk_wcn_cmb_stub_query_ctrl(void);
 extern int mtk_wcn_cmb_stub_do_reset (unsigned int type);
 extern int board_sdio_ctrl (unsigned int sdio_port_num, unsigned int on);
 #if MTK_WCN_CMB_FOR_SDIO_1V_AUTOK

@@ -583,53 +583,50 @@ extern unsigned int *aee_rr_rec_mcdi_wfi(void);
 #endif
 static void spm_mcdi_wfi_sel_enter(int core_id)
 {
-    int core_id_val = core_id;
-    CHIP_SW_VER ver=mt_get_chip_sw_ver();
-
+	int core_id_val = core_id;
 #if SPM_CTRL_BIG_CPU
-    if(CHIP_SW_VER_02>ver)
-        core_id_val+=4;
+	CHIP_SW_VER ver=mt_get_chip_sw_ver();
+	if(CHIP_SW_VER_02>ver)
+		core_id_val+=4;
 #endif
     /*SPM WFI Select by core number*/
-    switch (core_id_val)
-    {
-        case 0 : 
-            spm_write(SPM_CA7_CPU0_IRQ_MASK, 1);
-            spm_write(SPM_SLEEP_CA7_WFI0_EN, 1); 
-            
-            break;
-        case 1 : 
-            spm_write(SPM_CA7_CPU1_IRQ_MASK, 1);
-            spm_write(SPM_SLEEP_CA7_WFI1_EN, 1);             
-            break;                     
-        case 2 : 
-            spm_write(SPM_CA7_CPU2_IRQ_MASK, 1);
-            spm_write(SPM_SLEEP_CA7_WFI2_EN, 1);             
-            break;                     
-        case 3 : 
-            spm_write(SPM_CA7_CPU3_IRQ_MASK, 1);
-            spm_write(SPM_SLEEP_CA7_WFI3_EN, 1);             
-            break;
-        case 4 : 
-            spm_write(SPM_CA15_CPU0_IRQ_MASK, 1);
-            spm_write(SPM_SLEEP_CA15_WFI0_EN, 1);             
-            break;
-        case 5 : 
-            spm_write(SPM_CA15_CPU1_IRQ_MASK, 1);
-            spm_write(SPM_SLEEP_CA15_WFI1_EN, 1);             
-            break;                     
-        case 6 : 
-            spm_write(SPM_CA15_CPU2_IRQ_MASK, 1);
-            spm_write(SPM_SLEEP_CA15_WFI2_EN, 1);            
-            break;                     
-        case 7 : 
-            spm_write(SPM_CA15_CPU3_IRQ_MASK, 1);
-            spm_write(SPM_SLEEP_CA15_WFI3_EN, 1);            
-            break;         
-        default : break;
-    }  
-	
-
+	switch (core_id_val)
+	{
+		case 0 : 
+			spm_write(SPM_CA7_CPU0_IRQ_MASK, 1);
+			spm_write(SPM_SLEEP_CA7_WFI0_EN, 1);
+			break;
+		case 1 : 
+			spm_write(SPM_CA7_CPU1_IRQ_MASK, 1);
+			spm_write(SPM_SLEEP_CA7_WFI1_EN, 1);             
+			break;                     
+		case 2 : 
+			spm_write(SPM_CA7_CPU2_IRQ_MASK, 1);
+			spm_write(SPM_SLEEP_CA7_WFI2_EN, 1);             
+			break;                     
+		case 3 : 
+			spm_write(SPM_CA7_CPU3_IRQ_MASK, 1);
+			spm_write(SPM_SLEEP_CA7_WFI3_EN, 1);             
+			break;
+		case 4 : 
+			spm_write(SPM_CA15_CPU0_IRQ_MASK, 1);
+			spm_write(SPM_SLEEP_CA15_WFI0_EN, 1);             
+			break;
+		case 5 : 
+			spm_write(SPM_CA15_CPU1_IRQ_MASK, 1);
+			spm_write(SPM_SLEEP_CA15_WFI1_EN, 1);             
+			break;                     
+		case 6 : 
+			spm_write(SPM_CA15_CPU2_IRQ_MASK, 1);
+			spm_write(SPM_SLEEP_CA15_WFI2_EN, 1);            
+			break;                     
+		case 7 : 
+			spm_write(SPM_CA15_CPU3_IRQ_MASK, 1);
+			spm_write(SPM_SLEEP_CA15_WFI3_EN, 1);            
+			break;         
+        	default :
+			break;
+	}
 }
 
 static void spm_mcdi_wfi_sel_leave(int core_id)
@@ -720,8 +717,7 @@ bool spm_mcdi_wfi(int core_id)
     if(CHIP_SW_VER_02>ver)
         mcdi_core_id=core_id+4;//E1 Bigcore
 #endif
-    
-    //printk("spm_mcdi_wfi\n");
+
     spin_lock_irqsave(&__spm_lock, flags);
 #if SPM_AEE_RR_REC
     *p_is_mcdi_wfi=( *p_is_mcdi_wfi | (1<<core_id) );
@@ -976,7 +972,6 @@ static unsigned int spm_mcdi_is_disable(void)
 
 void spm_mcdi_switch_on_off(enum spm_mcdi_lock_id id, int mcdi_en)
 {
-    unsigned long flags;
     spm_mcdi_enable(id,mcdi_en);
     if(mcdi_en)
     {

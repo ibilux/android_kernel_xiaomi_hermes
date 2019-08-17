@@ -201,7 +201,12 @@ PVRSRV_ERROR RGXSetupFirmware(PVRSRV_DEVICE_NODE	*psDeviceNode,
 							     IMG_UINT32            ui32NumTilingCfgs,
 							     IMG_UINT32            *pui32BIFTilingXStrides,
 							     IMG_UINT32			ui32FilterMode,
-							     RGXFWIF_DEV_VIRTADDR	*psRGXFWInitFWAddr);
+							     IMG_UINT32			ui32JonesDisableMask,
+							     IMG_UINT32			ui32HWRDebugDumpLimit,
+								 IMG_UINT32			ui32HWPerfCountersDataSize,
+							     RGXFWIF_DEV_VIRTADDR	*psRGXFWInitFWAddr,
+							     RGX_RD_POWER_ISLAND_CONF eRGXRDPowerIslandingConf);
+
 
 
 IMG_VOID RGXFreeFirmware(PVRSRV_RGXDEV_INFO 	*psDevInfo);
@@ -222,11 +227,11 @@ IMG_VOID RGXSetFirmwareAddress(RGXFWIF_DEV_VIRTADDR	*ppDest,
 							   IMG_UINT32			uiOffset,
 							   IMG_UINT32			ui32Flags);
 
-#if defined(RGX_FEATURE_DMA)
+#if defined(RGX_FEATURE_META_DMA)
 /*************************************************************************/ /*!
-@Function       RGXSetDMAAddress
+@Function       RGXSetMetaDMAAddress
 
-@Description    Fills a firmware data structure used for DMA with two
+@Description    Fills a Firmware structure used to setup the Meta DMA with two
                 pointers to the same data, one on 40 bit and one on 32 bit
                 (pointer in the FW memory space).
 
@@ -236,10 +241,10 @@ IMG_VOID RGXSetFirmwareAddress(RGXFWIF_DEV_VIRTADDR	*ppDest,
 
 @Return			IMG_VOID
 */ /**************************************************************************/
-IMG_VOID RGXSetDMAAddress(RGXFWIF_DMA_ADDR		*psDest,
-                          DEVMEM_MEMDESC		*psSrcMemDesc,
-                          RGXFWIF_DEV_VIRTADDR	*psSrcFWDevVAddr,
-                          IMG_UINT32			uiOffset);
+IMG_VOID RGXSetMetaDMAAddress(RGXFWIF_DMA_ADDR		*psDest,
+							  DEVMEM_MEMDESC		*psSrcMemDesc,
+							  RGXFWIF_DEV_VIRTADDR	*psSrcFWDevVAddr,
+							  IMG_UINT32			uiOffset);
 #endif
 
 /*************************************************************************/ /*!
@@ -511,6 +516,34 @@ PVRSRV_ERROR RGXFWRequestHWRTDataCleanUp(PVRSRV_DEVICE_NODE *psDeviceNode,
 										 PVRSRV_CLIENT_SYNC_PRIM *psSync,
 										 RGXFWIF_DM eDM);
 
+#if defined(RGX_FEATURE_RAY_TRACING)
+
+PVRSRV_ERROR RGXFWRequestRayFrameDataCleanUp(PVRSRV_DEVICE_NODE *psDeviceNode,
+											 PRGXFWIF_RAY_FRAME_DATA psHWFrameData,
+											 PVRSRV_CLIENT_SYNC_PRIM *psSync,
+											 RGXFWIF_DM eDM);
+
+/*!
+******************************************************************************
+
+ @Function	RGXFWRequestRPMFreeListCleanUp
+
+ @Description Schedules a FW RPM FreeList cleanup. The firmware will doesn't block
+              waiting for the resource to become idle but rather notifies the
+              host that the resources is busy.
+
+ @Input psDeviceNode - pointer to device node
+
+ @Input psFWRPMFreeList - firmware address of the RPM freelist to be cleaned up
+
+ @Input psSync - Sync object associated with cleanup
+
+ ******************************************************************************/
+PVRSRV_ERROR RGXFWRequestRPMFreeListCleanUp(PVRSRV_RGXDEV_INFO *psDevInfo,
+											PRGXFWIF_RPM_FREELIST psFWRPMFreeList,
+											PVRSRV_CLIENT_SYNC_PRIM *psSync);
+#endif
+
 /*!
 ******************************************************************************
 
@@ -561,21 +594,22 @@ PVRSRV_ERROR ContextSetPriority(RGX_SERVER_COMMON_CONTEXT *psContext,
 /*!
 ******************************************************************************
 
- @Function	RGXReadMETAReg
+ @Function	RGXReadMETAAddr
 
- @Description Reads META register at given address and returns its value
+ @Description Reads a value at given address in META memory space
+              (it can be either a memory location or a META register)
 
  @Input psDevInfo - pointer to device info
 
- @Input ui32RegAddr - register address
+ @Input ui32METAAddr - address in META memory space
 
- @Output pui32RegValue - register value
+ @Output pui32Value - value
 
  ******************************************************************************/
 
-PVRSRV_ERROR RGXReadMETAReg(PVRSRV_RGXDEV_INFO	*psDevInfo, 
-							IMG_UINT32 ui32RegAddr, 
-							IMG_UINT32 *pui32RegValue);
+PVRSRV_ERROR RGXReadMETAAddr(PVRSRV_RGXDEV_INFO	*psDevInfo,
+                             IMG_UINT32 ui32METAAddr,
+                             IMG_UINT32 *pui32Value);
 
 /*!
 ******************************************************************************
@@ -655,6 +689,30 @@ IMG_VOID AttachKickResourcesCleanupCtls(PRGXFWIF_CLEANUP_CTL *apsCleanupCtl,
                                 	error code
  ******************************************************************************/
 PVRSRV_ERROR RGXResetHWRLogs(PVRSRV_DEVICE_NODE *psDevNode);
+
+
+#if defined(PDUMP)
+/*!
+******************************************************************************
+
+ @Function                      RGXPdumpDrainKCCB
+
+ @Description                   Wait for the firmware to execute all the commands in the kCCB
+
+ @Input                         psDevInfo	Pointer to the device
+
+ @Input                         ui32WriteOffset	  Woff we have to POL for the Roff to be equal to
+
+ @Input                         eKCCBType	  Data Master of the KCCB
+
+ @Return                        PVRSRV_ERROR	PVRSRV_OK on success. Otherwise, an
+                                                error code
+ ******************************************************************************/
+PVRSRV_ERROR RGXPdumpDrainKCCB(PVRSRV_RGXDEV_INFO *psDevInfo,
+                               IMG_UINT32 ui32WriteOffset,
+                               RGXFWIF_DM eKCCBType);
+#endif /* PDUMP */
+
 
 #endif /* __RGXFWUTILS_H__ */
 /******************************************************************************

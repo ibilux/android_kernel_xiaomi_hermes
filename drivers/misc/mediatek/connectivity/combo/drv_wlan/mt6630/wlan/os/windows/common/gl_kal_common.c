@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/gl_kal_common.c#2 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/gl_kal_common.c#2
 */
 
 /*! \file   gl_kal_common.c
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: gl_kal_common.c $
+** Log: gl_kal_common.c
 **
 ** 01 15 2014 eason.tsai
 ** [ALPS01070904] [Need Patch] [Volunteer Patch][MT6630][Driver]MT6630 Wi-Fi Patch
@@ -82,11 +80,13 @@
  * support to load different firmware image for E3/E4/E5 and E6 ASIC on win32 platforms.
  *
  * 06 07 2011 yuche.tsai
- * [WCXRP00000696] [Volunteer Patch][MT6620][Driver] Infinite loop issue when RX invitation response.[WCXRP00000763] [Volunteer Patch][MT6620][Driver] RX Service Discovery Frame under AP mode Issue
+ * [WCXRP00000696] [Volunteer Patch][MT6620][Driver] Infinite loop issuewhen RX invitation response.
+ * [WCXRP00000763] [Volunteer Patch][MT6620][Driver] RX Service Discovery Frame under AP mode Issue
  * Add invitation support.
  *
  * 04 22 2011 cp.wu
- * [WCXRP00000598] [MT6620 Wi-Fi][Driver] Implementation of interface for communicating with user space process for RESET_START and RESET_END events
+ * [WCXRP00000598] [MT6620 Wi-Fi][Driver] Implementation of interface for communicating
+ * with user space process for RESET_START and RESET_END events
  * skip power-off handshaking when RESET indication is received.
  *
  * 04 18 2011 cp.wu
@@ -95,31 +95,37 @@
  * 2) Windows glue should not access to hardware after switched into D3 state
  *
  * 04 14 2011 cp.wu
- * [WCXRP00000598] [MT6620 Wi-Fi][Driver] Implementation of interface for communicating with user space process for RESET_START and RESET_END events
+ * [WCXRP00000598] [MT6620 Wi-Fi][Driver] Implementation of interface for communicating
+ * with user space process for RESET_START and RESET_END events
  * 1. add code to put whole-chip resetting trigger when abnormal firmware assertion is detected
  * 2. add dummy function for both Win32 and Linux part.
  *
  * 04 12 2011 cp.wu
- * [WCXRP00000635] [MT6620 Wi-Fi][Driver] Clear pending security frames when QM clear pending data frames for dedicated network type
+ * [WCXRP00000635] [MT6620 Wi-Fi][Driver] Clear pending security frames
+ * when QM clear pending data frames for dedicated network type
  * clear pending security frames for dedicated network type when BSS is being deactivated/disconnected
  *
  * 03 16 2011 cp.wu
- * [WCXRP00000562] [MT6620 Wi-Fi][Driver] I/O buffer pre-allocation to avoid physically continuous memory shortage after system running for a long period
+ * [WCXRP00000562] [MT6620 Wi-Fi][Driver] I/O buffer pre-allocation to avoid
+ * physically continuous memory shortage after system running for a long period
  * 1. pre-allocate physical continuous buffer while module is being loaded
  * 2. use pre-allocated physical continuous buffer for TX/RX DMA transfer
  *
  * The windows part remained the same as before, but added similiar APIs to hide the difference.
  *
  * 03 02 2011 cp.wu
- * [WCXRP00000503] [MT6620 Wi-Fi][Driver] Take RCPI brought by association response as initial RSSI right after connection is built.
+ * [WCXRP00000503] [MT6620 Wi-Fi][Driver] Take RCPI brought by association response
+ * as initial RSSI right after connection is built.
  * use RCPI brought by ASSOC-RESP after connection is built as initial RCPI to avoid using a uninitialized MAC-RX RCPI.
  *
  * 02 23 2011 cp.wu
- * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation because NdisMSleep() won't sleep long enough for specified interval such as 500ms
+ * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation
+ * because NdisMSleep() won't sleep long enough for specified interval such as 500ms
  * add design to avoid system ticks wraps around
  *
  * 02 23 2011 cp.wu
- * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation because NdisMSleep() won't sleep long enough for specified interval such as 500ms
+ * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation
+ * because NdisMSleep() won't sleep long enough for specified interval such as 500ms
  * kalMsleep is now implemented with awareness of system ticks to ensure the sleep function has waited for long enough.
  *
  * 01 24 2011 cp.wu
@@ -129,20 +135,25 @@
  * 3. correct build errors leaded by introduction of Wi-Fi direct separation module
  *
  * 01 04 2011 cp.wu
- * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and vmalloc implementations to ease physically continous memory demands
+ * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc
+ * and vmalloc implementations to ease physically continous memory demands
  * separate kalMemAlloc() into virtually-continous and physically-continous type to ease slab system pressure
  *
  * 12 31 2010 cp.wu
- * [WCXRP00000335] [MT6620 Wi-Fi][Driver] change to use milliseconds sleep instead of delay to avoid blocking to system scheduling
- * change to use msleep() and shorten waiting interval to reduce blocking to other task while Wi-Fi driver is being loaded
+ * [WCXRP00000335] [MT6620 Wi-Fi][Driver] change to use milliseconds sleep instead of delay
+ * to avoid blocking to system scheduling
+ * change to use msleep() and shorten waiting interval to reduce blocking
+ * to other task while Wi-Fi driver is being loaded
  *
  * 11 30 2010 yuche.tsai
  * NULL
  * Invitation & Provision Discovery Indication.
  *
  * 11 26 2010 cp.wu
- * [WCXRP00000209] [MT6620 Wi-Fi][Driver] Modify NVRAM checking mechanism to warning only with necessary data field checking
- * 1. NVRAM error is now treated as warning only, thus normal operation is still available but extra scan result used to indicate user is attached
+ * [WCXRP00000209] [MT6620 Wi-Fi][Driver] Modify NVRAM checking mechanism to warning
+ * only with necessary data field checking
+ * 1. NVRAM error is now treated as warning only, thus normal operation is still available
+ * but extra scan result used to indicate user is attached
  * 2. DPD and TX-PWR are needed fields from now on, if these 2 fields are not availble then warning message is shown
  *
  * 11 03 2010 wh.su
@@ -150,13 +161,15 @@
  * Refine the HT rate disallow TKIP pairwise cipher .
  *
  * 11 01 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150]
+ * [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
  * 1) Query link speed (TX rate) from firmware directly with buffering mechanism to reduce overhead
  * 2) Remove CNM CH-RECOVER event handling
  * 3) cfg read/write API renamed with kal prefix for unified naming rules.
  *
  * 10 18 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version
+ * Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
  * complete implementation of Android NVRAM access
  *
  * 10 08 2010 wh.su
@@ -182,7 +195,8 @@
  * fixed compiling error while enable p2p.
  *
  * 10 04 2010 cp.wu
- * [WCXRP00000077] [MT6620 Wi-Fi][Driver][FW] Eliminate use of ENUM_NETWORK_TYPE_T and replaced by ENUM_NETWORK_TYPE_INDEX_T only
+ * [WCXRP00000077] [MT6620 Wi-Fi][Driver][FW] Eliminate use of
+ * ENUM_NETWORK_TYPE_T and replaced by ENUM_NETWORK_TYPE_INDEX_T only
  * remove ENUM_NETWORK_TYPE_T definitions
  *
  * 09 28 2010 wh.su
@@ -190,7 +204,8 @@
  * [WCXRP00000069][MT6620 Wi-Fi][Driver] Fix some code for phase 1 P2P Demo.
  *
  * 09 21 2010 cp.wu
- * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and might leads to BSOD when entering RF test with AIS associated
+ * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and might
+ * leads to BSOD when entering RF test with AIS associated
  * Do a complete reset with STA-REC null checking for RF test re-entry
  *
  * 09 13 2010 cp.wu
@@ -270,7 +285,8 @@
  *
  * 1) MMPDUs are now sent to MT6620 by CMD queue for keeping strict order of 1X/MMPDU/CMD packets
  * 2) integrate with qmGetFrameAction() for deciding which MMPDU/1X could pass checking for sending
- * 2) enhance CMD_INFO_T descriptor number from 10 to 32 to avoid descriptor underflow under concurrent network operation
+ * 2) enhance CMD_INFO_T descriptor number from 10 to 32 to avoid descriptor
+ *    underflow under concurrent network operation
  *
  * 07 08 2010 cp.wu
  *
@@ -282,7 +298,8 @@
  *
  * 06 24 2010 cp.wu
  * [WPD00003833][MT6620 and MT5931] Driver migration
- * 802.1x and bluetooth-over-Wi-Fi security frames are now delievered to firmware via command path instead of data path.
+ * 802.1x and bluetooth-over-Wi-Fi security frames are now delievered to
+ * firmware via command path instead of data path.
  *
  * 06 23 2010 yarco.yang
  * [WPD00003837][MT6620]Data Path Refine
@@ -379,9 +396,9 @@
  * 04 13 2010 cp.wu
  * [WPD00003823][MT6620 Wi-Fi] Add Bluetooth-over-Wi-Fi support
  * add framework for BT-over-Wi-Fi support.
- *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 1) prPendingCmdInfo is replaced by queue for multiple handler capability
- *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 2) command sequence number is now increased atomically
- *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 3) private data could be hold and taken use for other purpose
+ * 1) prPendingCmdInfo is replaced by queue for multiple handler capability
+ * 2) command sequence number is now increased atomically
+ * 3) private data could be hold and taken use for other purpose
  *
  * 04 07 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
@@ -429,12 +446,15 @@
  *
  * 03 24 2010 yuche.tsai
  * [WPD00003825]Multiple OID issue.
- * Fix multiple OID issue. Completing one OID may trigger another OID set/query call back to driver. This issue can not be resolved by only raising IRQL to dispatch level. Decrease the pending OID counter before completing the OID.
+ * Fix multiple OID issue. Completing one OID may trigger another OID set/query call back to driver.
+ * This issue can not be resolved by only raising IRQL to dispatch level.
+ * Decrease the pending OID counter before completing the OID.
  *
  * 03 19 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
  * 1) add ACPI D0/D3 state switching support
- *  *  *  *  *  *  *  *  *  * 2) use more formal way to handle interrupt when the status is retrieved from enhanced RX response
+ *  *  *  *  *  *  *  *  *  * 2) use more formal way to handle interrupt
+ *  *  *  *  *  *  *  *  *  * when the status is retrieved from enhanced RX response
  *
  * 03 08 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
@@ -470,9 +490,9 @@
  * 01 27 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
  * 1. eliminate improper variable in rHifInfo
- *  *  *  *  *  *  *  *  *  *  * 2. block TX/ordinary OID when RF test mode is engaged
- *  *  *  *  *  *  *  *  *  *  * 3. wait until firmware finish operation when entering into and leaving from RF test mode
- *  *  *  *  *  *  *  *  *  *  * 4. correct some HAL implementation
+ * 2. block TX/ordinary OID when RF test mode is engaged
+ * 3. wait until firmware finish operation when entering into and leaving from RF test mode
+ * 4. correct some HAL implementation
  *
  * 01 26 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
@@ -577,7 +597,6 @@
 *                            P U B L I C   D A T A
 ********************************************************************************
 */
-ULONG RtlRandomEx(__inout PULONG Seed);
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A
@@ -599,7 +618,6 @@ ULONG RtlRandomEx(__inout PULONG Seed);
 ********************************************************************************
 */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief Cache-able memory free
@@ -615,7 +633,6 @@ VOID kalMemFree(IN PVOID pvAddr, IN ENUM_KAL_MEM_ALLOCATION_TYPE eMemType, IN UI
 {
 	NdisFreeMemory(pvAddr, u4Size, 0);
 }				/* kalMemFree */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -635,11 +652,9 @@ VOID kalUdelay(IN UINT_32 u4MicroSec)
 		u4MicroSec -= 50;
 	}
 
-	if (u4MicroSec > 0) {
+	if (u4MicroSec > 0)
 		NdisStallExecution(u4MicroSec);
-	}
 }				/* kalUdelay */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -654,7 +669,6 @@ VOID kalMdelay(IN UINT_32 u4MilliSec)
 {
 	kalUdelay(u4MilliSec * 1000);
 }				/* kalMdelay */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -681,17 +695,15 @@ VOID kalMsleep(IN UINT_32 u4MilliSec)
 
 		/* to avoid system tick wraps around */
 		if (u4Timestamp[1] >= u4Timestamp[0]) {
-			if ((u4Timestamp[1] - u4Timestamp[0]) >= u4RemainTime) {
+			if ((u4Timestamp[1] - u4Timestamp[0]) >= u4RemainTime)
 				break;
-			} else {
+			else
 				u4RemainTime -= (u4Timestamp[1] - u4Timestamp[0]);
-			}
 		} else {
-			if ((u4Timestamp[1] + (UINT_MAX - u4Timestamp[0])) >= u4RemainTime) {
+			if ((u4Timestamp[1] + (UINT_MAX - u4Timestamp[0])) >= u4RemainTime)
 				break;
-			} else {
+			else
 				u4RemainTime -= (u4Timestamp[1] + (UINT_MAX - u4Timestamp[0]));
-			}
 		}
 	}
 }				/* kalMsleep */
@@ -714,7 +726,6 @@ VOID kalSetEvent(IN P_GLUE_INFO_T prGlueInfo)
 
 }				/* end of kalSetEvent() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief Notify Host the Interrupt serive is done, used at Indigo SC32442 SP, the ISR call
@@ -733,7 +744,6 @@ VOID kalInterruptDone(IN P_GLUE_INFO_T prGlueInfo)
 	InterruptDone(prGlueInfo->rHifInfo.u4sysIntr);
 #endif
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -758,7 +768,6 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 	BOOLEAN fgNeedHwAccess;
 	GLUE_SPIN_LOCK_DECLARATION();
 
-
 	ASSERT(pvGlueContext);
 
 	prGlueInfo = (P_GLUE_INFO_T) pvGlueContext;
@@ -776,7 +785,7 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 
 	while (TRUE) {
 		if (GLUE_TEST_FLAG(prGlueInfo, GLUE_FLAG_HALT)) {
-			DBGLOG(INIT, TRACE, ("kalTxServiceThread - GLUE_FLAG_HALT!!\n"));
+			DBGLOG1(INIT, TRACE, "kalTxServiceThread - GLUE_FLAG_HALT!!\n");
 			break;
 		}
 
@@ -797,19 +806,16 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 				wlanFlushTxPendingPackets(prGlueInfo->prAdapter);
 			}
 			/* Remove pending security frames */
-			if (prGlueInfo->i4TxPendingSecurityFrameNum) {
+			if (prGlueInfo->i4TxPendingSecurityFrameNum)
 				kalClearSecurityFrames(prGlueInfo);
-			}
 
 			if ((!prGlueInfo->i4OidPendingCount) &&
-			    (!prGlueInfo->i4TxPendingFrameNum) &&
-			    (!prGlueInfo->i4TxPendingSecurityFrameNum)) {
+			    (!prGlueInfo->i4TxPendingFrameNum) && (!prGlueInfo->i4TxPendingSecurityFrameNum)) {
 
 				GLUE_CLEAR_FLAG(prGlueInfo, GLUE_FLAG_RESET);
 
-				DBGLOG(INIT, WARN, ("NdisMResetComplete()\n"));
-				NdisMResetComplete(prGlueInfo->rMiniportAdapterHandle,
-						   NDIS_STATUS_SUCCESS, FALSE);
+				DBGLOG1(INIT, WARN, "NdisMResetComplete()\n");
+				NdisMResetComplete(prGlueInfo->rMiniportAdapterHandle, NDIS_STATUS_SUCCESS, FALSE);
 			}
 		}
 
@@ -834,15 +840,13 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 				kalDevPortRead(prGlueInfo,
 					       MCR_WTMDR,
 					       256,
-					       prGlueInfo->aucSdioTestBuffer,
-					       sizeof(prGlueInfo->aucSdioTestBuffer));
+					       prGlueInfo->aucSdioTestBuffer, sizeof(prGlueInfo->aucSdioTestBuffer));
 			} else {
 				/* write test */
 				kalDevPortWrite(prGlueInfo,
 						MCR_WTMDR,
 						172,
-						prGlueInfo->aucSdioTestBuffer,
-						sizeof(prGlueInfo->aucSdioTestBuffer));
+						prGlueInfo->aucSdioTestBuffer, sizeof(prGlueInfo->aucSdioTestBuffer));
 			}
 		}
 #endif
@@ -851,8 +855,7 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 		wlanProcessMboxMessage(prGlueInfo->prAdapter);
 
 		/* Process CMD request */
-		if (wlanGetAcpiState(prGlueInfo->prAdapter) == ACPI_STATE_D0
-		    && prCmdQue->u4NumElem > 0) {
+		if (wlanGetAcpiState(prGlueInfo->prAdapter) == ACPI_STATE_D0 && prCmdQue->u4NumElem > 0) {
 			/* Acquire LP-OWN */
 			if (fgNeedHwAccess == FALSE) {
 				fgNeedHwAccess = TRUE;
@@ -871,15 +874,13 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 				QUEUE_REMOVE_HEAD(prTxQue, prQueueEntry, P_QUE_ENTRY_T);
 				GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_TX_QUE);
 
-				if (prQueueEntry == NULL) {
+				if (prQueueEntry == NULL)
 					break;
-				}
 
 				prNdisPacket = GLUE_GET_PKT_DESCRIPTOR(prQueueEntry);
 
 				if (wlanEnqueueTxPacket(prGlueInfo->prAdapter,
-							(P_NATIVE_PACKET) prNdisPacket) ==
-				    WLAN_STATUS_RESOURCES) {
+							(P_NATIVE_PACKET) prNdisPacket) == WLAN_STATUS_RESOURCES) {
 					GLUE_ACQUIRE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_TX_QUE);
 					QUEUE_INSERT_HEAD(prTxQue, prQueueEntry);
 					GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_TX_QUE);
@@ -888,9 +889,8 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 				}
 			}
 
-			if (wlanGetTxPendingFrameCount(prGlueInfo->prAdapter) > 0) {
+			if (wlanGetTxPendingFrameCount(prGlueInfo->prAdapter) > 0)
 				wlanTxPendingPackets(prGlueInfo->prAdapter, &fgNeedHwAccess);
-			}
 		}
 
 		/* Process RX request */
@@ -904,9 +904,8 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 				QUEUE_REMOVE_HEAD(prReturnQueue, prQueueEntry, P_QUE_ENTRY_T);
 				GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_RX_RETURN_QUE);
 
-				if (prQueueEntry == NULL) {
+				if (prQueueEntry == NULL)
 					break;
-				}
 
 				prNdisPacket = MP_GET_MR_PKT(prQueueEntry);
 
@@ -915,115 +914,97 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 		}
 
 		/* Process OID request */
-		{
-			P_WLAN_REQ_ENTRY prEntry;
-			UINT_32 u4QueryInfoLen;
-			UINT_32 u4SetInfoLen;
-			KIRQL rOldIrql;
-			WLAN_STATUS rStatus;
+		P_WLAN_REQ_ENTRY prEntry;
+		UINT_32 u4QueryInfoLen;
+		UINT_32 u4SetInfoLen;
+		KIRQL rOldIrql;
+		WLAN_STATUS rStatus;
 
-			if (_InterlockedAnd(&prGlueInfo->rHifInfo.u4ReqFlag, ~REQ_FLAG_OID) &
-			    REQ_FLAG_OID) {
+		if (_InterlockedAnd(&prGlueInfo->rHifInfo.u4ReqFlag, ~REQ_FLAG_OID) & REQ_FLAG_OID) {
 
-				prEntry = (P_WLAN_REQ_ENTRY) prGlueInfo->pvOidEntry;
+			prEntry = (P_WLAN_REQ_ENTRY) prGlueInfo->pvOidEntry;
 
-				if (prGlueInfo->fgSetOid) {
-					if (prGlueInfo->fgIsGlueExtension) {
-						rStatus = prEntry->pfOidSetHandler(prGlueInfo,
-										   prGlueInfo->
-										   pvInformationBuffer,
-										   prGlueInfo->
-										   u4InformationBufferLength,
-										   &u4SetInfoLen);
-					} else {
-						rStatus = wlanSetInformation(prGlueInfo->prAdapter,
-									     prEntry->
-									     pfOidSetHandler,
-									     prGlueInfo->
-									     pvInformationBuffer,
+			if (prGlueInfo->fgSetOid) {
+				if (prGlueInfo->fgIsGlueExtension) {
+					rStatus = prEntry->pfOidSetHandler(prGlueInfo,
+									   prGlueInfo->pvInformationBuffer,
+									   prGlueInfo->
+									   u4InformationBufferLength,
+									   &u4SetInfoLen);
+				} else {
+					rStatus = wlanSetInformation(prGlueInfo->prAdapter,
+								     prEntry->pfOidSetHandler,
+								     prGlueInfo->pvInformationBuffer,
+								     prGlueInfo->u4InformationBufferLength,
+								     &u4SetInfoLen);
+				}
+
+				/* 20091012 George */
+				/* it seems original code does not properly handle the case
+				 * which there's command/ response to be handled within OID handler.
+				 * it should wait until command/ response done and then indicate completed to NDIS.
+				 *
+				 */
+				if (prGlueInfo->pu4BytesReadOrWritten)
+					*prGlueInfo->pu4BytesReadOrWritten = u4SetInfoLen;
+
+				if (prGlueInfo->pu4BytesNeeded)
+					*prGlueInfo->pu4BytesNeeded = u4SetInfoLen;
+
+				if (rStatus != WLAN_STATUS_PENDING) {
+					KeRaiseIrql(DISPATCH_LEVEL, &rOldIrql);
+
+					GLUE_DEC_REF_CNT(prGlueInfo->i4OidPendingCount);
+					ASSERT(prGlueInfo->i4OidPendingCount == 0);
+
+					NdisMSetInformationComplete(prGlueInfo->rMiniportAdapterHandle,
+								    rStatus);
+					KeLowerIrql(rOldIrql);
+				} else {
+					wlanoidTimeoutCheck(prGlueInfo->prAdapter, prEntry->pfOidSetHandler);
+				}
+			} else {
+				if (prGlueInfo->fgIsGlueExtension) {
+					rStatus = prEntry->pfOidQueryHandler(prGlueInfo,
+									     prGlueInfo->pvInformationBuffer,
 									     prGlueInfo->
 									     u4InformationBufferLength,
-									     &u4SetInfoLen);
-					}
-
-					/* 20091012 George */
-					/* it seems original code does not properly handle the case
-					 * which there's command/ response to be handled within OID handler.
-					 * it should wait until command/ response done and then indicate completed to NDIS.
-					 *
-					 */
-					if (prGlueInfo->pu4BytesReadOrWritten)
-						*prGlueInfo->pu4BytesReadOrWritten = u4SetInfoLen;
-
-					if (prGlueInfo->pu4BytesNeeded)
-						*prGlueInfo->pu4BytesNeeded = u4SetInfoLen;
-
-					if (rStatus != WLAN_STATUS_PENDING) {
-						KeRaiseIrql(DISPATCH_LEVEL, &rOldIrql);
-
-
-						GLUE_DEC_REF_CNT(prGlueInfo->i4OidPendingCount);
-						ASSERT(prGlueInfo->i4OidPendingCount == 0);
-
-						NdisMSetInformationComplete(prGlueInfo->
-									    rMiniportAdapterHandle,
-									    rStatus);
-						KeLowerIrql(rOldIrql);
-					} else {
-						wlanoidTimeoutCheck(prGlueInfo->prAdapter,
-								    prEntry->pfOidSetHandler);
-					}
+									     &u4QueryInfoLen);
 				} else {
-					if (prGlueInfo->fgIsGlueExtension) {
-						rStatus = prEntry->pfOidQueryHandler(prGlueInfo,
-										     prGlueInfo->
-										     pvInformationBuffer,
-										     prGlueInfo->
-										     u4InformationBufferLength,
-										     &u4QueryInfoLen);
+					rStatus =
+					    wlanQueryInformation(prGlueInfo->prAdapter,
+								 prEntry->pfOidQueryHandler,
+								 prGlueInfo->pvInformationBuffer,
+								 prGlueInfo->u4InformationBufferLength,
+								 &u4QueryInfoLen);
+				}
+
+				if (prGlueInfo->pu4BytesReadOrWritten) {
+					/* This case is added to solve the problem of both 32-bit
+					 * and 64-bit counters supported for the general
+					 * statistics OIDs. */
+					if (u4QueryInfoLen > prGlueInfo->u4InformationBufferLength) {
+						*prGlueInfo->pu4BytesReadOrWritten =
+						    prGlueInfo->u4InformationBufferLength;
 					} else {
-						rStatus =
-						    wlanQueryInformation(prGlueInfo->prAdapter,
-									 prEntry->pfOidQueryHandler,
-									 prGlueInfo->
-									 pvInformationBuffer,
-									 prGlueInfo->
-									 u4InformationBufferLength,
-									 &u4QueryInfoLen);
+						*prGlueInfo->pu4BytesReadOrWritten = u4QueryInfoLen;
 					}
+				}
 
-					if (prGlueInfo->pu4BytesReadOrWritten) {
-						/* This case is added to solve the problem of both 32-bit
-						 * and 64-bit counters supported for the general
-						 * statistics OIDs. */
-						if (u4QueryInfoLen >
-						    prGlueInfo->u4InformationBufferLength) {
-							*prGlueInfo->pu4BytesReadOrWritten =
-							    prGlueInfo->u4InformationBufferLength;
-						} else {
-							*prGlueInfo->pu4BytesReadOrWritten =
-							    u4QueryInfoLen;
-						}
-					}
+				if (prGlueInfo->pu4BytesNeeded)
+					*prGlueInfo->pu4BytesNeeded = u4QueryInfoLen;
 
-					if (prGlueInfo->pu4BytesNeeded)
-						*prGlueInfo->pu4BytesNeeded = u4QueryInfoLen;
+				if (rStatus != WLAN_STATUS_PENDING) {
+					KeRaiseIrql(DISPATCH_LEVEL, &rOldIrql);
 
-					if (rStatus != WLAN_STATUS_PENDING) {
-						KeRaiseIrql(DISPATCH_LEVEL, &rOldIrql);
+					GLUE_DEC_REF_CNT(prGlueInfo->i4OidPendingCount);
+					ASSERT(prGlueInfo->i4OidPendingCount == 0);
 
-
-						GLUE_DEC_REF_CNT(prGlueInfo->i4OidPendingCount);
-						ASSERT(prGlueInfo->i4OidPendingCount == 0);
-
-						NdisMQueryInformationComplete(prGlueInfo->
-									      rMiniportAdapterHandle,
-									      rStatus);
-						KeLowerIrql(rOldIrql);
-					} else {
-						wlanoidTimeoutCheck(prGlueInfo->prAdapter,
-								    prEntry->pfOidSetHandler);
-					}
+					NdisMQueryInformationComplete(prGlueInfo->rMiniportAdapterHandle,
+								      rStatus);
+					KeLowerIrql(rOldIrql);
+				} else {
+					wlanoidTimeoutCheck(prGlueInfo->prAdapter, prEntry->pfOidSetHandler);
 				}
 			}
 		}
@@ -1042,22 +1023,18 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 			}
 		}
 
-		if (wlanGetAcpiState(prGlueInfo->prAdapter) == ACPI_STATE_D0
-		    && fgNeedHwAccess == TRUE) {
+		if (wlanGetAcpiState(prGlueInfo->prAdapter) == ACPI_STATE_D0 && fgNeedHwAccess == TRUE)
 			wlanReleasePowerControl(prGlueInfo->prAdapter);
-		}
 
 		/* Do Reset if no pending OID and TX */
 		if (GLUE_TEST_FLAG(prGlueInfo, GLUE_FLAG_RESET) &&
 		    (!prGlueInfo->i4OidPendingCount) &&
-		    (!prGlueInfo->i4TxPendingFrameNum) &&
-		    (!prGlueInfo->i4TxPendingSecurityFrameNum)) {
+		    (!prGlueInfo->i4TxPendingFrameNum) && (!prGlueInfo->i4TxPendingSecurityFrameNum)) {
 
 			GLUE_CLEAR_FLAG(prGlueInfo, GLUE_FLAG_RESET);
 
-			DBGLOG(INIT, WARN, ("NdisMResetComplete()\n"));
-			NdisMResetComplete(prGlueInfo->rMiniportAdapterHandle,
-					   NDIS_STATUS_SUCCESS, FALSE);
+			DBGLOG1(INIT, WARN, "NdisMResetComplete()\n");
+			NdisMResetComplete(prGlueInfo->rMiniportAdapterHandle, NDIS_STATUS_SUCCESS, FALSE);
 		}
 
 		if (GLUE_TEST_FLAG(prGlueInfo, GLUE_FLAG_TIMEOUT)) {
@@ -1066,9 +1043,8 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 			wlanTimerTimeoutCheck(prGlueInfo->prAdapter);
 		}
 #if CFG_SUPPORT_SDIO_READ_WRITE_PATTERN
-		if (prGlueInfo->fgEnSdioTestPattern == TRUE) {
+		if (prGlueInfo->fgEnSdioTestPattern == TRUE)
 			GLUE_SET_EVENT(prGlueInfo);
-		}
 #endif
 	}
 
@@ -1096,7 +1072,6 @@ WLAN_STATUS kalTxServiceThread(IN PVOID pvGlueContext)
 	return ndisStatus;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief Download the patch file
@@ -1123,15 +1098,15 @@ WLAN_STATUS kalDownloadPatch(IN PNDIS_STRING FileName)
 		NdisMapFile(&rStatus, &pucMappedBuffer, FileHandle);
 
 		if (rStatus == NDIS_STATUS_SUCCESS) {
+			/* ToDo:: Nothing */
 			/* Issue the download CMD */
 		}
 
 		NdisCloseFile(FileHandle);
 	}
 
-	return (rStatus);
+	return rStatus;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1149,8 +1124,7 @@ kalOidComplete(IN P_GLUE_INFO_T prGlueInfo,
 	/* KIRQL rOldIrql; */
 
 	ASSERT(prGlueInfo);
-	ASSERT((((fgSetQuery) && (prGlueInfo->fgSetOid)) ||
-		((!fgSetQuery) && (!prGlueInfo->fgSetOid))));
+	ASSERT((((fgSetQuery) && (prGlueInfo->fgSetOid)) || ((!fgSetQuery) && (!prGlueInfo->fgSetOid))));
 
 	/* Remove Timeout check timer */
 	wlanoidClearTimeoutCheck(prGlueInfo->prAdapter);
@@ -1163,30 +1137,25 @@ kalOidComplete(IN P_GLUE_INFO_T prGlueInfo,
 
 	/* KeRaiseIrql(DISPATCH_LEVEL, &rOldIrql); */
 	if (prGlueInfo->fgSetOid) {
-		if (prGlueInfo->pu4BytesReadOrWritten) {
+		if (prGlueInfo->pu4BytesReadOrWritten)
 			*prGlueInfo->pu4BytesReadOrWritten = u4SetQueryInfoLen;
-		}
 
-		if (prGlueInfo->pu4BytesNeeded) {
+		if (prGlueInfo->pu4BytesNeeded)
 			*prGlueInfo->pu4BytesNeeded = u4SetQueryInfoLen;
-		}
 
 		NdisMSetInformationComplete(prGlueInfo->rMiniportAdapterHandle, rOidStatus);
 	} else {
 		/* This case is added to solve the problem of both 32-bit
 		   and 64-bit counters supported for the general
 		   statistics OIDs. */
-		if (u4SetQueryInfoLen > prGlueInfo->u4InformationBufferLength) {
+		if (u4SetQueryInfoLen > prGlueInfo->u4InformationBufferLength)
 			u4SetQueryInfoLen = prGlueInfo->u4InformationBufferLength;
-		}
 
-		if (prGlueInfo->pu4BytesReadOrWritten) {
+		if (prGlueInfo->pu4BytesReadOrWritten)
 			*prGlueInfo->pu4BytesReadOrWritten = u4SetQueryInfoLen;
-		}
 
-		if (prGlueInfo->pu4BytesNeeded) {
+		if (prGlueInfo->pu4BytesNeeded)
 			*prGlueInfo->pu4BytesNeeded = u4SetQueryInfoLen;
-		}
 
 		NdisMQueryInformationComplete(prGlueInfo->rMiniportAdapterHandle, rOidStatus);
 	}
@@ -1222,15 +1191,15 @@ kalQoSFrameClassifierAndPacketInfo(IN P_GLUE_INFO_T prGlueInfo,
 				   OUT PUINT_32 pu4PacketLen,
 				   OUT PUINT_8 pucEthDestAddr,
 				   OUT PBOOLEAN pfgIs1X,
-				   OUT PBOOLEAN pfgIsPAL,
-				   OUT PBOOLEAN pfgIs802_3, OUT PBOOLEAN pfgIsVlanExists)
+				   OUT PBOOLEAN pfgIsPAL, OUT PBOOLEAN pfgIs802_3, OUT PBOOLEAN pfgIsVlanExists)
 {
 	PNDIS_BUFFER prNdisBuffer;
 	UINT_32 u4PacketLen;
 
 	UINT_8 aucLookAheadBuf[LOOK_AHEAD_LEN];
 	UINT_32 u4ByteCount = 0;
-	UINT_8 ucUserPriority = 0;	/* Default, normally glue layer cannot see into non-WLAN header files QM_DEFAULT_USER_PRIORITY; */
+	/* Default, normally glue layer cannot see into non-WLAN header files QM_DEFAULT_USER_PRIORITY; */
+	UINT_8 ucUserPriority = 0;
 	UINT_8 ucLookAheadLen;
 	UINT_16 u2EtherTypeLen;
 	PNDIS_PACKET prNdisPacket = (PNDIS_PACKET) prPacket;
@@ -1241,15 +1210,14 @@ kalQoSFrameClassifierAndPacketInfo(IN P_GLUE_INFO_T prGlueInfo,
 	NdisQueryPacket(prNdisPacket, NULL, NULL, &prNdisBuffer, &u4PacketLen);
 
 	if (u4PacketLen < ETHER_HEADER_LEN) {
-		DBGLOG(INIT, WARN, ("Invalid Ether packet length: %d\n", u4PacketLen));
+		DBGLOG1(INIT, WARN, "Invalid Ether packet length: %d\n", u4PacketLen);
 		return FALSE;
 	}
 
-	if (u4PacketLen < LOOK_AHEAD_LEN) {
+	if (u4PacketLen < LOOK_AHEAD_LEN)
 		ucLookAheadLen = (UINT_8) u4PacketLen;
-	} else {
+	else
 		ucLookAheadLen = LOOK_AHEAD_LEN;
-	}
 
 	/* 4 <2> Copy partial frame to local LOOK AHEAD Buffer */
 	while (prNdisBuffer && u4ByteCount < ucLookAheadLen) {
@@ -1269,8 +1237,7 @@ kalQoSFrameClassifierAndPacketInfo(IN P_GLUE_INFO_T prGlueInfo,
 		}
 
 		if ((u4ByteCount + u4Len) >= ucLookAheadLen) {
-			kalMemCopy(&aucLookAheadBuf[u4ByteCount],
-				   pvAddr, (ucLookAheadLen - u4ByteCount));
+			kalMemCopy(&aucLookAheadBuf[u4ByteCount], pvAddr, (ucLookAheadLen - u4ByteCount));
 			break;
 		} else {
 			kalMemCopy(&aucLookAheadBuf[u4ByteCount], pvAddr, u4Len);
@@ -1296,17 +1263,14 @@ kalQoSFrameClassifierAndPacketInfo(IN P_GLUE_INFO_T prGlueInfo,
 		PUINT_8 pucIpHdr = &aucLookAheadBuf[ETHER_HEADER_LEN];
 		UINT_8 ucIpVersion;
 
-
 		ucIpVersion = (pucIpHdr[0] & IP_VERSION_MASK) >> IP_VERSION_OFFSET;
 
 		if (ucIpVersion == IP_VERSION_4) {
 			UINT_8 ucIpTos;
 
-
 			/* Get the DSCP value from the header of IP packet. */
 			ucIpTos = pucIpHdr[1];
-			ucUserPriority =
-			    ((ucIpTos & IPV4_HDR_TOS_PREC_MASK) >> IPV4_HDR_TOS_PREC_OFFSET);
+			ucUserPriority = ((ucIpTos & IPV4_HDR_TOS_PREC_MASK) >> IPV4_HDR_TOS_PREC_OFFSET);
 		}
 
 		/* TODO(Kevin): Add TSPEC classifier here */
@@ -1318,9 +1282,8 @@ kalQoSFrameClassifierAndPacketInfo(IN P_GLUE_INFO_T prGlueInfo,
 		*pfgIs1X = TRUE;
 	}
 #if CFG_SUPPORT_WAPI
-	else if (u2EtherTypeLen == ETH_WPI_1X) {
+	else if (u2EtherTypeLen == ETH_WPI_1X)
 		*pfgIs1X = TRUE;
-	}
 #endif
 	else if (u2EtherTypeLen <= 1500) {	/* 802.3 Frame */
 		UINT_8 ucDSAP, ucSSAP, ucControl;
@@ -1363,7 +1326,6 @@ kalQoSFrameClassifierAndPacketInfo(IN P_GLUE_INFO_T prGlueInfo,
 	return TRUE;
 
 }				/* end of kalQoSFrameClassifier() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1414,7 +1376,6 @@ VOID kalOsTimerInitialize(IN P_GLUE_INFO_T prGlueInfo, IN PVOID prTimerHandler)
 			     (PNDIS_TIMER_FUNCTION) kalTimerEvent, (PVOID) prGlueInfo);
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is called to set the time to do the time out check.
@@ -1432,7 +1393,6 @@ BOOLEAN kalSetTimer(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Interval)
 	NdisMSetTimer(&prGlueInfo->rMasterTimer, u4Interval);
 	return TRUE;		/* success */
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1478,7 +1438,6 @@ VOID kalTimeoutHandler(IN P_GLUE_INFO_T prGlueInfo)
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to clear pending OID queued in pvOidEntry
@@ -1503,16 +1462,12 @@ VOID kalOidClearance(IN P_GLUE_INFO_T prGlueInfo)
 		GLUE_DEC_REF_CNT(prGlueInfo->i4OidPendingCount);
 		ASSERT(prGlueInfo->i4OidPendingCount == 0);
 
-		if (prGlueInfo->fgSetOid) {
-			NdisMSetInformationComplete(prGlueInfo->rMiniportAdapterHandle,
-						    NDIS_STATUS_FAILURE);
-		} else {
-			NdisMQueryInformationComplete(prGlueInfo->rMiniportAdapterHandle,
-						      NDIS_STATUS_FAILURE);
-		}
+		if (prGlueInfo->fgSetOid)
+			NdisMSetInformationComplete(prGlueInfo->rMiniportAdapterHandle, NDIS_STATUS_FAILURE);
+		else
+			NdisMQueryInformationComplete(prGlueInfo->rMiniportAdapterHandle, NDIS_STATUS_FAILURE);
 	}
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1537,7 +1492,6 @@ BOOLEAN kalRetrieveNetworkAddress(IN P_GLUE_INFO_T prGlueInfo, IN OUT PARAM_MAC_
 	}
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to update netweork address to glue layer
@@ -1558,7 +1512,6 @@ VOID kalUpdateMACAddress(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucMacAddr)
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to inform glue layer for address update
@@ -1578,7 +1531,6 @@ VOID kalUpdateNetworkAddress(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS r
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to load firmware image
@@ -1590,9 +1542,7 @@ VOID kalUpdateNetworkAddress(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS r
 * \retval Map File Handle, used for unammping
 */
 /*----------------------------------------------------------------------------*/
-PVOID
-kalFirmwareImageMapping(IN P_GLUE_INFO_T prGlueInfo,
-			OUT PPVOID ppvMapFileBuf, OUT PUINT_32 pu4FileLength)
+PVOID kalFirmwareImageMapping(IN P_GLUE_INFO_T prGlueInfo, OUT PPVOID ppvMapFileBuf, OUT PUINT_32 pu4FileLength)
 {
 	NDIS_HANDLE *prFileHandleFwImg;
 	NDIS_STRING rFileWifiRam;
@@ -1602,31 +1552,29 @@ kalFirmwareImageMapping(IN P_GLUE_INFO_T prGlueInfo,
 	ASSERT(prGlueInfo);
 	ASSERT(ppvMapFileBuf);
 	ASSERT(pu4FileLength);
-
-	if ((prFileHandleFwImg = kalMemAlloc(sizeof(NDIS_HANDLE), VIR_MEM_TYPE)) == NULL) {
-		DBGLOG(INIT, ERROR, ("Fail to allocate memory for NDIS_HANDLE!\n"));
+	prFileHandleFwImg = kalMemAlloc(sizeof(NDIS_HANDLE), VIR_MEM_TYPE);
+	if (prFileHandleFwImg == NULL) {
+		DBGLOG1(INIT, ERROR, "Fail to allocate memory for NDIS_HANDLE!\n");
 		return NULL;
 	}
 
 	/* Mapping FW image from file */
 #if defined(MT6620) && CFG_MULTI_ECOVER_SUPPORT
-	if (wlanGetEcoVersion(prGlueInfo->prAdapter) >= 6) {
+	if (wlanGetEcoVersion(prGlueInfo->prAdapter) >= 6)
 		NdisInitUnicodeString(&rFileWifiRam, prGlueInfo->rRegInfo.aucFwImgFilenameE6);
-	} else {
+	else
 		NdisInitUnicodeString(&rFileWifiRam, prGlueInfo->rRegInfo.aucFwImgFilename);
-	}
 #else
 	NdisInitUnicodeString(&rFileWifiRam, prGlueInfo->rRegInfo.aucFwImgFilename);
 #endif
 	if (!imageFileMapping(rFileWifiRam, prFileHandleFwImg, ppvMapFileBuf, pu4FileLength)) {
-		DBGLOG(INIT, ERROR, ("Fail to load FW image from file!\n"));
+		DBGLOG1(INIT, ERROR, "Fail to load FW image from file!\n");
 		kalMemFree(prFileHandleFwImg, VIR_MEM_TYPE, sizeof(NDIS_HANDLE));
 		return NULL;
 	}
 
 	return (PVOID) prFileHandleFwImg;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1639,8 +1587,7 @@ kalFirmwareImageMapping(IN P_GLUE_INFO_T prGlueInfo,
 * \retval none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-kalFirmwareImageUnmapping(IN P_GLUE_INFO_T prGlueInfo, IN PVOID prFwHandle, IN PVOID pvMapFileBuf)
+VOID kalFirmwareImageUnmapping(IN P_GLUE_INFO_T prGlueInfo, IN PVOID prFwHandle, IN PVOID pvMapFileBuf)
 {
 	NDIS_HANDLE rFileHandleFwImg;
 
@@ -1662,7 +1609,6 @@ kalFirmwareImageUnmapping(IN P_GLUE_INFO_T prGlueInfo, IN PVOID prFwHandle, IN P
 
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to check if card is removed
@@ -1679,7 +1625,6 @@ BOOLEAN kalIsCardRemoved(IN P_GLUE_INFO_T prGlueInfo)
 
 	return prGlueInfo->fgIsCardRemoved;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1706,9 +1651,8 @@ VOID kalFlushPendingTxPackets(IN P_GLUE_INFO_T prGlueInfo)
 			QUEUE_REMOVE_HEAD(prTxQue, prQueueEntry, P_QUE_ENTRY_T);
 			GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_TX_QUE);
 
-			if (prQueueEntry == NULL) {
+			if (prQueueEntry == NULL)
 				break;
-			}
 
 			prPacket = GLUE_GET_PKT_DESCRIPTOR(prQueueEntry);
 
@@ -1716,7 +1660,6 @@ VOID kalFlushPendingTxPackets(IN P_GLUE_INFO_T prGlueInfo)
 		}
 	}
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1733,7 +1676,6 @@ UINT_32 kalGetTxPendingFrameCount(IN P_GLUE_INFO_T prGlueInfo)
 
 	return (UINT_32) (prGlueInfo->i4TxPendingFrameNum);
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1755,7 +1697,6 @@ UINT_32 kalGetTxPendingCmdCount(IN P_GLUE_INFO_T prGlueInfo)
 	return prCmdQue->u4NumElem;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is get indicated media state
@@ -1772,7 +1713,6 @@ ENUM_PARAM_MEDIA_STATE_T kalGetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo)
 	return prGlueInfo->eParamMediaStateIndicated;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to set indicated media state
@@ -1782,15 +1722,12 @@ ENUM_PARAM_MEDIA_STATE_T kalGetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo)
 * \retval none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-kalSetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo,
-			  IN ENUM_PARAM_MEDIA_STATE_T eParamMediaStateIndicate)
+VOID kalSetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_PARAM_MEDIA_STATE_T eParamMediaStateIndicate)
 {
 	ASSERT(prGlueInfo);
 
 	prGlueInfo->eParamMediaStateIndicated = eParamMediaStateIndicate;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1808,7 +1745,6 @@ UINT_32 kalGetFwLoadAddress(IN P_GLUE_INFO_T prGlueInfo)
 	return prGlueInfo->rRegInfo.u4LoadAddress;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to get firmware start address from registry
@@ -1824,7 +1760,6 @@ UINT_32 kalGetFwStartAddress(IN P_GLUE_INFO_T prGlueInfo)
 
 	return prGlueInfo->rRegInfo.u4StartAddress;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1868,16 +1803,14 @@ VOID kalOidCmdClearance(IN P_GLUE_INFO_T prGlueInfo)
 	GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_CMD_QUE);
 
 	if (prCmdInfo) {
-		if (prCmdInfo->pfCmdTimeoutHandler) {
+		if (prCmdInfo->pfCmdTimeoutHandler)
 			prCmdInfo->pfCmdTimeoutHandler(prGlueInfo->prAdapter, prCmdInfo);
-		} else {
+		else
 			kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, 0, WLAN_STATUS_FAILURE);
-		}
 
 		cmdBufFreeCmdInfo(prGlueInfo->prAdapter, prCmdInfo);
 	}
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1902,7 +1835,6 @@ VOID kalEnqueueCommand(IN P_GLUE_INFO_T prGlueInfo, IN P_QUE_ENTRY_T prQueueEntr
 	QUEUE_INSERT_TAIL(prCmdQue, prQueueEntry);
 	GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_CMD_QUE);
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1937,12 +1869,10 @@ VOID kalClearSecurityFrames(IN P_GLUE_INFO_T prGlueInfo)
 		prCmdInfo = (P_CMD_INFO_T) prQueueEntry;
 
 		if (prCmdInfo->eCmdType == COMMAND_TYPE_SECURITY_FRAME) {
-			if (prCmdInfo->pfCmdTimeoutHandler) {
+			if (prCmdInfo->pfCmdTimeoutHandler)
 				prCmdInfo->pfCmdTimeoutHandler(prGlueInfo->prAdapter, prCmdInfo);
-			} else {
-				wlanReleaseCommand(prGlueInfo->prAdapter, prCmdInfo,
-						   TX_RESULT_QUEUE_CLEARANCE);
-			}
+			else
+				wlanReleaseCommand(prGlueInfo->prAdapter, prCmdInfo, TX_RESULT_QUEUE_CLEARANCE);
 			cmdBufFreeCmdInfo(prGlueInfo->prAdapter, prCmdInfo);
 		} else {
 			QUEUE_INSERT_TAIL(prReturnCmdQue, prQueueEntry);
@@ -1956,7 +1886,6 @@ VOID kalClearSecurityFrames(IN P_GLUE_INFO_T prGlueInfo)
 	QUEUE_CONCATENATE_QUEUES_HEAD(prCmdQue, prReturnCmdQue);
 	GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_CMD_QUE);
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1992,14 +1921,11 @@ VOID kalClearSecurityFramesByBssIdx(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucBss
 	while (prQueueEntry) {
 		prCmdInfo = (P_CMD_INFO_T) prQueueEntry;
 
-		if (prCmdInfo->eCmdType == COMMAND_TYPE_SECURITY_FRAME &&
-		    prCmdInfo->ucBssIndex == ucBssIndex) {
-			if (prCmdInfo->pfCmdTimeoutHandler) {
+		if (prCmdInfo->eCmdType == COMMAND_TYPE_SECURITY_FRAME && prCmdInfo->ucBssIndex == ucBssIndex) {
+			if (prCmdInfo->pfCmdTimeoutHandler)
 				prCmdInfo->pfCmdTimeoutHandler(prGlueInfo->prAdapter, prCmdInfo);
-			} else {
-				wlanReleaseCommand(prGlueInfo->prAdapter, prCmdInfo,
-						   TX_RESULT_QUEUE_CLEARANCE);
-			}
+			else
+				wlanReleaseCommand(prGlueInfo->prAdapter, prCmdInfo, TX_RESULT_QUEUE_CLEARANCE);
 			cmdBufFreeCmdInfo(prGlueInfo->prAdapter, prCmdInfo);
 		} else {
 			QUEUE_INSERT_TAIL(prReturnCmdQue, prQueueEntry);
@@ -2013,7 +1939,6 @@ VOID kalClearSecurityFramesByBssIdx(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucBss
 	QUEUE_CONCATENATE_QUEUES_HEAD(prCmdQue, prReturnCmdQue);
 	GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_CMD_QUE);
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2048,8 +1973,7 @@ VOID kalClearMgmtFrames(IN P_GLUE_INFO_T prGlueInfo)
 		prCmdInfo = (P_CMD_INFO_T) prQueueEntry;
 
 		if (prCmdInfo->eCmdType == COMMAND_TYPE_MANAGEMENT_FRAME) {
-			wlanReleaseCommand(prGlueInfo->prAdapter, prCmdInfo,
-					   TX_RESULT_QUEUE_CLEARANCE);
+			wlanReleaseCommand(prGlueInfo->prAdapter, prCmdInfo, TX_RESULT_QUEUE_CLEARANCE);
 			cmdBufFreeCmdInfo(prGlueInfo->prAdapter, prCmdInfo);
 		} else {
 			QUEUE_INSERT_TAIL(prReturnCmdQue, prQueueEntry);
@@ -2063,7 +1987,6 @@ VOID kalClearMgmtFrames(IN P_GLUE_INFO_T prGlueInfo)
 	QUEUE_CONCATENATE_QUEUES_HEAD(prCmdQue, prReturnCmdQue);
 	GLUE_RELEASE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_CMD_QUE);
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2083,7 +2006,6 @@ UINT_32 kalRandomNumber(VOID)
 	return RtlRandomEx(&u4Seed);
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is not used by NDIS
@@ -2095,9 +2017,7 @@ UINT_32 kalRandomNumber(VOID)
 * \retval none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-kalScanDone(IN P_GLUE_INFO_T prGlueInfo,
-	    IN ENUM_KAL_NETWORK_TYPE_INDEX_T eNetTypeIdx, IN WLAN_STATUS rStatus)
+VOID kalScanDone(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_KAL_NETWORK_TYPE_INDEX_T eNetTypeIdx, IN WLAN_STATUS rStatus)
 {
 	ASSERT(prGlueInfo);
 
@@ -2106,7 +2026,6 @@ kalScanDone(IN P_GLUE_INFO_T prGlueInfo,
 
 	return;
 }
-
 
 #if CFG_ENABLE_BT_OVER_WIFI
 /*----------------------------------------------------------------------------*/
@@ -2148,7 +2067,6 @@ ENUM_BOW_DEVICE_STATE kalGetBowState(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_A
 	return BOW_DEVICE_STATE_DISCONNECTED;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to set Bluetooth-over-Wi-Fi state in glue layer
@@ -2161,9 +2079,7 @@ ENUM_BOW_DEVICE_STATE kalGetBowState(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_A
 *           none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-kalSetBowState(IN P_GLUE_INFO_T prGlueInfo,
-	       IN ENUM_BOW_DEVICE_STATE eBowState, IN PARAM_MAC_ADDRESS rPeerAddr)
+VOID kalSetBowState(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_BOW_DEVICE_STATE eBowState, IN PARAM_MAC_ADDRESS rPeerAddr)
 {
 	ASSERT(prGlueInfo);
 
@@ -2171,7 +2087,6 @@ kalSetBowState(IN P_GLUE_INFO_T prGlueInfo,
 
 	return;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2202,7 +2117,6 @@ ENUM_BOW_DEVICE_STATE kalGetBowGlobalState(IN P_GLUE_INFO_T prGlueInfo)
 	return BOW_DEVICE_STATE_DISCONNECTED;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to retrieve Bluetooth-over-Wi-Fi operating frequency
@@ -2222,7 +2136,6 @@ UINT_32 kalGetBowFreqInKHz(IN P_GLUE_INFO_T prGlueInfo)
 
 	return 0;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2245,7 +2158,6 @@ UINT_8 kalGetBowRole(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rPeerAddr
 	return 0;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to set Bluetooth-over-Wi-Fi role
@@ -2267,7 +2179,6 @@ VOID kalSetBowRole(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucRole, IN PARAM_MAC_A
 
 	return;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2311,7 +2222,6 @@ ENUM_PARAM_MEDIA_STATE_T kalP2PGetState(IN P_GLUE_INFO_T prGlueInfo)
 	return PARAM_MEDIA_STATE_DISCONNECTED;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to set Wi-Fi Direct state in glue layer
@@ -2348,7 +2258,6 @@ kalP2PSetState(IN P_GLUE_INFO_T prGlueInfo,
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to retrieve Wi-Fi Direct operating frequency
@@ -2368,7 +2277,6 @@ UINT_32 kalP2PGetFreqInKHz(IN P_GLUE_INFO_T prGlueInfo)
 
 	return 0;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2391,7 +2299,6 @@ UINT_8 kalP2PGetRole(IN P_GLUE_INFO_T prGlueInfo)
 
 	return 0;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2423,7 +2330,6 @@ kalP2PSetRole(IN P_GLUE_INFO_T prGlueInfo,
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief indicate an event to supplicant for device found
@@ -2444,7 +2350,6 @@ BOOLEAN kalP2PIndicateFound(IN P_GLUE_INFO_T prGlueInfo)
 	return FALSE;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief indicate an event to supplicant for device connection request
@@ -2454,7 +2359,9 @@ BOOLEAN kalP2PIndicateFound(IN P_GLUE_INFO_T prGlueInfo)
 * \retval none
 */
 /*----------------------------------------------------------------------------*/
-VOID kalP2PIndicateConnReq(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucDevName, IN INT_32 u4NameLength, IN PARAM_MAC_ADDRESS rPeerAddr, IN UINT_8 ucDevType,	/* 0: P2P Device / 1: GC / 2: GO */
+VOID kalP2PIndicateConnReq(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucDevName,
+			   IN INT_32 u4NameLength, IN PARAM_MAC_ADDRESS rPeerAddr,
+			   IN UINT_8 ucDevType,	/* 0: P2P Device / 1: GC / 2: GO */
 			   IN INT_32 i4ConfigMethod, IN INT_32 i4ActiveConfigMethod)
 {
 	ASSERT(prGlueInfo);
@@ -2478,8 +2385,7 @@ VOID
 kalP2PInvitationIndication(IN P_GLUE_INFO_T prGlueInfo,
 			   IN P_P2P_DEVICE_DESC_T prP2pDevDesc,
 			   IN PUINT_8 pucSsid,
-			   IN UINT_8 ucSsidLen,
-			   IN UINT_8 ucOperatingChnl, IN UINT_8 ucInvitationType)
+			   IN UINT_8 ucSsidLen, IN UINT_8 ucOperatingChnl, IN UINT_8 ucInvitationType)
 {
 	ASSERT(prGlueInfo);
 
@@ -2488,8 +2394,6 @@ kalP2PInvitationIndication(IN P_GLUE_INFO_T prGlueInfo,
 
 	return;
 }
-
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2511,7 +2415,6 @@ VOID kalP2PSetCipher(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Cipher)
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to get the cipher, return for cipher is ccmp
@@ -2531,7 +2434,6 @@ BOOLEAN kalP2PGetCipher(IN P_GLUE_INFO_T prGlueInfo)
 	/* Wi-Fi Direct not implemented yet */
 	return FALSE;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2553,7 +2455,6 @@ BOOLEAN kalP2PGetTkipCipher(IN P_GLUE_INFO_T prGlueInfo)
 	return FALSE;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to get the cipher, return for cipher is ccmp
@@ -2573,7 +2474,6 @@ BOOLEAN kalP2PGetCcmpCipher(IN P_GLUE_INFO_T prGlueInfo)
 	/* Wi-Fi Direct not implemented yet */
 	return FALSE;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2595,7 +2495,6 @@ UINT_16 kalP2PCalWSC_IELen(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucType)
 	return 0;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to copy the wsc ie setting from p2p supplicant
@@ -2614,7 +2513,6 @@ VOID kalP2PGenWSC_IE(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucType, IN PUINT_8 p
 	/* Wi-Fi Direct not implemented yet */
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to update the assoc req to p2p
@@ -2629,15 +2527,13 @@ VOID kalP2PGenWSC_IE(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucType, IN PUINT_8 p
 /*----------------------------------------------------------------------------*/
 VOID
 kalP2PUpdateAssocInfo(IN P_GLUE_INFO_T prGlueInfo,
-		      IN PUINT_8 pucFrameBody,
-		      IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest)
+		      IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest)
 {
 	ASSERT(prGlueInfo);
 
 	/* Wi-Fi Direct not implemented yet */
 }
 #endif
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2659,7 +2555,6 @@ BOOLEAN kalIsConfigurationExist(IN P_GLUE_INFO_T prGlueInfo)
 	return TRUE;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to retrieve Registry information
@@ -2677,7 +2572,6 @@ P_REG_INFO_T kalGetConfiguration(IN P_GLUE_INFO_T prGlueInfo)
 
 	return &(prGlueInfo->rRegInfo);
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2745,7 +2639,6 @@ BOOLEAN kalCfgDataRead16(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Offset, OUT P
 	return FALSE;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief API for writing data on NVRAM
@@ -2782,9 +2675,8 @@ BOOLEAN kalCfgDataWrite16(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Offset, IN U
 BOOLEAN kalWSCGetActiveState(IN P_GLUE_INFO_T prGlueInfo)
 {
 	/* Windows family does not support WSC. */
-	return (FALSE);
+	return FALSE;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2818,7 +2710,6 @@ kalUpdateRSSI(IN P_GLUE_INFO_T prGlueInfo,
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Dispatch pre-allocated I/O buffer
@@ -2834,7 +2725,6 @@ PVOID kalAllocateIOBuffer(IN UINT_32 u4AllocSize)
 {
 	return kalMemAlloc(u4AllocSize, PHY_MEM_TYPE);
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2852,7 +2742,6 @@ VOID kalReleaseIOBuffer(IN PVOID pvAddr, IN UINT_32 u4Size)
 {
 	kalMemFree(pvAddr, PHY_MEM_TYPE, u4Size);
 }
-
 
 #if CFG_CHIP_RESET_SUPPORT
 /*----------------------------------------------------------------------------*/
@@ -2872,7 +2761,6 @@ VOID glSendResetRequest(VOID)
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
  * @brief This routine is called for checking if MT6620 is resetting
@@ -2888,7 +2776,6 @@ BOOLEAN kalIsResetting(VOID)
 	return FALSE;
 }
 #endif
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2917,8 +2804,7 @@ UINT_32 kalWriteToFile(const PUINT_8 pucPath, BOOLEAN fgDoAppend, PUINT_8 pucDat
 	/* 1.Path information */
 	RtlInitUnicodeString(&uniName, pucPath);
 
-	InitializeObjectAttributes(&objAttr, &uniName,
-				   OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
+	InitializeObjectAttributes(&objAttr, &uniName, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
 	/*  */
 
 	if (KeGetCurrentIrql() != PASSIVE_LEVEL)
@@ -2928,25 +2814,20 @@ UINT_32 kalWriteToFile(const PUINT_8 pucPath, BOOLEAN fgDoAppend, PUINT_8 pucDat
 					GENERIC_WRITE,
 					&objAttr, &ioStatusBlock, NULL,
 					FILE_ATTRIBUTE_NORMAL,
-					0,
-					FILE_OVERWRITE_IF, FILE_SYNCHRONOUS_IO_NONALERT, NULL, 0);
+					0, FILE_OVERWRITE_IF, FILE_SYNCHRONOUS_IO_NONALERT, NULL, 0);
 
 	} else {
 		ntstatus = ZwOpenFile(&handle,
 				      FILE_APPEND_DATA,
 				      &objAttr, &ioStatusBlock,
-				      FILE_SHARE_READ | FILE_SHARE_WRITE,
-				      FILE_SYNCHRONOUS_IO_NONALERT);
-
+				      FILE_SHARE_READ | FILE_SHARE_WRITE, FILE_SYNCHRONOUS_IO_NONALERT);
 
 	}
 
-	ntstatus = ZwWriteFile(handle, NULL, NULL, NULL, &ioStatusBlock,
-			       pucData, u4Size, NULL, NULL);
+	ntstatus = ZwWriteFile(handle, NULL, NULL, NULL, &ioStatusBlock, pucData, u4Size, NULL, NULL);
 	ZwClose(handle);
 	return 0;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -2958,13 +2839,10 @@ UINT_32 kalWriteToFile(const PUINT_8 pucPath, BOOLEAN fgDoAppend, PUINT_8 pucDat
  *
  */
 /*----------------------------------------------------------------------------*/
-UINT_32
-kal_sprintf_ddk(const PUINT_8 pucPath,
-		UINT_32 u4size, const char *fmt1, const char *fmt2, const char *fmt3)
+UINT_32 kal_sprintf_ddk(const PUINT_8 pucPath, UINT_32 u4size, const char *fmt1, const char *fmt2, const char *fmt3)
 {
 #if 0
-	RtlStringCbPrintfW(pucPath, u4size,
-			   L"\\SystemRoot\\dump_%ld_0x%08lX_%ld.hex", fmt1, fmt2, fmt3);
+	RtlStringCbPrintfW(pucPath, u4size, L"\\SystemRoot\\dump_%ld_0x%08lX_%ld.hex", fmt1, fmt2, fmt3);
 #else
 	RtlStringCbPrintfW(pucPath, u4size, L"\\SystemRoot\\dump.hex");
 
@@ -3030,46 +2908,38 @@ BOOLEAN kalSetSdioTestPattern(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgEn, IN B
 
 	if (fgRead == FALSE) {
 		/* fill buffer for data to be written */
-		for (i = 0; i < sizeof(aucPattern); i++) {
+		for (i = 0; i < sizeof(aucPattern); i++)
 			prGlueInfo->aucSdioTestBuffer[i] = aucPattern[i];
-		}
 	}
 
 	return TRUE;
 }
 #endif
 
-
 VOID
 kalReadyOnChannel(IN P_GLUE_INFO_T prGlueInfo,
 		  IN UINT_64 u8Cookie,
-		  IN ENUM_BAND_T eBand,
-		  IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum, IN UINT_32 u4DurationMs)
+		  IN ENUM_BAND_T eBand, IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum, IN UINT_32 u4DurationMs)
 {
 	/* no implementation yet */
 	return;
 }
-
 
 VOID
 kalRemainOnChannelExpired(IN P_GLUE_INFO_T prGlueInfo,
-			  IN UINT_64 u8Cookie,
-			  IN ENUM_BAND_T eBand, IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum)
+			  IN UINT_64 u8Cookie, IN ENUM_BAND_T eBand, IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum)
 {
 	/* no implementation yet */
 	return;
 }
-
 
 VOID
 kalIndicateMgmtTxStatus(IN P_GLUE_INFO_T prGlueInfo,
-			IN UINT_64 u8Cookie,
-			IN BOOLEAN fgIsAck, IN PUINT_8 pucFrameBuf, IN UINT_32 u4FrameLen)
+			IN UINT_64 u8Cookie, IN BOOLEAN fgIsAck, IN PUINT_8 pucFrameBuf, IN UINT_32 u4FrameLen)
 {
 	/* no implementation yet */
 	return;
 }
-
 
 VOID kalIndicateRxMgmtFrame(IN P_GLUE_INFO_T prGlueInfo, IN P_SW_RFB_T prSwRfb)
 {
@@ -3077,13 +2947,11 @@ VOID kalIndicateRxMgmtFrame(IN P_GLUE_INFO_T prGlueInfo, IN P_SW_RFB_T prSwRfb)
 	return;
 }
 
-
 VOID kalSchedScanResults(IN P_GLUE_INFO_T prGlueInfo)
 {
 	/* no implementation yet */
 	return;
 }
-
 
 VOID kalSchedScanStopped(IN P_GLUE_INFO_T prGlueInfo)
 {
@@ -3091,10 +2959,7 @@ VOID kalSchedScanStopped(IN P_GLUE_INFO_T prGlueInfo)
 	return;
 }
 
-
-BOOLEAN
-kalGetEthDestAddr(IN P_GLUE_INFO_T prGlueInfo,
-		  IN P_NATIVE_PACKET prPacket, OUT PUINT_8 pucEthDestAddr)
+BOOLEAN kalGetEthDestAddr(IN P_GLUE_INFO_T prGlueInfo, IN P_NATIVE_PACKET prPacket, OUT PUINT_8 pucEthDestAddr)
 {
 	PNDIS_BUFFER prNdisBuffer;
 	UINT_32 u4PacketLen;
@@ -3111,7 +2976,7 @@ kalGetEthDestAddr(IN P_GLUE_INFO_T prGlueInfo,
 	NdisQueryPacket(prNdisPacket, NULL, NULL, &prNdisBuffer, &u4PacketLen);
 
 	if (u4PacketLen < 6) {
-		DBGLOG(INIT, WARN, ("Invalid Ether packet length: %d\n", u4PacketLen));
+		DBGLOG1(INIT, WARN, "Invalid Ether packet length: %d\n", u4PacketLen);
 		return FALSE;
 	}
 	/* 4 <2> Copy partial frame to local LOOK AHEAD Buffer */
@@ -3132,12 +2997,10 @@ kalGetEthDestAddr(IN P_GLUE_INFO_T prGlueInfo,
 		}
 
 		if ((u4ByteCount + u4Len) >= 6) {
-			kalMemCopy((PUINT_8) ((UINT_32) pucEthDestAddr + u4ByteCount),
-				   pvAddr, (6 - u4ByteCount));
+			kalMemCopy((PUINT_8) ((UINT_32) pucEthDestAddr + u4ByteCount), pvAddr, (6 - u4ByteCount));
 			break;
 		} else {
-			kalMemCopy((PUINT_8) ((UINT_32) pucEthDestAddr + u4ByteCount),
-				   pvAddr, u4Len);
+			kalMemCopy((PUINT_8) ((UINT_32) pucEthDestAddr + u4ByteCount), pvAddr, u4Len);
 		}
 		u4ByteCount += u4Len;
 

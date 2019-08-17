@@ -3,6 +3,7 @@
 #include "psm_core.h"
 #include "btm_core.h"
 #include "stp_dbg.h"
+#include "stp_sdio.h"
 
 #define PFX                         "[STP] "
 #define STP_LOG_DBG                  4
@@ -110,7 +111,9 @@ static VOID stp_send_ack(UINT8 txAck, UINT8 nak);
 INT32 stp_send_data_no_ps(PUINT8 buffer, UINT32 length, UINT8 type);
 static INT32 stp_process_rxack(VOID);
 static VOID stp_process_packet(VOID);
+static VOID stp_sdio_process_packet(VOID);
 VOID stp_do_tx_timeout(VOID);
+static INT32 wmt_parser_data(PUINT8 buffer, UINT32 length, UINT8 type);
 
 /*Bad*/
 extern INT32 mtk_wcn_sys_if_rx(PUINT8 data, INT32 size);
@@ -365,9 +368,8 @@ static void stp_tx_timeout_handler(unsigned long data)
 {
 	STP_WARN_FUNC("call retry btm retry wq ...\n");
 	/*shorten the softirq lattency */
-#if WMT_PLAT_ALPS
-	stop_log();
-#endif
+	if (mtk_wcn_stp_is_uart_mand_mode() || mtk_wcn_stp_is_uart_fullset_mode())
+		stop_log();
 	stp_btm_notify_stp_retry_wq(STP_BTM_CORE(stp_core_ctx));
 	STP_WARN_FUNC("call retry btm retry wq ...#\n");
 }
@@ -638,6 +640,96 @@ static VOID stp_add_to_tx_queue(const PUINT8 buffer, UINT32 length)
 	}
 
 	return;
+}
+
+/*****************************************************************************
+* FUNCTION
+*  wmt_parser_data
+* DESCRIPTION
+*  push data to wmt parser engine
+* PARAMETERS
+*  buffer      [IN]        data buffer
+*  length      [IN]        data buffer length
+*  type        [IN]        corresponding task index
+* RETURNS
+*  INT32    0=success, others=error
+*****************************************************************************/
+static INT32 wmt_parser_data(PUINT8 buffer, UINT32 length, UINT8 type)
+{
+	UINT8 wmtsubtype;
+	INT32 fgRxOk = -1;
+	UINT32 parser_length = 0;
+	UINT32 packet_length = 0;
+
+	while (parser_length < length) {
+		wmtsubtype = buffer[parser_length + 1];
+		packet_length = buffer[parser_length + 3] << 8;
+		packet_length += buffer[parser_length + 2];
+		STP_DBG_FUNC("wmt sub type (%d)\n", wmtsubtype);
+		if (wmtsubtype == WMT_LTE_COEX_FLAG) {
+#if CFG_WMT_LTE_COEX_HANDLING
+			fgRxOk = stp_add_to_rx_queue(buffer + parser_length, packet_length + 4, COEX_TASK_INDX);
+			if (fgRxOk == 0) {
+				STP_DBG_FUNC("wmt/lte coex package!\n");
+				stp_notify_btm_handle_wmt_lte_coex(STP_BTM_CORE(stp_core_ctx));
+			}
+#else
+			STP_WARN_FUNC("BT/WIFI & LTE coex in non-LTE projects,drop it...\n");
+#endif
+		} else {
+			fgRxOk = stp_add_to_rx_queue(buffer + parser_length, packet_length + 4, type);
+			if (fgRxOk == 0) {
+				STP_DBG_FUNC("wmt package!\n");
+				(*sys_event_set)(type);
+			}
+		}
+		parser_length += packet_length + 4;
+	}
+
+	return fgRxOk;
+}
+
+static VOID stp_sdio_process_packet(VOID)
+{
+	MTK_WCN_BOOL is_function_active = 0;
+
+	if ((stp_core_ctx.parser.type == BT_TASK_INDX) && STP_BT_STK_IS_BLUEZ(stp_core_ctx)) {
+		INT32 b;
+
+		/*Indicate packet to hci_stp */
+		if (gStpDbgLvl >= STP_LOG_DBG)
+			stp_dump_data(stp_core_ctx.rx_buf, "indicate_to_bt_core", stp_core_ctx.rx_counter);
+
+		b = mtk_wcn_sys_if_rx(stp_core_ctx.rx_buf, stp_core_ctx.rx_counter);
+		if (b)
+			STP_ERR_FUNC("mtk_wcn_sys_if_rx is NULL\n");
+	} else {
+		is_function_active = ((*sys_check_function_status)(stp_core_ctx.parser.type,
+					OP_FUNCTION_ACTIVE) == STATUS_FUNCTION_ACTIVE);
+
+		/*check type and function if active? */
+		if ((stp_core_ctx.parser.type < MTKSTP_MAX_TASK_NUM)
+				&& (is_function_active == MTK_WCN_BOOL_TRUE)) {
+			if (stp_core_ctx.parser.type == WMT_TASK_INDX) {
+				wmt_parser_data(stp_core_ctx.rx_buf, stp_core_ctx.rx_counter,
+						stp_core_ctx.parser.type);
+			} else {
+				stp_add_to_rx_queue(stp_core_ctx.rx_buf, stp_core_ctx.rx_counter,
+						stp_core_ctx.parser.type);
+
+				/*notify corresponding subfunction of incoming data */
+				(*sys_event_set)(stp_core_ctx.parser.type);
+			}
+		} else {
+			if (is_function_active == MTK_WCN_BOOL_FALSE) {
+				STP_ERR_FUNC("function type = %d is inactive, so no en-queue to rx\n",
+						stp_core_ctx.parser.type);
+			} else {
+				STP_ERR_FUNC("mtkstp_process_packet: type = %x, the type is invalid\n",
+						stp_core_ctx.parser.type);
+			}
+		}
+	}
 }
 
 /*****************************************************************************
@@ -1016,30 +1108,15 @@ static VOID stp_process_packet(VOID)
 					osal_printtimeofday("############ BT Rest end <--");
 				}
 			}
-#if CFG_WMT_LTE_COEX_HANDLING
-			if ((stp_core_ctx.parser.type == WMT_TASK_INDX) &&
-			    (stp_core_ctx.parser.wmtsubtype == WMT_LTE_COEX_FLAG)) {
-				fgRxOk =
-				    stp_add_to_rx_queue(stp_core_ctx.rx_buf,
-							stp_core_ctx.rx_counter, COEX_TASK_INDX);
+			if (stp_core_ctx.parser.type == WMT_TASK_INDX) {
+				fgRxOk = wmt_parser_data(stp_core_ctx.rx_buf, stp_core_ctx.rx_counter,
+						stp_core_ctx.parser.type);
 			} else {
 				fgRxOk =
 				    stp_add_to_rx_queue(stp_core_ctx.rx_buf,
 							stp_core_ctx.rx_counter,
 							stp_core_ctx.parser.type);
 			}
-#else
-			if ((stp_core_ctx.parser.type == WMT_TASK_INDX) &&
-			    (stp_core_ctx.parser.wmtsubtype == WMT_LTE_COEX_FLAG)) {
-				STP_WARN_FUNC
-				    ("BT/WIFI & LTE coex in non-LTE projects,drop it...\n");
-			} else {
-				fgRxOk =
-				    stp_add_to_rx_queue(stp_core_ctx.rx_buf,
-							stp_core_ctx.rx_counter,
-							stp_core_ctx.parser.type);
-			}
-#endif
 		} else {
 			if (is_function_active == MTK_WCN_BOOL_FALSE) {
 				STP_ERR_FUNC
@@ -1058,29 +1135,8 @@ static VOID stp_process_packet(VOID)
 		if (fgRxOk == 0) {
 			stp_process_packet_fail_count = 0;
 			/*notify corresponding subfunction of incoming data */
-#if CFG_WMT_LTE_COEX_HANDLING
-			if ((stp_core_ctx.parser.type == WMT_TASK_INDX) &&
-			    (stp_core_ctx.parser.wmtsubtype == WMT_LTE_COEX_FLAG)) {
-	                        #if 1
-							STP_DBG_FUNC("WMT/LTE package:[0x%2x][0x%2x][0x%2x][0x%2x][0x%2x][0x%2x][0x%2x][0x%2x]\n",
-								stp_core_ctx.rx_buf[0],stp_core_ctx.rx_buf[1],
-								stp_core_ctx.rx_buf[2],stp_core_ctx.rx_buf[3],
-								stp_core_ctx.rx_buf[4],stp_core_ctx.rx_buf[5],
-								stp_core_ctx.rx_buf[6],stp_core_ctx.rx_buf[7]);
-	                        #endif
-				stp_notify_btm_handle_wmt_lte_coex(STP_BTM_CORE(stp_core_ctx));
-			} else {
+			if (stp_core_ctx.parser.type != WMT_TASK_INDX)
 				(*sys_event_set) (stp_core_ctx.parser.type);
-			}
-#else
-			if ((stp_core_ctx.parser.type == WMT_TASK_INDX) &&
-			    (stp_core_ctx.parser.wmtsubtype == WMT_LTE_COEX_FLAG)) {
-				STP_WARN_FUNC
-				    ("omit BT/WIFI & LTE coex msg handling in non-LTE projects\n");
-			} else {
-				(*sys_event_set) (stp_core_ctx.parser.type);
-			}
-#endif
 
 			stp_ctx_lock(&stp_core_ctx);
 
@@ -1137,9 +1193,8 @@ static VOID stp_process_packet(VOID)
 	if (stp_process_packet_fail_count > MTKSTP_RETRY_LIMIT) {
 		stp_process_packet_fail_count = 0;
 		STP_ERR_FUNC("The process packet fail count > 10 lastly\n\r, whole chip reset\n\r");
-#if WMT_PLAT_ALPS
-		stop_log();	/* dump_uart_history(); */
-#endif
+		if (mtk_wcn_stp_is_uart_mand_mode() || mtk_wcn_stp_is_uart_fullset_mode())
+			stop_log();	/* dump_uart_history(); */
 		mtk_wcn_stp_dbg_dump_package();
 		stp_notify_btm_dump(STP_BTM_CORE(stp_core_ctx));
 
@@ -1232,8 +1287,8 @@ INT32 mtk_wcn_stp_init(const mtkstp_callback * const cb_func)
 
 	STP_SET_BTM_CORE(stp_core_ctx, stp_btm_init());
 	if (!STP_BTM_CORE(stp_core_ctx)) {
-		STP_ERR_FUNC("STP_BTM_CORE(stp_core_ctx) initialization fail!\n")
-		    ret = (-3);
+		STP_ERR_FUNC("STP_BTM_CORE(stp_core_ctx) initialization fail!\n");
+		ret = (-3);
 		goto ERROR;
 	}
 
@@ -1451,9 +1506,8 @@ extern INT32 mtk_wcn_stp_dbg_enable(VOID)
 		STP_INFO_FUNC("STP dbg mode is turned on\n");
 		STP_SET_ENABLE_DBG(stp_core_ctx, 1);
 		stp_dbg_enable(g_mtkstp_dbg);
-	} else {
-		STP_WARN_FUNC("STP dbg mode has been turned on\n")
-	}
+	} else
+		STP_WARN_FUNC("STP dbg mode has been turned on\n");
 
 	return 0;
 }
@@ -1467,8 +1521,8 @@ INT32 mtk_wcn_stp_dbg_log_ctrl(UINT32 on)
 INT32 mtk_wcn_stp_coredump_flag_ctrl(UINT32 on)
 {
 	STP_ENABLE_FW_COREDUMP(stp_core_ctx, on);
-	STP_INFO_FUNC("%s coredump function.\n", 0 == on ? "disable" : "enable")
-	    return 0;
+	STP_INFO_FUNC("%d coredump function.\n", on);
+	return 0;
 }
 
 INT32 mtk_wcn_stp_coredump_flag_get(VOID)
@@ -1507,7 +1561,6 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 	PUINT8 p_data;
 	UINT8 padding_len = 0;
 	INT32 remain_length;	/* GeorgeKuo: sync from MAUI, change to unsigned */
-	MTK_WCN_BOOL is_function_active = 0;
 	INT32 i_ret = 0;
 #ifdef DEBUG_DUMP_PACKET_HEAD
     static UINT32 counter = 0;
@@ -1742,88 +1795,7 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 						0,
 						PKT_DIR_RX,
 						stp_core_ctx.rx_buf, stp_core_ctx.rx_counter);
-#if 1
-				if (stp_core_ctx.parser.type == WMT_TASK_INDX) {
-					stp_core_ctx.parser.wmtsubtype = stp_core_ctx.rx_buf[1];
-					STP_DBG_FUNC("wmt sub type (%d)\n",
-						     stp_core_ctx.parser.wmtsubtype);
-				}
-#endif
-
-				if ((stp_core_ctx.parser.type == BT_TASK_INDX)
-				    && STP_BT_STK_IS_BLUEZ(stp_core_ctx)) {
-					INT32 b;
-
-					/*Indicate packet to hci_stp */
-					if (gStpDbgLvl >= STP_LOG_DBG) {
-						stp_dump_data(stp_core_ctx.rx_buf,
-							      "indicate_to_bt_core",
-							      stp_core_ctx.rx_counter);
-					}
-
-					b = mtk_wcn_sys_if_rx(stp_core_ctx.rx_buf,
-							      stp_core_ctx.rx_counter);
-					if (b) {
-						STP_ERR_FUNC("mtk_wcn_sys_if_rx is NULL\n");
-					}
-				} else {
-
-					is_function_active =
-					    ((*sys_check_function_status)
-					     (stp_core_ctx.parser.type,
-					      OP_FUNCTION_ACTIVE) == STATUS_FUNCTION_ACTIVE);
-
-					/*check type and function if active? */
-					if ((stp_core_ctx.parser.type < MTKSTP_MAX_TASK_NUM)
-					    && (is_function_active == MTK_WCN_BOOL_TRUE)) {
-
-#if CFG_WMT_LTE_COEX_HANDLING
-						if ((stp_core_ctx.parser.type == WMT_TASK_INDX)
-						    && stp_core_ctx.parser.wmtsubtype ==
-						    WMT_LTE_COEX_FLAG) {
-							STP_INFO_FUNC("wmt/lte coex package!\n");
-							stp_add_to_rx_queue(stp_core_ctx.rx_buf,
-									    stp_core_ctx.rx_counter,
-									    COEX_TASK_INDX);
-							stp_notify_btm_handle_wmt_lte_coex
-							    (STP_BTM_CORE(stp_core_ctx));
-						} else {
-							stp_add_to_rx_queue(stp_core_ctx.rx_buf,
-									    stp_core_ctx.rx_counter,
-									    stp_core_ctx.parser.
-									    type);
-
-							/*notify corresponding subfunction of incoming data */
-							(*sys_event_set) (stp_core_ctx.parser.type);
-						}
-#else
-						if ((stp_core_ctx.parser.type == WMT_TASK_INDX)
-						    && stp_core_ctx.parser.wmtsubtype ==
-						    WMT_LTE_COEX_FLAG) {
-							STP_WARN_FUNC
-							    ("omit BT/WIFI & LTE coex msg handling in non-LTE projects\n");
-						} else {
-							stp_add_to_rx_queue(stp_core_ctx.rx_buf,
-									    stp_core_ctx.rx_counter,
-									    stp_core_ctx.parser.
-									    type);
-
-							/*notify corresponding subfunction of incoming data */
-							(*sys_event_set) (stp_core_ctx.parser.type);
-						}
-#endif
-					} else {
-						if (is_function_active == MTK_WCN_BOOL_FALSE) {
-							STP_ERR_FUNC
-							    ("function type = %d is inactive, so no en-queue to rx\n",
-							     stp_core_ctx.parser.type);
-						} else {
-							STP_ERR_FUNC
-							    ("mtkstp_process_packet: type = %x, the type is invalid\n",
-							     stp_core_ctx.parser.type);
-						}
-					}
-				}
+				stp_sdio_process_packet();
 
 				/* STP_DBG_FUNC("[STP] crc2->sync\n"); */
 				/* STP_DBG_FUNC("[STP] STP Packet End <=========\n"); */
@@ -1870,9 +1842,8 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 					continue;
 				}
 				if (STP_IS_READY(stp_core_ctx)) {
-#if WMT_PLAT_ALPS
-					stop_log();
-#endif
+					if (mtk_wcn_stp_is_uart_mand_mode() || mtk_wcn_stp_is_uart_fullset_mode())
+						stop_log();
 					mtk_wcn_stp_dbg_dump_package();
 					stp_notify_btm_dump(STP_BTM_CORE(stp_core_ctx));
 				}
@@ -1928,6 +1899,7 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 						static UINT32 counter;
 						if (0 != stp_core_ctx.rx_counter) {
 							STP_SET_READY(stp_core_ctx, 0);
+							mtk_wcn_stp_coredump_start_ctrl(1);
 							stp_psm_set_sleep_disable(stp_core_ctx.psm);
 							stp_dbg_log_pkt(g_mtkstp_dbg,
 									STP_DBG_FW_DMP
@@ -1941,7 +1913,7 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 							STP_INFO_FUNC
 							    ("only dump 20 packages from the begging\n");
 						} else if (counter < 20) {
-							STP_DBG_FUNC
+							STP_INFO_FUNC
 							    ("[len=%d][type=%d]counter[%d]\n%s\n",
 							     stp_core_ctx.rx_counter,
 							     stp_core_ctx.parser.type, counter,
@@ -2389,13 +2361,6 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 			case MTKSTP_CRC2:
 				stp_change_rx_state(MTKSTP_SYNC);
 				stp_core_ctx.parser.crc += (*p_data) << 8;
-#if 1
-				if (stp_core_ctx.parser.type == WMT_TASK_INDX) {
-					stp_core_ctx.parser.wmtsubtype = stp_core_ctx.rx_buf[1];
-					STP_DBG_FUNC("wmt sub type (%d)\n",
-						     stp_core_ctx.parser.wmtsubtype);
-				}
-#endif
 				if (stp_check_crc
 				    (stp_core_ctx.rx_buf, stp_core_ctx.rx_counter,
 				     stp_core_ctx.parser.crc) == MTK_WCN_BOOL_TRUE) {
@@ -2437,9 +2402,8 @@ INT32 mtk_wcn_stp_parser_data(PUINT8 buffer, UINT32 length)
 					continue;
 				}
 				if (STP_IS_READY(stp_core_ctx)) {
-#if WMT_PLAT_ALPS
-					stop_log();
-#endif
+					if (mtk_wcn_stp_is_uart_mand_mode() || mtk_wcn_stp_is_uart_fullset_mode())
+						stop_log();
 					mtk_wcn_stp_dbg_dump_package();
 					stp_notify_btm_dump(STP_BTM_CORE(stp_core_ctx));
 				}
@@ -2761,6 +2725,8 @@ INT32 mtk_wcn_stp_send_data(const PUINT8 buffer, const UINT32 length, const UINT
 
 	/* osal_buffer_dump(buffer,"tx", length, 32); */
 
+	osal_ftrace_print("%s|S|T%d|L%d\n", __func__, type, length);
+
 	if (0 != STP_WMT_LAST_CLOSE(stp_core_ctx)) {
 		STP_ERR_FUNC("WMT lats close,shoud not have tx request!\n");
 		return length;
@@ -3006,6 +2972,7 @@ STP_LOCK_FAIL:
 	}
 #endif
 
+	osal_ftrace_print("%s|E|T|%d|L|%d\n", __func__, type, length);
 	return ret;
 }
 
@@ -3079,6 +3046,7 @@ INT32 mtk_wcn_stp_receive_data(PUINT8 buffer, UINT32 length, UINT8 type)
 	UINT16 copyLen = 0;
 	UINT16 tailLen = 0;
 
+	osal_ftrace_print("%s|S|T|%d|L|%d\n", __func__, type, length);
 	stp_ctx_lock(&stp_core_ctx);
 	while (stp_core_ctx.ring[type].read_p != stp_core_ctx.ring[type].write_p) {
 		/* GeorgeKuo modify: reduce if branch */
@@ -3138,6 +3106,8 @@ INT32 mtk_wcn_stp_receive_data(PUINT8 buffer, UINT32 length, UINT8 type)
         stp_psm_disable_by_tx_rx_density(STP_PSM_CORE(stp_core_ctx), 1, copyLen);
 #endif
     }
+
+	osal_ftrace_print("%s|E|T|%d|L|%d\n", __func__, type, copyLen);
 	return copyLen;
 }
 
@@ -3466,6 +3436,31 @@ VOID mtk_wcn_stp_set_bluez(MTK_WCN_BOOL bluez_flag)
 {
 	/* g_mtkstp_bluez_flag = bluez_flag; */
 	STP_SET_BT_STK(stp_core_ctx, bluez_flag);
+}
+
+/*****************************************************************************
+* FUNCTION
+*  mtk_wcn_stp_read_fw_cpupcr
+* DESCRIPTION
+*  read firmware cpupcr for debug.
+* PARAMETERS
+*  VOID
+* RETURNS
+*  VOID
+*****************************************************************************/
+VOID mtk_wcn_stp_read_fw_cpupcr(VOID)
+{
+	INT32 i_ret = 0;
+	UINT32 chlcpr_value = 0x0;
+	INT32 i;
+
+	for (i = 0; i < STP_SDIO_FW_CPUPCR_POLLING_CNT; i++) {
+		i_ret = mtk_wcn_hif_sdio_readl(g_stp_sdio_host_info.sdio_cltctx, SWPCDBGR, &chlcpr_value);
+		if (i_ret)
+			STP_ERR_FUNC("read SWPCDBGR fail(%d)\n", i_ret);
+		else
+			STP_INFO_FUNC("read SWPCDBGR value(0x%x)\n", chlcpr_value);
+	}
 }
 
 /*****************************************************************************

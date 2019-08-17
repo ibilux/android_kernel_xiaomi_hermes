@@ -28,7 +28,7 @@
 #include "fm_err.h"
 #include "fm_stdlib.h"
 #include "fm_link.h"
-#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6630_FM))
+#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6580_FM) || defined(MT6630_FM))
 #include "osal_typedef.h"
 #include "stp_exp.h"
 #include "wmt_exp.h"
@@ -41,8 +41,7 @@ static struct fm_trace_fifo_t *evt_fifo;
 static fm_s32(*reset) (fm_s32 sta);
 
 static void WCNfm_wholechip_rst_cb(ENUM_WMTDRV_TYPE_T src,
-				   ENUM_WMTDRV_TYPE_T dst,
-				   ENUM_WMTMSG_TYPE_T type, void *buf, unsigned int sz)
+				   ENUM_WMTDRV_TYPE_T dst, ENUM_WMTMSG_TYPE_T type, void *buf, unsigned int sz)
 {
 	/* To handle reset procedure please */
 	ENUM_WMTRSTMSG_TYPE_T rst_msg;
@@ -57,15 +56,13 @@ static void WCNfm_wholechip_rst_cb(ENUM_WMTDRV_TYPE_T src,
 		    && (type == WMTMSG_TYPE_RESET)) {
 			if (rst_msg == WMTRSTMSG_RESET_START) {
 				WCN_DBG(FM_WAR | LINK, "FM restart start!\n");
-				if (reset) {
+				if (reset)
 					reset(1);
-				}
 
 			} else if (rst_msg == WMTRSTMSG_RESET_END) {
 				WCN_DBG(FM_WAR | LINK, "FM restart end!\n");
-				if (reset) {
+				if (reset)
 					reset(0);
-				}
 			}
 		}
 	} else {
@@ -74,12 +71,12 @@ static void WCNfm_wholechip_rst_cb(ENUM_WMTDRV_TYPE_T src,
 	}
 }
 
-
 fm_s32 fm_link_setup(void *data)
 {
 	fm_s32 ret = 0;
 
-	if (!(link_event = fm_zalloc(sizeof(struct fm_link_event)))) {
+	link_event = fm_zalloc(sizeof(struct fm_link_event));
+	if (!link_event) {
 		WCN_DBG(FM_ALT | LINK, "fm_zalloc(fm_link_event) -ENOMEM\n");
 		return -1;
 	}
@@ -93,7 +90,6 @@ fm_s32 fm_link_setup(void *data)
 	}
 
 	fm_flag_event_get(link_event->ln_event);
-
 
 	WCN_DBG(FM_NTC | LINK, "fm link setup\n");
 
@@ -115,13 +111,12 @@ fm_s32 fm_link_setup(void *data)
 	mtk_wcn_wmt_msgcb_reg(WMTDRV_TYPE_FM, WCNfm_wholechip_rst_cb);
 	return 0;
 
- failed:
+failed:
 	fm_trace_fifo_release(evt_fifo);
 	fm_trace_fifo_release(cmd_fifo);
 	fm_flag_event_put(link_event->ln_event);
-	if (link_event) {
+	if (link_event)
 		fm_free(link_event);
-	}
 
 	return ret;
 }
@@ -132,9 +127,8 @@ fm_s32 fm_link_release(void)
 	fm_trace_fifo_release(evt_fifo);
 	fm_trace_fifo_release(cmd_fifo);
 	fm_flag_event_put(link_event->ln_event);
-	if (link_event) {
+	if (link_event)
 		fm_free(link_event);
-	}
 
 	WCN_DBG(FM_NTC | LINK, "fm link release\n");
 	return 0;
@@ -194,21 +188,21 @@ fm_s32 fm_cmd_tx(fm_u8 *buf, fm_u16 len, fm_s32 mask, fm_s32 cnt, fm_s32 timeout
 	trace.len = len - 4;
 	trace.tid = (fm_s32) task->pid;
 	fm_memset(trace.pkt, 0, FM_TRACE_PKT_SIZE);
-	fm_memcpy(trace.pkt, &buf[4],
-		  (trace.len > FM_TRACE_PKT_SIZE) ? FM_TRACE_PKT_SIZE : trace.len);
+	fm_memcpy(trace.pkt, &buf[4], (trace.len > FM_TRACE_PKT_SIZE) ? FM_TRACE_PKT_SIZE : trace.len);
 #endif
 
- sw_retry:
+sw_retry:
 
 #ifdef FM_TRACE_ENABLE
-	if (fm_true == FM_TRACE_FULL(cmd_fifo)) {
+	if (fm_true == FM_TRACE_FULL(cmd_fifo))
 		FM_TRACE_OUT(cmd_fifo, NULL);
-	}
+
 	FM_TRACE_IN(cmd_fifo, &trace);
 #endif
 
 	/* send cmd to FM firmware */
-	if ((ret_time = mtk_wcn_stp_send_data(buf, len, FM_TASK_INDX)) <= 0) {
+	ret_time = mtk_wcn_stp_send_data(buf, len, FM_TASK_INDX);
+	if (ret_time <= 0) {
 		WCN_DBG(FM_EMG | LINK, "send data over stp failed[%d]\n", ret_time);
 		return -FM_ELINK;
 	}
@@ -217,8 +211,7 @@ fm_s32 fm_cmd_tx(fm_u8 *buf, fm_u16 len, fm_s32 mask, fm_s32 cnt, fm_s32 timeout
 
 	if (!ret_time) {
 		if (0 < cnt--) {
-			WCN_DBG(FM_WAR | LINK, "wait even timeout, [retry_cnt=%d], pid=%d\n", cnt,
-				task->pid);
+			WCN_DBG(FM_WAR | LINK, "wait even timeout, [retry_cnt=%d], pid=%d\n", cnt, task->pid);
 			fm_print_cmd_fifo();
 			fm_print_evt_fifo();
 			return -FM_EFW;
@@ -231,9 +224,8 @@ fm_s32 fm_cmd_tx(fm_u8 *buf, fm_u16 len, fm_s32 mask, fm_s32 cnt, fm_s32 timeout
 
 	FM_EVENT_CLR(link_event->ln_event, mask);
 
-	if (callback) {
+	if (callback)
 		callback(&link_event->result);
-	}
 
 	return 0;
 }
@@ -267,14 +259,12 @@ fm_s32 fm_event_parser(fm_s32(*rds_parser) (struct rds_rx_t *, fm_s32))
 						rx_buf[i], rx_buf[i + 1], rx_buf[i + 2],
 						rx_buf[i + 3], rx_buf[i + 4], rx_buf[i + 5]);
 				} else {
-					WCN_DBG(FM_DBG | LINK, "0x%02x 0x%02x\n", rx_buf[i],
-						rx_buf[i + 1]);
+					WCN_DBG(FM_DBG | LINK, "0x%02x 0x%02x\n", rx_buf[i], rx_buf[i + 1]);
 				}
 
 				state = FM_TASK_RX_PARSER_OPCODE;
 			} else {
-				WCN_DBG(FM_ALT | LINK,
-					"event pkt type error (rx_buf[%d] = 0x%02x)\n", i, ch);
+				WCN_DBG(FM_ALT | LINK, "event pkt type error (rx_buf[%d] = 0x%02x)\n", i, ch);
 			}
 
 			i++;
@@ -302,12 +292,11 @@ fm_s32 fm_event_parser(fm_s32(*rds_parser) (struct rds_rx_t *, fm_s32))
 			trace.len = length;
 			trace.tid = (fm_s32) task->pid;
 			fm_memset(trace.pkt, 0, FM_TRACE_PKT_SIZE);
-			fm_memcpy(trace.pkt, &rx_buf[i],
-				  (length > FM_TRACE_PKT_SIZE) ? FM_TRACE_PKT_SIZE : length);
+			fm_memcpy(trace.pkt, &rx_buf[i], (length > FM_TRACE_PKT_SIZE) ? FM_TRACE_PKT_SIZE : length);
 
-			if (fm_true == FM_TRACE_FULL(cmd_fifo)) {
+			if (fm_true == FM_TRACE_FULL(cmd_fifo))
 				FM_TRACE_OUT(cmd_fifo, NULL);
-			}
+
 			FM_TRACE_IN(cmd_fifo, &trace);
 #endif
 			if (length > 0) {
@@ -327,9 +316,8 @@ fm_s32 fm_event_parser(fm_s32(*rds_parser) (struct rds_rx_t *, fm_s32))
 			switch (opcode) {
 			case FM_TUNE_OPCODE:
 
-				if ((length == 1) && (rx_buf[i] == 1)) {
+				if ((length == 1) && (rx_buf[i] == 1))
 					FM_EVENT_SEND(link_event->ln_event, FLAG_TUNE_DONE);
-				}
 
 				break;
 
@@ -337,17 +325,15 @@ fm_s32 fm_event_parser(fm_s32(*rds_parser) (struct rds_rx_t *, fm_s32))
 
 				if (length >= 2) {
 					fm_memcpy(link_event->result.cqi, &rx_buf[i],
-						  (length >
-						   FM_CQI_BUF_SIZE) ? FM_CQI_BUF_SIZE : length);
+						  (length > FM_CQI_BUF_SIZE) ? FM_CQI_BUF_SIZE : length);
 					FM_EVENT_SEND(link_event->ln_event, FLAG_SM_TUNE);
 				}
 				break;
 
 			case FM_SEEK_OPCODE:
 
-				if ((i + 1) < RX_BUF_SIZE) {
-					link_event->result.seek_result = rx_buf[i] + (rx_buf[i + 1] << 8);	/* 8760 means 87.60Mhz */
-				}
+				if ((i + 1) < RX_BUF_SIZE)
+					link_event->result.seek_result = rx_buf[i] + (rx_buf[i + 1] << 8);
 
 				FM_EVENT_SEND(link_event->ln_event, FLAG_SEEK_DONE);
 				break;
@@ -364,8 +350,7 @@ fm_s32 fm_event_parser(fm_s32(*rds_parser) (struct rds_rx_t *, fm_s32))
 					return 0;
 				} else if ((length >= FM_CQI_BUF_SIZE)
 					   && ((RX_BUF_SIZE - i) >= FM_CQI_BUF_SIZE)) {
-					fm_memcpy(link_event->result.cqi, &rx_buf[i],
-						  FM_CQI_BUF_SIZE);
+					fm_memcpy(link_event->result.cqi, &rx_buf[i], FM_CQI_BUF_SIZE);
 					FM_EVENT_SEND(link_event->ln_event, FLAG_CQI_DONE);
 				} else {
 					fm_memcpy(link_event->result.scan_result, &rx_buf[i],
@@ -377,10 +362,8 @@ fm_s32 fm_event_parser(fm_s32(*rds_parser) (struct rds_rx_t *, fm_s32))
 
 			case FSPI_READ_OPCODE:
 
-				if ((i + 1) < RX_BUF_SIZE) {
-					link_event->result.fspi_rd =
-					    (rx_buf[i] + (rx_buf[i + 1] << 8));
-				}
+				if ((i + 1) < RX_BUF_SIZE)
+					link_event->result.fspi_rd = (rx_buf[i] + (rx_buf[i + 1] << 8));
 
 				FM_EVENT_SEND(link_event->ln_event, (1 << opcode));
 				break;
@@ -421,11 +404,10 @@ fm_s32 fm_event_parser(fm_s32(*rds_parser) (struct rds_rx_t *, fm_s32))
 				fm_memcpy(&link_event->result.rds_rx_result, &rx_buf[i], length);
 
 				/*Handle the RDS data that we get */
-				if (rds_parser) {
+				if (rds_parser)
 					rds_parser(&link_event->result.rds_rx_result, length);
-				} else {
+				else
 					WCN_DBG(FM_WAR | LINK, "no method to parse RDS data\n");
-				}
 
 				FM_EVENT_SEND(link_event->ln_event, (1 << opcode));
 				break;
@@ -464,7 +446,6 @@ fm_s32 fm_force_active_event(fm_u32 mask)
 	return 0;
 }
 
-
 extern fm_s32 fm_print_cmd_fifo(void)
 {
 #ifdef FM_TRACE_ENABLE
@@ -475,14 +456,12 @@ extern fm_s32 fm_print_cmd_fifo(void)
 		fm_memset(trace.pkt, 0, FM_TRACE_PKT_SIZE);
 		FM_TRACE_OUT(cmd_fifo, &trace);
 		WCN_DBG(FM_ALT | LINK, "trace, type %d, op %d, len %d, tid %d, time %d\n",
-			trace.type, trace.opcode, trace.len, trace.tid,
-			jiffies_to_msecs(abs(trace.time)));
+			trace.type, trace.opcode, trace.len, trace.tid, jiffies_to_msecs(abs(trace.time)));
 		i = 0;
 		while ((trace.len > 0) && (i < trace.len) && (i < (FM_TRACE_PKT_SIZE - 8))) {
 			WCN_DBG(FM_ALT | LINK, "trace, %02x %02x %02x %02x %02x %02x %02x %02x\n",
 				trace.pkt[i], trace.pkt[i + 1], trace.pkt[i + 2], trace.pkt[i + 3],
-				trace.pkt[i + 4], trace.pkt[i + 5], trace.pkt[i + 6],
-				trace.pkt[i + 7]);
+				trace.pkt[i + 4], trace.pkt[i + 5], trace.pkt[i + 6], trace.pkt[i + 7]);
 			i += 8;
 		}
 		WCN_DBG(FM_ALT | LINK, "trace\n");
@@ -564,17 +543,17 @@ fm_bool fm_trace_is_empty(struct fm_trace_fifo_t *thiz)
 	return (thiz->len == 0) ? fm_true : fm_false;
 }
 
-
 struct fm_trace_fifo_t *fm_trace_fifo_create(const fm_s8 *name)
 {
 	struct fm_trace_fifo_t *tmp;
 
-	if (!(tmp = fm_zalloc(sizeof(struct fm_trace_fifo_t)))) {
+	tmp = fm_zalloc(sizeof(struct fm_trace_fifo_t));
+	if (!tmp) {
 		WCN_DBG(FM_ALT | MAIN, "fm_zalloc(fm_trace_fifo) -ENOMEM\n");
 		return NULL;
 	}
 
-	fm_memcpy(tmp->name, name, 20);
+	fm_memcpy(tmp->name, name, (strlen(name) + 1));
 	tmp->size = FM_TRACE_FIFO_SIZE;
 	tmp->in = 0;
 	tmp->out = 0;
@@ -588,7 +567,6 @@ struct fm_trace_fifo_t *fm_trace_fifo_create(const fm_s8 *name)
 
 	return tmp;
 }
-
 
 fm_s32 fm_trace_fifo_release(struct fm_trace_fifo_t *fifo)
 {

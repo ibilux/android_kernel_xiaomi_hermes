@@ -1348,9 +1348,9 @@ unsigned int u3d_get_vbus_mV(void)
 	unsigned int vbus_value_raw;
 	DEV_INT8 devctl ;
 	
-	//vbus_value_raw = PMIC_IMM_GetOneChannelValue(ADC_VCHRIN_AP, 1, 0);
-	vbus_value_raw = PMIC_IMM_GetOneChannelValue(ADC_VUSB_AP , 1, 0);
-	//vbus_value_raw = PMIC_IMM_GetOneChannelValue(ADC_ADCVIN0_AP , 1, 0);
+	//vbus_value_raw = PMIC_IMM_GetOneChannelValue(AUX_VCHRIN_AP, 1, 0);
+	vbus_value_raw = PMIC_IMM_GetOneChannelValue(AUX_VUSB_AP , 1, 0);
+	//vbus_value_raw = PMIC_IMM_GetOneChannelValue(AUX_ADCVIN0_AP , 1, 0);
 	
 	devctl = os_readl(U3D_DEVICE_CONTROL) ;
 			

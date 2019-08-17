@@ -15,8 +15,7 @@ WMT_PARSER_CONF_FOR_CCCI gWmtCfgForCCCI;
 */
 struct parse_data {
 	char *name;
-	int (*parser) (P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data,
-		       const char *value);
+	int (*parser) (P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data, const char *value);
 	char *(*writer) (P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data);
 	/*PCHAR param1, *param2, *param3; */
 	char *param1;
@@ -28,30 +27,23 @@ struct parse_data {
 *                   F U N C T I O N   D E C L A R A T I O N S
 *******************************************************************************
 */
-static int wmt_conf_parse_char(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-			       const struct parse_data *data, const char *pos);
+static int wmt_conf_parse_char(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data, const char *pos);
 
-static char *wmt_conf_write_char(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-				 const struct parse_data *data);
+static char *wmt_conf_write_char(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data);
 
 #if 0
-static int wmt_conf_parse_short(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-				const struct parse_data *data, const char *pos);
+static int wmt_conf_parse_short(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data, const char *pos);
 
-static char *wmt_conf_write_short(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-				  const struct parse_data *data);
+static char *wmt_conf_write_short(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data);
 #endif
 
-static int wmt_conf_parse_int(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-			      const struct parse_data *data, const char *pos);
+static int wmt_conf_parse_int(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data, const char *pos);
 
 static char *wmt_conf_write_int(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data);
 
-static int wmt_conf_parse_pair(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-			       const char *pKey, const char *pVal);
+static int wmt_conf_parse_pair(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const char *pKey, const char *pVal);
 
-static int wmt_conf_parse(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-			  const char *pInBuf, unsigned int size);
+static int wmt_conf_parse(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const char *pInBuf, unsigned int size);
 
 static int wmt_conf_read_file(void);
 
@@ -59,8 +51,7 @@ static int wmt_conf_patch_get(unsigned char *pPatchName, struct firmware **ppPat
 
 static int wmt_conf_patch_put(struct firmware **ppPatch);
 
-static int wmt_conf_read_file_from_fs(unsigned char *pName,
-				      const u8 **ppBufPtr, int offset, int padSzBuf);
+static int wmt_conf_read_file_from_fs(unsigned char *pName, const u8 **ppBufPtr, int offset, int padSzBuf);
 /*******************************************************************************
 *                                 M A C R O S
 ********************************************************************************
@@ -68,46 +59,61 @@ static int wmt_conf_read_file_from_fs(unsigned char *pName,
 
 #define OFFSET(v) ((void *) &((P_WMT_PARSER_CONF_FOR_CCCI) 0)->v)
 
-#define _CHAR(f) #f, wmt_conf_parse_char, wmt_conf_write_char, OFFSET(rWmtCfgFile.f)
-#define CHAR(f) _CHAR(f), NULL, NULL
+#define CHAR(f) \
+{ \
+	#f, \
+	wmt_conf_parse_char, \
+	wmt_conf_write_char, \
+	OFFSET(rWmtCfgFile.f), \
+	NULL, \
+	NULL \
+}
 
-#if 0
-#define _SHORT(f) #f, wmt_conf_parse_short, wmt_conf_write_short, OFFSET(rWmtCfgFile.f)
-#define SHORT(f) _SHORT(f), NULL, NULL
-#endif
-
-#define _INT(f) #f, wmt_conf_parse_int, wmt_conf_write_int, OFFSET(rWmtCfgFile.f)
-#define INT(f) _INT(f), NULL, NULL
+#define INT(f) \
+{ \
+	#f, \
+	wmt_conf_parse_int, \
+	wmt_conf_write_int, \
+	OFFSET(rWmtCfgFile.f), \
+	NULL, \
+	NULL \
+}
 
 static const struct parse_data wmtcfg_fields[] = {
-	{CHAR(coex_wmt_ant_mode)},
+	CHAR(coex_wmt_ant_mode),
 
-	{CHAR(wmt_gps_lna_pin)},
-	{CHAR(wmt_gps_lna_enable)},
+	CHAR(wmt_gps_lna_pin),
+	CHAR(wmt_gps_lna_enable),
 
-	{INT(co_clock_flag)},
+	INT(co_clock_flag),
 
 };
 
 #define NUM_WMTCFG_FIELDS (sizeof(wmtcfg_fields) / sizeof(wmtcfg_fields[0]))
-
 
 /*******************************************************************************
 *                          F U N C T I O N S
 ********************************************************************************
 */
 
-static int wmt_conf_parse_char(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data,
-			       const char *pos)
+static int wmt_conf_parse_char(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data, const char *pos)
 {
 	unsigned char *dst;
+	long res;
+	int ret;
 	dst = (char *)(((unsigned char *)pWmtCcci) + (signed long)data->param1);
 
 	if ((strlen(pos) > 2) && ((*pos) == '0') && (*(pos + 1) == 'x')) {
-		*dst = simple_strtol(pos + 2, NULL, 16);
+		ret = kstrtol(pos + 2, 16, &res);
+		if (ret)
+			WMT_CCCI_ERR_FUNC("fail(%d)\n", ret);
+		*dst = res;
 		WMT_CCCI_DBG_FUNC("wmtcfg==> %s=0x%x\n", data->name, *dst);
 	} else {
-		*dst = simple_strtol(pos, NULL, 10);
+		ret = kstrtol(pos, 10, &res);
+		if (ret)
+			WMT_CCCI_ERR_FUNC("fail(%d)\n", ret);
+		*dst = res;
 		WMT_CCCI_DBG_FUNC("wmtcfg==> %s=%d\n", data->name, *dst);
 	}
 	return 0;
@@ -133,62 +139,26 @@ static char *wmt_conf_write_char(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const stru
 	return value;
 }
 
-#if 0
-static int wmt_conf_parse_short(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data,
-				const char *pos)
-{
-	unsigned short *dst;
-	dst = (short *)(((unsigned char *)pWmtCcci) + (long)data->param1);
-
-	/* WMT_INFO_FUNC(">strlen(pos)=%d\n", strlen(pos)); */
-
-	if ((strlen(pos) > 2) && ((*pos) == '0') && (*(pos + 1) == 'x')) {
-		*dst = simple_strtol(pos + 2, NULL, 16);
-		WMT_CCCI_DBG_FUNC("wmtcfg==> %s=0x%x\n", data->name, *dst);
-	} else {
-		*dst = simple_strtol(pos, NULL, 10);
-		WMT_CCCI_DBG_FUNC("wmtcfg==> %s=%d\n", data->name, *dst);
-	}
-
-	return 0;
-}
-
-static char *wmt_conf_write_short(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-				  const struct parse_data *data)
-{
-	short *src;
-	int res;
-	char *value;
-
-	/* TODO: [FixMe][George] FIX COMPILE WARNING HERE! */
-	src = (short *)(((unsigned char *)pWmtCcci) + (long)data->param1);
-
-	value = vmalloc(20);
-	if (value == NULL)
-		return NULL;
-	res = snprintf(value, 20, "0x%x", *src);
-	if (res < 0 || res >= 20) {
-		vfree(value);
-		return NULL;
-	}
-	value[20 - 1] = '\0';
-	return value;
-}
-#endif
-
-static int wmt_conf_parse_int(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data,
-			      const char *pos)
+static int wmt_conf_parse_int(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struct parse_data *data, const char *pos)
 {
 	unsigned int *dst;
+	long res;
+	int ret;
 	dst = (int *)(((unsigned char *)pWmtCcci) + (long)data->param1);
 
 	/* WMT_INFO_FUNC(">strlen(pos)=%d\n", strlen(pos)); */
 
 	if ((strlen(pos) > 2) && ((*pos) == '0') && (*(pos + 1) == 'x')) {
-		*dst = simple_strtol(pos + 2, NULL, 16);
+		ret = kstrtol(pos + 2, 16, &res);
+		if (ret)
+			WMT_CCCI_ERR_FUNC("fail(%d)\n", ret);
+		*dst = res;
 		WMT_CCCI_DBG_FUNC("wmtcfg==> %s=0x%x\n", data->name, *dst);
 	} else {
-		*dst = simple_strtol(pos, NULL, 10);
+		ret = kstrtol(pos, 10, &res);
+		if (ret)
+			WMT_CCCI_ERR_FUNC("fail(%d)\n", ret);
+		*dst = res;
 		WMT_CCCI_DBG_FUNC("wmtcfg==> %s=%d\n", data->name, *dst);
 	}
 
@@ -215,8 +185,7 @@ static char *wmt_conf_write_int(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const struc
 	return value;
 }
 
-static int wmt_conf_parse_pair(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-			       const char *pKey, const char *pVal)
+static int wmt_conf_parse_pair(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const char *pKey, const char *pVal)
 {
 	int i = 0;
 	int ret = 0;
@@ -241,8 +210,7 @@ static int wmt_conf_parse_pair(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
 	return ret;
 }
 
-static int wmt_conf_parse(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
-			  const char *pInBuf, unsigned int size)
+static int wmt_conf_parse(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci, const char *pInBuf, unsigned int size)
 {
 	char *pch;
 	char *pBuf;
@@ -255,9 +223,8 @@ static int wmt_conf_parse(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
 	char *pa = NULL;
 
 	pBuf = vmalloc(size);
-	if (!pBuf) {
+	if (!pBuf)
 		return -1;
-	}
 
 	memcpy(pBuf, pInBuf, size);
 	pBuf[size] = '\0';
@@ -285,9 +252,8 @@ static int wmt_conf_parse(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
 
 		/* WMT_INFO_FUNC("==> Line = (%s)\n", pLine); */
 
-		if (!*pLine) {
+		if (!*pLine)
 			continue;
-		}
 
 		pVal = strchr(pLine, '=');
 		if (!pVal) {
@@ -300,9 +266,8 @@ static int wmt_conf_parse(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
 		/* |<-pKey->|'\0'|<-pVal->|'\n' ('\0')|  */
 		pKey = pLine;
 
-		if ((pVal - pBuf) < size) {
+		if ((pVal - pBuf) < size)
 			pVal++;
-		}
 
 		/*key handling */
 		pPos = pKey;
@@ -345,9 +310,8 @@ static int wmt_conf_parse(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
 		/* WMT_DBG_FUNC("parse (key: #%s#, value: #%s#)\n", pKey, pVal); */
 		ret = wmt_conf_parse_pair(pWmtCcci, pKey, pVal);
 		WMT_CCCI_WARN_FUNC("parse (%s, %s, %d)\n", pKey, pVal, ret);
-		if (ret) {
+		if (ret)
 			WMT_CCCI_WARN_FUNC("parse fail (%s, %s, %d)\n", pKey, pVal, ret);
-		}
 	}
 
 	for (i = 0; i < NUM_WMTCFG_FIELDS; i++) {
@@ -364,7 +328,6 @@ static int wmt_conf_parse(P_WMT_PARSER_CONF_FOR_CCCI pWmtCcci,
 	return 0;
 }
 
-
 static int wmt_conf_read_file(void)
 {
 	int ret = -1;
@@ -375,27 +338,24 @@ static int wmt_conf_read_file(void)
 	strncat(&(gWmtCfgForCCCI.cWmtCfgName[0]), WMT_CFG_FILE_PREFIX, sizeof(WMT_CFG_FILE_PREFIX));
 	strncat(&(gWmtCfgForCCCI.cWmtCfgName[0]), WMT_CFG_FILE, sizeof(WMT_CFG_FILE));
 
-
 	if (!strlen(&(gWmtCfgForCCCI.cWmtCfgName[0]))) {
 		WMT_CCCI_ERR_FUNC("empty Wmtcfg name\n");
 		wmt_ccci_assert(0);
 		return ret;
 	}
 	WMT_CCCI_INFO_FUNC("WMT config file:%s\n", &(gWmtCfgForCCCI.cWmtCfgName[0]));
-	if (0 == wmt_conf_patch_get(&gWmtCfgForCCCI.cWmtCfgName[0],
-			       (struct firmware **)&gWmtCfgForCCCI.pWmtCfg, 0)) {
+	if (0 == wmt_conf_patch_get(&gWmtCfgForCCCI.cWmtCfgName[0], (struct firmware **)&gWmtCfgForCCCI.pWmtCfg, 0)) {
 		/*get full name patch success */
-		WMT_CCCI_INFO_FUNC("get full file name(%s) buf(0x%p) size(%d)\n",
+		WMT_CCCI_INFO_FUNC("get full file name(%s) buf(0x%p) size(%zd)\n",
 				   &gWmtCfgForCCCI.cWmtCfgName[0], gWmtCfgForCCCI.pWmtCfg->data,
 				   gWmtCfgForCCCI.pWmtCfg->size);
 
 		if (0 == wmt_conf_parse(&gWmtCfgForCCCI, (const char *)gWmtCfgForCCCI.pWmtCfg->data,
-				   gWmtCfgForCCCI.pWmtCfg->size)) {
+					gWmtCfgForCCCI.pWmtCfg->size)) {
 			/*config file exists */
 			gWmtCfgForCCCI.rWmtCfgFile.cfgExist = 1;
 
-			WMT_CCCI_INFO_FUNC("&gWmtCfgForCCCI.rWmtCfgFile=%p\n",
-					   &gWmtCfgForCCCI.rWmtCfgFile);
+			WMT_CCCI_INFO_FUNC("&gWmtCfgForCCCI.rWmtCfgFile=%p\n", &gWmtCfgForCCCI.rWmtCfgFile);
 			ret = 0;
 		} else {
 			WMT_CCCI_ERR_FUNC("wmt conf parsing fail\n");
@@ -421,18 +381,15 @@ static int wmt_conf_patch_get(unsigned char *pPatchName, struct firmware **ppPat
 	uid_t orig_uid;
 	gid_t orig_gid;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29))
-	/* struct cred *cred = get_task_cred(current); */
 	struct cred *cred = (struct cred *)get_current_cred();
-#endif
 
 	mm_segment_t orig_fs = get_fs();
 
 	if (*ppPatch) {
 		WMT_CCCI_WARN_FUNC("f/w patch already exists\n");
-		if ((*ppPatch)->data) {
+		if ((*ppPatch)->data)
 			vfree((*ppPatch)->data);
-		}
+
 		kfree(*ppPatch);
 		*ppPatch = NULL;
 	}
@@ -445,18 +402,13 @@ static int wmt_conf_patch_get(unsigned char *pPatchName, struct firmware **ppPat
 
 	pfw = kzalloc(sizeof(struct firmware), /*GFP_KERNEL */ GFP_ATOMIC);
 	if (!pfw) {
-		WMT_CCCI_ERR_FUNC("kzalloc(%d) fail\n", sizeof(struct firmware));
+		WMT_CCCI_ERR_FUNC("kzalloc(%zd) fail\n", sizeof(struct firmware));
 		return -2;
 	}
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29))
+
 	orig_uid = cred->fsuid;
 	orig_gid = cred->fsgid;
 	cred->fsuid = cred->fsgid = 0;
-#else
-	orig_uid = current->fsuid;
-	orig_gid = current->fsgid;
-	current->fsuid = current->fsgid = 0;
-#endif
 
 	set_fs(get_ds());
 
@@ -464,13 +416,8 @@ static int wmt_conf_patch_get(unsigned char *pPatchName, struct firmware **ppPat
 	iRet = wmt_conf_read_file_from_fs(pPatchName, &pfw->data, 0, padSzBuf);
 	set_fs(orig_fs);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29))
 	cred->fsuid = orig_uid;
 	cred->fsgid = orig_gid;
-#else
-	current->fsuid = orig_uid;
-	current->fsgid = orig_gid;
-#endif
 
 	if (iRet > 0) {
 		pfw->size = iRet;
@@ -485,21 +432,18 @@ static int wmt_conf_patch_get(unsigned char *pPatchName, struct firmware **ppPat
 	}
 }
 
-
 static int wmt_conf_patch_put(struct firmware **ppPatch)
 {
 	if (NULL != *ppPatch) {
-		if ((*ppPatch)->data) {
+		if ((*ppPatch)->data)
 			vfree((*ppPatch)->data);
-		}
 		kfree(*ppPatch);
 		*ppPatch = NULL;
 	}
 	return 0;
 }
 
-static int wmt_conf_read_file_from_fs(unsigned char *pName,
-				      const u8 **ppBufPtr, int offset, int padSzBuf)
+static int wmt_conf_read_file_from_fs(unsigned char *pName, const u8 **ppBufPtr, int offset, int padSzBuf)
 {
 	int iRet = -1;
 	struct file *fd;
@@ -546,20 +490,18 @@ static int wmt_conf_read_file_from_fs(unsigned char *pName,
 		}
 
 		read_len = fd->f_op->read(fd, pBuf + padSzBuf, file_len, &fd->f_pos);
-		if (read_len != file_len) {
-			WMT_CCCI_WARN_FUNC("read abnormal: read_len(%d), file_len(%d)\n", read_len,
-					   file_len);
-		}
+		if (read_len != file_len)
+			WMT_CCCI_WARN_FUNC("read abnormal: read_len(%d), file_len(%d)\n", read_len, file_len);
+
 	} while (false);
 
 	iRet = 0;
 	*ppBufPtr = pBuf;
 
- read_file_done:
+read_file_done:
 	if (iRet) {
-		if (pBuf) {
+		if (pBuf)
 			vfree(pBuf);
-		}
 	}
 
 	filp_close(fd, NULL);
@@ -578,7 +520,8 @@ unsigned int wmt_get_coclock_setting_for_ccci(void)
 	char *clk_type_name[] = {
 		"TCXO",
 		"GPS_coclk",
-		"coDCXO"
+		"coDCXO",
+		"coVCTCXO"
 	};
 
 	iRet = wmt_conf_read_file();

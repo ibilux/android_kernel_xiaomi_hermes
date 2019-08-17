@@ -6,3 +6,6 @@ ipanic-y	+= ipanic_emmc.o
 else
 ipanic-y	+= ipanic_mtd.o
 endif
+
+ipanic-y	+= ipanic_vfs.o
+ipanic-y	+= ipanic_pstore.o

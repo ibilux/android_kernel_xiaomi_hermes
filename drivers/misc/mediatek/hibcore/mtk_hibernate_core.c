@@ -1,3 +1,5 @@
+#define pr_fmt(fmt) "[HIB/CORE] " fmt
+
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/fs.h>
@@ -21,17 +23,16 @@
 #endif
 
 #define HIB_CORE_DEBUG 0
-#define _TAG_HIB_M "HIB/CORE"
 #if (HIB_CORE_DEBUG)
 #undef hib_log
-#define hib_log(fmt, ...)	xlog_printk(ANDROID_LOG_WARN, _TAG_HIB_M, fmt, ##__VA_ARGS__);
+#define hib_log(fmt, ...)	pr_warn(fmt, ##__VA_ARGS__);
 #else
 #define hib_log(fmt, ...)
 #endif
 #undef hib_warn
-#define hib_warn(fmt, ...)  xlog_printk(ANDROID_LOG_WARN, _TAG_HIB_M, fmt,  ##__VA_ARGS__);
+#define hib_warn(fmt, ...)  pr_warn(fmt,  ##__VA_ARGS__);
 #undef hib_err
-#define hib_err(fmt, ...)   xlog_printk(ANDROID_LOG_ERROR, _TAG_HIB_M, fmt,  ##__VA_ARGS__);
+#define hib_err(fmt, ...)   pr_err(fmt,  ##__VA_ARGS__);
 
 #ifdef CONFIG_PM_AUTOSLEEP
 
@@ -62,6 +63,16 @@ static inline suspend_state_t pm_autosleep_state(void)
 /* kernel/power/wakelock.c */
 extern int pm_wake_lock(const char *buf);
 extern int pm_wake_unlock(const char *buf);
+#else
+int pm_wake_lock(const char *buf)
+{
+	return 0;
+}
+
+int pm_wake_unlock(const char *buf)
+{
+	return 0;
+}
 #endif				/* !CONFIG_PM_WAKELOCKS */
 
 /* HOTPLUG */

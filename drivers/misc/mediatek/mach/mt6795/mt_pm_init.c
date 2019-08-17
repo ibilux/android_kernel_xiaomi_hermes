@@ -51,10 +51,10 @@ static void _power_off_ca15l_vproc_vsram(void)
     /* enable ca15l power isolation */
     pminit_write(SPM_SLEEP_DUAL_VCORE_PWR_CON, pminit_read(SPM_SLEEP_DUAL_VCORE_PWR_CON) | VCA15_PWR_ISO);
 #if 1
-    printk("bigcore_power_off\n");
+	pr_debug("bigcore_power_off\n");
     bigcore_power_off();
 #else
-    printk("_power_off_ca15l_vproc_vsram\n");
+	pr_debug("_power_off_ca15l_vproc_vsram\n");
 
     /* turn off ca15l vproc(ext buck) */
     set_da9210_buck_en(0);
@@ -67,10 +67,10 @@ static void _power_off_ca15l_vproc_vsram(void)
 static void _power_on_ca15l_vproc_vsram(void)
 {
 #if 1
-    printk("bigcore_power_on\n");
+	pr_debug("bigcore_power_on\n");
     bigcore_power_on();
 #else
-    printk("_power_on_ca15l_vproc_vsram\n");
+	pr_debug("_power_on_ca15l_vproc_vsram\n");
 
     /* turn on ca15l vsram */
     mt6331_upmu_set_rg_vsram_dvfs1_en(1);
@@ -161,7 +161,7 @@ unsigned int ckgen_meter(int val)
     /* wait frequency meter finish */
     while (DRV_Reg32(CLK26CALI_0) & 0x10)
     {
-        printk("%d, wait for frequency meter finish, CLK26CALI = 0x%x\n", val, DRV_Reg32(CLK26CALI_0));
+		pr_debug("%d, wait for frequency meter finish, CLK26CALI = 0x%x\n", val, DRV_Reg32(CLK26CALI_0));
         mdelay(10);
         i++;
         if(i > 10)
@@ -205,7 +205,7 @@ unsigned int abist_meter(int val)
     /* wait frequency meter finish */
     while (DRV_Reg32(CLK26CALI_0) & 0x1)
     {
-        printk("%d, wait for frequency meter finish, CLK26CALI = 0x%x\n", val, DRV_Reg32(CLK26CALI_0));
+		pr_debug("%d, wait for frequency meter finish, CLK26CALI = 0x%x\n", val, DRV_Reg32(CLK26CALI_0));
         mdelay(10);
         i++;
         if(i > 10)
@@ -251,7 +251,7 @@ static int ckgen_meter_write(struct file *file, const char __user *buffer,
     desc[len] = '\0';
 
     if (sscanf(desc, "%d", &val) == 1) {
-        printk("ckgen_meter %d is %d\n", val, ckgen_meter(val));
+		pr_debug("ckgen_meter %d is %d\n", val, ckgen_meter(val));
     }
     return count;
 }
@@ -280,7 +280,7 @@ static int abist_meter_write(struct file *file, const char __user *buffer,
     desc[len] = '\0';
 
     if (sscanf(desc, "%d", &val) == 1) {
-        printk("abist_meter %d is %d\n", val, abist_meter(val));
+		pr_debug("abist_meter %d is %d\n", val, abist_meter(val));
     }
     return count;
 }
@@ -333,7 +333,7 @@ unsigned int mt_get_emi_freq(void)
     /* wait frequency meter finish */
     while (DRV_Reg32(CLK26CALI_0) & 0x1)
     {
-        printk("wait for frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
+		pr_debug("wait for frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
         //mdelay(10);
     }
 
@@ -372,7 +372,7 @@ unsigned int mt_get_bus_freq(void)
     /* wait frequency meter finish */
     while (DRV_Reg32(CLK26CALI_0) & 0x10)
     {
-        //printk("wait for bus frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
+		/* pr_debug("wait for bus frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0)); */
         mdelay(10);
     }
 
@@ -384,7 +384,7 @@ unsigned int mt_get_bus_freq(void)
     pminit_write(CLK_MISC_CFG_1, clk_misc_cfg_1);
     pminit_write(CLK26CALI_0, clk26cali_0);
 
-    //printk("CLK26CALI = 0x%x, bus frequency = %d Khz\n", temp, output);
+	/* pr_debug("CLK26CALI = 0x%x, bus frequency = %d Khz\n", temp, output); */
 
     return output;
 #else
@@ -438,7 +438,7 @@ unsigned int mt_get_bus_freq(void)
         bus_clk = 26 * 1000;
     }
 
-    //printk("bus frequency = %d Khz\n", bus_clk);
+	/* pr_debug("bus frequency = %d Khz\n", bus_clk); */
 
     return bus_clk; // Khz
 #endif
@@ -475,7 +475,7 @@ unsigned int mt_get_smallcpu_freq(void)
     /* wait frequency meter finish */
     while (DRV_Reg32(CLK26CALI_0) & 0x1)
     {
-        printk("wait for frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
+		pr_debug("wait for frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
         //mdelay(10);
     }
 
@@ -529,7 +529,7 @@ unsigned int mt_get_bigcpu_freq(void)
     /* wait frequency meter finish */
     while (DRV_Reg32(CLK26CALI_0) & 0x1)
     {
-        printk("wait for frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
+		pr_debug("wait for frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
         //mdelay(10);
     }
 
@@ -572,7 +572,7 @@ unsigned int mt_get_mmclk_freq(void)
     /* wait frequency meter finish */
     while (DRV_Reg32(CLK26CALI_0) & 0x10)
     {
-        printk("wait for emi frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
+		pr_debug("wait for emi frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
         mdelay(10);
     }
 
@@ -608,7 +608,7 @@ unsigned int mt_get_mfgclk_freq(void)
     /* wait frequency meter finish */
     while (DRV_Reg32(CLK26CALI_0) & 0x10)
     {
-        printk("wait for emi frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
+		pr_debug("wait for emi frequency meter finish, CLK26CALI = 0x%x\n", DRV_Reg32(CLK26CALI_0));
         mdelay(10);
     }
 
@@ -733,7 +733,7 @@ static int __init mt_power_management_init(void)
     #if !defined (CONFIG_FPGA_CA7)
      //FIXME: for FPGA early porting
     #if 0
-    xlog_printk(ANDROID_LOG_INFO, "Power/PM_INIT", "Bus Frequency = %d KHz\n", mt_get_bus_freq());
+    pr_debug("Power/PM_INIT" "Bus Frequency = %d KHz\n", mt_get_bus_freq());
     #endif
 
     //cpu dormant driver init

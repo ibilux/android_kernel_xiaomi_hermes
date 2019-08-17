@@ -1,3 +1,5 @@
+ifdef MTK_PLATFORM
+
 PRIVATE_CUSTOM_KERNEL_DCT:= $(if $(CUSTOM_KERNEL_DCT),$(CUSTOM_KERNEL_DCT),dct)
 DRVGEN_TOOL := $(PWD)/tools/dct/DrvGen
 ifneq ($(wildcard $(PWD)/arch/arm/mach-$(MTK_PLATFORM)/$(MTK_PROJECT)/dct/$(PRIVATE_CUSTOM_KERNEL_DCT)/codegen.dws),)
@@ -24,24 +26,6 @@ DRVGEN_FILE_LIST := $(DRVGEN_OUT)/inc/cust_kpd.h \
 		    $(DRVGEN_OUT)/inc/pmic_drv.h \
 		    $(DRVGEN_OUT)/pmic_drv.c
 
-ifneq ($(MTK_PLATFORM),mt8127)
-  DRVGEN_FILE_LIST += $(DRVGEN_OUT)/inc/cust_eint_md1.h
-endif
-
-
-ifeq ($(MTK_PLATFORM),mt6735)
-  DRVGEN_FILE_LIST += $(DRVGEN_OUT)/inc/cust_eint_md2.h \
-		    $(DRVGEN_OUT)/inc/cust_i2c.h \
-		    $(DRVGEN_OUT)/inc/cust_clk_buf.h \
-		    $(DRVGEN_OUT)/cust_eint.dtsi
-endif
-
-ifeq ($(MTK_PLATFORM),mt6752)
-  DRVGEN_FILE_LIST += $(DRVGEN_OUT)/inc/cust_eint_md2.h \
-		    $(DRVGEN_OUT)/inc/cust_i2c.h \
-		    $(DRVGEN_OUT)/inc/cust_clk_buf.h \
-		    $(DRVGEN_OUT)/cust_eint.dtsi
-endif
 ifeq ($(MTK_PLATFORM),mt6795)
   DRVGEN_FILE_LIST += $(DRVGEN_OUT)/inc/cust_i2c.h \
 		    $(DRVGEN_OUT)/inc/cust_clk_buf.h \
@@ -49,8 +33,8 @@ ifeq ($(MTK_PLATFORM),mt6795)
 		    $(DRVGEN_OUT)/cust_eint.dtsi
 endif
 
-ifeq ($(MTK_PLATFORM),mt8127)
-  DRVGEN_FILE_LIST += $(DRVGEN_OUT)/inc/cust_eint_ext.h
+ifneq ($(MTK_PLATFORM),mt8127)
+  DRVGEN_FILE_LIST += $(DRVGEN_OUT)/inc/cust_eint_md1.h
 endif
 
 archprepare: $(DRVGEN_FILE_LIST)
@@ -117,3 +101,48 @@ $(DRVGEN_OUT)/cust_eint.dtsi: $(DRVGEN_TOOL) $(DWS_FILE)
 	@mkdir -p $(dir $@)
 	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT) $(DRVGEN_OUT_PATH) eint_dtsi
 
+$(DRVGEN_OUT)/inc/pmic_drv.c: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT_PATH) $(DRVGEN_OUT_PATH) pmic_c
+
+$(DRVGEN_OUT)/cust_i2c.dtsi: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT) $(DRVGEN_OUT_PATH) i2c_dtsi
+
+$(DRVGEN_OUT)/cust_adc.dtsi: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT) $(DRVGEN_OUT_PATH) adc_dtsi
+
+$(DRVGEN_OUT)/cust_md1_eint.dtsi: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT) $(DRVGEN_OUT_PATH) md1_eint_dtsi
+
+$(DRVGEN_OUT)/cust_kpd.dtsi: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT) $(DRVGEN_OUT_PATH) kpd_dtsi
+
+$(DRVGEN_OUT)/cust_clk_buf.dtsi: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT) $(DRVGEN_OUT_PATH) clk_buf_dtsi
+
+$(DRVGEN_OUT)/cust_gpio.dtsi: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT) $(DRVGEN_OUT_PATH) gpio_dtsi
+
+$(DRVGEN_OUT)/cust_adc.dtsi: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT) $(DRVGEN_OUT_PATH) adc_dtsi
+
+$(DRVGEN_OUT)/cust_pmic.dtsi: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT) $(DRVGEN_OUT_PATH) pmic_dtsi
+
+$(DRVGEN_OUT)/inc/mt6735-pinfunc.h: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT_PATH) $(DRVGEN_OUT_PATH) mt6735_pinfunc_h
+
+$(DRVGEN_OUT)/inc/pinctrl-mtk-mt6735.h: $(DRVGEN_TOOL) $(DWS_FILE)
+	@mkdir -p $(dir $@)
+	@$(DRVGEN_TOOL) $(DWS_FILE) $(DRVGEN_OUT_PATH) $(DRVGEN_OUT_PATH) pinctrl_mtk_mt6735_h
+
+endif#MTK_PLATFORM

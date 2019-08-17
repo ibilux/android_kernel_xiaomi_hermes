@@ -525,7 +525,7 @@ struct fsr_info {
 #include "fsr-2level.c"
 #endif
 
-void 
+void __init
 hook_fault_code(int nr, int (*fn)(unsigned long, unsigned int, struct pt_regs *),
 		int sig, int code, const char *name)
 {
@@ -604,7 +604,7 @@ asmlinkage void __exception
 do_PrefetchAbort(unsigned long addr, unsigned int ifsr, struct pt_regs *regs)
 {
 	struct thread_info *thread = current_thread_info();
-	int ret;  
+	int ret;
 	const struct fsr_info *inf = ifsr_info + fsr_fs(ifsr);
 	struct siginfo info;
 

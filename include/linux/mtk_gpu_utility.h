@@ -35,6 +35,10 @@ bool mtk_custom_upbound_gpu_freq(unsigned int ui32FreqLevel);
 bool mtk_get_custom_boost_gpu_freq(unsigned int *pui32FreqLevel);
 bool mtk_get_custom_upbound_gpu_freq(unsigned int *pui32FreqLevel);
 
+bool mtk_dump_gpu_memory_usage(void);
+
+bool mtk_get_gpu_cur_owner(int **ppid);
+
 #ifdef __cplusplus
 }
 #endif

@@ -241,6 +241,7 @@ INT32 wmt_ctrl_rx(P_WMT_CTRL_DATA pWmtCtrlData /*UINT8 *pBuff, UINT32 buffLen, U
 		WMT_LOUD_FUNC("wmt_dev_rx_timeout returned\n");
 
 		if (0 == waitRet) {
+			wmt_lib_read_fw_cpupcr();
 			WMT_ERR_FUNC("wmt_dev_rx_timeout: timeout\n");
 			return -1;
 		} else if (waitRet < 0) {
@@ -798,7 +799,7 @@ INT32 wmt_ctrl_sdio_func(P_WMT_CTRL_DATA pWmtCtrlData)
 					break;
 				}
 			}
-			if (!retry || iRet) {
+			if (retry < 0 && iRet) {
 				WMT_ERR_FUNC
 				    ("mtk_wcn_hif_sdio_wmt_control(%d, TRUE) fail(%d) retry(%d)\n",
 				     sdioFuncType, iRet, retry);

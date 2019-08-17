@@ -1,3 +1,4 @@
+MTK_PLATFORM := $(subst ",,$(CONFIG_MTK_PLATFORM))
 ifeq ($(CONFIG_MTK_COMBO), y)
 ccflags-y += -I$(src)/../../linux/include \
 						 -I$(src)/../../linux/pri/include \
@@ -9,7 +10,7 @@ ccflags-y += -I$(src)/../../linux/include \
                          -I$(src)/../include
 
 ifeq ($(CONFIG_ARM64), y)
-ccflags-y += -I$(srctree)/drivers/misc/mediatek/mach/mt6752/include/mach
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/include/mach
 endif
 
 ccflags-y += -DWMT_CREATE_NODE_DYNAMIC=1

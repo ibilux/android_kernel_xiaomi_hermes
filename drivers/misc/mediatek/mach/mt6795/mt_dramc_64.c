@@ -15,22 +15,31 @@
 //#include <asm/delay.h>
 #include <mach/mt_reg_base.h>
 #include <mach/mt_clkmgr.h>
-#include <mach/mt_freqhopping.h>
+#include "mt_freqhopping.h"
 #include <mach/emi_bwl.h>
 #include <mach/mt_typedefs.h>
 #include <mach/memory.h>
 #include <mach/mt_sleep.h>
 #include <mach/mt_dramc.h>
 #include <mach/dma.h>
-#include <mach/mt_freqhopping_drv.h>
+#include "mt_freqhopping_drv.h"
 #include <mach/sync_write.h>
 #include <mach/mt_chip.h>
 #include <linux/of.h>
 #include <linux/of_address.h>
+#include <linux/of_fdt.h>
+#include <mach/mt_ccci_common.h>
+#include <mach/mt_vcore_dvfs.h>
 
 //#include "md32_ipi.h"
 //#include "md32_helper.h"
 
+#ifdef CONFIG_OF_RESERVED_MEM
+#define DRAM_R0_DUMMY_READ_RESERVED_KEY "reserve-memory-dram_r0_dummy_read"
+#define DRAM_R1_DUMMY_READ_RESERVED_KEY "reserve-memory-dram_r1_dummy_read"
+#include <mach/mtk_memcfg.h>
+#include <linux/of_reserved_mem.h>
+#endif
 
 static void __iomem *APMIXED_BASE_ADDR;
 static void __iomem *CQDMA_BASE_ADDR;
@@ -46,6 +55,8 @@ volatile unsigned int src_array_p;
 char dfs_dummy_buffer[BUFF_LEN] __attribute__ ((aligned (PAGE_SIZE)));
 int init_done = 0;
 int org_dram_data_rate = 0;
+static unsigned int dram_rank_num;
+phys_addr_t dram_base, dram_add_rank0_base;
 
 void enter_pasr_dpd_config(unsigned char segment_rank0, unsigned char segment_rank1)
 {
@@ -717,15 +728,23 @@ static ssize_t complex_mem_test_store(struct device_driver *driver, const char *
 }
 
 #ifdef APDMA_TEST
-#error "Do not use APDMA_TEST"
 static ssize_t DFS_APDMA_TEST_show(struct device_driver *driver, char *buf)
-{   
-    dma_dummy_read_for_vcorefs(7);
-    return snprintf(buf, PAGE_SIZE, "DFS APDMA Dummy Read Address 0x%x\n",(unsigned int)src_array_p);
-}
-static ssize_t DFS_APDMA_TEST_store(struct device_driver *driver, const char *buf, size_t count)
 {
-    return count;
+	dma_dummy_read_for_vcorefs(7);
+
+	if (dram_rank_num == DULE_RANK)
+		return snprintf(buf, PAGE_SIZE, "DFS APDMA Dummy Read Address src1:%pa src2:%pa\n",
+				&dram_base, &dram_add_rank0_base);
+	else if (dram_rank_num == SINGLE_RANK)
+		return snprintf(buf, PAGE_SIZE, "DFS APDMA Dummy Read Address src1:%pa\n", &dram_base);
+	else
+		return snprintf(buf, PAGE_SIZE, "DFS APDMA Dummy Read rank number incorrect = %d !!!\n", dram_rank_num);
+}
+
+static ssize_t DFS_APDMA_TEST_store(struct device_driver *driver,
+				    const char *buf, size_t count)
+{
+	return count;
 }
 #endif
 
@@ -966,6 +985,50 @@ unsigned int read_dram_temperature(void)
     return value;
 }
 
+static int dt_scan_dram_info(unsigned long node, const char *uname, int depth, void *data)
+{
+	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
+	__be32 *reg, *endp;
+	dram_info_t *dram_info = NULL;
+	unsigned long l;
+
+	/* We are scanning "memory" nodes only */
+	if (type == NULL) {
+		/*
+		* The longtrail doesn't have a device_type on the
+		* /memory node, so look for the node called /memory@0.
+		*/
+		if (depth != 1 || strcmp(uname, "memory@0") != 0)
+			return 0;
+	} else if (strcmp(type, "memory") != 0)
+		return 0;
+
+	reg = of_get_flat_dt_prop(node, "reg", &l);
+	if (reg == NULL)
+		return 0;
+
+	endp = reg + (l / sizeof(__be32));
+
+	if (node) {
+		/* orig_dram_info */
+		dram_info = (const struct dram_info *)of_get_flat_dt_prop(node, "orig_dram_info", NULL);
+		if (dram_info == NULL)
+			return 0;
+
+		dram_rank_num = dram_info->rank_num;
+		dram_base = dram_info->rank_info[0].start;
+
+		if (dram_rank_num == SINGLE_RANK)
+			pr_err("[DFS]  enable (dram base): (%pa)\n", &dram_base);
+		else {
+			dram_add_rank0_base = dram_info->rank_info[1].start;
+			pr_err("[DFS]  enable (dram base, dram rank1 base): (%pa,%pa)\n",
+								&dram_base, &dram_add_rank0_base);
+		}
+	}
+
+	return node;
+}
 #ifdef READ_DRAM_TEMP_TEST
 static ssize_t read_dram_temp_show(struct device_driver *driver, char *buf)
 {
@@ -1100,6 +1163,19 @@ int __init dram_test_init(void)
         printk("[DRAMC]can't find SLEEP compatible node\n");
 	  	return -1;
 	  }
+#ifdef CONFIG_OF
+	if (dram_rank_num == 0) { /* happend to no rsv mem node from LK */
+		node = of_scan_flat_dt(dt_scan_dram_info, NULL);
+		if (node) {
+			pr_err("[DRAMC]find dt_scan_dram_info\n");
+		} else {
+			pr_err("[DRAMC]can't find dt_scan_dram_info\n");
+			return -1;
+		}
+	}
+#else
+	pr_err("[DRAMC] Error: undefined dummy read!!!\n");
+#endif
            
     ret = driver_register(&dram_test_drv);
     if (ret) {
@@ -1160,6 +1236,37 @@ int __init dram_test_init(void)
     return 0;
 }
 
+#ifdef CONFIG_OF_RESERVED_MEM
+int dram_dummy_read_reserve_mem_of_init(struct reserved_mem *rmem)
+{
+	phys_addr_t rptr = 0;
+	unsigned int rsize = 0;
+
+	rptr = rmem->base;
+	rsize = (unsigned int)rmem->size;
+
+	if (strstr(DRAM_R0_DUMMY_READ_RESERVED_KEY, rmem->name)) {
+		dram_base = rptr;
+		dram_rank_num++;
+		pr_debug("[dram_dummy_read_reserve_mem_of_init] dram_base = %pa, size = 0x%x\n",
+				&dram_base, rsize);
+	}
+
+	if (strstr(DRAM_R1_DUMMY_READ_RESERVED_KEY, rmem->name)) {
+		dram_add_rank0_base = rptr;
+		dram_rank_num++;
+		pr_debug("[dram_dummy_read_reserve_mem_of_init] dram_add_rank0_base = %pa, size = 0x%x\n",
+				&dram_add_rank0_base, rsize);
+	}
+
+	return 0;
+}
+RESERVEDMEM_OF_DECLARE(dram_reserve_r0_dummy_read_init, DRAM_R0_DUMMY_READ_RESERVED_KEY,
+			dram_dummy_read_reserve_mem_of_init);
+RESERVEDMEM_OF_DECLARE(dram_reserve_r1_dummy_read_init, DRAM_R1_DUMMY_READ_RESERVED_KEY,
+			dram_dummy_read_reserve_mem_of_init);
+#endif
+
 int DFS_APDMA_early_init(void)
 {
     phys_addr_t max_dram_size = get_max_DRAM_size();
@@ -1208,12 +1315,31 @@ int DFS_APDMA_Enable(void)
 #ifdef APDMAREG_DUMP    
     int i;
 #endif
-    
+
     while(readl(DMA_START)& 0x1);
+#if 0
     writel(src_array_p, DMA_SRC);
     writel(dst_array_p, DMA_DST);
     writel(BUFF_LEN , DMA_LEN1);
     writel(DMA_CON_BURST_8BEAT, DMA_CON);    
+#else
+	if (dram_rank_num == DULE_RANK) {
+		writel(dram_base, DMA_SRC);
+		writel(dram_add_rank0_base, DMA_SRC2);
+		writel(dst_array_p, DMA_DST);
+		writel((BUFF_LEN >> 1), DMA_LEN1);
+		writel((BUFF_LEN >> 1), DMA_LEN2);
+		writel((DMA_CON_BURST_8BEAT | DMA_CON_WPEN), DMA_CON);
+	}	else if (dram_rank_num == SINGLE_RANK) {
+			writel(dram_base, DMA_SRC);
+			writel(dst_array_p, DMA_DST);
+			writel(BUFF_LEN, DMA_LEN1);
+			writel(DMA_CON_BURST_8BEAT, DMA_CON);
+		} else {
+			pr_err("[DFS] error rank number = %x\n", dram_rank_num);
+			return 1;
+			}
+#endif
 
 #ifdef APDMAREG_DUMP
    printk("src_p=0x%x, dst_p=0x%x, src_v=0x%x, dst_v=0x%x, len=%d\n", src_array_p, dst_array_p, (unsigned int)src_array_v, (unsigned int)dst_array_v, BUFF_LEN);
@@ -1317,7 +1443,7 @@ void DFS_Reserved_Memory(void)
   {
     ASSERT(0);
   }
-  
+
   /*For DFS Purpose, we remove this memory block for Dummy read/write by APDMA.*/
   printk("[DFS Check]DRAM SIZE:0x%llx\n",(unsigned long long)max_dram_size);
   printk("[DFS Check]DRAM Dummy read from:0x%llx to 0x%llx\n",(unsigned long long)(DFS_dummy_read_center_address-(BUFF_LEN >> 1)),(unsigned long long)(DFS_dummy_read_center_address+(BUFF_LEN >> 1)));
@@ -1346,52 +1472,5 @@ void DFS_Reserved_Memory(void)
  
   return;
 }
-
-#if 0
-void sync_hw_gating_value(void)
-{
-    unsigned int reg_val;
-    
-    reg_val = (*(volatile unsigned int *)(0xF0004028)) & (~(0x01<<30));         // cha DLLFRZ=0
-    mt_reg_sync_writel(reg_val, 0xF0004028);
-    reg_val = (*(volatile unsigned int *)(0xF0011028)) & (~(0x01<<30));         // chb DLLFRZ=0
-    mt_reg_sync_writel(reg_val, 0xF0011028);
-    
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF020e374)), 0xF0004094);   // cha r0 
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF020e378)), 0xF0004098);   // cha r1
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF0213374)), 0xF0011094);   // chb r0  
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF0213378)), 0xF0011098);   // chb r1 
-
-    reg_val = (*(volatile unsigned int *)(0xF0004028)) | (0x01<<30);            // cha DLLFRZ=1
-    mt_reg_sync_writel(reg_val, 0xF0004028);
-    reg_val = (*(volatile unsigned int *)(0xF0011028)) | (0x01<<30);            // chb DLLFRZ=0
-    mt_reg_sync_writel(reg_val, 0xF0011028);        
-}
-
-void disable_MR4_enable_manual_ref_rate(void)
-{
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF00041e8))|(1<<26), 0xF00041e8);//disable changelA MR4
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF00111e8))|(1<<26), 0xF00111e8);//disable changelB MR4
-  
-    udelay(10);
-    
-    //before deepidle
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF0004114))|0x80000000, 0xF0004114);  //set R_DMREFRATE_MANUAL_TRIG=1 to change refresh_rate=h3
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF0011114))|0x80000000, 0xF0011114);    
-   
-    udelay(10);
-}
-
-void enable_MR4_disable_manual_ref_rate(void)
-{
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF0004114))&0x7FFFFFFF, 0xF0004114);  //After leave self refresh, set R_DMREFRATE_MANUAL_TRIG=0 
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF0011114))&0x7FFFFFFF, 0xF0011114);
-
-    udelay(10);
-    
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF00041e8))&~(1<<26), 0xF00041e8);//enable changelA MR4
-    mt_reg_sync_writel((*(volatile unsigned int *)(0xF00111e8))&~(1<<26), 0xF00111e8);//enable changelB MR4 
-}
-#endif
 
 arch_initcall(dram_test_init);

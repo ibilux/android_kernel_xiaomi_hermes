@@ -6,7 +6,7 @@
 
 #include <mach/mt_typedefs.h>
 #include <mach/mt_power_gs.h>
-
+/*
 const unsigned int AP_CG_gs_dpidle_data[] = {
  // Address     Mask        Golden Setting Value
     0xF0000040, 0xFFFFFFFF, 0x00810106,// CLK_CFG_0
@@ -74,7 +74,7 @@ const unsigned int AP_CG_gs_dpidle_data[] = {
 const unsigned int *AP_CG_gs_dpidle = AP_CG_gs_dpidle_data;
 
 unsigned int AP_CG_gs_dpidle_len = 192;
-
+*/
 const unsigned int AP_CG_gs_suspend_data[] = {
  // Address     Mask        Golden Setting Value
     0xF0000040, 0xFFFFFFFF, 0x00810106,// CLK_CFG_0
@@ -142,7 +142,7 @@ const unsigned int AP_CG_gs_suspend_data[] = {
 const unsigned int *AP_CG_gs_suspend = AP_CG_gs_suspend_data;
 
 unsigned int AP_CG_gs_suspend_len = 180;
-
+/*
 const unsigned int AP_CG_gs_vp_data[] = {
  // Address     Mask        Golden Setting Value
     0xF0000040, 0xFFFFFFFF, 0x01810101,// CLK_CFG_0
@@ -729,3 +729,4 @@ const unsigned int *AP_CG_gs_vr = AP_CG_gs_vr_data;
 
 unsigned int AP_CG_gs_vr_len = 192;
 
+*/

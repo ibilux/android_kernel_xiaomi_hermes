@@ -114,7 +114,6 @@
 #define RF_AT_PARAM_RIFS_DISABLE    0
 #define RF_AT_PARAM_RIFS_ENABLE     1
 
-
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -220,7 +219,6 @@ typedef enum _ENUM_RF_AT_COMMAND_T {
 	RF_AT_COMMAND_NUM
 } ENUM_RF_AT_COMMAND_T;
 
-
 /* Preamble */
 typedef enum _ENUM_RF_AT_PREAMBLE_T {
 	RF_AT_PREAMBLE_NORMAL = 0,
@@ -251,7 +249,6 @@ typedef enum _ENUM_RF_AUTOTEST_STATE_T {
 	RF_AUTOTEST_STATE_NUM
 } ENUM_RF_AUTOTEST_STATE_T;
 
-
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -276,10 +273,8 @@ WLAN_STATUS rftestSetATInfo(IN P_ADAPTER_T prAdapter, UINT_32 u4FuncIndex, UINT_
 
 WLAN_STATUS
 rftestQueryATInfo(IN P_ADAPTER_T prAdapter,
-		  UINT_32 u4FuncIndex,
-		  UINT_32 u4FuncData, OUT PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen);
+		  UINT_32 u4FuncIndex, UINT_32 u4FuncData, OUT PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen);
 
-WLAN_STATUS
-rftestSetFrequency(IN P_ADAPTER_T prAdapter, IN UINT_32 u4FreqInKHz, IN PUINT_32 pu4SetInfoLen);
+WLAN_STATUS rftestSetFrequency(IN P_ADAPTER_T prAdapter, IN UINT_32 u4FreqInKHz, IN PUINT_32 pu4SetInfoLen);
 
-#endif				/* _RFTEST_H */
+#endif /* _RFTEST_H */

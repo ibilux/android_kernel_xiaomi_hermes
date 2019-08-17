@@ -453,7 +453,7 @@ int ipanic(struct notifier_block *this, unsigned long event, void *ptr)
 {
 	struct ipanic_data_header *dheader;
 	struct kmsg_dumper dumper;
-    ipanic_atf_log_rec_t atf_log = {ATF_LOG_SIZE, 0, 0};
+	ipanic_atf_log_rec_t atf_log = {ATF_LOG_SIZE, 0, 0};
 	int dt;
 	int errno;
 	struct ipanic_header *ipanic_hdr;

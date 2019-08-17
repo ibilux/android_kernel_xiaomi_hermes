@@ -1,5 +1,5 @@
 /*
-** $Id: @(#) gl_p2p_init.c@@
+** Id: @(#) gl_p2p_init.c@@
 */
 
 /*! \file   gl_p2p_init.c
@@ -8,8 +8,6 @@
     This file contains the main routines of Linux driver for MediaTek Inc. 802.11
     Wireless LAN Adapters.
 */
-
-
 
 /*******************************************************************************
 *                         C O M P I L E R   F L A G S
@@ -22,7 +20,6 @@
 */
 
 #include "precomp.h"
-
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -75,7 +72,6 @@ static UINT_16 mode = RUNNING_P2P_MODE;
 ********************************************************************************
 */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief    check interface name parameter is valid or not
@@ -98,11 +94,10 @@ VOID p2pCheckInterfaceName(VOID)
 	if (ifname) {
 		ifLen = strlen(ifname);
 
-		if (ifLen > MAX_INF_NAME_LEN) {
+		if (ifLen > MAX_INF_NAME_LEN)
 			ifname[MAX_INF_NAME_LEN] = '\0';
-		} else if (ifLen < MIN_INF_NAME_LEN) {
+		else if (ifLen < MIN_INF_NAME_LEN)
 			ifname = P2P_MODE_INF_NAME;
-		}
 	} else {
 		ifname = P2P_MODE_INF_NAME;
 	}
@@ -113,18 +108,17 @@ VOID p2pSetSuspendMode(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgEnable)
 {
 	struct net_device *prDev = NULL;
 
-	if (!prGlueInfo) {
+	if (!prGlueInfo)
 		return;
-	}
 
 	if (!prGlueInfo->prAdapter->fgIsP2PRegistered) {
-		DBGLOG(INIT, INFO, ("%s: P2P is not enabled, SKIP!\n", __func__));
+		DBGLOG(P2P, INFO, "%s: P2P is not enabled, SKIP!\n", __func__);
 		return;
 	}
 
 	prDev = prGlueInfo->prP2PInfo->prDevHandler;
 	if (!prDev) {
-		DBGLOG(INIT, INFO, ("%s: P2P dev is not availiable, SKIP!\n", __func__));
+		DBGLOG(P2P, WARN, "%s: P2P dev is not availiable, SKIP!\n", __func__);
 		return;
 	}
 
@@ -142,23 +136,18 @@ VOID p2pSetSuspendMode(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgEnable)
 /*----------------------------------------------------------------------------*/
 BOOLEAN p2pLaunch(P_GLUE_INFO_T prGlueInfo)
 {
-	printk("p2p Launch\n");
-
 	if (prGlueInfo->prAdapter->fgIsP2PRegistered == TRUE) {
-		printk("p2p already registered\n");
+		DBGLOG(P2P, INFO, "p2p already registered\n");
 		return FALSE;
 	} else if (glRegisterP2P(prGlueInfo, ifname, (BOOLEAN) mode)) {
 		prGlueInfo->prAdapter->fgIsP2PRegistered = TRUE;
-		printk("Launch success, fgIsP2PRegistered TRUE.\n");
 
+		DBGLOG(P2P, INFO, "Launch success, fgIsP2PRegistered TRUE.\n");
 		return TRUE;
-	} else {
-		printk("Launch Fail\n");
 	}
-
+	DBGLOG(P2P, ERROR, "Launch Fail\n");
 	return FALSE;
 }
-
 
 VOID p2pSetMode(IN BOOLEAN fgIsAPMOde)
 {
@@ -173,7 +162,6 @@ VOID p2pSetMode(IN BOOLEAN fgIsAPMOde)
 	return;
 }				/* p2pSetMode */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief
@@ -186,10 +174,8 @@ VOID p2pSetMode(IN BOOLEAN fgIsAPMOde)
 /*----------------------------------------------------------------------------*/
 BOOLEAN p2pRemove(P_GLUE_INFO_T prGlueInfo)
 {
-	printk("p2p Remove\n");
-
 	if (prGlueInfo->prAdapter->fgIsP2PRegistered == FALSE) {
-		printk("p2p is not Registered.\n");
+		DBGLOG(P2P, INFO, "p2p is not Registered.\n");
 		return FALSE;
 	} else {
 		prGlueInfo->prAdapter->fgIsP2PRegistered = FALSE;
@@ -218,7 +204,7 @@ static int initP2P(void)
 	/*check interface name validation */
 	p2pCheckInterfaceName();
 
-	printk(KERN_INFO DRV_NAME "InitP2P, Ifname: %s, Mode: %s\n", ifname, mode ? "AP" : "P2P");
+	DBGLOG(P2P, INFO, "InitP2P, Ifname: %s, Mode: %s\n", ifname, mode ? "AP" : "P2P");
 
 	/*register p2p init & exit function to wlan sub module handler */
 	wlanSubModRegisterInitExit(p2pLaunch, p2pRemove, P2P_MODULE);
@@ -235,7 +221,6 @@ static int initP2P(void)
 	return 0;
 }				/* end of initP2P() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Driver exit point when the driver as a Linux Module is removed. Called
@@ -250,12 +235,11 @@ static VOID __exit exitP2P(void)
 {
 	P_GLUE_INFO_T prGlueInfo;
 
-	printk(KERN_INFO DRV_NAME "ExitP2P\n");
+	DBGLOG(P2P, INFO, "ExitP2P\n");
 
 	/*if wlan is not started yet, return FALSE */
-	if (wlanExportGlueInfo(&prGlueInfo)) {
+	if (wlanExportGlueInfo(&prGlueInfo))
 		wlanSubModExit(prGlueInfo);
-	}
 	/*UNregister p2p init & exit function to wlan sub module handler */
 	wlanSubModRegisterInitExit(NULL, NULL, P2P_MODULE);
 }				/* end of exitP2P() */

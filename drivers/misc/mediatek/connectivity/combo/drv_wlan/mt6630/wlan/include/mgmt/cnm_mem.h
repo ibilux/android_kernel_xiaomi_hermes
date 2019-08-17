@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/cnm_mem.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/cnm_mem.h#1
 */
 
 /*! \file   "cnm_mem.h"
@@ -7,10 +7,8 @@
 	    packet buffer and MGT/MSG Memory Buffer.
 */
 
-
-
 /*
-** $Log: cnm_mem.h $
+** Log: cnm_mem.h
 **
 ** 01 15 2014 eason.tsai
 ** [ALPS01070904] [Need Patch] [Volunteer Patch][MT6630][Driver]MT6630 Wi-Fi Patch
@@ -121,7 +119,6 @@
 
 Add per station flow control when STA is in PS
 
-
  * Add per STA flow control when STA is in PS mode
  *
  * 12 29 2010 eddie.chen
@@ -143,11 +140,13 @@ Add per station flow control when STA is in PS
  * 2. free all sta records when network is disconnected
  *
  * 11 29 2010 cm.chang
- * [WCXRP00000210] [MT6620 Wi-Fi][Driver][FW] Set RCPI value in STA_REC for initial TX rate selection of auto-rate algorithm
+ * [WCXRP00000210] [MT6620 Wi-Fi][Driver][FW] Set RCPI value in STA_REC for
+ * initial TX rate selection of auto-rate algorithm
  * Sync RCPI of STA_REC to FW as reference of initial TX rate
  *
  * 10 18 2010 cp.wu
- * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and might leads to BSOD when entering RF test with AIS associated
+ * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and might leads to BSOD
+ * when entering RF test with AIS associated
  * 1. remove redundant variables in STA_REC structure
  * 2. add STA-REC uninitialization routine for clearing pending events
  *
@@ -307,7 +306,8 @@ Add per station flow control when STA is in PS
  *
  * 03 03 2010 wh.su
  * [BORA00000637][MT6620 Wi-Fi] [Bug] WPA2 pre-authentication timer not correctly initialize
- * Fixed the pre-authentication timer not correctly init issue, and modify the security related callback function prototype.
+ * Fixed the pre-authentication timer not correctly init issue,
+ * and modify the security related callback function prototype.
  *
  * 03 01 2010 tehuang.liu
  * [BORA00000569][WIFISYS] Phase 2 Integration Test
@@ -580,13 +580,11 @@ Add per station flow control when STA is in PS
 #define MGT_BUFFER_SIZE                         (MAX_NUM_OF_BUF_BLOCKS * MGT_BUF_BLOCK_SIZE)
 #define MSG_BUFFER_SIZE                         (MAX_NUM_OF_BUF_BLOCKS * MSG_BUF_BLOCK_SIZE)
 
-
 /* STA_REC related definitions */
 #define STA_REC_INDEX_BMCAST        0xFF
 #define STA_REC_INDEX_NOT_FOUND     0xFE
 #define STA_WAIT_QUEUE_NUM          5	/* Number of SW queues in each STA_REC: AC0~AC4 */
 #define SC_CACHE_INDEX_NUM          5	/* Number of SC caches in each STA_REC: AC0~AC4 */
-
 
 /* P2P related definitions */
 #ifdef CFG_ENABLE_WIFI_DIRECT
@@ -612,8 +610,7 @@ typedef UINT_32 BUF_BITMAP;
 typedef UINT_16 BUF_BITMAP;
 #else
 typedef UINT_8 BUF_BITMAP;
-#endif				/* MAX_NUM_OF_MGT_BUF_BLOCKS */
-
+#endif /* MAX_NUM_OF_MGT_BUF_BLOCKS */
 
 /* Control variable of TX management memory pool */
 typedef struct _BUF_INFO_T {
@@ -628,7 +625,6 @@ typedef struct _BUF_INFO_T {
 	BUF_BITMAP rFreeBlocksBitmap;
 	UINT_8 aucAllocatedBlockNum[MAX_NUM_OF_BUF_BLOCKS];
 } BUF_INFO_T, *P_BUF_INFO_T;
-
 
 /* Wi-Fi divides RAM into three types
  * MSG:     Mailbox message (Small size)
@@ -647,7 +643,6 @@ typedef enum _ENUM_BUFFER_SOURCE_T {
 	BUFFER_SOURCE_BCN,
 	BUFFER_SOURCE_NUM
 } ENUM_BUFFER_SOURCE_T, *P_ENUM_BUFFER_SOURCE_T;
-
 
 typedef enum _ENUM_SEC_STATE_T {
 	SEC_STATE_INIT,
@@ -696,7 +691,6 @@ typedef struct _FRAG_INFO_T {
 	OS_SYSTIME rReceiveLifetimeLimit;	/* The receive time of 1st fragment */
 } FRAG_INFO_T, *P_FRAG_INFO_T;
 
-
 /* Define STA record structure */
 struct _STA_RECORD_T {
 	LINK_ENTRY_T rLinkEntry;
@@ -715,7 +709,6 @@ struct _STA_RECORD_T {
 	ENUM_STA_TYPE_T eStaType;	/* Indicate the role of this STA in
 					 * the network (for example, P2P GO)
 					 */
-
 
 	UINT_8 ucBssIndex;	/* BSS_INFO_I index */
 
@@ -736,7 +729,6 @@ struct _STA_RECORD_T {
 					 */
 
 	UINT_16 u2HwDefaultFixedRateCode;
-
 
 	UINT_16 u2CapInfo;	/* For Infra Mode, to store Capability Info. from Association Resp(SAA).
 				 * For AP Mode, to store Capability Info. from Association Req(AAA).
@@ -799,15 +791,15 @@ struct _STA_RECORD_T {
 	UINT_16 u2StatusCode;	/* Status of Auth/Assoc Req */
 	UINT_16 u2ReasonCode;	/* Reason that been Deauth/Disassoc */
 
-
-	P_IE_CHALLENGE_TEXT_T prChallengeText;	/* Point to an allocated buffer for storing Challenge Text for Shared Key Authentication */
+	P_IE_CHALLENGE_TEXT_T prChallengeText;	/* Point to an allocated buffer for storing Challenge
+						 * Text for Shared Key Authentication */
 
 	TIMER_T rTxReqDoneOrRxRespTimer;	/* For Infra Mode, a timer used to send a timeout event
 						 * while waiting for TX request done or RX response.
 						 */
 
     /*------------------------------------------------------------------------------------------*/
-	/* Power Management related fields  (for STA/ AP/ P2P/ BOW power saving mode)                                                        */
+	/* Power Management related fields  (for STA/ AP/ P2P/ BOW power saving mode)           */
     /*------------------------------------------------------------------------------------------*/
 	BOOLEAN fgSetPwrMgtBit;	/* For Infra Mode, to indicate that outgoing frame need toggle
 				 * the Pwr Mgt Bit in its Frame Control Field.
@@ -842,7 +834,8 @@ struct _STA_RECORD_T {
 
 	LINK_T arStaWaitQueue[STA_WAIT_QUEUE_NUM];	/* For TXM to defer pkt forwarding to MAC TX DMA */
 
-	UINT_16 au2CachedSeqCtrl[TID_NUM + 1];	/* Duplicate removal for HT STA on a per-TID basis ("+1" is for MMPDU and non-QoS) */
+	UINT_16 au2CachedSeqCtrl[TID_NUM + 1];		/* Duplicate removal for HT STA on a
+							 * per-TID basis ("+1" is for MMPDU and non-QoS) */
 
 	BOOLEAN afgIsIgnoreAmsduDuplicate[TID_NUM + 1];
 
@@ -856,10 +849,11 @@ struct _STA_RECORD_T {
 
 	FRAG_INFO_T rFragInfo[MAX_NUM_CONCURRENT_FRAGMENTED_MSDUS];
 
-	/* SEC_INFO_T              rSecInfo; */ /* The security state machine */
+	/* SEC_INFO_T              rSecInfo; *//* The security state machine */
 
 #if CFG_SUPPORT_ADHOC
-	BOOLEAN fgAdhocRsnBcKeyExist[2];	/* Ad-hoc RSN Rx BC key exist flag, only reserved two entry for each peer  */
+	BOOLEAN fgAdhocRsnBcKeyExist[2];	/* Ad-hoc RSN Rx BC key exist flag,
+						 * only reserved two entry for each peer  */
 	UINT_8 ucAdhocRsnBcWlanIndex[2];	/* Ad-hoc RSN Rx BC wlan index */
 #endif
 
@@ -874,6 +868,9 @@ struct _STA_RECORD_T {
 
 	PUINT_8 pucAssocReqIe;
 	UINT_16 u2AssocReqIeLen;
+
+	WIFI_WMM_AC_STAT_T arLinkStatistics[WMM_AC_INDEX_NUM];	/*link layer satatistics */
+
     /*------------------------------------------------------------------------------------------*/
 	/* WMM/QoS related fields                                                                   */
     /*------------------------------------------------------------------------------------------*/
@@ -901,13 +898,13 @@ struct _STA_RECORD_T {
 	DEVICE_TYPE_T arSecondaryDevTypeBE[P2P_GC_MAX_CACHED_SEC_DEV_TYPE_COUNT];
 #endif				/* CFG_SUPPORT_P2P */
 
-
     /*------------------------------------------------------------------------------------------*/
 	/* QM related fields                                                                       */
     /*------------------------------------------------------------------------------------------*/
 
-	UINT_8 ucFreeQuota;	/* Per Sta flow controal. Valid when fgIsInPS is TRUE. Chnage it for per Queue flow control  */
-	/* UINT_8                  aucFreeQuotaPerQueue[NUM_OF_PER_STA_TX_QUEUES]; */ /* used in future */
+	UINT_8 ucFreeQuota;	/* Per Sta flow controal. Valid when fgIsInPS is TRUE.
+					Chnage it for per Queue flow control  */
+	/* UINT_8                  aucFreeQuotaPerQueue[NUM_OF_PER_STA_TX_QUEUES]; *//* used in future */
 	UINT_8 ucFreeQuotaForDelivery;
 	UINT_8 ucFreeQuotaForNonDelivery;
 
@@ -923,7 +920,6 @@ struct _STA_RECORD_T {
 	UINT_32 u4MaxTxPktsTime;
 	UINT_32 u4ThresholdCounter;
 #endif
-
 
 #if 1
     /*------------------------------------------------------------------------------------------*/
@@ -957,7 +953,6 @@ struct _STA_RECORD_T {
 	UINT_16 u2MinLinkSpeed;
 	UINT_32 u4Flags;	/* reserved for MTK Synergies */
 
-
 #if CFG_SUPPORT_TDLS
 	BOOLEAN fgTdlsIsProhibited;	/* TRUE: AP prohibits TDLS links */
 	BOOLEAN fgTdlsIsChSwProhibited;	/* TRUE: AP prohibits TDLS chan switch */
@@ -967,7 +962,6 @@ struct _STA_RECORD_T {
 	PARAM_KEY_T rTdlsKeyTemp;	/* temp to queue the key information */
 	UINT_8 ucTdlsIndex;
 #endif				/* CFG_SUPPORT_TDLS */
-
 
 };
 
@@ -1100,13 +1094,11 @@ typedef struct _SW_RFB_T {
 } SW_RFB_T, *P_SW_RFB_T;
 #endif
 
-
 typedef enum _ENUM_STA_REC_CMD_ACTION_T {
 	STA_REC_CMD_ACTION_STA = 0,
 	STA_REC_CMD_ACTION_BSS = 1,
 	STA_REC_CMD_ACTION_BSS_EXCLUDE_STA = 2
 } ENUM_STA_REC_CMD_ACTION_T, *P_ENUM_STA_REC_CMD_ACTION_T;
-
 
 #if CFG_SUPPORT_TDLS
 
@@ -1128,8 +1120,6 @@ typedef struct _CMD_PEER_UPDATE_VHT_CAP_MCS_INFO_T {
 	UINT_8 arRxMask[SUP_MCS_RX_BITMASK_OCTET_NUM];
 } CMD_PEER_UPDATE_VHT_CAP_MCS_INFO_T;
 
-
-
 typedef struct _CMD_PEER_UPDATE_HT_CAP_T {
 	UINT_16 u2CapInfo;
 	UINT_8 ucAmpduParamsInfo;
@@ -1142,14 +1132,12 @@ typedef struct _CMD_PEER_UPDATE_HT_CAP_T {
 	UINT_8 ucAntennaSelInfo;
 } CMD_PEER_UPDATE_HT_CAP_T;
 
-
 typedef struct _CMD_PEER_UPDATE_VHT_CAP_T {
 	UINT_16 u2CapInfo;
 	/* 16 bytes MCS information */
 	CMD_PEER_UPDATE_VHT_CAP_MCS_INFO_T rVMCS;
 
 } CMD_PEER_UPDATE_VHT_CAP_T;
-
 
 typedef struct _CMD_PEER_UPDATE_T {
 
@@ -1257,22 +1245,17 @@ VOID cnmMemFree(IN P_ADAPTER_T prAdapter, IN PVOID pvMemory);
 VOID cnmStaRecInit(IN P_ADAPTER_T prAdapter);
 
 P_STA_RECORD_T
-cnmStaRecAlloc(IN P_ADAPTER_T prAdapter,
-	       IN ENUM_STA_TYPE_T eStaType, IN UINT_8 ucBssIndex, IN PUINT_8 pucMacAddr);
+cnmStaRecAlloc(IN P_ADAPTER_T prAdapter, IN ENUM_STA_TYPE_T eStaType, IN UINT_8 ucBssIndex, IN PUINT_8 pucMacAddr);
 
 VOID cnmStaRecFree(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec);
 
-VOID
-cnmStaFreeAllStaByNetwork(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex, UINT_8 ucStaRecIndexExcluded);
+VOID cnmStaFreeAllStaByNetwork(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex, UINT_8 ucStaRecIndexExcluded);
 
 P_STA_RECORD_T cnmGetStaRecByIndex(IN P_ADAPTER_T prAdapter, IN UINT_8 ucIndex);
 
-P_STA_RECORD_T
-cnmGetStaRecByAddress(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex, UINT_8 aucPeerMACAddress[]);
+P_STA_RECORD_T cnmGetStaRecByAddress(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex, UINT_8 aucPeerMACAddress[]);
 
-VOID
-cnmStaRecChangeState(IN P_ADAPTER_T prAdapter,
-		     IN OUT P_STA_RECORD_T prStaRec, IN UINT_8 ucNewState);
+VOID cnmStaRecChangeState(IN P_ADAPTER_T prAdapter, IN OUT P_STA_RECORD_T prStaRec, IN UINT_8 ucNewState);
 
 VOID cnmDumpStaRec(IN P_ADAPTER_T prAdapter, IN UINT_8 ucStaRecIdx);
 
@@ -1282,17 +1265,12 @@ VOID cnmDumpPktPool(IN P_ADAPTER_T prAdapter, IN BOOLEAN fgAll);
 
 #if CFG_SUPPORT_TDLS
 WLAN_STATUS			/* TDLS_STATUS */
-
-cnmPeerAdd(P_ADAPTER_T prAdapter,
-	   PVOID pvSetBuffer, UINT_32 u4SetBufferLen, PUINT_32 pu4SetInfoLen);
+cnmPeerAdd(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen, PUINT_32 pu4SetInfoLen);
 
 WLAN_STATUS			/* TDLS_STATUS */
+cnmPeerUpdate(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen, PUINT_32 pu4SetInfoLen);
 
-cnmPeerUpdate(P_ADAPTER_T prAdapter,
-	      PVOID pvSetBuffer, UINT_32 u4SetBufferLen, PUINT_32 pu4SetInfoLen);
-
-P_STA_RECORD_T
-cnmGetTdlsPeerByAddress(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex, UINT_8 aucPeerMACAddress[]);
+P_STA_RECORD_T cnmGetTdlsPeerByAddress(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex, UINT_8 aucPeerMACAddress[]);
 #endif
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -1308,65 +1286,51 @@ static __KAL_INLINE__ VOID cnmMemDataTypeCheck(VOID)
 #if 0
 	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, rLinkEntry) == 0);
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, rLinkEntry) ==
-				     OFFSET_OF(SW_RFB_T, rLinkEntry));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, rLinkEntry) == OFFSET_OF(SW_RFB_T, rLinkEntry));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, pucBuffer) ==
-				     OFFSET_OF(SW_RFB_T, pucBuffer));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, pucBuffer) == OFFSET_OF(SW_RFB_T, pucBuffer));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, ucBufferSource) ==
-				     OFFSET_OF(SW_RFB_T, ucBufferSource));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, ucBufferSource) == OFFSET_OF(SW_RFB_T, ucBufferSource));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, pucMacHeader) ==
-				     OFFSET_OF(SW_RFB_T, pucMacHeader));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, pucMacHeader) == OFFSET_OF(SW_RFB_T, pucMacHeader));
 
 	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, ucMacHeaderLength) ==
 				     OFFSET_OF(SW_RFB_T, ucMacHeaderLength));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, pucPayload) ==
-				     OFFSET_OF(SW_RFB_T, pucPayload));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, pucPayload) == OFFSET_OF(SW_RFB_T, pucPayload));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, u2PayloadLength) ==
-				     OFFSET_OF(SW_RFB_T, u2PayloadLength));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, u2PayloadLength) == OFFSET_OF(SW_RFB_T, u2PayloadLength));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, prStaRec) ==
-				     OFFSET_OF(SW_RFB_T, prStaRec));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, prStaRec) == OFFSET_OF(SW_RFB_T, prStaRec));
 
 	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, ucNetworkTypeIndex) ==
 				     OFFSET_OF(SW_RFB_T, ucNetworkTypeIndex));
 
 	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, ucTID) == OFFSET_OF(SW_RFB_T, ucTID));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, fgIs802_11Frame) ==
-				     OFFSET_OF(SW_RFB_T, fgIs802_11Frame));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, fgIs802_11Frame) == OFFSET_OF(SW_RFB_T, fgIs802_11Frame));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, ucControlFlag) ==
-				     OFFSET_OF(SW_RFB_T, ucControlFlag));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, ucControlFlag) == OFFSET_OF(SW_RFB_T, ucControlFlag));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, rArrivalTime) ==
-				     OFFSET_OF(SW_RFB_T, rArrivalTime));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, rArrivalTime) == OFFSET_OF(SW_RFB_T, rArrivalTime));
 
 	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, ucTC) == OFFSET_OF(SW_RFB_T, ucTC));
 
 #if CFG_PROFILE_BUFFER_TRACING
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, eActivity[0]) ==
-				     OFFSET_OF(SW_RFB_T, eActivity[0]));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, eActivity[0]) == OFFSET_OF(SW_RFB_T, eActivity[0]));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, rActivityTime[0]) ==
-				     OFFSET_OF(SW_RFB_T, rActivityTime[0]));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, rActivityTime[0]) == OFFSET_OF(SW_RFB_T, rActivityTime[0]));
 #endif
 
 #if DBG && CFG_BUFFER_FREE_CHK
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, fgBufferInSource) ==
-				     OFFSET_OF(SW_RFB_T, fgBufferInSource));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSDU_INFO_T, fgBufferInSource) == OFFSET_OF(SW_RFB_T, fgBufferInSource));
 #endif
-
 
 	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(STA_RECORD_T, rLinkEntry) == 0);
 
 	return;
 #endif
 }
-#endif				/* _lint */
+#endif /* _lint */
 
-#endif				/* _CNM_MEM_H */
+#endif /* _CNM_MEM_H */

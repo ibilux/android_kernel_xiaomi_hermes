@@ -3,7 +3,6 @@
 
 
 //--------------feature configure--------------//
-#define _ECCMNI_SEQ_SUPPORT_   			//ADD sequence number in cccih->reserved
 #define __ECCMNI_SUPPORT__
 #define __EEMCS_EXPT_SUPPORT__ 			//exception mode support
 #define __EEMCS_XBOOT_SUPPORT__    		//Enable/Disable xBoot flow
@@ -12,6 +11,13 @@
 #define  ENABLE_MD_WDT_PROCESS			//disable for bring up for md not enable wdt at bring up
 //#define  ENABLE_CONN_COEX_MSG           	//disable for bring up
 
+#define _RUNTIME_MISC_INFO_SUPPORT_ 	//define misc info in runtime data between AP&MD
+//#define DBG_FEATURE_ADD_CCCI_SEQNO		//add sequence number in ccci header to trace data lost issue
+//#define DBG_FEATURE_POLL_MD_STA   		//setup timer to poll md status to trace md hang issue
+
+#ifndef DBG_FEATURE_ADD_CCCI_SEQNO
+#define _ECCMNI_SEQ_SUPPORT_   			//ADD sequence number in cccih->reserved
+#endif
 
 //--------------feature configure--------------//
 #define  EE_INIT_TIMER		(2*HZ)		//sdio exception handshake timeout
@@ -26,6 +32,7 @@
 #define MD_EX_BOOT_TRA_START_OFF (0x400)   //modem boot up trace start offset in exception memory
 #define MD_EX_BOOT_TRA_END_OFF   (0x780)   //modem boot up trace end  offset in exception memory
 
+#define TDD_DL_DROP_SOLUTION2
 
 //--------------Debug&UT configure--------------//
 //#define _EEMCS_EXCEPTION_UT    			//Enable exception mode UT

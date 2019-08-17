@@ -2,7 +2,7 @@
 #define __TZ_NDBG_T__
 
 /* enable ndbg implementation */
-#define CC_ENABLE_NDBG
+//#define CC_ENABLE_NDBG
 
 extern void tz_ndbg_init(void);
 

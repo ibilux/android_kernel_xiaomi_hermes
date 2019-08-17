@@ -7,7 +7,6 @@
 #include <linux/thermal.h>
 #include <linux/platform_device.h>
 #include <linux/aee.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/delay.h>
 #include <linux/proc_fs.h>
@@ -61,14 +60,14 @@ static DEFINE_MUTEX(MTM_SYSINFO_LOCK);
 #define THRML_LOG(fmt, args...) \
     do { \
         if (enable_ThermalMonitorXlog) { \
-            xlog_printk(ANDROID_LOG_INFO, "THERMAL/PLATFORM", fmt, ##args); \
+            pr_notice("THERMAL/PLATFORM" fmt, ##args); \
         } \
     } while(0)
 
 
 #define THRML_ERROR_LOG(fmt, args...) \
     do { \
-        xlog_printk(ANDROID_LOG_INFO, "THERMAL/PLATFORM", fmt, ##args); \
+        pr_err("THERMAL/PLATFORM" fmt, ##args); \
     } while(0)
 
 
@@ -323,10 +322,10 @@ static int get_sys_cpu_usage_info_ex(void)
 		cpu_index_list[nCoreIndex].q[CPU_USAGE_SAVE_FIELD]  = cpu_index_list[nCoreIndex].q[CPU_USAGE_CURRENT_FIELD];
 		cpu_index_list[nCoreIndex].sq[CPU_USAGE_SAVE_FIELD] = cpu_index_list[nCoreIndex].sq[CPU_USAGE_CURRENT_FIELD];
 
-		THRML_LOG("CPU%d Frame:%d USAGE:%d\n", nCoreIndex, cpu_index_list[nCoreIndex].tot_frme, cpuloadings[nCoreIndex]);
+		THRML_LOG("CPU%d Frame:%lu USAGE:%d\n", nCoreIndex, cpu_index_list[nCoreIndex].tot_frme, cpuloadings[nCoreIndex]);
 
         for (i=0 ; i<3 ; i++) {
-            THRML_LOG("Index %d [u:%d] [n:%d] [s:%d] [i:%d] [w:%d] [q:%d] [sq:%d] \n",
+            THRML_LOG("Index %d [u:%lu] [n:%lu] [s:%lu] [i:%lu] [w:%lu] [q:%lu] [sq:%lu] \n",
                       i,
                       cpu_index_list[nCoreIndex].u[i],
                       cpu_index_list[nCoreIndex].n[i],

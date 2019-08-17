@@ -65,11 +65,11 @@
 //#define EINT_IRQ_BASE            NR_MT_IRQ_LINE
 //#define EINT_AP_MAXNUMBER       64 
 //#define EINT_MAX_CHANNEL        64
-#define DEINT_MAX_CHANNEL       4
+//#define DEINT_MAX_CHANNEL       4
 #define MT_EINT_POL_NEG         0
 #define MT_EINT_POL_POS         1
 #define MAX_HW_DEBOUNCE_CNT     32
-#define MAX_DEINT_CNT           4
+//#define MAX_DEINT_CNT           4
 #define EINTF_TRIGGER_RISING    0x00000001
 #define EINTF_TRIGGER_FALLING   0x00000002
 #define EINTF_TRIGGER_HIGH      0x00000004

@@ -132,13 +132,17 @@ static int __init android_power_init(void)
 		return ret;
 	}
 
+#ifdef CONFIG_HAS_EARLYSUSPEND
 	register_early_suspend(&stop_drawing_early_suspend_desc);
+#endif
 	return 0;
 }
 
 static void __exit android_power_exit(void)
 {
+#ifdef CONFIG_HAS_EARLYSUSPEND
 	unregister_early_suspend(&stop_drawing_early_suspend_desc);
+#endif
 	sysfs_remove_group(power_kobj, &attr_group);
 }
 module_init(android_power_init);

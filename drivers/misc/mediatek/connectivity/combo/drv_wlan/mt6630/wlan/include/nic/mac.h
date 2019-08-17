@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/mac.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/mac.h#1
 */
 
 /*! \file   "mac.h"
@@ -8,10 +8,8 @@
     Detail description.
 */
 
-
-
 /*
-** $Log: mac.h $
+** Log: mac.h
 **
 ** 09 16 2014 eason.tsai
 ** [ALPS01728937] [Need Patch] [Volunteer Patch] MET support
@@ -66,16 +64,19 @@
  * adding the 802.11w related function and define .
  *
  * 06 22 2011 wh.su
- * [WCXRP00000806] [MT6620 Wi-Fi][Driver] Move the WPA/RSN IE and WAPI IE structure to mac.h and let the sw structure not align at byte
+ * [WCXRP00000806] [MT6620 Wi-Fi][Driver] Move the WPA/RSN IE and WAPI IE structure to mac.h
+ * and let the sw structure not align at byte
  * Move the WAPI/RSN IE to mac.h and SW structure not align to byte,
  * Notice needed update P2P.ko.
  *
  * 05 06 2011 wh.su
- * [WCXRP00000699] [MT6620 Wi-Fi][Driver] Add the ie pointer check for avoid TP-LINK AP send the wrong beacon make driver got incorrect support rate set
+ * [WCXRP00000699] [MT6620 Wi-Fi][Driver] Add the ie pointer check for avoid TP-LINK AP send
+ * the wrong beacon make driver got incorrect support rate set
  * Add the length check before access the ie length filed.
  *
  * 05 06 2011 wh.su
- * [WCXRP00000699] [MT6620 Wi-Fi][Driver] Add the ie pointer check for avoid TP-LINK AP send the wrong beacon make driver got incorrect support rate set
+ * [WCXRP00000699] [MT6620 Wi-Fi][Driver] Add the ie pointer check for avoid TP-LINK AP send
+ * the wrong beacon make driver got incorrect support rate set
  * adding the length check before processing next ie..
  *
  * 04 18 2011 terry.wu
@@ -183,10 +184,11 @@
 #define ETH_P_IPV6                              0x86DD
 #define ETH_P_VLAN                              0x8100
 
-#define IP_PRO_ICMP								0x01
-#define IP_PRO_UDP								0x11
-#define UDP_PORT_DHCPS							0x43
-#define UDP_PORT_DHCPC							0x44
+#define IP_PRO_ICMP				0x01
+#define IP_PRO_UDP				0x11
+
+#define UDP_PORT_DHCPS				0x43
+#define UDP_PORT_DHCPC				0x44
 
 #define ETH_P_1X                                0x888E
 #define ETH_P_PRE_1X                            0x88C7
@@ -194,8 +196,8 @@
 #define ETH_WPI_1X                              0x88B4
 #endif
 
-#define ARP_PRO_REQ								1
-#define ARP_PRO_RSP								2
+#define ARP_PRO_REQ				1
+#define ARP_PRO_RSP				2
 
 /* 802.3 Frame If Ether Type/Len <= 1500 */
 #define ETH_802_3_MAX_LEN                       1500
@@ -250,6 +252,7 @@
 #define ICMPV6_TYPE_NEIGHBOR_ADVERTISEMENT      0x88
 
 #define TCP_HDR_TCP_CSUM_OFFSET                 16
+
 #define UDP_HDR_LEN                             8
 
 #define UDP_HDR_SRC_PORT_OFFSET                 0
@@ -274,17 +277,15 @@
 #define NULL_MAC_ADDR                           {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 #define BC_MAC_ADDR                             {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
 
-
 #if 1
 
 #define ETH_HLEN                                14
 #define ETH_TYPE_LEN_OFFSET                     12
 
-
 #define IPVERSION                               4
 #define IP_HEADER_LEN                           20
 
-#define IPVH_VERSION_OFFSET                     4 // For Little-Endian
+#define IPVH_VERSION_OFFSET                     4	/* For Little-Endian */
 #define IPVH_VERSION_MASK                       0xF0
 #define IPTOS_PREC_OFFSET                       5
 #define IPTOS_PREC_MASK                         0xE0
@@ -293,10 +294,7 @@
 
 #define LOOK_AHEAD_LEN                          (ETH_HLEN + IP_HEADER_LEN + SOURCE_PORT_LEN)
 
-
-
-#endif 
-
+#endif
 
 /* Ethernet Frame Field Size, in byte */
 #define ETHER_HEADER_LEN                        14
@@ -315,7 +313,8 @@
 #define ETH_LLC_DSAP_SNAP                       0xAA
 #define ETH_LLC_SSAP_SNAP                       0xAA
 #define ETH_LLC_CONTROL_UNNUMBERED_INFORMATION  0x03
-#define ETH_LLC                                 {ETH_LLC_DSAP_SNAP, ETH_LLC_SSAP_SNAP, ETH_LLC_CONTROL_UNNUMBERED_INFORMATION}
+#define ETH_LLC                                 \
+	{ETH_LLC_DSAP_SNAP, ETH_LLC_SSAP_SNAP, ETH_LLC_CONTROL_UNNUMBERED_INFORMATION}
 
 /* Bluetooth SNAP */
 #define ETH_SNAP_OFFSET                         (ETHER_HEADER_LEN + ETH_LLC_LEN)
@@ -341,7 +340,7 @@
 #define QOS_CTRL_LEN                            2
 #define HT_CTRL_LEN                             4
 
-#define WLAN_MAC_CTS_ACK_LEN         WLAN_MAC_CTS_ACK_FRAME_HEADER_LEN + FCS_LEN
+#define WLAN_MAC_CTS_ACK_LEN			(WLAN_MAC_CTS_ACK_FRAME_HEADER_LEN + FCS_LEN)
 
 /* 6.2.1.1.2 Semantics of the service primitive */
 #define MSDU_MAX_LENGTH                         2304
@@ -399,7 +398,6 @@
 #define RCPI_HIGH_BOUND                         220
 #define RCPI_MEASUREMENT_NOT_AVAILABLE          255
 
-
 /* PHY characteristics */
 /* 17.4.4/18.3.3/19.8.4 Slot Time (aSlotTime) */
 #define SLOT_TIME_LONG                          20	/* Long Slot Time */
@@ -447,7 +445,6 @@
 #define CH_14                                   0xe
 
 #define MAXIMUM_OPERATION_CHANNEL_LIST          32
-
 
 /* 3 --------------- IEEE 802.11 PICS --------------- */
 /* Annex D - dot11OperationEntry 2 */
@@ -497,8 +494,6 @@
 #define REGULATION_DOMAIN_CHINA                 0x50	/* China */
 #define REGULATION_DOMAIN_OTHER                 0x00	/* Other */
 
-
-
 /* 3 --------------- IEEE 802.11 MAC header fields --------------- */
 /* 7.1.3.1 Masks for the subfields in the Frame Control field */
 #define MASK_FC_PROTOCOL_VER                    BITS(0, 1)
@@ -520,7 +515,6 @@
 #define MAX_NUM_OF_FC_SUBTYPES                  16
 #define OFFSET_OF_FC_SUBTYPE                    4
 
-
 /* 7.1.3.1.2 MAC frame types and subtypes */
 #define MAC_FRAME_TYPE_MGT                      0
 #define MAC_FRAME_TYPE_CTRL                     BIT(2)
@@ -540,7 +534,6 @@
 #define MAC_FRAME_DEAUTH                        (MAC_FRAME_TYPE_MGT | 0x00C0)
 #define MAC_FRAME_ACTION                        (MAC_FRAME_TYPE_MGT | 0x00D0)
 #define MAC_FRAME_ACTION_NO_ACK                 (MAC_FRAME_TYPE_MGT | 0x00E0)
-
 
 #define MAC_FRAME_CONTRL_WRAPPER                (MAC_FRAME_TYPE_CTRL | 0x0070)
 #define MAC_FRAME_BLOCK_ACK_REQ                 (MAC_FRAME_TYPE_CTRL | 0x0080)
@@ -629,7 +622,6 @@
 
 /* 8.3.2.2 TKIP MPDU formats */
 #define TKIP_MIC_LEN                            8
-
 
 #define BA_POLICY_IMMEDIATE                     BIT(1)
 
@@ -725,13 +717,16 @@
 #define REASON_CODE_CLASS_3_ERR                     7	/* Class 3 frame rx from nonassoc STA */
 #define REASON_CODE_DISASSOC_LEAVING_BSS            8	/* Disassoc because sending STA is leaving BSS */
 #define REASON_CODE_ASSOC_BEFORE_AUTH               9	/* STA requesting (re)assoc is not auth with responding STA */
-#define REASON_CODE_DISASSOC_PWR_CAP_UNACCEPTABLE   10	/* Disassoc because the info in Power Capability is unacceptable */
-#define REASON_CODE_DISASSOC_SUP_CHS_UNACCEPTABLE   11	/* Disassoc because the info in Supported Channels is unacceptable */
+#define REASON_CODE_DISASSOC_PWR_CAP_UNACCEPTABLE   10	/* Disassoc because the info in Power Capability is
+							unacceptable */
+#define REASON_CODE_DISASSOC_SUP_CHS_UNACCEPTABLE   11	/* Disassoc because the info in Supported Channels is
+							unacceptable */
 #define REASON_CODE_INVALID_INFO_ELEM               13	/* Invalid information element */
 #define REASON_CODE_MIC_FAILURE                     14	/* MIC failure */
 #define REASON_CODE_4_WAY_HANDSHAKE_TIMEOUT         15	/* 4-way handshake timeout */
 #define REASON_CODE_GROUP_KEY_UPDATE_TIMEOUT        16	/* Group key update timeout */
-#define REASON_CODE_DIFFERENT_INFO_ELEM             17	/* Info element in 4-way handshake different from (Re-)associate request/Probe response/Beacon */
+#define REASON_CODE_DIFFERENT_INFO_ELEM             17	/* Info element in 4-way handshake different from
+							(Re-)associate request/Probe response/Beacon */
 #define REASON_CODE_MULTICAST_CIPHER_NOT_VALID      18	/* Multicast Cipher is not valid */
 #define REASON_CODE_UNICAST_CIPHER_NOT_VALID        19	/* Unicast Cipher is not valid */
 #define REASON_CODE_AKMP_NOT_VALID                  20	/* AKMP is not valid */
@@ -740,16 +735,18 @@
 #define REASON_CODE_IEEE_802_1X_AUTH_FAILED         23	/* IEEE 802.1X Authentication failed */
 #define REASON_CODE_CIPHER_REJECT_SEC_POLICY        24	/* Cipher suite rejected because of the security policy */
 #define REASON_CODE_DISASSOC_UNSPECIFIED_QOS        32	/* Disassoc for unspecified, QoS-related reason */
-#define REASON_CODE_DISASSOC_LACK_OF_BANDWIDTH      33	/* Disassoc because QAP lacks sufficient bandwidth for this QSTA */
-#define REASON_CODE_DISASSOC_ACK_LOST_POOR_CHANNEL  34	/* Disassoc because of too many ACKs lost for AP transmissions and/or poor channel conditions */
-#define REASON_CODE_DISASSOC_TX_OUTSIDE_TXOP_LIMIT  35	/* Disassoc because QSTA is transmitting outside the limits of its TXOPs */
+#define REASON_CODE_DISASSOC_LACK_OF_BANDWIDTH      33	/* Disassoc because QAP lacks sufficient bandwidth
+							for this QSTA */
+#define REASON_CODE_DISASSOC_ACK_LOST_POOR_CHANNEL  34	/* Disassoc because of too many ACKs lost for AP transmissions
+							and/or poor channel conditions */
+#define REASON_CODE_DISASSOC_TX_OUTSIDE_TXOP_LIMIT  35	/* Disassoc because QSTA is transmitting outside the limits of
+							its TXOPs */
 #define REASON_CODE_PEER_WHILE_LEAVING              36	/* QSTA is leaving the QBSS or resetting */
 #define REASON_CODE_PEER_REFUSE_DLP                 37	/* Peer does not want to use this mechanism */
 #define REASON_CODE_PEER_SETUP_REQUIRED             38	/* Frames received but a setup is reqired */
 #define REASON_CODE_PEER_TIME_OUT                   39	/* Time out */
 #define REASON_CODE_PEER_CIPHER_UNSUPPORTED         45	/* Peer does not support the requested cipher suite */
-#define REASON_CODE_BEACON_TIMEOUT					100 /* for beacon timeout, defined by mediatek */
-#define REASON_CODE_BSS_SECURITY_CHANGE				101 /* for BSS security change, defined by mediatek */
+#define REASON_CODE_BEACON_TIMEOUT		    100	/* for beacon timeout, defined by mediatek */
 /* 7.3.1.8 AID field */
 #define AID_FIELD_LEN                               2
 #define AID_MASK                                    BITS(0, 13)
@@ -764,33 +761,51 @@
 #define STATUS_CODE_SUCCESSFUL                      0	/* Successful */
 #define STATUS_CODE_UNSPECIFIED_FAILURE             1	/* Unspecified failure */
 #define STATUS_CODE_CAP_NOT_SUPPORTED               10	/* Cannot support all requested cap in the Cap Info field */
-#define STATUS_CODE_REASSOC_DENIED_WITHOUT_ASSOC    11	/* Reassoc denied due to inability to confirm that assoc exists */
+#define STATUS_CODE_REASSOC_DENIED_WITHOUT_ASSOC    11	/* Reassoc denied due to inability to confirm that
+							assoc exists */
 #define STATUS_CODE_ASSOC_DENIED_OUTSIDE_STANDARD   12	/* Assoc denied due to reason outside the scope of this std. */
-#define STATUS_CODE_AUTH_ALGORITHM_NOT_SUPPORTED    13	/* Responding STA does not support the specified auth algorithm */
-#define STATUS_CODE_AUTH_OUT_OF_SEQ                 14	/* Rx an auth frame with auth transaction seq num out of expected seq */
+#define STATUS_CODE_AUTH_ALGORITHM_NOT_SUPPORTED    13	/* Responding STA does not support the specified
+							auth algorithm */
+#define STATUS_CODE_AUTH_OUT_OF_SEQ                 14	/* Rx an auth frame with auth transaction seq num
+							out of expected seq */
 #define STATUS_CODE_AUTH_REJECTED_CHAL_FAIL         15	/* Auth rejected because of challenge failure */
-#define STATUS_CODE_AUTH_REJECTED_TIMEOUT           16	/* Auth rejected due to timeout waiting for next frame in sequence */
-#define STATUS_CODE_ASSOC_DENIED_AP_OVERLOAD        17	/* Assoc denied because AP is unable to handle additional assoc STAs */
-#define STATUS_CODE_ASSOC_DENIED_RATE_NOT_SUPPORTED 18	/* Assoc denied due to requesting STA not supporting all of basic rates */
-#define STATUS_CODE_ASSOC_DENIED_NO_SHORT_PREAMBLE  19	/* Assoc denied due to requesting STA not supporting short preamble */
+#define STATUS_CODE_AUTH_REJECTED_TIMEOUT           16	/* Auth rejected due to timeout waiting for next frame
+							in sequence */
+#define STATUS_CODE_ASSOC_DENIED_AP_OVERLOAD        17	/* Assoc denied because AP is unable to handle additional
+							assoc STAs */
+#define STATUS_CODE_ASSOC_DENIED_RATE_NOT_SUPPORTED 18	/* Assoc denied due to requesting STA not supporting
+							all of basic rates */
+#define STATUS_CODE_ASSOC_DENIED_NO_SHORT_PREAMBLE  19	/* Assoc denied due to requesting STA not supporting short
+							preamble */
 #define STATUS_CODE_ASSOC_DENIED_NO_PBCC            20	/* Assoc denied due to requesting STA not supporting PBCC */
-#define STATUS_CODE_ASSOC_DENIED_NO_CH_AGILITY      21	/* Assoc denied due to requesting STA not supporting channel agility */
+#define STATUS_CODE_ASSOC_DENIED_NO_CH_AGILITY      21	/* Assoc denied due to requesting STA not supporting channel
+							agility */
 #define STATUS_CODE_ASSOC_REJECTED_NO_SPEC_MGT      22	/* Assoc rejected because Spectrum Mgt capability is required */
-#define STATUS_CODE_ASSOC_REJECTED_PWR_CAP          23	/* Assoc rejected because the info in Power Capability is unacceptable */
-#define STATUS_CODE_ASSOC_REJECTED_SUP_CHS          24	/* Assoc rejected because the info in Supported Channels is unacceptable */
-#define STATUS_CODE_ASSOC_DENIED_NO_SHORT_SLOT_TIME 25	/* Assoc denied due to requesting STA not supporting short slot time */
-#define STATUS_CODE_ASSOC_DENIED_NO_DSSS_OFDM       26	/* Assoc denied due to requesting STA not supporting DSSS-OFDM */
+#define STATUS_CODE_ASSOC_REJECTED_PWR_CAP          23	/* Assoc rejected because the info in Power Capability
+							is unacceptable */
+#define STATUS_CODE_ASSOC_REJECTED_SUP_CHS          24	/* Assoc rejected because the info in Supported Channels
+							is unacceptable */
+#define STATUS_CODE_ASSOC_DENIED_NO_SHORT_SLOT_TIME 25	/* Assoc denied due to requesting STA not supporting
+							short slot time */
+#define STATUS_CODE_ASSOC_DENIED_NO_DSSS_OFDM       26	/* Assoc denied due to requesting STA not supporting
+							DSSS-OFDM */
 #if CFG_SUPPORT_802_11W
 #define STATUS_CODE_ASSOC_REJECTED_TEMPORARILY      30	/*  IEEE 802.11w, Assoc denied due to the SA query */
-#define STATUS_CODE_ROBUST_MGMT_FRAME_POLICY_VIOLATION 31	/* IEEE 802.11w, Assoc denied due to the MFP select policy */
+#define STATUS_CODE_ROBUST_MGMT_FRAME_POLICY_VIOLATION 31	/* IEEE 802.11w, Assoc denied due to the MFP select
+								policy */
 #endif
 #define STATUS_CODE_UNSPECIFIED_QOS_FAILURE         32	/* Unspecified, QoS-related failure */
-#define STATUS_CODE_ASSOC_DENIED_BANDWIDTH          33	/* Assoc denied due to insufficient bandwidth to handle another QSTA */
-#define STATUS_CODE_ASSOC_DENIED_POOR_CHANNEL       34	/* Assoc denied due to excessive frame loss rates and/or poor channel conditions */
-#define STATUS_CODE_ASSOC_DENIED_NO_QOS_FACILITY    35	/* Assoc denied due to requesting STA not supporting QoS facility */
+#define STATUS_CODE_ASSOC_DENIED_BANDWIDTH          33	/* Assoc denied due to insufficient bandwidth to handle another
+							QSTA */
+#define STATUS_CODE_ASSOC_DENIED_POOR_CHANNEL       34	/* Assoc denied due to excessive frame loss rates and/or poor
+							channel conditions */
+#define STATUS_CODE_ASSOC_DENIED_NO_QOS_FACILITY    35	/* Assoc denied due to requesting STA not supporting QoS
+							facility */
 #define STATUS_CODE_REQ_DECLINED                    37	/* Request has been declined */
-#define STATUS_CODE_REQ_INVALID_PARAMETER_VALUE     38	/* Request has not been successful as one or more parameters have invalid values */
-#define STATUS_CODE_REQ_NOT_HONORED_TSPEC           39	/* TS not created because request cannot be honored. Suggested TSPEC provided. */
+#define STATUS_CODE_REQ_INVALID_PARAMETER_VALUE     38	/* Request has not been successful as one or more parameters
+							have invalid values */
+#define STATUS_CODE_REQ_NOT_HONORED_TSPEC           39	/* TS not created because request cannot be honored.
+							Suggested TSPEC provided. */
 #define STATUS_CODE_INVALID_INFO_ELEMENT            40	/* Invalid information element */
 #define STATUS_CODE_INVALID_GROUP_CIPHER            41	/* Invalid group cipher */
 #define STATUS_CODE_INVALID_PAIRWISE_CIPHER         42	/* Invalid pairwise cipher */
@@ -798,7 +813,8 @@
 #define STATUS_CODE_UNSUPPORTED_RSN_IE_VERSION      44	/* Unsupported RSN information element version */
 #define STATUS_CODE_INVALID_RSN_IE_CAP              45	/* Invalid RSN information element capabilities */
 #define STATUS_CODE_CIPHER_SUITE_REJECTED           46	/* Cipher suite rejected because of security policy */
-#define STATUS_CODE_REQ_NOT_HONORED_TS_DELAY        47	/* TS not created becasue request cannot be honored. Attempt to create a TS later. */
+#define STATUS_CODE_REQ_NOT_HONORED_TS_DELAY        47	/* TS not created becasue request cannot be honored.
+							Attempt to create a TS later. */
 #define STATUS_CODE_DIRECT_LINK_NOT_ALLOWED         48	/* Direct Link is not allowed in the BSS by policy */
 #define STATUS_CODE_DESTINATION_STA_NOT_PRESENT     49	/* Destination STA is not present within this QBSS */
 #define STATUS_CODE_DESTINATION_STA_NOT_QSTA        50	/* Destination STA is not a QSTA */
@@ -810,7 +826,6 @@
 #define STATUS_CODE_AUTH_TIMEOUT                    0xFFF2	/* Authentication timeout */
 #define STATUS_CODE_ASSOC_TIMEOUT                   0xFFF3	/* (Re)Association timeout */
 #define STATUS_CODE_CCX_CCKM_REASSOC_FAILURE        0xFFF4	/* CCX CCKM reassociation failure */
-
 
 /* 7.3.1.10 Timestamp field */
 #define TIMESTAMP_FIELD_LEN                         8
@@ -827,18 +842,16 @@
 #define CATEGORY_SA_QUERY_ACTION                    8
 #define CATEGORY_PROTECTED_DUAL_OF_PUBLIC_ACTION    9
 #endif
-#define CATEGORY_WNM_ACTION                         10  /* 802.11v Wireless Network Management */
-#define CATEGORY_UNPROTECTED_WNM_ACTION             11  /* 802.11v Wireless Network Management */
-#define CATEGORY_WME_MGT_NOTIFICATION               17  /* WME management notification */
+#define CATEGORY_WNM_ACTION                         10	/* 802.11v Wireless Network Management */
+#define CATEGORY_UNPROTECTED_WNM_ACTION             11	/* 802.11v Wireless Network Management */
+#define CATEGORY_WME_MGT_NOTIFICATION               17	/* WME management notification */
 
-#define CATEGORY_VHT_ACTION                         21  /* VHT action*/                         
-
+#define CATEGORY_VHT_ACTION                         21	/* VHT action */
 
 #if CFG_SUPPORT_802_11W
 #define CATEGORY_VENDOR_SPECIFIC_ACTION_PROTECTED   126
 #endif
 #define CATEGORY_VENDOR_SPECIFIC_ACTION             127
-
 
 /* 7.3.1.14 Block Ack Parameter Set field */
 #define BA_PARAM_SET_ACK_POLICY_MASK                BIT(1)
@@ -850,7 +863,6 @@
 
 #define BA_PARAM_SET_ACK_POLICY_IMMEDIATE_BA        1
 #define BA_PARAM_SET_ACK_POLICY_DELAYED_BA          0
-
 
 /* 3 Management frame body components (II): Information Elements. */
 /* 7.3.2 Element IDs of information elements */
@@ -896,8 +908,6 @@
 #endif
 #define ELEM_ID_SUP_OPERATING_CLASS					59	/* Supported Operating Classes */
 
-
-
 #define ELEM_ID_HT_OP                               61	/* HT Operation */
 #define ELEM_ID_SCO                                 62	/* Secondary Channel Offset */
 #define ELEM_ID_RRM_ENABLED_CAP                     70	/* Radio Resource Management Enabled Capabilities */
@@ -917,12 +927,11 @@
 #define ELEM_ID_P2P                                 ELEM_ID_VENDOR	/* WiFi Direct */
 #define ELEM_ID_WSC                                 ELEM_ID_VENDOR	/* WSC IE */
 
-#define ELEM_ID_VHT_CAP                             191  /* VHT Capabilities subelement */
-#define ELEM_ID_VHT_OP                              192  /* VHT Operation information*/
-#define ELEM_ID_WIDE_BAND_CHANNEL_SWITCH            194  /*Wide Bandwidth Channel Switch*/
-#define ELEM_ID_OP_MODE                             199  /* Operation Mode Notification */
-#define ELEM_ID_RESERVED                            255 /* Reserved */
-
+#define ELEM_ID_VHT_CAP                             191	/* VHT Capabilities subelement */
+#define ELEM_ID_VHT_OP                              192	/* VHT Operation information */
+#define ELEM_ID_WIDE_BAND_CHANNEL_SWITCH            194	/*Wide Bandwidth Channel Switch */
+#define ELEM_ID_OP_MODE                             199	/* Operation Mode Notification */
+#define ELEM_ID_RESERVED                            255	/* Reserved */
 
 /* 7.3.2.1 SSID element */
 #define ELEM_MAX_LEN_SSID                           32
@@ -955,15 +964,12 @@
 #define ELEM_ID_COUNTRY_INFO_SUBBAND_TRIPLET_LEN_FIXED      3
 #define ELEM_ID_COUNTRY_INFO_REGULATORY_TRIPLET_LEN_FIXED   3
 
-
 /* 7.3.2.13 ERP Information element */
 #define ELEM_MAX_LEN_ERP                            1
 /* -- bits in the ERP Information element */
 #define ERP_INFO_NON_ERP_PRESENT                    BIT(0)	/* NonERP_Present bit */
 #define ERP_INFO_USE_PROTECTION                     BIT(1)	/* Use_Protection bit */
 #define ERP_INFO_BARKER_PREAMBLE_MODE               BIT(2)	/* Barker_Preamble_Mode bit */
-
-
 
 #define ELEM_MAX_LEN_SUPPPORTED_CHANNELS            9
 
@@ -1059,7 +1065,6 @@
 #define HT_CAP_INFO_RX_STBC_2_SS                    BIT(9)
 #define HT_CAP_INFO_RX_STBC_3_SS                    HT_CAP_INFO_RX_STBC
 
-
 #define ELEM_MAX_LEN_VHT_CAP                         (14 - ELEM_HDR_LEN)	/* sizeof(IE_VHT_CAP_T)-2 */
 /* 8.4.2.161 VHT Operation element */
 #define ELEM_MAX_LEN_VHT_OP                          (7 - ELEM_HDR_LEN)	/* sizeof(IE_VHT_OP_T)-2 */
@@ -1136,7 +1141,6 @@
 #define VHT_OP_MODE_CHANNEL_WIDTH_40                1
 #define VHT_OP_MODE_CHANNEL_WIDTH_80                2
 #define VHT_OP_MODE_CHANNEL_WIDTH_160_80P80         3
-
 
 /* 7.3.2.56.3 A-MPDU Parameters field */
 #define AMPDU_PARAM_MAX_AMPDU_LEN_EXP               BITS(0, 1)
@@ -1260,7 +1264,6 @@
 #define BSS_COEXIST_OBSS_SCAN_EXEMPTION_REQ         BIT(3)
 #define BSS_COEXIST_OBSS_SCAN_EXEMPTION_GRANT       BIT(4)
 
-
 /* 802.11u 7.3.2.92 Interworking IE */
 #define ELEM_MAX_LEN_INTERWORKING                   (11 - ELEM_HDR_LEN)
 
@@ -1275,7 +1278,6 @@
 #define IW_IE_LENGTH_ANO_HESSID                     7
 #define IW_IE_LENGTH_ANO_VENUE_HESSID               9
 
-
 #if CFG_SUPPORT_PASSPOINT
 /* HOTSPOT 2.0 Indication IE*/
 #define ELEM_MAX_LEN_HS20_INDICATION                5
@@ -1283,7 +1285,7 @@
 
 /* Hotspot Configuration*/
 #define ELEM_HS_CONFIG_DGAF_DISABLED_MASK           BIT(0)	/* Downstream Group-Addressed Forwarding */
-#endif				/* CFG_SUPPORT_PASSPOINT */
+#endif /* CFG_SUPPORT_PASSPOINT */
 
 /* MTK Vendor Specific OUI */
 #define ELEM_MIN_LEN_MTK_OUI                        7
@@ -1376,8 +1378,7 @@
 #define ACTION_GROUP_ID_MANAGEMENT                  1
 #define ACTION_OPERATING_MODE_NOTIFICATION          2
 
-
-//3 /* --------------- WFA  frame body fields --------------- */
+/* 3  --------------- WFA  frame body fields --------------- */
 #define VENDOR_OUI_WFA                              { 0x00, 0x50, 0xF2 }
 #define VENDOR_OUI_WFA_SPECIFIC                     { 0x50, 0x6F, 0x9A }
 #define VENDOR_OUI_TYPE_WPA                         1
@@ -1388,7 +1389,7 @@
 
 #if CFG_SUPPORT_PASSPOINT
 #define VENDOR_OUI_TYPE_HS20                        16
-#endif				/* CFG_SUPPORT_PASSPOINT */
+#endif /* CFG_SUPPORT_PASSPOINT */
 
 #define VENDOR_OUI_TYPE_LEN                         4	/* Length of OUI and Type */
 
@@ -1413,10 +1414,8 @@
 #define WMM_QC_ACK_POLICY_ACKNOWLEDGE               0
 #define WMM_QC_ACK_POLICY_NOT_ACKNOWLEDGE           (1 << WMM_QC_ACK_POLICY_OFFSET)
 
-
 /* WMM-2.2.1 WMM Information Element */
 #define ELEM_MIN_LEN_WFA_OUI_TYPE_SUBTYPE           6
-
 
 /* 3 Control frame body */
 /* 7.2.1.7 BlockAckReq */
@@ -1424,7 +1423,6 @@
 #define CTRL_BAR_BAR_CONTROL_TID_OFFSET             12
 #define CTRL_BAR_BAR_INFORMATION_OFFSET             18
 #define CTRL_BAR_BAR_INFORMATION_SSN_OFFSET         4
-
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -1457,24 +1455,24 @@ typedef struct _ETH_FRAME_T {
 	UINT_16 u2TypeLen;
 	UINT_8 aucData[1];
 } __KAL_ATTRIB_PACKED__ ETH_FRAME_T, *P_ETH_FRAME_T;
-typedef struct _BOOTP_PROTOCOL_T {
-    UINT_8 ucOperation;
-    UINT_8 ucHdrType;
-    UINT_8 ucHdrLen;
-    UINT_8 ucHops;
-    UINT_32 u4TransId;
-    UINT_16 u2Seconds;
-    UINT_16 u2Flags;
-    UINT_32 u4CIAddr;
-    UINT_32 u4YIAddr;
-    UINT_32 u4SIAddr;
-    UINT_32 u4GIAddr;
-    UINT_8 aucCHAddr[16];
-    UINT_8 aucServerName[64];
-    UINT_8 aucFileName[128];
-    UINT_8 aucOptions[0];
-} __KAL_ATTRIB_PACKED__ BOOTP_PROTOCOL_T, *P_BOOTP_PROTOCOL_T;
 
+typedef struct _BOOTP_PROTOCOL_T {
+	UINT_8 ucOperation;
+	UINT_8 ucHdrType;
+	UINT_8 ucHdrLen;
+	UINT_8 ucHops;
+	UINT_32 u4TransId;
+	UINT_16 u2Seconds;
+	UINT_16 u2Flags;
+	UINT_32 u4CIAddr;
+	UINT_32 u4YIAddr;
+	UINT_32 u4SIAddr;
+	UINT_32 u4GIAddr;
+	UINT_8 aucCHAddr[16];
+	UINT_8 aucServerName[64];
+	UINT_8 aucFileName[128];
+	UINT_8 aucOptions[0];
+} __KAL_ATTRIB_PACKED__ BOOTP_PROTOCOL_T, *P_BOOTP_PROTOCOL_T;
 
 /* IEEE 802.11 WLAN Frame Structure */
 /* WLAN MAC Header (without Address 4 and QoS Control fields) */
@@ -1487,7 +1485,6 @@ typedef struct _WLAN_MAC_HEADER_T {
 	UINT_16 u2SeqCtrl;
 } __KAL_ATTRIB_PACKED__ WLAN_MAC_HEADER_T, *P_WLAN_MAC_HEADER_T;
 
-
 /* WLAN MAC Header (QoS Control fields included) */
 typedef struct _WLAN_MAC_HEADER_QOS_T {
 	UINT_16 u2FrameCtrl;
@@ -1498,7 +1495,6 @@ typedef struct _WLAN_MAC_HEADER_QOS_T {
 	UINT_16 u2SeqCtrl;
 	UINT_16 u2QosCtrl;
 } __KAL_ATTRIB_PACKED__ WLAN_MAC_HEADER_QOS_T, *P_WLAN_MAC_HEADER_QOS_T;
-
 
 /* WLAN MAC Header (HT Control fields included) */
 typedef struct _WLAN_MAC_HEADER_HT_T {
@@ -1512,7 +1508,6 @@ typedef struct _WLAN_MAC_HEADER_HT_T {
 	UINT_32 u4HtCtrl;
 } __KAL_ATTRIB_PACKED__ WLAN_MAC_HEADER_HT_T, *P_WLAN_MAC_HEADER_HT_T;
 
-
 /* WLAN MAC Header (Address 4 included) */
 typedef struct _WLAN_MAC_HEADER_A4_T {
 	UINT_16 u2FrameCtrl;
@@ -1523,7 +1518,6 @@ typedef struct _WLAN_MAC_HEADER_A4_T {
 	UINT_16 u2SeqCtrl;
 	UINT_8 aucAddr4[MAC_ADDR_LEN];
 } __KAL_ATTRIB_PACKED__ WLAN_MAC_HEADER_A4_T, *P_WLAN_MAC_HEADER_A4_T;
-
 
 /* WLAN MAC Header (Address 4 and QoS Control fields included) */
 typedef struct _WLAN_MAC_HEADER_A4_QOS_T {
@@ -1537,7 +1531,6 @@ typedef struct _WLAN_MAC_HEADER_A4_QOS_T {
 	UINT_16 u2QosCtrl;
 } __KAL_ATTRIB_PACKED__ WLAN_MAC_HEADER_A4_QOS_T, *P_WLAN_MAC_HEADER_A4_QOS_T;
 
-
 typedef struct _WLAN_MAC_HEADER_A4_HT_T {
 	UINT_16 u2FrameCtrl;
 	UINT_16 u2DurationID;
@@ -1550,7 +1543,6 @@ typedef struct _WLAN_MAC_HEADER_A4_HT_T {
 	UINT_32 u4HtCtrl;
 } __KAL_ATTRIB_PACKED__ WLAN_MAC_HEADER_A4_HT_T, *P_WLAN_MAC_HEADER_A4_HT_T;
 
-
 /* 7.2.3 WLAN MAC Header for Management Frame - MMPDU */
 typedef struct _WLAN_MAC_MGMT_HEADER_T {
 	UINT_16 u2FrameCtrl;
@@ -1560,7 +1552,6 @@ typedef struct _WLAN_MAC_MGMT_HEADER_T {
 	UINT_8 aucBSSID[MAC_ADDR_LEN];
 	UINT_16 u2SeqCtrl;
 } __KAL_ATTRIB_PACKED__ WLAN_MAC_MGMT_HEADER_T, *P_WLAN_MAC_MGMT_HEADER_T;
-
 
 /* WLAN MAC Header for Management Frame (HT Control fields included) */
 typedef struct _WLAN_MAC_MGMT_HEADER_HT_T {
@@ -1581,7 +1572,6 @@ typedef struct _CTRL_PSPOLL_FRAME_T {
 	UINT_8 aucBSSID[MAC_ADDR_LEN];	/* BSSID */
 	UINT_8 aucTA[MAC_ADDR_LEN];	/* TA */
 } __KAL_ATTRIB_PACKED__ CTRL_PSPOLL_FRAME_T, *P_CTRL_PSPOLL_FRAME_T;
-
 
 /* BAR */
 typedef struct _CTRL_BAR_FRAME_T {
@@ -1618,7 +1608,6 @@ typedef struct _WLAN_BEACON_FRAME_BODY_T {
 	UINT_8 aucInfoElem[1];	/* Various IEs, start from SSID */
 } __KAL_ATTRIB_PACKED__ WLAN_BEACON_FRAME_BODY_T, *P_WLAN_BEACON_FRAME_BODY_T;
 
-
 /* 7.2.3.3 WLAN Management Frame - Disassociation Frame */
 typedef struct _WLAN_DISASSOC_FRAME_T {
 	/* Authentication MAC header */
@@ -1632,7 +1621,6 @@ typedef struct _WLAN_DISASSOC_FRAME_T {
 	UINT_16 u2ReasonCode;	/* Reason code */
 	UINT_8 aucInfoElem[1];	/* Various IEs, possible no. */
 } __KAL_ATTRIB_PACKED__ WLAN_DISASSOC_FRAME_T, *P_WLAN_DISASSOC_FRAME_T;
-
 
 /* 7.2.3.4 WLAN Management Frame - Association Request frame */
 typedef struct _WLAN_ASSOC_REQ_FRAME_T {
@@ -1648,7 +1636,6 @@ typedef struct _WLAN_ASSOC_REQ_FRAME_T {
 	UINT_16 u2ListenInterval;	/* Listen interval */
 	UINT_8 aucInfoElem[1];	/* Information elements, include WPA IE */
 } __KAL_ATTRIB_PACKED__ WLAN_ASSOC_REQ_FRAME_T, *P_WLAN_ASSOC_REQ_FRAME_T;
-
 
 /* 7.2.3.5 WLAN Management Frame - Association Response frame */
 typedef struct _WLAN_ASSOC_RSP_FRAME_T {
@@ -1667,7 +1654,6 @@ typedef struct _WLAN_ASSOC_RSP_FRAME_T {
 				   supported rates, and etc. */
 } __KAL_ATTRIB_PACKED__ WLAN_ASSOC_RSP_FRAME_T, *P_WLAN_ASSOC_RSP_FRAME_T;
 
-
 /* 7.2.3.6 WLAN Management Frame - Reassociation Request frame */
 typedef struct _WLAN_REASSOC_REQ_FRAME_T {
 	/* Reassociation Request MAC header */
@@ -1683,7 +1669,6 @@ typedef struct _WLAN_REASSOC_REQ_FRAME_T {
 	UINT_8 aucCurrentAPAddr[MAC_ADDR_LEN];	/* Current AP address */
 	UINT_8 aucInfoElem[1];	/* Information elements, include WPA IE */
 } __KAL_ATTRIB_PACKED__ WLAN_REASSOC_REQ_FRAME_T, *P_WLAN_REASSOC_REQ_FRAME_T;
-
 
 /* 7.2.3.7 WLAN Management Frame - Reassociation Response frame
    (the same as Association Response frame) */
@@ -1708,7 +1693,6 @@ typedef struct _WLAN_AUTH_FRAME_T {
 	UINT_8 aucInfoElem[1];	/* Various IEs for Fast BSS Transition */
 } __KAL_ATTRIB_PACKED__ WLAN_AUTH_FRAME_T, *P_WLAN_AUTH_FRAME_T;
 
-
 /* 7.2.3.11 WLAN Management Frame - Deauthentication Frame */
 typedef struct _WLAN_DEAUTH_FRAME_T {
 	/* Authentication MAC header */
@@ -1722,8 +1706,6 @@ typedef struct _WLAN_DEAUTH_FRAME_T {
 	UINT_16 u2ReasonCode;	/* Reason code */
 	UINT_8 aucInfoElem[1];	/* Various IEs, possible no. */
 } __KAL_ATTRIB_PACKED__ WLAN_DEAUTH_FRAME_T, *P_WLAN_DEAUTH_FRAME_T;
-
-
 
 /* 3 Information Elements. */
 /* 7.3.2 Generic element format */
@@ -1754,7 +1736,6 @@ typedef struct _IE_DS_PARAM_SET_T {
 	UINT_8 ucCurrChnl;
 } __KAL_ATTRIB_PACKED__ IE_DS_PARAM_SET_T, *P_IE_DS_PARAM_SET_T;
 
-
 /* 7.3.2.5 CF Parameter Set element */
 typedef struct _IE_CF_PARAM_SET_T {
 	UINT_8 ucId;
@@ -1764,7 +1745,6 @@ typedef struct _IE_CF_PARAM_SET_T {
 	UINT_16 u2CFPMaxDur;
 	UINT_16 u2DurRemaining;
 } __KAL_ATTRIB_PACKED__ IE_CF_PARAM_SET_T, *P_IE_CF_PARAM_SET_T;
-
 
 /* 7.3.2.6 TIM */
 typedef struct _IE_TIM_T {
@@ -1820,7 +1800,7 @@ typedef struct _IE_COUNTRY_T {
 	UINT_8 aucCountryStr[3];
 	COUNTRY_INFO_SUBBAND_TRIPLET_T arCountryStr[1];
 } __KAL_ATTRIB_PACKED__ IE_COUNTRY_T, *P_IE_COUNTRY_T;
-#endif				/* CFG_SUPPORT_802_11D */
+#endif /* CFG_SUPPORT_802_11D */
 
 /* 7.3.2.13 ERP element */
 typedef struct _IE_ERP_T {
@@ -1865,7 +1845,6 @@ typedef struct _IE_TPC_REPORT_T {
 	INT_8 cLinkMargin;	/* Unit: dB */
 } __KAL_ATTRIB_PACKED__ IE_TPC_REPORT_T, *P_IE_TPC_REPORT_T;
 
-
 /* 7.3.2.19 Supported Channels element*/
 typedef struct _IE_SUPPORTED_CHANNELS_T {
 	UINT_8 ucId;
@@ -1893,9 +1872,6 @@ typedef struct _IE_TIMEOUT_INTERVAL_T {
 	UINT_32 u4Value;
 } __KAL_ATTRIB_PACKED__ IE_TIMEOUT_INTERVAL_T;
 
-
-
-
 /* 7.3.2.20 Channel Switch Announcement element */
 typedef struct _IE_CHNL_SWITCH_T {
 	UINT_8 ucId;
@@ -1915,7 +1891,6 @@ typedef struct _IE_MEASUREMENT_REQ_T {
 	UINT_8 aucRequestFields[1];
 } __KAL_ATTRIB_PACKED__ IE_MEASUREMENT_REQ_T, *P_IE_MEASUREMENT_REQ_T;
 
-
 /* 7.3.2.60 20/40 BSS Coexistence element */
 typedef struct _IE_SUP_OPERATING_CLASS_T {
 	UINT_8 ucId;
@@ -1923,7 +1898,6 @@ typedef struct _IE_SUP_OPERATING_CLASS_T {
 	UINT_8 ucCur;
 	UINT_8 ucSup[255];
 } __KAL_ATTRIB_PACKED__ IE_SUP_OPERATING_CLASS_T, *P_IE_SUP_OPERATING_CLASS_T;
-
 
 typedef struct _SM_BASIC_REQ_T {
 	UINT_8 ucChannel;
@@ -2123,31 +2097,29 @@ typedef struct _IE_VHT_OP_T {
 
 /*8.4.2.22 Secondary Channel Offset element*/
 typedef struct _IE_SECONDARY_OFFSET_T {
-	UINT_8              ucId;
-	UINT_8              ucLength;
-	UINT_8              ucSecondaryOffset;
-}__KAL_ATTRIB_PACKED__ IE_SECONDARY_OFFSET_T, *P_IE_SECONDARY_OFFSET_T;
+	UINT_8 ucId;
+	UINT_8 ucLength;
+	UINT_8 ucSecondaryOffset;
+} __KAL_ATTRIB_PACKED__ IE_SECONDARY_OFFSET_T, *P_IE_SECONDARY_OFFSET_T;
 
 /*8.4.2.105 Mesh Channel Switch Parameters element*/
 typedef struct _IE_MESH_CHANNEL_T {
-	UINT_8              ucId;
-	UINT_8              ucLength;
-	UINT_8              ucTimetoLive;
-	UINT_8              ucFlags;
-	UINT_16             u2ReasonCodes;
-	UINT_16             u2ProcedenceValue;
-}__KAL_ATTRIB_PACKED__ IE_MESH_CHANNEL_T, *P_IE_MESH_CHANNEL_T;
-
+	UINT_8 ucId;
+	UINT_8 ucLength;
+	UINT_8 ucTimetoLive;
+	UINT_8 ucFlags;
+	UINT_16 u2ReasonCodes;
+	UINT_16 u2ProcedenceValue;
+} __KAL_ATTRIB_PACKED__ IE_MESH_CHANNEL_T, *P_IE_MESH_CHANNEL_T;
 
 /*8.4.2.163 Wide Bandwidth Channel Switch element*/
 typedef struct _IE_WIDE_BAND_CHANNEL_T {
-	UINT_8              ucId;
-	UINT_8              ucLength;
-	UINT_8              ucNewChannelWidth;
-	UINT_8              ucChannelS1;
-	UINT_8              ucChannelS2;
-}__KAL_ATTRIB_PACKED__ IE_WIDE_BAND_CHANNEL_T, *P_IE_WIDE_BAND_CHANNEL_T;
-
+	UINT_8 ucId;
+	UINT_8 ucLength;
+	UINT_8 ucNewChannelWidth;
+	UINT_8 ucChannelS1;
+	UINT_8 ucChannelS2;
+} __KAL_ATTRIB_PACKED__ IE_WIDE_BAND_CHANNEL_T, *P_IE_WIDE_BAND_CHANNEL_T;
 
 /*8.4.2.168 Operating Mode Notification element*/
 typedef struct _IE_OP_MODE_NOTIFICATION_T {
@@ -2155,7 +2127,6 @@ typedef struct _IE_OP_MODE_NOTIFICATION_T {
 	UINT_8 ucLength;
 	UINT_8 ucOpMode;
 } __KAL_ATTRIB_PACKED__ IE_OP_MODE_NOTIFICATION_T, *P_IE_OP_MODE_NOTIFICATION_T;
-
 
 /* 7.3.2.25 RSN Information element format */
 typedef struct _RSN_INFO_ELEM_T {
@@ -2207,7 +2178,6 @@ typedef struct _IE_20_40_COEXIST_T {
 	UINT_8 ucData;
 } __KAL_ATTRIB_PACKED__ IE_20_40_COEXIST_T, *P_IE_20_40_COEXIST_T;
 
-
 /* 3 7.4 Action Frame. */
 /* 7.4 Action frame format */
 typedef struct _WLAN_ACTION_FRAME {
@@ -2245,19 +2215,18 @@ typedef ACTION_SM_REQ_FRAME ACTION_SM_REPORT_FRAME, *P_ACTION_SM_REPORT_FRAME;
 
 /* 7.4.1.5 Channel Switch Announcement frame format */
 typedef struct _ACTION_CHANNEL_SWITCH_FRAME {
-    /* ADDTS Request MAC header */
-    UINT_16     u2FrameCtrl;                /* Frame Control */
-    UINT_16     u2Duration;                 /* Duration */
-    UINT_8      aucDestAddr[MAC_ADDR_LEN];  /* DA */
-    UINT_8      aucSrcAddr[MAC_ADDR_LEN];   /* SA */
-    UINT_8      aucBSSID[MAC_ADDR_LEN];     /* BSSID */
-    UINT_16     u2SeqCtrl;                  /* Sequence Control */
-    /* ADDTS Request frame body */
-    UINT_8      ucCategory;                 /* Category */
-    UINT_8      ucAction;                   /* Action Value */
-    UINT_8      aucInfoElem[1];             /* Information elements */
+	/* ADDTS Request MAC header */
+	UINT_16 u2FrameCtrl;	/* Frame Control */
+	UINT_16 u2Duration;	/* Duration */
+	UINT_8 aucDestAddr[MAC_ADDR_LEN];	/* DA */
+	UINT_8 aucSrcAddr[MAC_ADDR_LEN];	/* SA */
+	UINT_8 aucBSSID[MAC_ADDR_LEN];	/* BSSID */
+	UINT_16 u2SeqCtrl;	/* Sequence Control */
+	/* ADDTS Request frame body */
+	UINT_8 ucCategory;	/* Category */
+	UINT_8 ucAction;	/* Action Value */
+	UINT_8 aucInfoElem[1];	/* Information elements */
 } __KAL_ATTRIB_PACKED__ ACTION_CHANNEL_SWITCH_FRAME, *P_ACTION_CHANNEL_SWITCH_FRAME;
-
 
 /* 7.4.2.1 ADDTS Request frame format */
 typedef struct _ACTION_ADDTS_REQ_FRAME {
@@ -2275,7 +2244,6 @@ typedef struct _ACTION_ADDTS_REQ_FRAME {
 	UINT_8 aucInfoElem[1];	/* Information elements, such as
 				   TS Delay, and etc. */
 } __KAL_ATTRIB_PACKED__ ACTION_ADDTS_REQ_FRAME, *P_ACTION_ADDTS_REQ_FRAME;
-
 
 /* 7.4.2.2 ADDTS Response frame format */
 typedef struct _ACTION_ADDTS_RSP_FRAME {
@@ -2295,7 +2263,6 @@ typedef struct _ACTION_ADDTS_RSP_FRAME {
 				   TS Delay, and etc. */
 } __KAL_ATTRIB_PACKED__ ACTION_ADDTS_RSP_FRAME, *P_ACTION_ADDTS_RSP_FRAME;
 
-
 /* 7.4.2.3 DELTS frame format */
 typedef struct _ACTION_DELTS_FRAME {
 	/* DELTS MAC header */
@@ -2310,7 +2277,6 @@ typedef struct _ACTION_DELTS_FRAME {
 	UINT_8 ucAction;	/* Action Value */
 	UINT_8 aucTsInfo[3];	/* TS Info */
 } __KAL_ATTRIB_PACKED__ ACTION_DELTS_FRAME, *P_ACTION_DELTS_FRAME;
-
 
 /* 7.4.4.1 ADDBA Request frame format */
 typedef struct _ACTION_ADDBA_REQ_FRAME_T {
@@ -2429,7 +2395,6 @@ typedef struct _ACTION_20_40_COEXIST_FRAME {
 
 } __KAL_ATTRIB_PACKED__ ACTION_20_40_COEXIST_FRAME, *P_ACTION_20_40_COEXIST_FRAME;
 
-
 #if CFG_SUPPORT_802_11W
 /* 7.4.9 SA Query Management frame format */
 typedef struct _ACTION_SA_QUERY_FRAME {
@@ -2497,25 +2462,24 @@ typedef struct _ACTION_UNPROTECTED_WNM_TIMING_MEAS_FRAME {
 	UINT_32 u4ToA;		/* Timestamp of Arrival [10ns] */
 	UINT_8 ucMaxToDErr;	/* Maximum of ToD Error [10ns] */
 	UINT_8 ucMaxToAErr;	/* Maximum of ToA Error [10ns] */
-} __KAL_ATTRIB_PACKED__ ACTION_UNPROTECTED_WNM_TIMING_MEAS_FRAME,
-    *P_ACTION_UNPROTECTED_WNM_TIMING_MEAS_FRAME;
+} __KAL_ATTRIB_PACKED__ ACTION_UNPROTECTED_WNM_TIMING_MEAS_FRAME, *P_ACTION_UNPROTECTED_WNM_TIMING_MEAS_FRAME;
 
 /* 8.5.23.4 Operating Mode Notification frame format */
 typedef struct _ACTION_OP_MODE_NOTIFICATION_FRAME {
-    /* MAC header */
-    UINT_16     u2FrameCtrl;                /* Frame Control */
-    UINT_16     u2Duration;                 /* Duration */
-    UINT_8      aucDestAddr[MAC_ADDR_LEN];  /* DA */
-    UINT_8      aucSrcAddr[MAC_ADDR_LEN];   /* SA */
-    UINT_8      aucBSSID[MAC_ADDR_LEN];     /* BSSID */
-    UINT_16     u2SeqCtrl;                  /* Sequence Control */
-    /* Operating Mode Notification frame body */
-    UINT_8      ucCategory;                 /* Category */
-    UINT_8      ucAction;                   /* Action Value */
-    UINT_8      ucOperatingMode;            /* Operating Mode */
+	/* MAC header */
+	UINT_16 u2FrameCtrl;	/* Frame Control */
+	UINT_16 u2Duration;	/* Duration */
+	UINT_8 aucDestAddr[MAC_ADDR_LEN];	/* DA */
+	UINT_8 aucSrcAddr[MAC_ADDR_LEN];	/* SA */
+	UINT_8 aucBSSID[MAC_ADDR_LEN];	/* BSSID */
+	UINT_16 u2SeqCtrl;	/* Sequence Control */
+	/* Operating Mode Notification frame body */
+	UINT_8 ucCategory;	/* Category */
+	UINT_8 ucAction;	/* Action Value */
+	UINT_8 ucOperatingMode;	/* Operating Mode */
 } __KAL_ATTRIB_PACKED__ ACTION_OP_MODE_NOTIFICATION_FRAME, *P_ACTION_OP_MODE_NOTIFICATION_FRAME;
 
-//3 Information Elements from WFA.
+/* 3 Information Elements from WFA. */
 typedef struct _IE_WFA_T {
 	UINT_8 ucId;
 	UINT_8 ucLength;
@@ -2535,7 +2499,7 @@ typedef struct _IE_HS20_INDICATION_T {
 	UINT_8 ucType;		/* Type */
 	UINT_8 ucHotspotConfig;	/* Hotspot Configuration */
 } __KAL_ATTRIB_PACKED__ IE_HS20_INDICATION_T, *P_IE_HS20_INDICATION_T;
-#endif				/* CFG_SUPPORT_PASSPOINT */
+#endif /* CFG_SUPPORT_PASSPOINT */
 
 /* WAPI Information element format */
 typedef struct _WAPI_INFO_ELEM_T {
@@ -2578,13 +2542,13 @@ typedef struct _IE_MTK_OUI_T {
 
 /* Convert the RCPI to dBm */
 #define RCPI_TO_dBm(_rcpi)                          \
-    ((PARAM_RSSI)(((_rcpi) > RCPI_HIGH_BOUND ? RCPI_HIGH_BOUND : (_rcpi)) >> 1) - NDBM_LOW_BOUND_FOR_RCPI)
+	((PARAM_RSSI)(((_rcpi) > RCPI_HIGH_BOUND ? RCPI_HIGH_BOUND : (_rcpi)) >> 1) - NDBM_LOW_BOUND_FOR_RCPI)
 
 /* Convert the dBm to RCPI */
 #define dBm_TO_RCPI(_dbm)                           \
-    (RCPI)(((((PARAM_RSSI)(_dbm) + NDBM_LOW_BOUND_FOR_RCPI) << 1) > RCPI_HIGH_BOUND) ? RCPI_HIGH_BOUND : \
-	    ((((PARAM_RSSI)(_dbm) + NDBM_LOW_BOUND_FOR_RCPI) << 1) < RCPI_LOW_BOUND ? RCPI_LOW_BOUND : \
-	     (((PARAM_RSSI)(_dbm) + NDBM_LOW_BOUND_FOR_RCPI) << 1)))
+	(RCPI)(((((PARAM_RSSI)(_dbm) + NDBM_LOW_BOUND_FOR_RCPI) << 1) > RCPI_HIGH_BOUND) ? RCPI_HIGH_BOUND : \
+	((((PARAM_RSSI)(_dbm) + NDBM_LOW_BOUND_FOR_RCPI) << 1) < RCPI_LOW_BOUND ? RCPI_LOW_BOUND : \
+	(((PARAM_RSSI)(_dbm) + NDBM_LOW_BOUND_FOR_RCPI) << 1)))
 
 /* Convert an unsigned char pointer to an information element pointer */
 #define IE_ID(fp)               (((P_IE_HDR_T) fp)->ucId)
@@ -2634,65 +2598,63 @@ typedef struct _IE_MTK_OUI_T {
 #define SUPPORTED_CHANNELS_IE(fp) ((P_IE_SUPPORTED_CHANNELS_T)fp)
 #define TIMEOUT_INTERVAL_IE(fp)	((IE_TIMEOUT_INTERVAL_T *)fp)
 
-
 /* The macro to check if the MAC address is B/MCAST Address */
 #define IS_BMCAST_MAC_ADDR(_pucDestAddr)            \
-    ((BOOLEAN) (((PUINT_8)(_pucDestAddr))[0] & BIT(0)))
+	((BOOLEAN) (((PUINT_8)(_pucDestAddr))[0] & BIT(0)))
 
 /* The macro to check if the MAC address is UCAST Address */
 #define IS_UCAST_MAC_ADDR(_pucDestAddr)             \
-    ((BOOLEAN) !(((PUINT_8)(_pucDestAddr))[0] & BIT(0)))
+	((BOOLEAN) !(((PUINT_8)(_pucDestAddr))[0] & BIT(0)))
 
 /* The macro to copy the MAC address */
 #define COPY_MAC_ADDR(_pucDestAddr, _pucSrcAddr)    \
-    kalMemCopy(_pucDestAddr, _pucSrcAddr, MAC_ADDR_LEN)
+	kalMemCopy(_pucDestAddr, _pucSrcAddr, MAC_ADDR_LEN)
 
 /* The macro to check if two MAC addresses are equal */
 #define EQUAL_MAC_ADDR(_pucDestAddr, _pucSrcAddr)   \
-    (!kalMemCmp(_pucDestAddr, _pucSrcAddr, MAC_ADDR_LEN))
+	(!kalMemCmp(_pucDestAddr, _pucSrcAddr, MAC_ADDR_LEN))
 
 /* The macro to check if two MAC addresses are not equal */
 #define UNEQUAL_MAC_ADDR(_pucDestAddr, _pucSrcAddr) \
-    (kalMemCmp(_pucDestAddr, _pucSrcAddr, MAC_ADDR_LEN))
-
+	(kalMemCmp(_pucDestAddr, _pucSrcAddr, MAC_ADDR_LEN))
 
 /* The macro to check whether two SSIDs are equal */
 #define EQUAL_SSID(pucSsid1, ucSsidLen1, pucSsid2, ucSsidLen2) \
-    ((ucSsidLen1 <= ELEM_MAX_LEN_SSID) && \
+	((ucSsidLen1 <= ELEM_MAX_LEN_SSID) && \
 	(ucSsidLen2 <= ELEM_MAX_LEN_SSID) && \
 	((ucSsidLen1) == (ucSsidLen2)) && \
 	!kalMemCmp(pucSsid1, pucSsid2, ucSsidLen1))
 
 /* The macro to check whether two SSIDs are equal */
 #define UNEQUAL_SSID(pucSsid1, ucSsidLen1, pucSsid2, ucSsidLen2) \
-    ((ucSsidLen1 > ELEM_MAX_LEN_SSID) || \
+	((ucSsidLen1 > ELEM_MAX_LEN_SSID) || \
 	(ucSsidLen2 > ELEM_MAX_LEN_SSID) || \
 	((ucSsidLen1) != (ucSsidLen2)) || \
 	kalMemCmp(pucSsid1, pucSsid2, ucSsidLen1))
 
 /* The macro to copy the SSID, the length of pucDestSsid should have at least 32 bytes */
 #define COPY_SSID(pucDestSsid, ucDestSsidLen, pucSrcSsid, ucSrcSsidLen) \
-    do { \
-	ucDestSsidLen = ucSrcSsidLen; \
-	if (ucSrcSsidLen) { \
-	    ASSERT(ucSrcSsidLen <= ELEM_MAX_LEN_SSID); \
-	    kalMemCopy(pucDestSsid, pucSrcSsid, ((ucSrcSsidLen > ELEM_MAX_LEN_SSID) ? ELEM_MAX_LEN_SSID : ucSrcSsidLen)); \
-	} \
-    } while (FALSE)
+	do { \
+		ucDestSsidLen = ucSrcSsidLen; \
+		if (ucSrcSsidLen) { \
+			ASSERT(ucSrcSsidLen <= ELEM_MAX_LEN_SSID); \
+			kalMemCopy(pucDestSsid, pucSrcSsid,	\
+			((ucSrcSsidLen > ELEM_MAX_LEN_SSID) ? ELEM_MAX_LEN_SSID : ucSrcSsidLen)); \
+		} \
+	} while (FALSE)
 
 /* The macro to copy the IE */
 #define COPY_IE(pucDestIE, pucSrcIE) \
-    do { \
-	kalMemCopy((PUINT_8)pucDestIE, \
-		   (PUINT_8)pucSrcIE,\
-		   IE_SIZE(pucSrcIE)); \
-    } while (FALSE)
-
+	do { \
+		kalMemCopy((PUINT_8)pucDestIE, \
+		(PUINT_8)pucSrcIE,\
+		IE_SIZE(pucSrcIE)); \
+	} while (FALSE)
 
 #define IE_FOR_EACH(_pucIEsBuf, _u2IEsBufLen, _u2Offset) \
-    for ((_u2Offset) = 0; ((((_u2Offset) + 2) <= (_u2IEsBufLen)) && (((_u2Offset) + IE_SIZE(_pucIEsBuf)) <= (_u2IEsBufLen))); \
-	(_u2Offset) += IE_SIZE(_pucIEsBuf), (_pucIEsBuf) += IE_SIZE(_pucIEsBuf))
-
+	for ((_u2Offset) = 0;	\
+		((((_u2Offset) + 2) <= (_u2IEsBufLen)) && (((_u2Offset) + IE_SIZE(_pucIEsBuf)) <= (_u2IEsBufLen))); \
+		(_u2Offset) += IE_SIZE(_pucIEsBuf), (_pucIEsBuf) += IE_SIZE(_pucIEsBuf))
 
 #define SET_EXT_CAP(_aucField, _ucFieldLength, _ucBit) \
 			do { \
@@ -2701,7 +2663,6 @@ typedef struct _IE_MTK_OUI_T {
 					((aucExtCap)[(_ucBit) / 8]) |= BIT((_ucBit) % 8); \
 				} \
 			} while (FALSE)
-
 
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
@@ -2713,4 +2674,4 @@ typedef struct _IE_MTK_OUI_T {
 ********************************************************************************
 */
 
-#endif				/* _MAC_H */
+#endif /* _MAC_H */

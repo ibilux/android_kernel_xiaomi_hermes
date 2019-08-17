@@ -11,7 +11,7 @@ config ARM64
 	select AUDIT_ARCH_COMPAT_GENERIC
 	select CLONE_BACKWARDS
 	select COMMON_CLK
-        select ARM_GIC
+	select ARM_GIC
 	select GENERIC_CLOCKEVENTS
 	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
 	select GENERIC_CPU_AUTOPROBE
@@ -133,6 +133,25 @@ config ARM_ERRATA_824069
 	  incorrectly marked as dirty. This workaround replaces all cache clean opeartion
 	  to clean & invalidate.
 
+config ARM_ERRATA_845719
+        bool "Cortex-A53: 845719: a load might read incorrect data"
+        depends on COMPAT
+        default y
+        help
+          This option enables the workaround for erratum 845719.
+          When running a compat (AArch32) userspace on an affected Cortex-A53
+          part, a load at EL0 from a virtual address that matches the bottom 32
+          bits of the virtual address used by a recent load at (AArch64) EL1
+          might return incorrect data.
+
+          The workaround is to write the contextidr_el1 register on exception
+          return to a 32-bit task.
+          Please note that this does not necessarily enable the workaround,
+          as it depends on the alternative framework, which will only patch
+          the kernel if an affected CPU is detected.
+
+          If unsure, say Y.
+
 config KERNEL_MODE_NEON
 	def_bool y
 
@@ -152,83 +171,6 @@ config ARCH_VEXPRESS
 	  This enables support for the ARMv8 software model (Versatile
 	  Express).
 
-config ARCH_MT6735
-	bool "MediaTek MT6735"
-	select GENERIC_TIME
-	select GENERIC_CLOCKEVENTS
-	select ARCH_HAS_CPUFREQ
-	select ARM_AMBA
-	select CPU_V7
-	select HAVE_SMP
-	select NEED_MACH_MEMORY_H
-	select IRQ_DOMAIN
-	select IRQ_DOMAIN_DEBUG
-	select GENERIC_SCHED_CLOCK
-	select MTK_SYSTRACKER
-	select ARMV7_COMPAT
-        select ARMV7_COMPAT_CPUINFO
-	help
-	  This enable support for MediaTek MT6735
-
-config ARCH_MT6735M
-	bool "MediaTek MT6735M"
-	select GENERIC_TIME
-	select GENERIC_CLOCKEVENTS
-	select ARCH_HAS_CPUFREQ
-	select ARM_AMBA
-	select CPU_V7
-	select HAVE_SMP
-	select NEED_MACH_MEMORY_H
-	select IRQ_DOMAIN
-	select IRQ_DOMAIN_DEBUG
-	select GENERIC_SCHED_CLOCK
-	select MTK_SYSTRACKER
-	select ARMV7_COMPAT
-        select ARMV7_COMPAT_CPUINFO
-	help
-	  This enable support for MediaTek MT6735M
-
-config ARCH_MT6753
-	bool "MediaTek MT6735M"
-	select GENERIC_TIME
-	select GENERIC_CLOCKEVENTS
-	select ARCH_HAS_CPUFREQ
-	select ARM_AMBA
-	select CPU_V7
-	select HAVE_SMP
-	select NEED_MACH_MEMORY_H
-	select IRQ_DOMAIN
-	select IRQ_DOMAIN_DEBUG
-	select GENERIC_SCHED_CLOCK
-	select MTK_SYSTRACKER
-	select ARMV7_COMPAT
-        select ARMV7_COMPAT_CPUINFO
-	help
-	  This enable support for MediaTek MT6753
-
-config ARCH_MT6752
-	bool "MediaTek MT6752"
-	select GENERIC_TIME
-	select GENERIC_CLOCKEVENTS
-	select ARCH_HAS_CPUFREQ
-	select ARM_AMBA
-	select CPU_V7
-	select HAVE_SMP
-	select NEED_MACH_MEMORY_H
-	select IRQ_DOMAIN
-	select IRQ_DOMAIN_DEBUG
-	select GENERIC_SCHED_CLOCK
-	select MTK_SYSTRACKER
-	select MTK_L2C_SHARE
-	select ARCH_REQUIRE_GPIOLIB
-	select MTK_ETM
-	select MTK_EIC
-	select ARMV7_COMPAT
-        select ARMV7_COMPAT_CPUINFO
-	select ARM_ERRATA_824069
-	help
-	  This enable support for MediaTek MT6752
-
 config ARCH_MT6795
 	bool "MediaTek MT6795"
 	select GENERIC_TIME
@@ -244,13 +186,19 @@ config ARCH_MT6795
 	select GENERIC_SCHED_CLOCK
 	select ARCH_REQUIRE_GPIOLIB
 	select MTK_CIRQ
+	select MTK_SYS_CIRQ
 	select MTK_CPU_STRESS
 	select MTK_SYSTRACKER
 	select MTK_LASTPC
+	select MTK_EIC
+	select MTK_ETM
 	select ARMV7_COMPAT
-        select ARMV7_COMPAT_CPUINFO
-        select MD32_SUPPORT
+	select ARMV7_COMPAT_CPUINFO
+	select MD32_SUPPORT
 	select ARM_ERRATA_824069
+	select ARM_ERRATA_845719
+	select MTK_LM_MODE
+	select MTK_USB2JTAG_SUPPORT
 	help
 	  This enable support for MediaTek MT6795
 endmenu
@@ -713,4 +661,3 @@ source "arch/arm64/crypto/Kconfig"
 endif
 
 source "lib/Kconfig"
-

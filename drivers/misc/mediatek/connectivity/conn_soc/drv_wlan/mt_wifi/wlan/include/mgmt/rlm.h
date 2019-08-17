@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm.h#2 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm.h#2
 */
 
 /*! \file   "rlm.h"
     \brief
 */
 
-
-
 /*
-** $Log: rlm.h $
+** Log: rlm.h
  *
  * 07 17 2012 yuche.tsai
  * NULL
@@ -180,73 +178,68 @@
 ********************************************************************************
 */
 #define ELEM_EXT_CAP_DEFAULT_VAL \
-        (ELEM_EXT_CAP_20_40_COEXIST_SUPPORT /*| ELEM_EXT_CAP_PSMP_CAP*/)
-
+	(ELEM_EXT_CAP_20_40_COEXIST_SUPPORT /*| ELEM_EXT_CAP_PSMP_CAP*/)
 
 #if CFG_SUPPORT_RX_STBC
-    #define FIELD_HT_CAP_INFO_RX_STBC   HT_CAP_INFO_RX_STBC_1_SS
+#define FIELD_HT_CAP_INFO_RX_STBC   HT_CAP_INFO_RX_STBC_1_SS
 #else
-    #define FIELD_HT_CAP_INFO_RX_STBC   HT_CAP_INFO_RX_STBC_NO_SUPPORTED
+#define FIELD_HT_CAP_INFO_RX_STBC   HT_CAP_INFO_RX_STBC_NO_SUPPORTED
 #endif
 
 #if CFG_SUPPORT_RX_SGI
-    #define FIELD_HT_CAP_INFO_SGI_20M   HT_CAP_INFO_SHORT_GI_20M
-    #define FIELD_HT_CAP_INFO_SGI_40M   HT_CAP_INFO_SHORT_GI_40M
+#define FIELD_HT_CAP_INFO_SGI_20M   HT_CAP_INFO_SHORT_GI_20M
+#define FIELD_HT_CAP_INFO_SGI_40M   HT_CAP_INFO_SHORT_GI_40M
 #else
-    #define FIELD_HT_CAP_INFO_SGI_20M   0
-    #define FIELD_HT_CAP_INFO_SGI_40M   0
+#define FIELD_HT_CAP_INFO_SGI_20M   0
+#define FIELD_HT_CAP_INFO_SGI_40M   0
 #endif
 
 #if CFG_SUPPORT_RX_HT_GF
-    #define FIELD_HT_CAP_INFO_HT_GF     HT_CAP_INFO_HT_GF
+#define FIELD_HT_CAP_INFO_HT_GF     HT_CAP_INFO_HT_GF
 #else
-    #define FIELD_HT_CAP_INFO_HT_GF     0
+#define FIELD_HT_CAP_INFO_HT_GF     0
 #endif
 
 #define HT_CAP_INFO_DEFAULT_VAL \
-        (HT_CAP_INFO_SUP_CHNL_WIDTH | FIELD_HT_CAP_INFO_HT_GF | \
-         FIELD_HT_CAP_INFO_SGI_20M | FIELD_HT_CAP_INFO_SGI_40M | \
-         FIELD_HT_CAP_INFO_RX_STBC | HT_CAP_INFO_DSSS_CCK_IN_40M)
-
-
+	(HT_CAP_INFO_SUP_CHNL_WIDTH | FIELD_HT_CAP_INFO_HT_GF | \
+	 FIELD_HT_CAP_INFO_SGI_20M | FIELD_HT_CAP_INFO_SGI_40M | \
+	 FIELD_HT_CAP_INFO_RX_STBC | HT_CAP_INFO_DSSS_CCK_IN_40M)
 
 #define AMPDU_PARAM_DEFAULT_VAL \
-        (AMPDU_PARAM_MAX_AMPDU_LEN_64K | AMPDU_PARAM_MSS_NO_RESTRICIT)
-
+	(AMPDU_PARAM_MAX_AMPDU_LEN_64K | AMPDU_PARAM_MSS_NO_RESTRICIT)
 
 #define SUP_MCS_TX_DEFAULT_VAL \
-        SUP_MCS_TX_SET_DEFINED   /* TX defined and TX/RX equal (TBD) */
+	SUP_MCS_TX_SET_DEFINED	/* TX defined and TX/RX equal (TBD) */
 
 #if CFG_SUPPORT_MFB
-    #define FIELD_HT_EXT_CAP_MFB    HT_EXT_CAP_MCS_FEEDBACK_BOTH
+#define FIELD_HT_EXT_CAP_MFB    HT_EXT_CAP_MCS_FEEDBACK_BOTH
 #else
-    #define FIELD_HT_EXT_CAP_MFB    HT_EXT_CAP_MCS_FEEDBACK_NO_FB
+#define FIELD_HT_EXT_CAP_MFB    HT_EXT_CAP_MCS_FEEDBACK_NO_FB
 #endif
 
 #if CFG_SUPPORT_RX_RDG
-    #define FIELD_HT_EXT_CAP_RDR    HT_EXT_CAP_RD_RESPONDER
+#define FIELD_HT_EXT_CAP_RDR    HT_EXT_CAP_RD_RESPONDER
 #else
-    #define FIELD_HT_EXT_CAP_RDR    0
+#define FIELD_HT_EXT_CAP_RDR    0
 #endif
 
 #if CFG_SUPPORT_MFB || CFG_SUPPORT_RX_RDG
-    #define FIELD_HT_EXT_CAP_HTC    HT_EXT_CAP_HTC_SUPPORT
+#define FIELD_HT_EXT_CAP_HTC    HT_EXT_CAP_HTC_SUPPORT
 #else
-    #define FIELD_HT_EXT_CAP_HTC    0
+#define FIELD_HT_EXT_CAP_HTC    0
 #endif
 
 #define HT_EXT_CAP_DEFAULT_VAL \
-        (HT_EXT_CAP_PCO | HT_EXT_CAP_PCO_TRANS_TIME_NONE | \
-         FIELD_HT_EXT_CAP_MFB | FIELD_HT_EXT_CAP_HTC | \
-         FIELD_HT_EXT_CAP_RDR)
+	(HT_EXT_CAP_PCO | HT_EXT_CAP_PCO_TRANS_TIME_NONE | \
+	 FIELD_HT_EXT_CAP_MFB | FIELD_HT_EXT_CAP_HTC | \
+	 FIELD_HT_EXT_CAP_RDR)
 
 #define TX_BEAMFORMING_CAP_DEFAULT_VAL              0
 #define ASEL_CAP_DEFAULT_VAL                        0
 
-
 /* Define bandwidth from user setting */
 #define CONFIG_BW_20_40M            0
-#define CONFIG_BW_20M               1   /* 20MHz only */
+#define CONFIG_BW_20M               1	/* 20MHz only */
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -272,196 +265,118 @@
  * Note: Ad-hoc mode of AIS is not included now. (TBD)
  */
 #define RLM_NET_PARAM_VALID(_prBssInfo) \
-        (IS_BSS_ACTIVE(_prBssInfo) && \
-         ((_prBssInfo)->eConnectionState == PARAM_MEDIA_STATE_CONNECTED || \
-          (_prBssInfo)->eCurrentOPMode == OP_MODE_ACCESS_POINT || \
-          (_prBssInfo)->eCurrentOPMode == OP_MODE_IBSS || \
-          RLM_NET_IS_BOW(_prBssInfo)) \
-        )
+	(IS_BSS_ACTIVE(_prBssInfo) && \
+	 ((_prBssInfo)->eConnectionState == PARAM_MEDIA_STATE_CONNECTED || \
+	  (_prBssInfo)->eCurrentOPMode == OP_MODE_ACCESS_POINT || \
+	  (_prBssInfo)->eCurrentOPMode == OP_MODE_IBSS || \
+	  RLM_NET_IS_BOW(_prBssInfo)) \
+	)
 
 #define RLM_NET_IS_11N(_prBssInfo) \
-        ((_prBssInfo)->ucPhyTypeSet & PHY_TYPE_SET_802_11N)
+	((_prBssInfo)->ucPhyTypeSet & PHY_TYPE_SET_802_11N)
 #define RLM_NET_IS_11GN(_prBssInfo) \
-        ((_prBssInfo)->ucPhyTypeSet & PHY_TYPE_SET_802_11GN)
-
+	((_prBssInfo)->ucPhyTypeSet & PHY_TYPE_SET_802_11GN)
 
 /* This macro is used to sweep all 3 networks */
 #define RLM_NET_FOR_EACH(_ucNetIdx) \
-    for ((_ucNetIdx) = 0; \
-         (_ucNetIdx) < NETWORK_TYPE_INDEX_NUM; \
-         (_ucNetIdx)++)
+	for ((_ucNetIdx) = 0; \
+		(_ucNetIdx) < NETWORK_TYPE_INDEX_NUM; \
+		(_ucNetIdx)++)
 
 /* This macro is used to sweep all networks excluding BOW */
 #if CFG_ENABLE_BT_OVER_WIFI
     /* Note: value of enum NETWORK_TYPE_BOW_INDEX is validated in
      *       rlmStuctureCheck().
      */
-    #define RLM_NET_FOR_EACH_NO_BOW(_ucNetIdx) \
-        for ((_ucNetIdx) = 0; \
-             (_ucNetIdx) < NETWORK_TYPE_BOW_INDEX; \
-             (_ucNetIdx)++)
+#define RLM_NET_FOR_EACH_NO_BOW(_ucNetIdx) \
+	for ((_ucNetIdx) = 0; \
+		(_ucNetIdx) < NETWORK_TYPE_BOW_INDEX; \
+		(_ucNetIdx)++)
 
-    #define RLM_NET_IS_BOW(_prBssInfo) \
-            ((_prBssInfo)->ucNetTypeIndex == NETWORK_TYPE_BOW_INDEX)
+#define RLM_NET_IS_BOW(_prBssInfo) \
+	((_prBssInfo)->ucNetTypeIndex == NETWORK_TYPE_BOW_INDEX)
 
 #else
-    #define RLM_NET_FOR_EACH_NO_BOW(_ucNetIdx)  RLM_NET_FOR_EACH(_ucNetIdx)
-    #define RLM_NET_IS_BOW(_prBssInfo)          (FALSE)
+#define RLM_NET_FOR_EACH_NO_BOW(_ucNetIdx)  RLM_NET_FOR_EACH(_ucNetIdx)
+#define RLM_NET_IS_BOW(_prBssInfo)          (FALSE)
 
 #endif /* end of CFG_ENABLE_BT_OVER_WIFI */
-
 
 /* The bandwidth modes are not used anymore. They represent if AP
  * can use 20/40 bandwidth, not all modes. (20110411)
  */
 #define RLM_AP_IS_BW_40_ALLOWED(_prAdapter, _prBssInfo) \
-    (((_prBssInfo)->eBand == BAND_2G4 && \
-      (_prAdapter)->rWifiVar.rConnSettings.uc2G4BandwidthMode \
-      == CONFIG_BW_20_40M) || \
-     ((_prBssInfo)->eBand == BAND_5G && \
-      (_prAdapter)->rWifiVar.rConnSettings.uc5GBandwidthMode \
-      == CONFIG_BW_20_40M))
+	(((_prBssInfo)->eBand == BAND_2G4 && \
+	(_prAdapter)->rWifiVar.rConnSettings.uc2G4BandwidthMode \
+	== CONFIG_BW_20_40M) || \
+	((_prBssInfo)->eBand == BAND_5G && \
+	(_prAdapter)->rWifiVar.rConnSettings.uc5GBandwidthMode \
+	== CONFIG_BW_20_40M))
 
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-VOID
-rlmFsmEventInit (
-    P_ADAPTER_T     prAdapter
-    );
+VOID rlmFsmEventInit(P_ADAPTER_T prAdapter);
 
-VOID
-rlmFsmEventUninit (
-    P_ADAPTER_T     prAdapter
-    );
+VOID rlmFsmEventUninit(P_ADAPTER_T prAdapter);
 
-VOID
-rlmReqGenerateHtCapIE (
-    P_ADAPTER_T     prAdapter,
-    P_MSDU_INFO_T   prMsduInfo
-    );
+VOID rlmReqGenerateHtCapIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 
-VOID
-rlmReqGenerateExtCapIE (
-    P_ADAPTER_T     prAdapter,
-    P_MSDU_INFO_T   prMsduInfo
-    );
+VOID rlmReqGenerateExtCapIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 
-VOID
-rlmRspGenerateHtCapIE (
-    P_ADAPTER_T     prAdapter,
-    P_MSDU_INFO_T   prMsduInfo
-    );
+VOID rlmRspGenerateHtCapIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 
-VOID
-rlmRspGenerateExtCapIE (
-    P_ADAPTER_T     prAdapter,
-    P_MSDU_INFO_T   prMsduInfo
-    );
+VOID rlmRspGenerateExtCapIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 
-VOID
-rlmRspGenerateHtOpIE (
-    P_ADAPTER_T     prAdapter,
-    P_MSDU_INFO_T   prMsduInfo
-    );
+VOID rlmRspGenerateHtOpIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 
-VOID
-rlmRspGenerateErpIE (
-    P_ADAPTER_T     prAdapter,
-    P_MSDU_INFO_T   prMsduInfo
-    );
+VOID rlmRspGenerateErpIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 
-VOID
-rlmProcessBcn (
-    P_ADAPTER_T prAdapter,
-    P_SW_RFB_T  prSwRfb,
-    PUINT_8     pucIE,
-    UINT_16     u2IELength
-    );
+VOID rlmProcessBcn(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb, PUINT_8 pucIE, UINT_16 u2IELength);
 
-VOID
-rlmProcessAssocRsp (
-    P_ADAPTER_T prAdapter,
-    P_SW_RFB_T  prSwRfb,
-    PUINT_8     pucIE,
-    UINT_16     u2IELength
-    );
+VOID rlmProcessAssocRsp(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb, PUINT_8 pucIE, UINT_16 u2IELength);
 
-VOID
-rlmFillSyncCmdParam (
-    P_CMD_SET_BSS_RLM_PARAM_T   prCmdBody,
-    P_BSS_INFO_T                prBssInfo
-    );
+VOID rlmFillSyncCmdParam(P_CMD_SET_BSS_RLM_PARAM_T prCmdBody, P_BSS_INFO_T prBssInfo);
 
-VOID
-rlmSyncOperationParams (
-    P_ADAPTER_T         prAdapter,
-    P_BSS_INFO_T        prBssInfo
-    );
+VOID rlmSyncOperationParams(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
 
-VOID
-rlmBssInitForAPandIbss (
-    P_ADAPTER_T     prAdapter,
-    P_BSS_INFO_T    prBssInfo
-    );
+VOID rlmBssInitForAPandIbss(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
 
-VOID
-rlmProcessAssocReq (
-    P_ADAPTER_T prAdapter,
-    P_SW_RFB_T  prSwRfb,
-    PUINT_8     pucIE,
-    UINT_16     u2IELength
-    );
+VOID rlmProcessAssocReq(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb, PUINT_8 pucIE, UINT_16 u2IELength);
 
-VOID
-rlmBssAborted (
-    P_ADAPTER_T     prAdapter,
-    P_BSS_INFO_T    prBssInfo
-    );
+VOID rlmBssAborted(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
 
 UINT32
-rlmFillHtCapIEByParams (
-	BOOLEAN				fg40mAllowed,
-	BOOLEAN				fgShortGIDisabled,
-	UINT_8				u8SupportRxSgi20,
-	UINT_8				u8SupportRxSgi40,
-	UINT_8				u8SupportRxGf,	
-	UINT_8				u8SupportRxSTBC,
-	ENUM_OP_MODE_T		eCurrentOPMode,
-    UINT_8				*pOutBuf
-    );
+rlmFillHtCapIEByParams(BOOLEAN fg40mAllowed,
+		       BOOLEAN fgShortGIDisabled,
+		       UINT_8 u8SupportRxSgi20,
+		       UINT_8 u8SupportRxSgi40,
+		       UINT_8 u8SupportRxGf, UINT_8 u8SupportRxSTBC, ENUM_OP_MODE_T eCurrentOPMode, UINT_8 *pOutBuf);
 
-UINT32
-rlmFillHtOpIeBody(
-	P_BSS_INFO_T    prBssInfo,
-	UINT_8			*pFme
-	);
+UINT32 rlmFillHtOpIeBody(P_BSS_INFO_T prBssInfo, UINT_8 *pFme);
 
-#if CFG_SUPPORT_DFS // Add by Enlai
-VOID
-rlmProcessSpecMgtAction(
-        P_ADAPTER_T prAdapter,
-        P_SW_RFB_T  prSwRfb
-        );
+#if CFG_SUPPORT_DFS		/* Add by Enlai */
+VOID rlmProcessSpecMgtAction(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb);
 
-VOID
-rlmProcessChannelSwitchIE(
-        P_ADAPTER_T prAdapter,
-        P_IE_CHANNEL_SWITCH_T  prChannelSwitchIE
-        );
+VOID rlmProcessChannelSwitchIE(P_ADAPTER_T prAdapter, P_IE_CHANNEL_SWITCH_T prChannelSwitchIE);
 #endif
 
 VOID
 rlmTxRateEnhanceConfig(
-	P_ADAPTER_T         prAdapter
+	P_ADAPTER_T	prAdapter
 	);
 
 VOID
 rlmCmd(
-	P_GLUE_INFO_T						prGlueInfo,
-	UINT_8								*prInBuf,
-	UINT_32 							u4InBufLen
+	P_GLUE_INFO_T	prGlueInfo,
+	UINT_8		*prInBuf,
+	UINT_32	u4InBufLen
+	);
+
+VOID
+rlmBcnEnhanceConfig(
+	P_ADAPTER_T         prAdapter
 	);
 
 /*******************************************************************************
@@ -470,25 +385,18 @@ rlmCmd(
 */
 
 #ifndef _lint
-__KAL_INLINE__ VOID
-rlmDataTypeCheck (
-    VOID
-    )
+static inline VOID rlmDataTypeCheck(VOID)
 {
 #if CFG_ENABLE_BT_OVER_WIFI
-    DATA_STRUC_INSPECTING_ASSERT(
-        NETWORK_TYPE_AIS_INDEX < NETWORK_TYPE_BOW_INDEX);
+	DATA_STRUC_INSPECTING_ASSERT(NETWORK_TYPE_AIS_INDEX < NETWORK_TYPE_BOW_INDEX);
 
-    #if CFG_ENABLE_WIFI_DIRECT
-        DATA_STRUC_INSPECTING_ASSERT(
-            NETWORK_TYPE_P2P_INDEX < NETWORK_TYPE_BOW_INDEX);
-    #endif
+#if CFG_ENABLE_WIFI_DIRECT
+	DATA_STRUC_INSPECTING_ASSERT(NETWORK_TYPE_P2P_INDEX < NETWORK_TYPE_BOW_INDEX);
+#endif
 #endif
 
-    return;
+	return;
 }
 #endif /* _lint */
 
 #endif /* _RLM_H */
-
-

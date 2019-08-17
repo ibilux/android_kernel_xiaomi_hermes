@@ -35,7 +35,7 @@ extern void toi_alloc_print_debug_stats(void);
 #define toi_get_free_pages(FAIL, FLAGS, ORDER) __get_free_pages(FLAGS, ORDER)
 #define toi_get_free_page(FAIL, FLAGS) __get_free_page(FLAGS)
 #define toi_get_zeroed_page(FAIL, FLAGS) get_zeroed_page(FLAGS)
-#define toi_free_page(FAIL, ALLOCN) do { free_page(ALLOCN); } while (0)
+#define toi_free_page(FAIL, ALLOCN) free_page(ALLOCN)
 #define toi__free_page(FAIL, PAGE) __free_page(PAGE)
 #define toi_free_pages(FAIL, PAGE, ORDER) __free_pages(PAGE, ORDER)
 #define toi_alloc_page(FAIL, MASK) alloc_page(MASK)

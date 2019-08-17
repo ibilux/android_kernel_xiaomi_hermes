@@ -6,24 +6,20 @@ ccflags-y += $(WLAN_CHIP_LIST)
 
 WLAN_CHIP_ID=MT6630
 
+ccflags-y += -DCFG_SUPPORT_DEBUG_FS=0
+ccflags-y += -DWLAN_INCLUDE_PROC
 ccflags-y += -DCFG_SUPPORT_AGPS_ASSIST=1
 ccflags-y += -DCFG_SUPPORT_TSF_USING_BOOTTIME=1
 
 ccflags-y:=$(filter-out -U$(WLAN_CHIP_ID),$(ccflags-y))
 ccflags-y += -DLINUX -D$(WLAN_CHIP_ID)
-
 ccflags-y += -DARP_MONITER_ENABLE=1
+
 ifeq ($(CONFIG_MTK_WIFI_MCC_SUPPORT), y)
     ccflags-y += -DCFG_SUPPORT_CHNL_CONFLICT_REVISE=0
 else
     ccflags-y += -DCFG_SUPPORT_CHNL_CONFLICT_REVISE=1
 endif
-
-#ifeq ($(CONFIG_HAVE_XLOG_FEATURE), y)
-#    ccflags-y += -DCFG_SUPPORT_XLOG=1
-#else
-    ccflags-y += -DCFG_SUPPORT_XLOG=0
-#endif
 
 ifeq ($(CONFIG_HAVE_AEE_FEATURE), y)
     ccflags-y += -DCFG_SUPPORT_AEE=1
@@ -116,6 +112,7 @@ OS_OBJS :=	$(OS_DIR)gl_init.o \
 			$(OS_DIR)gl_wext_priv.o \
 			$(OS_DIR)gl_rst.o \
 			$(OS_DIR)gl_cfg80211.o \
+			$(OS_DIR)gl_vendor.o \
 			$(OS_DIR)platform.o
 
 MGMT_OBJS := $(MGMT_DIR)ais_fsm.o \
@@ -142,7 +139,7 @@ MGMT_OBJS := $(MGMT_DIR)ais_fsm.o \
              $(MGMT_DIR)roaming_fsm.o \
              $(MGMT_DIR)tkip_mic.o \
              $(MGMT_DIR)hs20.o \
-             $(MGMT_DIR)tdls.o        
+             $(MGMT_DIR)tdls.o
 # ---------------------------------------------------
 # STATS Objects List
 # ---------------------------------------------------
@@ -175,9 +172,7 @@ MGMT_OBJS += $(MGMT_DIR)p2p_dev_fsm.o\
                  
 MGMT_OBJS += $(MGMT_DIR)wapi.o
 
-ifeq ($(WLAN_PROC), y)
-OS_OBJS += gl_proc.o
-endif
+OS_OBJS += $(OS_DIR)gl_proc.o
 
 HIF_OBJS :=  $(HIF_DIR)arm.o \
              $(HIF_DIR)sdio.o

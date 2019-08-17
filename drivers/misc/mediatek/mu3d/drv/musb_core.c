@@ -100,6 +100,10 @@
 #include <linux/platform_device.h>
 #include <linux/io.h>
 
+#ifdef CONFIG_MTK_USB2JTAG_SUPPORT
+#include <mach/mt_usb2jtag.h>
+#endif
+
 #ifdef CONFIG_USBIF_COMPLIANCE
 #include <linux/proc_fs.h>
 #include <asm/uaccess.h>
@@ -897,9 +901,10 @@ void musb_start(struct musb *musb)
 
 		/* disable IP reset and power down, disable U2/U3 ip power down */
 		_ex_mu3d_hal_ssusb_en();
-
 		/* USB PLL Force settings */
+#ifdef CONFIG_PROJECT_PHY
 		usb20_pll_settings(false, false);
+#endif
 
 		/* reset U3D all dev module. */
 		mu3d_hal_rst_dev();
@@ -2057,7 +2062,7 @@ static void musb_irq_work(struct work_struct *data)
 	struct musb *musb = container_of(data, struct musb, irq_work);
 	static int old_state;
 
-	os_printk(K_INFO, "%s [%d]=[%d]\n", __func__, musb->xceiv->state, old_state);
+	os_printk(K_DEBUG, "%s [%d]=[%d]\n", __func__, musb->xceiv->state, old_state);
 
 	if (musb->xceiv->state != old_state) {
 		old_state = musb->xceiv->state;
@@ -2980,6 +2985,12 @@ static int __init musb_init(void)
 	struct proc_dir_entry *prEntry;
 	int ret = 0;
 
+#ifdef CONFIG_MTK_USB2JTAG_SUPPORT
+	if (usb2jtag_mode()) {
+		pr_err("[USB2JTAG] in usb2jtag mode, not to initialize usb driver\n");
+		return 0;
+	}
+#endif
 	if (usb_disabled())
 		return 0;
 
@@ -3003,6 +3014,7 @@ static int __init musb_init(void)
 
 	return ret ;
 }
+
 module_init(musb_init);
 
 static void __exit musb_cleanup(void)
@@ -3018,6 +3030,12 @@ module_exit(musb_cleanup);
 
 static int __init musb_init(void)
 {
+#ifdef CONFIG_MTK_USB2JTAG_SUPPORT
+	if (usb2jtag_mode()) {
+		pr_err("[USB2JTAG] in usb2jtag mode, not to initialize usb driver\n");
+		return 0;
+	}
+#endif
 	if (usb_disabled())
 		return 0;
 

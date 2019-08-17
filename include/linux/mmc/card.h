@@ -204,6 +204,7 @@ enum mmc_blk_status {
 	MMC_BLK_ECC_ERR,
 	MMC_BLK_NOMEDIUM,
 	MMC_BLK_NEW_REQUEST,
+	MMC_BLK_READONLY,
 };
 
 /* The number of MMC physical partitions.  These consist of:
@@ -253,11 +254,17 @@ struct mmc_card {
 #define MMC_STATE_HIGHSPEED_200	(1<<8)		/* card is in HS200 mode */
 #define MMC_STATE_SLEEP		(1<<9)		/* card is in sleep state */
 #define MMC_STATE_DOING_BKOPS	(1<<10)		/* card is doing BKOPS */
-#define MMC_STATE_HIGHSPEED_400	(1<<11)		/* card is in HS200 mode */
+#define MMC_STATE_HIGHSPEED_400	(1<<11)		/* card is in HS400 mode */
+
 #ifdef CONFIG_MTK_EMMC_CACHE
-#define MMC_STATE_DOING_flush	(1<<10)		/* card is doing FLUSH OPS */
-#define MMC_STATE_NEED_flush	(1<<11)		/* card need to do FLUSH OPS */
+#define MMC_STATE_DOING_flush	(1<<20)		/* card is doing FLUSH OPS */
+#define MMC_STATE_NEED_flush	(1<<21)		/* card need to do FLUSH OPS */
 #endif
+
+#ifdef CONFIG_MMC_FFU
+#define MMC_STATE_FFUED         (1<<22)     /* card has been FFUed */
+#endif
+
 	unsigned int		quirks; 	/* card quirks */
 #define MMC_QUIRK_LENIENT_FN0	(1<<0)		/* allow SDIO FN0 writes outside of the VS CCCR range */
 #define MMC_QUIRK_BLKSZ_FOR_BYTE_MODE (1<<1)	/* use func->cur_blksize */

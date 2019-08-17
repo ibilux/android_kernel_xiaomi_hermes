@@ -19,10 +19,15 @@
 
 #include <linux/usb.h>
 #include <linux/usb/hcd.h>
+#include <linux/usb/otg.h>
 #include "usb.h"
 
-#if defined(CONFIG_USBIF_COMPLIANCE) && defined(CONFIG_USB_XHCI_HCD)
+#if defined(CONFIG_USBIF_COMPLIANCE)
+#if defined(CONFIG_USB_XHCI_HCD)
 extern int usbif_u3h_send_event(char* event) ;
+#else
+extern void send_otg_event(enum usb_otg_event event);
+#endif
 #endif
 
 static inline const char *plural(int n)
@@ -157,10 +162,14 @@ int usb_choose_configuration(struct usb_device *udev)
 		dev_warn(&udev->dev,
 			"no configuration chosen from %d choice%s\n",
 			num_configs, plural(num_configs));
-#if defined(CONFIG_USBIF_COMPLIANCE) && defined(CONFIG_USB_XHCI_HCD)
+#if defined(CONFIG_USBIF_COMPLIANCE)
 		if ((insufficient_power>0) && (insufficient_power==num_configs)){
 			MYDBG("insufficient available bus power to all intf\n");
+#if defined(CONFIG_USB_XHCI_HCD)
 			usbif_u3h_send_event("DEV_OVER_CURRENT");
+#else
+			send_otg_event(OTG_EVENT_DEV_OVER_CURRENT);
+#endif
 		}
 #endif
 	}

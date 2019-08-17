@@ -6,7 +6,6 @@
 #include <linux/thermal.h>
 #include <linux/platform_device.h>
 #include <linux/aee.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/delay.h>
 #include <linux/proc_fs.h>
@@ -51,7 +50,7 @@ static char g_bind9[20]={0};
 #define mtktspopram_dprintk(fmt, args...)   \
 do {                                    \
     if (mtktspopram_debug_log) {                \
-        xlog_printk(ANDROID_LOG_INFO, "Power/POPRAM_Thermal", fmt, ##args); \
+        pr_notice("Power/POPRAM_Thermal" fmt, ##args); \
     }                                   \
 } while(0)
 

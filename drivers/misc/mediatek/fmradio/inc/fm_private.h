@@ -54,12 +54,12 @@ typedef struct MT6620fm_priv {
 /* 6628 */
 typedef struct fm_priv_cb {
 	/* De-sense functions. */
-	fm_s32(*is_dese_chan) (fm_u16 freq);	/* check if this is a de-sense channel */
-	fm_s32(*hl_dese) (fm_u16 freq, void *arg);	/* return value: 0, low side; 1, high side; else error no */
-	fm_s32(*fa_dese) (fm_u16 freq, void *arg);	/* return value: 0, fa off; 1, fa on; else error no */
-	fm_s32(*mcu_dese) (fm_u16 freq, void *arg);	/* return value: 0, mcu dese disable; 1, enable; else error no */
-	fm_s32(*gps_dese) (fm_u16 freq, void *arg);	/* return value: 0,mcu dese disable; 1, enable; else error no */
-	fm_u16(*chan_para_get) (fm_u16 freq);	/* get channel parameter, HL side/ FA / ATJ */
+	fm_s32(*is_dese_chan) (fm_u16 freq); /* check if this is a de-sense channel */
+	fm_s32(*hl_dese) (fm_u16 freq, void *arg); /* return value: 0, low side; 1, high side; else error no */
+	fm_s32(*fa_dese) (fm_u16 freq, void *arg); /* return value: 0, fa off; 1, fa on; else error no */
+	fm_s32(*mcu_dese) (fm_u16 freq, void *arg); /* return value: 0, mcu dese disable; 1, enable; else error no */
+	fm_s32(*gps_dese) (fm_u16 freq, void *arg); /* return value: 0,mcu dese disable; 1, enable; else error no */
+	fm_u16(*chan_para_get) (fm_u16 freq); /* get channel parameter, HL side/ FA / ATJ */
 } fm_priv_cb_t;
 
 typedef struct fm_priv {
@@ -85,9 +85,8 @@ typedef struct fm_pub {
 	struct fm_pub_cb pub_tbl;
 } fm_pub_t;
 
-
 #if 0				/* (!defined(MT6620_FM)&&!defined(MT6628_FM)) */
 extern fm_s32 fm_priv_register(struct fm_priv *pri, struct fm_pub *pub);
 extern fm_s32 fm_priv_unregister(struct fm_priv *pri, struct fm_pub *pub);
 #endif
-#endif				/* __FM_PRIVATE_H__ */
+#endif /* __FM_PRIVATE_H__ */

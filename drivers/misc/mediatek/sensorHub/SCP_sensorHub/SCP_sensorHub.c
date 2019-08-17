@@ -311,6 +311,21 @@ static void SCP_sensorHub_power(struct sensorHub_hw *hw, unsigned int on)
 {
 }
 /*----------------------------------------------------------------------------*/
+static unsigned long long SCP_sensorHub_GetCurNS(void)
+{
+/*
+    int64_t  nt;
+    struct timespec time;
+
+    time.tv_sec = 0;
+    time.tv_nsec = 0;
+    get_monotonic_boottime(&time);
+    nt = time.tv_sec*1000000000LL+time.tv_nsec;
+*/
+
+	return sched_clock();
+}
+/*----------------------------------------------------------------------------*/
 //md32 may lock hw semaphore about 6.x ms to push data to dram.
 static int SCP_sensorHub_get_md32_semaphore()
 {
@@ -389,7 +404,7 @@ static int SCP_sensorHub_ReadSensorData(int handle, hwm_sensor_data *sensorData)
 {
 	struct SCP_sensorHub_data *obj = obj_data;
     char *pStart, *pEnd, *pNext;
-    struct SCP_sensorData *curData;
+    struct SCP_sensorData curData;
     char *rp, *wp;
     int offset;
     int fifo_usage;
@@ -409,48 +424,48 @@ static int SCP_sensorHub_ReadSensorData(int handle, hwm_sensor_data *sensorData)
         return -2;
     }
         
-        dma_sync_single_for_cpu(&SCP_sensorHub_dev, obj->mapping, obj->SCP_sensorFIFO->FIFOSize, DMA_FROM_DEVICE);
-        pStart = (char *)obj->SCP_sensorFIFO + offsetof(struct sensorFIFO, data);
-        pEnd = (char *)pStart + obj->SCP_sensorFIFO->FIFOSize;
-        rp = pStart + (int)obj->SCP_sensorFIFO->rp;
-        wp = pStart + (int)obj->SCP_sensorFIFO->wp;
+    dma_sync_single_for_cpu(&SCP_sensorHub_dev, obj->mapping, obj->SCP_sensorFIFO->FIFOSize, DMA_FROM_DEVICE);
+    pStart = (char *)obj->SCP_sensorFIFO + offsetof(struct sensorFIFO, data);
+    pEnd = (char *)pStart + obj->SCP_sensorFIFO->FIFOSize;
+    rp = pStart + (int)obj->SCP_sensorFIFO->rp;
+    wp = pStart + (int)obj->SCP_sensorFIFO->wp;
 
-        if (rp < pStart || pEnd <= rp)
-        {
-            SCP_ERR("FIFO rp invalid : %p, %p, %p\n", pStart, pEnd, rp);
+    if (rp < pStart || pEnd <= rp)
+    {
+        SCP_ERR("FIFO rp invalid : %p, %p, %p\n", pStart, pEnd, rp);
         if ((err = release_md32_semaphore(SEMAPHORE_SENSOR)) < 0)
         {
             SCP_ERR("release_md32_semaphore fail : %d\n", err);
             return -3;
         }
-            return -4;
-        }
+        return -4;
+    }
 
-        if (wp < pStart || pEnd <= wp)
-        {
-            SCP_ERR("FIFO wp invalid : %p, %p, %p\n", pStart, pEnd, wp);
+    if (wp < pStart || pEnd <= wp)
+    {
+        SCP_ERR("FIFO wp invalid : %p, %p, %p\n", pStart, pEnd, wp);
         if ((err = release_md32_semaphore(SEMAPHORE_SENSOR)) < 0)
         {
             SCP_ERR("release_md32_semaphore fail : %d\n", err);
             return -3;
         }
-            return -5;
-        }
+        return -5;
+    }
 
-        if (rp == wp)
-        {
-            SCP_ERR("FIFO empty\n");
+    if (rp == wp)
+    {
+        SCP_ERR("FIFO empty\n");
         if ((err = release_md32_semaphore(SEMAPHORE_SENSOR)) < 0)
         {
             SCP_ERR("release_md32_semaphore fail : %d\n", err);
             return -3;
         }
-            return -6;
-        }
+        return -6;
+    }
     else
-	    {
-            pNext = rp + offsetof(struct SCP_sensorData, data) + ((struct SCP_sensorData*)rp)->dataLength;
-            pNext = (char *)((((unsigned long)pNext + 3) >> 2 ) << 2);
+    {
+        pNext = rp + offsetof(struct SCP_sensorData, data) + ((struct SCP_sensorData*)rp)->dataLength;
+        pNext = (char *)((((unsigned long)pNext + 3) >> 2 ) << 2);
         
         if (SCP_TRC_BATCH_DETAIL & atomic_read(&(obj_data->trace)))
             SCP_LOG("dataLength = %d, pNext = %p, rp = %p, wp = %p\n", ((struct SCP_sensorData*)rp)->dataLength, pNext, rp, wp);
@@ -458,30 +473,19 @@ static int SCP_sensorHub_ReadSensorData(int handle, hwm_sensor_data *sensorData)
         if (((struct SCP_sensorData*)rp)->dataLength != 6 && ((struct SCP_sensorData*)rp)->dataLength != 8)
             SCP_ERR("Wrong dataLength = %d\n", ((struct SCP_sensorData*)rp)->dataLength);
             
-            if(!(curData = kzalloc(pNext - rp, GFP_KERNEL)))
-            {
-                SCP_ERR("Allocate curData fail\n");
-            if ((err = release_md32_semaphore(SEMAPHORE_SENSOR)) < 0)
-            {
-                SCP_ERR("release_md32_semaphore fail : %d\n", err);
-                return -3;
-            }
-                return -7;
-            }
-            
-            if (pNext < pEnd)
-            {
-                memcpy((char *)curData, rp, pNext - rp);
-                rp = pNext;
-            }
-            else
-            {
-                memcpy(curData, rp, pEnd - rp);
-                offset = (int)(pEnd - rp); //fix build error, error: invalid operands to binary + (have 'char *' and 'char *')
-                memcpy(curData + offset, pStart, pNext - pEnd);
-                offset = (int)(pNext - pEnd); //fix build error, error: invalid operands to binary + (have 'char *' and 'char *')
-                rp = pStart + offset;
-            }
+        if (pNext < pEnd)
+        {
+            memcpy((char *)&curData, rp, pNext - rp);
+            rp = pNext;
+        }
+        else
+        {
+            memcpy(&curData, rp, pEnd - rp);
+            offset = (int)(pEnd - rp); //fix build error, error: invalid operands to binary + (have 'char *' and 'char *')
+            memcpy((char *)&curData + offset, pStart, pNext - pEnd);
+            offset = (int)(pNext - pEnd); //fix build error, error: invalid operands to binary + (have 'char *' and 'char *')
+            rp = pStart + offset;
+        }
 
         obj->SCP_sensorFIFO->rp = (int)(rp - pStart);
         dma_sync_single_for_device(&SCP_sensorHub_dev, obj->mapping, obj->SCP_sensorFIFO->FIFOSize, DMA_TO_DEVICE); //write back to device asap.
@@ -490,14 +494,12 @@ static int SCP_sensorHub_ReadSensorData(int handle, hwm_sensor_data *sensorData)
             SCP_ERR("release_md32_semaphore fail : %d\n", err);
         }
 
-            sensorData->sensor = curData->sensorType;
-            sensorData->value_divide = 1000; //need to check
-            sensorData->status = SENSOR_STATUS_ACCURACY_MEDIUM;
-                sensorData->values[0] = curData->data[0];
-                sensorData->values[1] = curData->data[1];
-                sensorData->values[2] = curData->data[2];
-
-            kfree(curData);
+        sensorData->sensor = curData.sensorType;
+        sensorData->value_divide = 1000; //need to check
+        sensorData->status = SENSOR_STATUS_ACCURACY_MEDIUM;
+        sensorData->values[0] = curData.data[0];
+        sensorData->values[1] = curData.data[1];
+        sensorData->values[2] = curData.data[2];
 
         if (rp <= wp)
         {
@@ -754,6 +756,7 @@ static void SCP_sensorHub_late_resume(struct early_suspend *h)
 /*----------------------------------------------------------------------------*/
 #endif //#if !defined(CONFIG_HAS_EARLYSUSPEND) || !defined(USE_EARLY_SUSPEND)
 /*----------------------------------------------------------------------------*/
+static unsigned long long t1, t2, t3, t4, t5, t6;
 int SCP_sensorHub_req_send(SCP_SENSOR_HUB_DATA_P data, uint *len, unsigned int wait)
 {
     ipi_status status;
@@ -830,6 +833,8 @@ int SCP_sensorHub_req_send(SCP_SENSOR_HUB_DATA_P data, uint *len, unsigned int w
         wait_event_interruptible(SCP_sensorHub_req_wq, (atomic_read(&(obj_data->wait_rsp)) == 0));
         del_timer_sync(&obj_data->timer);
         err = userData->rsp.errCode;
+		if (t6-t1 > 3000000LL)
+			SCP_ERR("%llu, %llu, %llu, %llu, %llu, %llu\n", t1, t2, t3, t4, t5, t6);
         mutex_unlock(&SCP_sensorHub_req_mutex);
     }
 
@@ -901,6 +906,8 @@ static void SCP_sensorHub_IPI_handler(int id, void *data, unsigned int len)
     bool do_registed_handler = false;
     static int first_init_done = 0;
 
+	t1 = SCP_sensorHub_GetCurNS();
+
     if (SCP_TRC_FUN == atomic_read(&(obj_data->trace)))
         SCP_FUN();
 
@@ -958,6 +965,8 @@ static void SCP_sensorHub_IPI_handler(int id, void *data, unsigned int len)
                 return;
         }
 
+		t2 = SCP_sensorHub_GetCurNS();
+
         if (ID_SENSOR_MAX_HANDLE < rsp->rsp.sensorType)
         {
             SCP_ERR("SCP_sensorHub_IPI_handler invalid sensor type %d\n", rsp->rsp.sensorType);
@@ -970,6 +979,8 @@ static void SCP_sensorHub_IPI_handler(int id, void *data, unsigned int len)
                 sensor_handler[rsp->rsp.sensorType](data, len);
             }
         }
+
+		t3 = SCP_sensorHub_GetCurNS();
 
         if(atomic_read(&(obj_data->wait_rsp)) == 1 && true == wake_up_req)
         {
@@ -986,8 +997,11 @@ static void SCP_sensorHub_IPI_handler(int id, void *data, unsigned int len)
                 memcpy(userData, rsp, len);
                 *userDataLen = len;
             }
+			t4 = SCP_sensorHub_GetCurNS();
             atomic_set(&(obj_data->wait_rsp), 0);
+			t5 = SCP_sensorHub_GetCurNS();
             wake_up(&SCP_sensorHub_req_wq);
+			t6 = SCP_sensorHub_GetCurNS();
         }
     }
 }
@@ -1120,7 +1134,10 @@ static int SCP_sensorHub_get_fifo_status(int *dataLen, int *status, char *reserv
                 SCP_LOG("rp = %p, dataLength = %d, pNext = %p\n", rp, ((struct SCP_sensorData*)rp)->dataLength, pNext);
 
             if (((struct SCP_sensorData*)rp)->dataLength != 6 && ((struct SCP_sensorData*)rp)->dataLength != 8)
-                SCP_ERR("Wrong dataLength = %d\n", ((struct SCP_sensorData*)rp)->dataLength);
+            {
+                SCP_ERR("Wrong dataLength = %d, sensorType = %d\n", ((struct SCP_sensorData*)rp)->dataLength, ((struct SCP_sensorData*)rp)->sensorType);
+                return -7;
+            }
 
             pt[((struct SCP_sensorData*)rp)->sensorType].total_count++;
             
@@ -1230,10 +1247,12 @@ static int SCP_sensorHub_probe(/*struct platform_device *pdev*/)
 	obj->timer.function	= SCP_sensorHub_req_send_timeout;
 	obj->timer.data		= (unsigned long)obj;
 
+#ifdef CONFIG_CUSTOM_KERNEL_STEP_COUNTER
     init_timer(&obj->notify_timer);
     obj->notify_timer.expires	= HZ/5; //200 ms
     obj->notify_timer.function	= notify_ap_timeout;
     obj->notify_timer.data	= (unsigned long)obj;
+#endif /*#ifdef CONFIG_CUSTOM_KERNEL_STEP_COUNTER*/
 
     md32_ipi_registration(IPI_SENSOR, SCP_sensorHub_IPI_handler, "SCP_sensorHub");
 		
@@ -1584,11 +1603,13 @@ static int SCP_sensorHub_notify_handler(void* data, uint len)
                     {
                         schedule_work(&(obj_data->sd_work));
                     }
+#ifdef CONFIG_CUSTOM_KERNEL_STEP_COUNTER
                     else if (ID_SIGNIFICANT_MOTION == rsp->notify_rsp.sensorType)
                     {
                         wake_lock(&sig_lock);
                         schedule_work(&(obj_data->sig_work));
                     }
+#endif /*#ifdef CONFIG_CUSTOM_KERNEL_STEP_COUNTER*/
                     else if (ID_IN_POCKET == rsp->notify_rsp.sensorType)
                     {
                         schedule_work(&(obj_data->inpk_work));

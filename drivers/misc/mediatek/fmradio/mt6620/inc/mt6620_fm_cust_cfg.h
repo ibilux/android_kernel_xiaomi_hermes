@@ -45,7 +45,7 @@ enum {
 /* ***************************************************************************************** */
 #define FMR_SEEK_SPACE      1	/* FM radio seek space,1:100KHZ; 2:200KHZ */
 #define FMR_SCAN_CH_SIZE    40	/* FM radio scan max channel size */
-#define FMR_BAND            1	/* FM radio band, 1:87.5MHz~108.0MHz; 2:76.0MHz~90.0MHz; 3:76.0MHz~108.0MHz; 4:special */
+#define FMR_BAND            1
 #define FM_SCAN_SORT_SELECT FM_SCAN_SORT_NON
 #define FM_FAKE_CH_NUM      1
 #define FM_FAKE_CH_RSSI     40
@@ -130,4 +130,4 @@ enum {
 #define FM_TX_SCAN_HOLE_LOW_MT6620  923	/* 92.3MHz~95.4MHz should not show to user */
 #define FM_TX_SCAN_HOLE_HIGH_MT6620 954	/* 92.3MHz~95.4MHz should not show to user */
 
-#endif				/* __FM_CUST_CFG_H__ */
+#endif /* __FM_CUST_CFG_H__ */

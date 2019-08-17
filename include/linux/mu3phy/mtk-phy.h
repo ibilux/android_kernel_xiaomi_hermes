@@ -201,8 +201,9 @@ EXTERN PHY_UINT8                      _bYcurr;
 EXTERN enumScanDir               _eScanDir;
 EXTERN PHY_INT8                      _fgXChged;
 EXTERN unsigned int                      _bPIResult;
-EXTERN PHY_UINT32 pwErrCnt0[CYCLE_COUNT_MAX][ERRCNT_MAX][ERRCNT_MAX];
-EXTERN PHY_UINT32 pwErrCnt1[CYCLE_COUNT_MAX][ERRCNT_MAX][ERRCNT_MAX];
+/* Comment for saving the kernel size. This's only used at external PHY*/
+/*EXTERN PHY_UINT32 pwErrCnt0[CYCLE_COUNT_MAX][ERRCNT_MAX][ERRCNT_MAX];*/
+/*EXTERN PHY_UINT32 pwErrCnt1[CYCLE_COUNT_MAX][ERRCNT_MAX][ERRCNT_MAX];*/
 
 /***********************************/
 #endif

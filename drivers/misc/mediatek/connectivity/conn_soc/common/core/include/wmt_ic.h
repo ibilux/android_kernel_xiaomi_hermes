@@ -1,10 +1,10 @@
 /*
 * Copyright (C) 2011-2014 MediaTek Inc.
-* 
-* This program is free software: you can redistribute it and/or modify it under the terms of the 
+*
+* This program is free software: you can redistribute it and/or modify it under the terms of the
 * GNU General Public License version 2 as published by the Free Software Foundation.
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU General Public License for more details.
 *
@@ -17,8 +17,6 @@
 
     Any definitions in this file will be shared among GLUE Layer and internal Driver Stack.
 */
-
-
 
 #ifndef _WMT_IC_H_
 #define _WMT_IC_H_
@@ -80,26 +78,25 @@
 /* General definition used for ALL/UNKNOWN CHIPS */
 /* Now MT6620 uses these definitions */
 #define GEN_CONFG_BASE (0x80000000UL)
-#define GEN_HVR (GEN_CONFG_BASE + 0x0UL) /* HW_VER */
-#define GEN_FVR (GEN_CONFG_BASE + 0x4UL) /* FW_VER */
-#define GEN_VER_MASK (0x0000FFFFUL) /* HW_VER and FW_VER valid bits mask */
-#define GEN_HCR (GEN_CONFG_BASE + 0x8UL) /* HW_CODE, chip id */
-#define GEN_HCR_MASK (0x0000FFFFUL) /* HW_CODE valid bits mask */
+#define GEN_HVR (GEN_CONFG_BASE + 0x0UL)	/* HW_VER */
+#define GEN_FVR (GEN_CONFG_BASE + 0x4UL)	/* FW_VER */
+#define GEN_VER_MASK (0x0000FFFFUL)	/* HW_VER and FW_VER valid bits mask */
+#define GEN_HCR (GEN_CONFG_BASE + 0x8UL)	/* HW_CODE, chip id */
+#define GEN_HCR_MASK (0x0000FFFFUL)	/* HW_CODE valid bits mask */
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
 */
 
-typedef struct _WMT_IC_INFO_S
-{
-    UINT32 u4HwVer; /* u4HwId */
-    PUINT8 cChipName;
-    PUINT8 cChipVersion;
-    PUINT8 cPatchNameExt;
-    MTK_WCN_BOOL bPsmSupport;
-    MTK_WCN_BOOL bWorkWithoutPatch;
-    ENUM_WMTHWVER_TYPE_T eWmtHwVer;
+typedef struct _WMT_IC_INFO_S {
+	UINT32 u4HwVer;		/* u4HwId */
+	PUINT8 cChipName;
+	PUINT8 cChipVersion;
+	PUINT8 cPatchNameExt;
+	MTK_WCN_BOOL bPsmSupport;
+	MTK_WCN_BOOL bWorkWithoutPatch;
+	ENUM_WMTHWVER_TYPE_T eWmtHwVer;
 } WMT_IC_INFO_S, *P_WMT_IC_INFO_S;
 
 /*******************************************************************************
@@ -123,4 +120,3 @@ typedef struct _WMT_IC_INFO_S
 */
 
 #endif /* _WMT_IC_H_ */
-

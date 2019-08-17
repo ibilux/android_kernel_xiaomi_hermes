@@ -53,7 +53,7 @@
 
 #include <trace/events/timer.h>
 
-#include <linux/mt_sched_mon.h>
+#include "mt_sched_mon.h"
 
 //#define MTK_HRTIME_DEBUG     /*MTK debug func*/
 /*

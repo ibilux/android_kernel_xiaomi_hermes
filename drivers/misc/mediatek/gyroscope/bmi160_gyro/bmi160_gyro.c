@@ -124,6 +124,10 @@ struct bmg_i2c_data {
 	atomic_t	fir_en;
 	struct data_filter	fir;
 #endif
+
+#if defined(CONFIG_HAS_EARLYSUSPEND)
+    struct early_suspend    early_drv;
+#endif
 };
 
 #ifndef GYRO_TAG
@@ -1591,6 +1595,7 @@ static struct miscdevice bmg_device = {
 	.fops = &bmg_fops,
 };
 
+#ifndef CONFIG_HAS_EARLYSUSPEND
 static int bmg_suspend(struct i2c_client *client, pm_message_t msg)
 {
 	struct bmg_i2c_data *obj = obj_i2c_data;
@@ -1636,6 +1641,49 @@ static int bmg_resume(struct i2c_client *client)
 	atomic_set(&obj->suspend, 0);
 	return 0;
 }
+#else
+static void bmi160_gyro_early_suspend(struct early_suspend *h)
+{
+	struct bmg_i2c_data *obj = obj_i2c_data;
+	int err = 0;
+	GYRO_FUN();
+
+	if (obj == NULL) {
+		GYRO_ERR("null pointer\n");
+		return;
+	}
+
+	atomic_set(&obj->suspend, 1);
+	err = bmg_set_powermode(obj->client, BMG_SUSPEND_MODE);
+	if (err) {
+		GYRO_ERR("bmg set suspend mode failed, err = %d\n",err);
+		return;
+	}
+	bmg_power(obj->hw, 0);
+	return;
+}
+static void bmi160_gyro_late_resume(struct early_suspend *h)
+{
+	struct bmg_i2c_data *obj = obj_i2c_data;
+	int err;
+	GYRO_FUN();
+
+	if (obj == NULL) {
+		GYRO_ERR("null pointer\n");
+		return;
+	}
+
+	bmg_power(obj->hw, 1);
+	err = bmg_init_client(obj->client, 0);
+	if (err) {
+		GYRO_ERR("initialize client failed, err = %d\n", err);
+		return;
+	}
+
+	atomic_set(&obj->suspend, 0);
+	return;
+}
+#endif/*CONFIG_HAS_EARLYSUSPEND*/
 
 static int bmg_i2c_detect(struct i2c_client *client,
 		struct i2c_board_info *info)
@@ -1776,6 +1824,7 @@ static int bmi160_gyro_get_data(int* x ,int* y,int* z, int* status)
 }
 
 #define SLT_DEVINFO_EMCP
+
 #ifdef SLT_DEVINFO_EMCP
 #include "../sltdevinfo/emi.h"
 #include <linux/dev_info.h>
@@ -1785,8 +1834,8 @@ extern int num_of_emi_records;
 extern EMI_SETTINGS emi_settings[];
 #endif
 
+#ifdef SLT_DEVINFO_EMCP
 extern int devinfo_ram_size;
-
 extern int g_rom_size1;
 
 extern u64 msdc_get_capacity(int get_emmc_total);
@@ -1813,7 +1862,7 @@ void dump_mmc()
 
                                    //  rom_size = user_size/1024/1024;
 
-                        for(i=0; i<num_of_emi_records; i++) {
+                for(i=0; i<num_of_emi_records; i++) {
 				     struct devinfo_struct *dev = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);;
                                 switch (emi_settings[i].type) {
 			            case 0x0001:
@@ -1825,7 +1874,7 @@ void dump_mmc()
 			            case 0x0003:
                                         dev->device_type =	"Discrete LPDDR3";
                                         break;
-				     case 0x0004:
+				        case 0x0004:
                                         dev->device_type =	"Discrete PCDDR3";
                                         break;
 			            case 0x0101:
@@ -1849,7 +1898,7 @@ void dump_mmc()
 			            default:
                                         dev->device_type =	"unknow";
                                         break;
-		                   }
+		                }
 
                                  if( (emi_settings[i].DEVINFO_MCP[0] == 'H') && (emi_settings[i].DEVINFO_MCP[1] == '9' )){
 						   dev->device_vendor	 = 	"Hynix";
@@ -1862,7 +1911,7 @@ void dump_mmc()
                                  }else {
                                        	   dev->device_vendor	 = 	"unknow"; 
                                  	}
-    			
+
 		                   ram_size = (unsigned long  )(emi_settings[i].DRAM_RANK_SIZE[0] /(1024*1024) + emi_settings[i].DRAM_RANK_SIZE[1]/(1024*1024)
 		                                          + emi_settings[i].DRAM_RANK_SIZE[2] /(1024*1024)+ emi_settings[i].DRAM_RANK_SIZE[3]/(1024*1024));
 
@@ -1986,13 +2035,13 @@ void dump_mmc()
 						 printk("unused mdl_num=%d \n", ram_num);
 					}
 
-                    dev->device_version = DEVINFO_NULL;
-  				     dev->device_module = DEVINFO_NULL;     
-                                dev->device_ic= emi_settings[i].DEVINFO_MCP;
-                                DEVINFO_CHECK_ADD_DEVICE(dev);
-						}
+					dev->device_version = DEVINFO_NULL;
+					dev->device_module = DEVINFO_NULL;     
+					dev->device_ic= emi_settings[i].DEVINFO_MCP;
+					DEVINFO_CHECK_ADD_DEVICE(dev);
+				}
 }
-
+#endif
 
 extern struct i2c_client *bmi160_acc_i2c_client;
 
@@ -2079,27 +2128,26 @@ static int bmg_i2c_probe(struct i2c_client *client,
 		goto exit_kfree;
 	}
 
+#ifdef CONFIG_HAS_EARLYSUSPEND
+	obj->early_drv.level    = EARLY_SUSPEND_LEVEL_DISABLE_FB - 2,
+	obj->early_drv.suspend  = bmi160_gyro_early_suspend,
+	obj->early_drv.resume   = bmi160_gyro_late_resume,
+	register_early_suspend(&obj->early_drv);
+#endif
 	bmi160_gyro_init_flag =0;
 
-		struct devinfo_struct *dev = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);;
-		dev->device_type = "Gyro";
-		dev->device_vendor = "bosch"; 
-		dev->device_ic = "bmi160";
-		dev->device_version = DEVINFO_NULL;
-		dev->device_module = DEVINFO_NULL; 
-		dev->device_info = DEVINFO_NULL;
-		dev->device_used = DEVINFO_USED;	
-		  DEVINFO_CHECK_ADD_DEVICE(dev);
-
-
+	struct devinfo_struct *dev = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);;
+	dev->device_type = "Gyro";
+	dev->device_vendor = "bosch"; 
+	dev->device_ic = "bmi160";
+	dev->device_version = DEVINFO_NULL;
+	dev->device_module = DEVINFO_NULL; 
+	dev->device_info = DEVINFO_NULL;
+	dev->device_used = DEVINFO_USED;
+	DEVINFO_CHECK_ADD_DEVICE(dev);
 
 	GYRO_LOG("%s: OK\n", __func__);
-
-
-
-
 	return 0;
-
 exit_create_attr_failed:
 	misc_deregister(&bmg_device);
 exit_misc_device_register_failed:
@@ -2139,8 +2187,10 @@ static struct i2c_driver bmg_i2c_driver = {
 	.probe = bmg_i2c_probe,
 	.remove	= bmg_i2c_remove,
 	.detect	= bmg_i2c_detect,
+#if !defined(CONFIG_HAS_EARLYSUSPEND)
 	.suspend = bmg_suspend,
 	.resume = bmg_resume,
+#endif
 	.id_table = bmg_i2c_id,
 };
 

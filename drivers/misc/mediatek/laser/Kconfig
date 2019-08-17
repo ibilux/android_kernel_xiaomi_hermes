@@ -1,5 +1,0 @@
-config MTK_LASER
-  bool CONFIG_MTK_LASER
-  default n
-  help
-    CONFIG_MTK_LASER

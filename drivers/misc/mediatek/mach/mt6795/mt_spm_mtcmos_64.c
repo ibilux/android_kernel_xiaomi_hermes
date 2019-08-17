@@ -1063,7 +1063,7 @@ int spm_mtcmos_ctrl_vdec(int state)
         while ((spm_read(SPM_VDE_PWR_CON) & VDE_SRAM_ACK) != VDE_SRAM_ACK) {
             count++;
             if (count > 1000 && count<1010) {
-                printk("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
+				pr_err("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
             }
             if (count > 2000) {
                 clk_stat_check(SYS_DIS);
@@ -1099,7 +1099,7 @@ int spm_mtcmos_ctrl_vdec(int state)
         while ((spm_read(SPM_VDE_PWR_CON) & VDE_SRAM_ACK)) {
             count++;
             if (count > 1000 && count<1010) {
-                printk("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
+				pr_err("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
             }
             if (count > 2000) {
             	clk_stat_check(SYS_DIS);
@@ -1129,7 +1129,7 @@ int spm_mtcmos_ctrl_venc(int state)
         while ((spm_read(SPM_VEN_PWR_CON) & VEN_SRAM_ACK) != VEN_SRAM_ACK) {
             count++;
             if (count > 1000 && count<1010) {
-                printk("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
+				pr_err("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
             }
             if (count > 2000) {
                 clk_stat_check(SYS_DIS);
@@ -1165,7 +1165,7 @@ int spm_mtcmos_ctrl_venc(int state)
         while ((spm_read(SPM_VEN_PWR_CON) & VEN_SRAM_ACK)) {
             count++;
             if (count > 1000 && count<1010) {
-                printk("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
+				pr_err("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
             }
             if (count > 2000) {
                 clk_stat_check(SYS_DIS);
@@ -1324,7 +1324,7 @@ int spm_mtcmos_ctrl_disp(int state)
         while ((spm_read(SPM_DIS_PWR_CON) & DIS_SRAM_ACK) != DIS_SRAM_ACK) {
             count++;
             if (count > 1000 && count<1010) {
-                printk("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
+				pr_err("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
             }
             if (count > 2000) {
                 clk_stat_check(SYS_DIS);
@@ -1360,7 +1360,7 @@ int spm_mtcmos_ctrl_disp(int state)
         while ((spm_read(SPM_DIS_PWR_CON) & DIS_SRAM_ACK)) {
             count++;
             if (count > 1000 && count<1010) {
-                printk("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
+				pr_err("there is no fmm_clk, CLK_CFG_0 = 0x%x\n", spm_read(CLK_CFG_0));
             }
             if (count > 2000) {
                 clk_stat_check(SYS_DIS);
@@ -1616,7 +1616,7 @@ int spm_mtcmos_ctrl_mjc(int state)
         while ((spm_read(SPM_MJC_PWR_CON) & MJC_SRAM_ACK) != MJC_SRAM_ACK) {
             count++;
             if (count > 1000 && count<1010) {
-                printk("there is no fmjc_clk, CLK_CFG_5 = 0x%x\n", spm_read(CLK_CFG_5));
+				pr_err("there is no fmjc_clk, CLK_CFG_5 = 0x%x\n", spm_read(CLK_CFG_5));
             }
             if (count > 2000)
                 BUG();
@@ -1650,7 +1650,7 @@ int spm_mtcmos_ctrl_mjc(int state)
         while ((spm_read(SPM_MJC_PWR_CON) & MJC_SRAM_ACK)) {
             count++;
             if (count > 1000 && count<1010) {
-                printk("there is no fmjc_clk, CLK_CFG_5 = 0x%x\n", spm_read(CLK_CFG_5));
+				pr_err("there is no fmjc_clk, CLK_CFG_5 = 0x%x\n", spm_read(CLK_CFG_5));
             }
             if (count > 2000)
                 BUG();	

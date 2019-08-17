@@ -308,7 +308,7 @@ static int lz4k_decompress_hc(const unsigned char *in, size_t in_len, unsigned c
 	const unsigned char *ip = in;
 	unsigned int bits_buffer32 = 0;
 	unsigned int remaining_bits = 32;
-	int previous_off;
+	int previous_off = 0;
 
 	bits_buffer32 = *((unsigned int *)ip);
 	ip += 4;
@@ -362,7 +362,7 @@ static int lz4k_decompress_hc(const unsigned char *in, size_t in_len, unsigned c
 				} while (litlen > 0);
 			}
 
- break_literal:
+ /*break_literal:*/
 			if (__builtin_expect(!!(op == op_end), 0))
 				break;
 		} else {
@@ -390,7 +390,7 @@ static int lz4k_decompress_hc(const unsigned char *in, size_t in_len, unsigned c
 				int index = op - out;
 				int bits = 32 - __builtin_clz(index);
 				offset = (bits_buffer32 >> 1) & ((1 << bits) - 1);
-				bits_buffer32 = bits_buffer32 >> bits + 1;
+				bits_buffer32 = bits_buffer32 >> (bits + 1);
 				remaining_bits -= bits + 1;
 			}
 			previous_off = offset;

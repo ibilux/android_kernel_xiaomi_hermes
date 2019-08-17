@@ -5,7 +5,6 @@
 #include <mach/mt_typedefs.h>
 #include "charging.h"
 
-
 /*****************************************************************************
  *  BATTERY VOLTAGE
  ****************************************************************************/
@@ -183,10 +182,108 @@ typedef struct {
 	UINT32 ZCV;
 } PMU_ChargerStruct;
 
+struct battery_custom_data {
+	/* mt_charging.h */
+	/* stop charging while in talking mode */
+	int stop_charging_in_takling;
+	int talking_recharge_voltage;
+	int talking_sync_time;
+
+	/* Battery Temperature Protection */
+	int mtk_temperature_recharge_support;
+	int max_charge_temperature;
+	int max_charge_temperature_minus_x_degree;
+	int min_charge_temperature;
+	int min_charge_temperature_plus_x_degree;
+	int err_charge_temperature;
+
+	/* Linear Charging Threshold */
+	int v_pre2cc_thres;
+	int v_cc2topoff_thres;
+	int recharging_voltage;
+	int charging_full_current;
+
+	/* Charging Current Setting */
+	int config_usb_if;
+	int usb_charger_current_suspend;
+	int usb_charger_current_unconfigured;
+	int usb_charger_current_configured;
+	int usb_charger_current;
+	int ac_charger_input_current;
+	int ac_charger_current;
+	int non_std_ac_charger_current;
+	int charging_host_charger_current;
+	int apple_0_5a_charger_current;
+	int apple_1_0a_charger_current;
+	int apple_2_1a_charger_current;
+
+	/* Precise Tunning
+	   int battery_average_data_number;
+	   int battery_average_size;
+	 */
+
+	/* charger error check */
+	int bat_low_temp_protect_enable;
+	int v_charger_enable;
+	int v_charger_max;
+	int v_charger_min;
+
+	/* Tracking TIME */
+	int onehundred_percent_tracking_time;
+	int npercent_tracking_time;
+	int sync_to_real_tracking_time;
+	int v_0percent_tracking;
+
+	/* Battery Notify
+	   int battery_notify_case_0001_vcharger;
+	   int battery_notify_case_0002_vbattemp;
+	   int battery_notify_case_0003_icharging;
+	   int battery_notify_case_0004_vbat;
+	   int battery_notify_case_0005_total_chargingtime;
+	 */
+
+	/* High battery support */
+	int high_battery_voltage_support;
+
+	/* JEITA parameter */
+	int mtk_jeita_standard_support;
+	int cust_soc_jeita_sync_time;
+	int jeita_recharge_voltage;
+	int jeita_temp_above_pos_60_cv_voltage;
+	int jeita_temp_pos_45_to_pos_60_cv_voltage;
+	int jeita_temp_pos_10_to_pos_45_cv_voltage;
+	int jeita_temp_pos_0_to_pos_10_cv_voltage;
+	int jeita_temp_neg_10_to_pos_0_cv_voltage;
+	int jeita_temp_below_neg_10_cv_voltage;
+
+	/* For JEITA Linear Charging only */
+	int jeita_neg_10_to_pos_0_full_current;
+	int jeita_temp_pos_45_to_pos_60_recharge_voltage;
+	int jeita_temp_pos_10_to_pos_45_recharge_voltage;
+	int jeita_temp_pos_0_to_pos_10_recharge_voltage;
+	int jeita_temp_neg_10_to_pos_0_recharge_voltage;
+	int jeita_temp_pos_45_to_pos_60_cc2topoff_threshold;
+	int jeita_temp_pos_10_to_pos_45_cc2topoff_threshold;
+	int jeita_temp_pos_0_to_pos_10_cc2topoff_threshold;
+	int jeita_temp_neg_10_to_pos_0_cc2topoff_threshold;
+
+	/* cust_pe.h */
+	int mtk_pump_express_plus_support;
+	int ta_start_battery_soc;
+	int ta_stop_battery_soc;
+	int ta_ac_12v_input_current;
+	int ta_ac_9v_input_current;
+	int ta_ac_7v_input_current;
+	int ta_ac_charging_current;
+	int ta_12v_support;
+	int ta_9v_support;
+};
+
 /*****************************************************************************
  *  Extern Variable
  ****************************************************************************/
 extern PMU_ChargerStruct BMT_status;
+extern struct battery_custom_data batt_cust_data;
 extern CHARGING_CONTROL battery_charging_control;
 extern kal_bool g_ftm_battery_flag;
 extern int charging_level_data[1];
@@ -198,7 +295,7 @@ extern kal_bool ta_cable_out_occur;
 extern kal_bool is_ta_connect;
 extern struct wake_lock TA_charger_suspend_lock;
 #endif
-
+extern U32 sleep_total_time;
 
 /*****************************************************************************
  *  Extern Function
@@ -216,7 +313,7 @@ extern bool get_usb_current_unlimited(void);
 extern CHARGER_TYPE mt_get_charger_type(void);
 
 extern kal_uint32 mt_battery_get_duration_time(BATTERY_TIME_ENUM duration_type);
-extern void mt_battery_update_time(struct timespec * pre_time, BATTERY_TIME_ENUM duration_type);
+extern void mt_battery_update_time(struct timespec *pre_time, BATTERY_TIME_ENUM duration_type);
 
 extern kal_uint32 mt_battery_shutdown_check(void);
 
@@ -224,6 +321,9 @@ extern kal_uint8 bat_is_kpoc(void);
 
 #ifdef CONFIG_MTK_SMART_BATTERY
 extern void wake_up_bat(void);
+extern void wake_up_bat2(void);
+extern void wake_up_bat3(void);
+
 extern unsigned long BAT_Get_Battery_Voltage(int polling_mode);
 extern void mt_battery_charging_algorithm(void);
 #if defined(CONFIG_MTK_JEITA_STANDARD_SUPPORT)
@@ -233,6 +333,10 @@ extern PMU_STATUS do_jeita_state_machine(void);
 #else
 
 #define wake_up_bat()			do {} while (0)
+#define wake_up_bat2()			do {} while (0)
+#define wake_up_bat3()			do {} while (0)
+
+
 #define BAT_Get_Battery_Voltage(polling_mode)	({ 0; })
 
 #endif
@@ -241,6 +345,17 @@ extern PMU_STATUS do_jeita_state_machine(void);
 extern kal_bool bat_is_ext_power(void);
 #endif
 
+extern bool mt_usb_is_device(void);
+#if defined(CONFIG_USB_MTK_HDRC) || defined(CONFIG_USB_MU3D_DRV)
+extern void mt_usb_connect(void);
+extern void mt_usb_disconnect(void);
+#else
+#define mt_usb_connect() do { } while (0)
+#define mt_usb_disconnect() do { } while (0)
+#endif
+void check_battery_exist(void);
+extern void reset_parameter_dod_empty(void);
+extern void reset_parameter_dod_charger_plug_event(void);
 
 
 #endif				/* #ifndef BATTERY_COMMON_H */

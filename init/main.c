@@ -83,7 +83,7 @@
 #include <asm/setup.h>
 #include <asm/sections.h>
 #include <asm/cacheflush.h>
-#include <linux/bootprof.h>
+#include "bootprof.h"
 
 #ifdef CONFIG_X86_LOCAL_APIC
 #include <asm/smp.h>

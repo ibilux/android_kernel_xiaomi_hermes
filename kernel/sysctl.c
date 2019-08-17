@@ -1476,6 +1476,40 @@ static struct ctl_table vm_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_doulongvec_minmax,
 	},
+#ifdef CONFIG_MEMCG_ZNDSWAP
+	{
+		.procname	= "dt_swapcache",
+		.data		= &dt_swapcache,
+		.maxlen		= sizeof(dt_swapcache),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &zero,
+	},
+	{
+		.procname	= "dt_writeback",
+		.data		= &dt_writeback,
+		.maxlen		= sizeof(dt_writeback),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &zero,
+	},
+	{
+		.procname	= "dt_filecache",
+		.data		= &dt_filecache,
+		.maxlen		= sizeof(dt_filecache),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &zero,
+	},
+	/*{
+		.procname	= "dt_free",
+		.data		= &dt_free,
+		.maxlen		= sizeof(dt_free),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &zero,
+	},*/
+#endif
 	{ }
 };
 

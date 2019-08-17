@@ -28,42 +28,17 @@
 #include <linux/vmalloc.h>
 #include <linux/seq_file.h>
 #include "ion_priv.h"
+#include "ion_fb_heap.h"
+#include "ion_drv_priv.h"
 
 /*fb heap base and size denamic access*/
-ion_phys_addr_t fb_heap_base;
-size_t fb_heap_size;
-
 struct ion_fb_heap {
 	struct ion_heap heap;
 	struct gen_pool *pool;
 	ion_phys_addr_t base;
 	size_t size;
 };
-
-/*struct ion_fb_buffer_info {
-	struct mutex lock;
-	unsigned int security;
-	unsigned int coherent;
-	void *pVA;
-	ion_phys_addr_t priv_phys;
-	ion_fb_buf_debug_info_t dbg_info;
-};*/
-
 static int ion_fb_heap_debug_show(struct ion_heap *heap, struct seq_file *s, void *unused);
-
-/*extern size_t mtkfb_get_fb_size(void);
-extern phys_addr_t mtkfb_get_fb_base(void);
-int ion_fb_get_fb_heap_base(void)
-{
-	fb_heap_base = (ion_phys_addr_t)mtkfb_get_fb_base();
-	return 0;
-}
-
-int ion_fb_get_fb_heap_size(void)
-{
-	fb_heap_size= mtkfb_get_fb_size();
-	return 0;
-}*/
 
 ion_phys_addr_t ion_fb_allocate(struct ion_heap *heap,
 				      unsigned long size, unsigned long align)
@@ -74,8 +49,7 @@ ion_phys_addr_t ion_fb_allocate(struct ion_heap *heap,
 	unsigned long offset = gen_pool_alloc(fb_heap->pool, size);
 
 	if (!offset) {
-		/*IONMSG("[ion_fb_alloc]:fail! size=0x%x, free=0x%x \n", size,
-		       gen_pool_avail(fb_heap->pool));*/
+		IONMSG("[ion_fb_alloc]:fail!\n");
 		return ION_CARVEOUT_ALLOCATE_FAIL;
 	}
 
@@ -98,13 +72,38 @@ static int ion_fb_heap_phys(struct ion_heap *heap,
 				  struct ion_buffer *buffer,
 				  ion_phys_addr_t *addr, size_t *len)
 {
-	struct sg_table *table=buffer->priv_virt;
-	struct page *page=sg_page(table->sgl);
-	ion_phys_addr_t paddr=PFN_PHYS(page_to_pfn(page));
-
-	*addr = paddr;
+	ion_fb_buffer_info *pBufferInfo = (ion_fb_buffer_info *) buffer->priv_virt;
+	if (!pBufferInfo) {
+		IONMSG("[ion_fb_heap_phys]: Error. Invalid buffer.\n");
+		return -EFAULT;	/* Invalid buffer */
+	}
+	if (pBufferInfo->eModuleID == -1) {
+		IONMSG("[ion_fb_heap_phys]: Error. Buffer not configured.\n");
+		return -EFAULT;	/* Buffer not configured. */
+	}
+	IONMSG("[ion_fb_heap_phys]: eModuleID = %d, len = 0x%x, pa = 0x%lx.\n",
+			pBufferInfo->eModuleID, (unsigned int)buffer->size, pBufferInfo->priv_phys);
+	
+	/*Allocate MVA*/
+	mutex_lock(&(pBufferInfo->lock));
+	if (pBufferInfo->MVA == 0) {
+		int ret =
+		    m4u_alloc_mva_sg(pBufferInfo->eModuleID, buffer->sg_table, buffer->size,
+				     pBufferInfo->security, pBufferInfo->coherent,
+				     &pBufferInfo->MVA);
+		if (ret < 0) {
+			mutex_unlock(&(pBufferInfo->lock));
+			IONMSG("[ion_fb_heap_phys]: Error. Allocate MVA failed.\n");
+			return -EFAULT;
+		}
+	}	
+		
+	*addr = (ion_phys_addr_t)pBufferInfo->MVA;
+	mutex_unlock(&(pBufferInfo->lock));
 	*len = buffer->size;
 	
+	IONMSG("[ion_fb_heap_phys]: MVA = 0x%x, len = 0x%x.\n", pBufferInfo->MVA, (unsigned int)buffer->size);
+
 	return 0;
 }
 
@@ -113,64 +112,74 @@ static int ion_fb_heap_allocate(struct ion_heap *heap,
 				      unsigned long size, unsigned long align,
 				      unsigned long flags)
 {
-	struct sg_table *table;
+	ion_fb_buffer_info *pBufferInfo = NULL;
 	ion_phys_addr_t paddr;
-	int ret;
-
+	
 	if (align > PAGE_SIZE)
 		return -EINVAL;
-
-	table = kzalloc(sizeof(struct sg_table), GFP_KERNEL);
-	if (!table)
-		return -ENOMEM;
-	ret=sg_alloc_table(table,1,GFP_KERNEL);
-	if(ret)
-		goto err_free;
 	
-	paddr=ion_fb_allocate(heap,size,align);
-	if(paddr==ION_CARVEOUT_ALLOCATE_FAIL)
-	{
-		ret=-ENOMEM;
-		goto err_free_table;
-	}
+	paddr = ion_fb_allocate(heap, size, align);
 	
-	sg_set_page(table->sgl,pfn_to_page(PFN_DOWN(paddr)),size,0);
-	return 0;
+    /*create fb buffer info for it*/
+    pBufferInfo = (ion_fb_buffer_info*) kzalloc(sizeof(ion_fb_buffer_info), GFP_KERNEL);
+    if (IS_ERR_OR_NULL(pBufferInfo))
+    {
+        IONMSG("[ion_fb_heap_allocate]: Error. Allocate ion_buffer failed.\n");
+        return -EFAULT;
+    }
+	
+	pBufferInfo->priv_phys = paddr;
+	pBufferInfo->pVA = 0;
+	pBufferInfo->MVA = 0;
+	pBufferInfo->eModuleID = -1;
+	pBufferInfo->dbg_info.value1 = 0;
+	pBufferInfo->dbg_info.value2 = 0;
+	pBufferInfo->dbg_info.value3 = 0;
+	pBufferInfo->dbg_info.value4 = 0;
+	strncpy((pBufferInfo->dbg_info.dbg_name), "nothing", ION_MM_DBG_NAME_LEN);
+	mutex_init(&(pBufferInfo->lock));
 
-	err_free_table:
-		sg_free_table(table);
-	err_free:
-		kfree(table);
-	return ret;
+	buffer->priv_virt = pBufferInfo;
+
+	IONMSG("[ion_fb_heap_allocate] Success! buffer->priv_phys = %lx\n",pBufferInfo->priv_phys);
+	return pBufferInfo->priv_phys == ION_CARVEOUT_ALLOCATE_FAIL ? -ENOMEM : 0;
 }
 
 static void ion_fb_heap_free(struct ion_buffer *buffer)
 {
-	struct ion_heap *heap = buffer->heap;	
-	struct sg_table *table=buffer->priv_virt;
-	struct page *page=sg_page(table->sgl);
-	ion_phys_addr_t paddr=PFN_PHYS(page_to_pfn(page));
-
-	ion_heap_buffer_zero(buffer);
+	struct ion_heap *heap = buffer->heap;
+	ion_fb_buffer_info *pBufferInfo = (ion_fb_buffer_info *) buffer->priv_virt;
 	
-	if(ion_buffer_cached(buffer))
-		dma_sync_sg_for_device(NULL,table->sgl,table->nents,DMA_BIDIRECTIONAL);
-
-	ion_fb_free(heap, paddr, buffer->size);
-	sg_free_table(table);
-	kfree(table);
+	ion_fb_free(heap, pBufferInfo->priv_phys, buffer->size);
+	
+	pBufferInfo->priv_phys = ION_CARVEOUT_ALLOCATE_FAIL;
+	kfree(pBufferInfo);
 }
 
 struct sg_table *ion_fb_heap_map_dma(struct ion_heap *heap,
 					      struct ion_buffer *buffer)
 {	
-	return buffer->priv_virt;
+	struct sg_table *table;
+	int ret;
+	ion_fb_buffer_info *pBufferInfo = (ion_fb_buffer_info *) buffer->priv_virt;
+
+	table = kzalloc(sizeof(struct sg_table), GFP_KERNEL);
+	if (!table)
+		return ERR_PTR(-ENOMEM);
+	ret = sg_alloc_table(table, 1, GFP_KERNEL);
+	if (ret) {
+		kfree(table);
+		return ERR_PTR(ret);
+	}
+	sg_set_page(table->sgl, phys_to_page(pBufferInfo->priv_phys), buffer->size,
+		    0);
+	return table;
 }
 
 void ion_fb_heap_unmap_dma(struct ion_heap *heap,
 				 struct ion_buffer *buffer)
 {
-	return;
+	sg_free_table(buffer->sg_table);
 }
 
 static struct ion_heap_ops fb_heap_ops = {
@@ -193,6 +202,28 @@ static struct ion_heap_ops fb_heap_ops = {
 		} while (0)
 
 
+static void ion_fb_chunk_show(struct gen_pool *pool, 
+							struct gen_pool_chunk *chunk, 
+							void *data)
+{
+	int order, nlongs, nbits,i;
+	struct seq_file *s = (struct seq_file *)data;
+			
+			
+	order = pool->min_alloc_order;
+	nbits = (chunk->end_addr - chunk->start_addr) >> order;
+	nlongs = BITS_TO_LONGS(nbits);
+			
+	seq_printf(s, "phys_addr=0x%x bits=", (unsigned int)chunk->phys_addr);
+			
+	for(i=0; i<nlongs; i++)
+	{
+		seq_printf(s, "0x%x ", (unsigned int)chunk->bits[i]);
+	}
+					
+	seq_printf(s, "\n");				
+}
+
 static int ion_fb_heap_debug_show(struct ion_heap *heap, struct seq_file *s, void *unused)
 {
 	struct ion_fb_heap *fb_heap =
@@ -202,28 +233,18 @@ static int ion_fb_heap_debug_show(struct ion_heap *heap, struct seq_file *s, voi
 	total_size = gen_pool_size(fb_heap->pool);
 	size_avail = gen_pool_avail(fb_heap->pool);
 
-	/*seq_printf(s, "total_size=0x%x, free=0x%x, base=0x%x\n",
-			total_size, size_avail, (unsigned int)fb_heap->base);*/
-
+	seq_printf(s, "************************************************************\n");
+	seq_printf(s, "total_size=0x%x, free=0x%x\n",
+			(unsigned int)total_size, (unsigned int)size_avail);
+	seq_printf(s, "************************************************************\n");
+	
+	gen_pool_for_each_chunk(fb_heap->pool, ion_fb_chunk_show, s);
 	return 0;
 }
 
 struct ion_heap *ion_fb_heap_create(struct ion_platform_heap *heap_data)
 {
 	struct ion_fb_heap *fb_heap;
-	int ret;
-
-	struct page *page;
-	size_t size;
-
-	page=pfn_to_page(PFN_DOWN(heap_data->base));
-	size=heap_data->size;
-
-	ion_pages_sync_for_device(NULL, page, size, DMA_BIDIRECTIONAL);
-
-	ret=ion_heap_pages_zero(page,size, pgprot_writecombine(PAGE_KERNEL));
-	if (ret)
-		return ERR_PTR(ret);
 	
 	fb_heap = kzalloc(sizeof(struct ion_fb_heap), GFP_KERNEL);
 	if (!fb_heap)
@@ -234,10 +255,9 @@ struct ion_heap *ion_fb_heap_create(struct ion_platform_heap *heap_data)
 		kfree(fb_heap);
 		return ERR_PTR(-ENOMEM);
 	}
-	//ion_fb_get_fb_heap_base();
-	//ion_fb_get_fb_heap_size();
-	fb_heap->base = heap_data->base;//fb_heap_base;
-	fb_heap->size = 0;//fb_heap_size;
+	
+	fb_heap->base = heap_data->base;
+	fb_heap->size = heap_data->size;
 	gen_pool_add(fb_heap->pool, fb_heap->base, fb_heap->size,
 		     -1);
 	fb_heap->heap.ops = &fb_heap_ops;
@@ -259,86 +279,21 @@ void ion_fb_heap_destroy(struct ion_heap *heap)
 	fb_heap = NULL;
 }
 
-long ion_fb_heap_ioctl(struct ion_client *client, unsigned int cmd, unsigned long arg, int from_kernel)
+int ion_drv_create_FB_heap(ion_phys_addr_t fb_base, size_t fb_size)
 {
+	struct ion_platform_heap * heap_data;
 	
-	ion_fb_data_t Param;
-	long ret = 0;
 	
-	unsigned long ret_copy;
-	if (from_kernel)
-		Param = *(ion_fb_data_t *) arg;
-	else
-		ret_copy = copy_from_user(&Param, (void __user *)arg, sizeof(ion_fb_data_t));
-
-	switch (Param.fb_cmd) {
-	case ION_FB_SET_DEBUG_INFO:
-		{
-			struct ion_buffer *buffer;
-			if (Param.buf_debug_info_param.handle) {
-				struct ion_handle *kernel_handle;
-				kernel_handle = ion_drv_get_handle(client, 0,
-									  Param.
-									  buf_debug_info_param.
-									  handle, from_kernel);
-				if (IS_ERR(kernel_handle)) {
-					IONMSG("[ion_fb_heap_ioctl]: ion config buffer fail!");
-					ret = -EINVAL;
-					break;
-				}
-
-				buffer = ion_handle_buffer(kernel_handle);
-				if ((int)buffer->heap->type == ION_HEAP_TYPE_FB) {
-					char *Msg = "buffer that is from fb carveout heap.";
-					IONMSG("[ion_fb_heap_ioctl]: success. %s.\n", Msg);
-					ret = -EFAULT;
-				}
-			} 
-			else {
-				IONMSG
-				("[ion_fb_heap_ioctl]: Error. set dbg buffer with invalid handle.\n");
-				ret = -EFAULT;
-			}
-		}
-		break;
-
-	case ION_FB_GET_DEBUG_INFO:
-		{
-			struct ion_buffer *buffer;
-			if (Param.buf_debug_info_param.handle) {
-				struct ion_handle *kernel_handle;
-				kernel_handle = ion_drv_get_handle(client, 0,
-									  Param.
-									  buf_debug_info_param.
-									  handle, from_kernel);
-				if (IS_ERR(kernel_handle)) {
-					IONMSG("[ion_fb_heap_ioctl]: ion config buffer fail! ");
-					ret = -EINVAL;
-					break;
-				}
-				buffer = ion_handle_buffer(kernel_handle);
-				if ((int)buffer->heap->type == ION_HEAP_TYPE_FB) {
-					char *Msg = "buffer that is not from fb carveout heap.";
-					IONMSG("[ion_fb_heap_ioctl]: success. %s.\n", Msg);
-					ret = -EFAULT;
-				}
-			} 
-			else {
-				IONMSG
-				("[ion_fb_heap_ioctl]: Error. set dbg buffer with invalid handle.\n");
-				ret = -EFAULT;
-			}
-		}
-		break;
-
-	default:
-		IONMSG("[ion_fb_heap_ioctl]: Error. Invalid command.\n");
-		ret = -EFAULT;
-	}
-	if (from_kernel)
-		*(ion_fb_data_t *) arg = Param;
-	else
-		ret_copy = copy_to_user((void __user *)arg, &Param, sizeof(ion_fb_data_t));
-	return ret;
+	heap_data = kzalloc(sizeof(struct  ion_platform_heap), GFP_KERNEL);
+	
+	heap_data->id   = ION_HEAP_TYPE_FB;
+	heap_data->type = ION_HEAP_TYPE_FB;
+	heap_data->name = "ion_fb_heap";
+	heap_data->base = fb_base;
+	heap_data->size = fb_size;
+	heap_data->align = 0x1000;
+	heap_data->priv = NULL;
+	ion_drv_create_heap(heap_data);
+	return 0;
 }
 

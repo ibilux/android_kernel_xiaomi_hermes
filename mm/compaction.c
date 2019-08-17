@@ -18,8 +18,10 @@
 #include <linux/page-isolation.h>
 #include "internal.h"
 
+#if 0
 #ifdef CONFIG_HAS_EARLYSUSPEND
 #include <linux/earlysuspend.h>
+#endif
 #endif
 
 #ifdef CONFIG_COMPACTION
@@ -1238,6 +1240,7 @@ void compaction_unregister_node(struct node *node)
 
 #endif /* CONFIG_COMPACTION */
 
+#if 0
 #ifdef CONFIG_HAS_EARLYSUSPEND
 extern void drop_pagecache(void);
 //extern void kick_lmk_from_compaction(gfp_t);
@@ -1280,15 +1283,20 @@ static struct early_suspend kick_compaction_early_suspend_desc = {
 static int __init compaction_init(void)
 {
 	printk("@@@@@@ [%s] Register early suspend callback @@@@@@\n",__FUNCTION__);
+ #ifdef CONFIG_EARLYSUSPEND
 	register_early_suspend(&kick_compaction_early_suspend_desc);
+ #endif
 	return 0;
 }
 static void __exit compaction_exit(void)
 {
 	printk("@@@@@@ [%s] Unregister early suspend callback @@@@@@\n",__FUNCTION__);
+  #ifdef CONFIG_EARLYSUSPEND
 	unregister_early_suspend(&kick_compaction_early_suspend_desc);
+  #endif
 }
 
 module_init(compaction_init);
 module_exit(compaction_exit);
+#endif
 #endif

@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rsn.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rsn.h#1
 */
 
 /*! \file   rsn.h
     \brief  The wpa/rsn related define, macro and structure are described here.
 */
 
-
-
 /*
-** $Log: rsn.h $
+** Log: rsn.h
 **
 ** 07 23 2013 wh.su
 ** [BORA00002446] [MT6630] [Wi-Fi] [Driver] Update the security function code
@@ -30,7 +28,8 @@
  * adding the 802.11w related function and define .
  *
  * 06 22 2011 wh.su
- * [WCXRP00000806] [MT6620 Wi-Fi][Driver] Move the WPA/RSN IE and WAPI IE structure to mac.h and let the sw structure not align at byte
+ * [WCXRP00000806] [MT6620 Wi-Fi][Driver] Move the WPA/RSN IE and WAPI IE structure to mac.h
+ * and let the sw structure not align at byte
  * Move the WAPI/RSN IE to mac.h and SW structure not align to byte,
  * Notice needed update P2P.ko.
  *
@@ -72,7 +71,8 @@
  *
  * 03 03 2010 wh.su
  * [BORA00000637][MT6620 Wi-Fi] [Bug] WPA2 pre-authentication timer not correctly initialize
- * Fixed the pre-authentication timer not correctly init issue, and modify the security related callback function prototype.
+ * Fixed the pre-authentication timer not correctly init issue, and modify
+ * the security related callback function prototype.
  *
  * 01 27 2010 wh.su
  * [BORA00000476][Wi-Fi][firmware] Add the security module initialize code
@@ -161,7 +161,7 @@
 #define MASK_RSNIE_CAP_PREAUTH          BIT(0)
 
 #define GET_SELECTOR_TYPE(x)           ((UINT_8)(((x) >> 24) & 0x000000FF))
-#define SET_SELECTOR_TYPE(x, y)         x = (((x) & 0x00FFFFFF) | (((UINT_32)(y) << 24) & 0xFF000000))
+#define SET_SELECTOR_TYPE(x, y)		(x = (((x) & 0x00FFFFFF) | (((UINT_32)(y) << 24) & 0xFF000000)))
 
 #define AUTH_CIPHER_CCMP                0x00000008
 
@@ -190,7 +190,6 @@
 /* Flags for PMKID Candidate list structure */
 #define EVENT_PMKID_CANDIDATE_PREAUTH_ENABLED   0x01
 
-
 #define CONTROL_FLAG_UC_MGMT_NO_ENC             BIT(5)
 
 /*******************************************************************************
@@ -212,21 +211,15 @@
 
 #define ELEM_MAX_LEN_ASSOC_RSP_WSC_IE          (32 - ELEM_HDR_LEN)
 
-
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-BOOLEAN
-rsnParseRsnIE(IN P_ADAPTER_T prAdapter,
-	      IN P_RSN_INFO_ELEM_T prInfoElem, OUT P_RSN_INFO_T prRsnInfo);
+BOOLEAN rsnParseRsnIE(IN P_ADAPTER_T prAdapter, IN P_RSN_INFO_ELEM_T prInfoElem, OUT P_RSN_INFO_T prRsnInfo);
 
-BOOLEAN
-rsnParseWpaIE(IN P_ADAPTER_T prAdapter,
-	      IN P_WPA_INFO_ELEM_T prInfoElem, OUT P_RSN_INFO_T prWpaInfo);
+BOOLEAN rsnParseWpaIE(IN P_ADAPTER_T prAdapter, IN P_WPA_INFO_ELEM_T prInfoElem, OUT P_RSN_INFO_T prWpaInfo);
 
-BOOLEAN
-rsnSearchSupportedCipher(IN P_ADAPTER_T prAdapter, IN UINT_32 u4Cipher, OUT PUINT_32 pu4Index);
+BOOLEAN rsnSearchSupportedCipher(IN P_ADAPTER_T prAdapter, IN UINT_32 u4Cipher, OUT PUINT_32 pu4Index);
 
 BOOLEAN rsnIsSuitableBSS(IN P_ADAPTER_T prAdapter, IN P_RSN_INFO_T prBssRsnInfo);
 
@@ -242,24 +235,19 @@ VOID rsnGenerateRSNIE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo);
 
 BOOLEAN
 rsnParseCheckForWFAInfoElem(IN P_ADAPTER_T prAdapter,
-			    IN PUINT_8 pucBuf,
-			    OUT PUINT_8 pucOuiType, OUT PUINT_16 pu2SubTypeVersion);
+			    IN PUINT_8 pucBuf, OUT PUINT_8 pucOuiType, OUT PUINT_16 pu2SubTypeVersion);
 
 #if CFG_SUPPORT_AAA
-void
-rsnParserCheckForRSNCCMPPSK(P_ADAPTER_T prAdapter, P_RSN_INFO_ELEM_T prIe, PUINT_16 pu2StatusCode);
+void rsnParserCheckForRSNCCMPPSK(P_ADAPTER_T prAdapter, P_RSN_INFO_ELEM_T prIe, PUINT_16 pu2StatusCode);
 #endif
 
-VOID
-rsnTkipHandleMICFailure(IN P_ADAPTER_T prAdapter,
-			IN P_STA_RECORD_T prSta, IN BOOLEAN fgErrorKeyType);
+VOID rsnTkipHandleMICFailure(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta, IN BOOLEAN fgErrorKeyType);
 
 VOID rsnSelectPmkidCandidateList(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBssDesc);
 
 VOID rsnUpdatePmkidCandidateList(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBssDesc);
 
-BOOLEAN
-rsnSearchPmkidEntry(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBssid, OUT PUINT_32 pu4EntryIndex);
+BOOLEAN rsnSearchPmkidEntry(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBssid, OUT PUINT_32 pu4EntryIndex);
 
 BOOLEAN rsnCheckPmkidCandicate(IN P_ADAPTER_T prAdapter);
 
@@ -292,13 +280,9 @@ void rsnSaQueryAction(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 VOID rsnGenerateWSCIEForAssocRsp(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 #endif
 
-#if CFG_SUPPORT_DETECT_SECURITY_MODE_CHANGE
-BOOLEAN rsnCheckSecurityModeChanged(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo, P_BSS_DESC_T prBssDesc);
-#endif
-
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
 */
 
-#endif				/* _RSN_H */
+#endif /* _RSN_H */

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/wapi.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/wapi.c#1
 */
 
 /*! \file   "wapi.c"
@@ -9,15 +9,13 @@
     cipher and AKM check to help the AP seleced deciding.
 */
 
-
-
 /*
-** $Log: wapi.c $
-** 
+** Log: wapi.c
+**
 ** 10 24 2012 wh.su
 ** [ALPS00376392] [klocwork 9.1]  in  wapi.c, line 344
 ** Use MAX_NUM_SUPPORTED_WAPI_AKM_SUITESfor avoid Klocwork warning.
-** 
+**
 ** 10 24 2012 wh.su
 ** [ALPS00376391] [klocwork 9.1]  in  wapi.c, line 311
 ** Use the MAX_NUM_SUPPORTED_WAPI_CIPHER_SUITES for avoid Klccwork waring.
@@ -125,31 +123,26 @@
 *      Called by: AIS module, Associate request
 */
 /*----------------------------------------------------------------------------*/
-VOID
-wapiGenerateWAPIIE (
-    IN P_ADAPTER_T          prAdapter,
-    IN P_MSDU_INFO_T        prMsduInfo
-    )
+VOID wapiGenerateWAPIIE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo)
 {
-    PUINT_8                 pucBuffer;
+	PUINT_8 pucBuffer;
 
-    ASSERT(prAdapter);
-    ASSERT(prMsduInfo);
+	ASSERT(prAdapter);
+	ASSERT(prMsduInfo);
 
-    if (prMsduInfo->ucNetworkType != NETWORK_TYPE_AIS_INDEX)
-        return;
+	if (prMsduInfo->ucNetworkType != NETWORK_TYPE_AIS_INDEX)
+		return;
 
-    pucBuffer = (PUINT_8)((ULONG)prMsduInfo->prPacket +
-                          prMsduInfo->u2FrameLength);
+	pucBuffer = (PUINT_8) ((ULONG) prMsduInfo->prPacket + prMsduInfo->u2FrameLength);
 
-    /* ASSOC INFO IE ID: 68 :0x44 */
-    if (/* prWlanInfo->fgWapiMode && */ prAdapter->prGlueInfo->u2WapiAssocInfoIESz) {
-        kalMemCopy(pucBuffer, &prAdapter->prGlueInfo->aucWapiAssocInfoIEs, prAdapter->prGlueInfo->u2WapiAssocInfoIESz);
-        prMsduInfo->u2FrameLength += prAdapter->prGlueInfo->u2WapiAssocInfoIESz;
-    }
+	/* ASSOC INFO IE ID: 68 :0x44 */
+	if (/* prWlanInfo->fgWapiMode && */ prAdapter->prGlueInfo->u2WapiAssocInfoIESz) {
+		kalMemCopy(pucBuffer, &prAdapter->prGlueInfo->aucWapiAssocInfoIEs,
+			   prAdapter->prGlueInfo->u2WapiAssocInfoIESz);
+		prMsduInfo->u2FrameLength += prAdapter->prGlueInfo->u2WapiAssocInfoIESz;
+	}
 
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -163,221 +156,208 @@ wapiGenerateWAPIIE (
 * \retval FALSE - Failed
 */
 /*----------------------------------------------------------------------------*/
-BOOLEAN
-wapiParseWapiIE (
-    IN  P_WAPI_INFO_ELEM_T prInfoElem,
-    OUT P_WAPI_INFO_T      prWapiInfo
-    )
+BOOLEAN wapiParseWapiIE(IN P_WAPI_INFO_ELEM_T prInfoElem, OUT P_WAPI_INFO_T prWapiInfo)
 {
-    UINT_32                i;
-    INT_32                 u4RemainWapiIeLen;
-    UINT_16                u2Version;
-    UINT_16                u2Cap = 0;
-    UINT_32                u4GroupSuite = WAPI_CIPHER_SUITE_WPI;
-    UINT_16                u2PairSuiteCount = 0;
-    UINT_16                u2AuthSuiteCount = 0;
-    PUCHAR                 pucPairSuite = NULL;
-    PUCHAR                 pucAuthSuite = NULL;
-    PUCHAR                 cp;
+	UINT_32 i;
+	INT_32 u4RemainWapiIeLen;
+	UINT_16 u2Version;
+	UINT_16 u2Cap = 0;
+	UINT_32 u4GroupSuite = WAPI_CIPHER_SUITE_WPI;
+	UINT_16 u2PairSuiteCount = 0;
+	UINT_16 u2AuthSuiteCount = 0;
+	PUCHAR pucPairSuite = NULL;
+	PUCHAR pucAuthSuite = NULL;
+	PUCHAR cp;
 
-    DEBUGFUNC("wapiParseWapiIE");
+	DEBUGFUNC("wapiParseWapiIE");
 
-    ASSERT(prInfoElem);
-    ASSERT(prWapiInfo);
+	ASSERT(prInfoElem);
+	ASSERT(prWapiInfo);
 
-    /* Verify the length of the WAPI IE. */
-    if (prInfoElem->ucLength < 6) {
-        DBGLOG(SEC, TRACE, ("WAPI IE length too short (length=%d)\n", prInfoElem->ucLength));
-        return FALSE;
-    }
+	/* Verify the length of the WAPI IE. */
+	if (prInfoElem->ucLength < 6) {
+		DBGLOG(SEC, TRACE, "WAPI IE length too short (length=%d)\n", prInfoElem->ucLength);
+		return FALSE;
+	}
 
-    /* Check WAPI version: currently, we only support version 1. */
-    WLAN_GET_FIELD_16(&prInfoElem->u2Version, &u2Version);
-    if (u2Version != 1) {
-        DBGLOG(SEC, TRACE, ("Unsupported WAPI IE version: %d\n", u2Version));
-        return FALSE;
-    }
+	/* Check WAPI version: currently, we only support version 1. */
+	WLAN_GET_FIELD_16(&prInfoElem->u2Version, &u2Version);
+	if (u2Version != 1) {
+		DBGLOG(SEC, TRACE, "Unsupported WAPI IE version: %d\n", u2Version);
+		return FALSE;
+	}
 
-    cp = (PUCHAR) &prInfoElem->u2AuthKeyMgtSuiteCount;
-    u4RemainWapiIeLen = (INT_32) prInfoElem->ucLength - 2;
+	cp = (PUCHAR) &prInfoElem->u2AuthKeyMgtSuiteCount;
+	u4RemainWapiIeLen = (INT_32) prInfoElem->ucLength - 2;
 
-    do {
-        if (u4RemainWapiIeLen == 0) {
-            break;
-        }
+	do {
+		if (u4RemainWapiIeLen == 0)
+			break;
 
-        /*
-           AuthCount    : 2
-           AuthSuite    : 4 * authSuiteCount
-           PairwiseCount: 2
-           PairwiseSuite: 4 * pairSuiteCount
-           GroupSuite   : 4
-           Cap          : 2 */
+		/*
+		   AuthCount    : 2
+		   AuthSuite    : 4 * authSuiteCount
+		   PairwiseCount: 2
+		   PairwiseSuite: 4 * pairSuiteCount
+		   GroupSuite   : 4
+		   Cap          : 2 */
 
-        /* Parse the Authentication and Key Management Cipher Suite Count
-           field. */
-        if (u4RemainWapiIeLen < 2) {
-            DBGLOG(SEC, TRACE, ("Fail to parse WAPI IE in auth & key mgt suite count (IE len: %d)\n",
-                prInfoElem->ucLength));
-            return FALSE;
-        }
+		/* Parse the Authentication and Key Management Cipher Suite Count
+		   field. */
+		if (u4RemainWapiIeLen < 2) {
+			DBGLOG(SEC, TRACE, "Fail to parse WAPI IE in auth & key mgt suite count (IE len: %d)\n",
+					    prInfoElem->ucLength);
+			return FALSE;
+		}
 
-        WLAN_GET_FIELD_16(cp, &u2AuthSuiteCount);
-        cp += 2;
-        u4RemainWapiIeLen -= 2;
+		WLAN_GET_FIELD_16(cp, &u2AuthSuiteCount);
+		cp += 2;
+		u4RemainWapiIeLen -= 2;
 
-        /* Parse the Authentication and Key Management Cipher Suite List
-           field. */
-        i = (UINT_32) u2AuthSuiteCount * 4;
-        if (u4RemainWapiIeLen < (INT_32) i) {
-            DBGLOG(SEC, TRACE, ("Fail to parse WAPI IE in auth & key mgt suite list (IE len: %d)\n",
-                prInfoElem->ucLength));
-            return FALSE;
-        }
+		/* Parse the Authentication and Key Management Cipher Suite List
+		   field. */
+		i = (UINT_32) u2AuthSuiteCount * 4;
+		if (u4RemainWapiIeLen < (INT_32) i) {
+			DBGLOG(SEC, TRACE, "Fail to parse WAPI IE in auth & key mgt suite list (IE len: %d)\n",
+					    prInfoElem->ucLength);
+			return FALSE;
+		}
 
-        pucAuthSuite = cp;
+		pucAuthSuite = cp;
 
-        cp += i;
-        u4RemainWapiIeLen -= (INT_32) i;
+		cp += i;
+		u4RemainWapiIeLen -= (INT_32) i;
 
-        if (u4RemainWapiIeLen == 0) {
-            break;
-        }
+		if (u4RemainWapiIeLen == 0)
+			break;
 
-        /* Parse the Pairwise Key Cipher Suite Count field. */
-        if (u4RemainWapiIeLen < 2) {
-            DBGLOG(SEC, TRACE, ("Fail to parse WAPI IE in pairwise cipher suite count (IE len: %d)\n",
-                prInfoElem->ucLength));
-            return FALSE;
-        }
+		/* Parse the Pairwise Key Cipher Suite Count field. */
+		if (u4RemainWapiIeLen < 2) {
+			DBGLOG(SEC, TRACE, "Fail to parse WAPI IE in pairwise cipher suite count (IE len: %d)\n",
+					    prInfoElem->ucLength);
+			return FALSE;
+		}
 
-        WLAN_GET_FIELD_16(cp, &u2PairSuiteCount);
-        cp += 2;
-        u4RemainWapiIeLen -= 2;
+		WLAN_GET_FIELD_16(cp, &u2PairSuiteCount);
+		cp += 2;
+		u4RemainWapiIeLen -= 2;
 
-        /* Parse the Pairwise Key Cipher Suite List field. */
-        i = (UINT_32) u2PairSuiteCount * 4;
-        if (u4RemainWapiIeLen < (INT_32) i) {
-            DBGLOG(SEC, TRACE, ("Fail to parse WAPI IE in pairwise cipher suite list (IE len: %d)\n",
-                prInfoElem->ucLength));
-            return FALSE;
-        }
+		/* Parse the Pairwise Key Cipher Suite List field. */
+		i = (UINT_32) u2PairSuiteCount * 4;
+		if (u4RemainWapiIeLen < (INT_32) i) {
+			DBGLOG(SEC, TRACE, "Fail to parse WAPI IE in pairwise cipher suite list (IE len: %d)\n",
+					    prInfoElem->ucLength);
+			return FALSE;
+		}
 
-        pucPairSuite = cp;
+		pucPairSuite = cp;
 
-        cp += i;
-        u4RemainWapiIeLen -= (INT_32) i;
+		cp += i;
+		u4RemainWapiIeLen -= (INT_32) i;
 
-        /* Parse the Group Key Cipher Suite field. */
-        if (u4RemainWapiIeLen < 4) {
-            DBGLOG(SEC, TRACE, ("Fail to parse WAPI IE in group cipher suite (IE len: %d)\n",
-                prInfoElem->ucLength));
-            return FALSE;
-        }
+		/* Parse the Group Key Cipher Suite field. */
+		if (u4RemainWapiIeLen < 4) {
+			DBGLOG(SEC, TRACE, "Fail to parse WAPI IE in group cipher suite (IE len: %d)\n",
+					    prInfoElem->ucLength);
+			return FALSE;
+		}
 
-        WLAN_GET_FIELD_32(cp, &u4GroupSuite);
-        cp += 4;
-        u4RemainWapiIeLen -= 4;
+		WLAN_GET_FIELD_32(cp, &u4GroupSuite);
+		cp += 4;
+		u4RemainWapiIeLen -= 4;
 
-        /* Parse the WAPI u2Capabilities field. */
-        if (u4RemainWapiIeLen < 2) {
-            DBGLOG(SEC, TRACE, ("Fail to parse WAPI IE in WAPI capabilities (IE len: %d)\n",
-                prInfoElem->ucLength));
-            return FALSE;
-        }
+		/* Parse the WAPI u2Capabilities field. */
+		if (u4RemainWapiIeLen < 2) {
+			DBGLOG(SEC, TRACE, "Fail to parse WAPI IE in WAPI capabilities (IE len: %d)\n",
+					    prInfoElem->ucLength);
+			return FALSE;
+		}
 
-        WLAN_GET_FIELD_16(cp, &u2Cap);
-        u4RemainWapiIeLen -= 2;
+		WLAN_GET_FIELD_16(cp, &u2Cap);
+		u4RemainWapiIeLen -= 2;
 
-        /* Todo:: BKID support */
-    } while (FALSE);
+		/* Todo:: BKID support */
+	} while (FALSE);
 
-    /* Save the WAPI information for the BSS. */
+	/* Save the WAPI information for the BSS. */
 
-    prWapiInfo->ucElemId = ELEM_ID_WAPI;
+	prWapiInfo->ucElemId = ELEM_ID_WAPI;
 
-    prWapiInfo->u2Version = u2Version;
+	prWapiInfo->u2Version = u2Version;
 
-    prWapiInfo->u4GroupKeyCipherSuite = u4GroupSuite;
+	prWapiInfo->u4GroupKeyCipherSuite = u4GroupSuite;
 
-    DBGLOG(SEC, LOUD, ("WAPI: version %d, group key cipher suite %02x-%02x-%02x-%02x\n",
-        u2Version, (UCHAR) (u4GroupSuite & 0x000000FF),
-        (UCHAR) ((u4GroupSuite >> 8) & 0x000000FF),
-        (UCHAR) ((u4GroupSuite >> 16) & 0x000000FF),
-        (UCHAR) ((u4GroupSuite >> 24) & 0x000000FF)));
+	DBGLOG(SEC, LOUD, "WAPI: version %d, group key cipher suite %02x-%02x-%02x-%02x\n",
+			   u2Version, (UCHAR) (u4GroupSuite & 0x000000FF),
+			   (UCHAR) ((u4GroupSuite >> 8) & 0x000000FF),
+			   (UCHAR) ((u4GroupSuite >> 16) & 0x000000FF), (UCHAR) ((u4GroupSuite >> 24) & 0x000000FF));
 
-    if (pucPairSuite) {
-        /* The information about the pairwise key cipher suites is present. */
-        if (u2PairSuiteCount > MAX_NUM_SUPPORTED_WAPI_CIPHER_SUITES) {
-            u2PairSuiteCount = MAX_NUM_SUPPORTED_WAPI_CIPHER_SUITES;
-        }
+	if (pucPairSuite) {
+		/* The information about the pairwise key cipher suites is present. */
+		if (u2PairSuiteCount > MAX_NUM_SUPPORTED_WAPI_CIPHER_SUITES)
+			u2PairSuiteCount = MAX_NUM_SUPPORTED_WAPI_CIPHER_SUITES;
 
-        prWapiInfo->u4PairwiseKeyCipherSuiteCount = (UINT_32) u2PairSuiteCount;
+		prWapiInfo->u4PairwiseKeyCipherSuiteCount = (UINT_32) u2PairSuiteCount;
 
-        for (i = 0; i < (UINT_32) u2PairSuiteCount; i++) {
-            WLAN_GET_FIELD_32(pucPairSuite,
-                              &prWapiInfo->au4PairwiseKeyCipherSuite[i]);
-            pucPairSuite += 4;
+		for (i = 0; i < (UINT_32) u2PairSuiteCount; i++) {
+			WLAN_GET_FIELD_32(pucPairSuite, &prWapiInfo->au4PairwiseKeyCipherSuite[i]);
+			pucPairSuite += 4;
 
-            DBGLOG(SEC, LOUD,("WAPI: pairwise key cipher suite [%d]: %02x-%02x-%02x-%02x\n",
-                (UINT_8)i, (UCHAR) (prWapiInfo->au4PairwiseKeyCipherSuite[i] & 0x000000FF),
-                (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[i] >> 8) & 0x000000FF),
-                (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[i] >> 16) & 0x000000FF),
-                (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[i] >> 24) & 0x000000FF)));
-        }
-    }
-    else {
-        /* The information about the pairwise key cipher suites is not present.
-           Use the default chipher suite for WAPI: WPI. */
-        prWapiInfo->u4PairwiseKeyCipherSuiteCount = 1;
-        prWapiInfo->au4PairwiseKeyCipherSuite[0] = WAPI_CIPHER_SUITE_WPI;
+			DBGLOG(SEC, LOUD, "WAPI: pairwise key cipher suite [%d]: %02x-%02x-%02x-%02x\n",
+					   (UINT_8) i, (UCHAR) (prWapiInfo->au4PairwiseKeyCipherSuite[i] & 0x000000FF),
+					   (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[i] >> 8) & 0x000000FF),
+					   (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[i] >> 16) & 0x000000FF),
+					   (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[i] >> 24) & 0x000000FF));
+		}
+	} else {
+		/* The information about the pairwise key cipher suites is not present.
+		   Use the default chipher suite for WAPI: WPI. */
+		prWapiInfo->u4PairwiseKeyCipherSuiteCount = 1;
+		prWapiInfo->au4PairwiseKeyCipherSuite[0] = WAPI_CIPHER_SUITE_WPI;
 
-        DBGLOG(SEC, LOUD, ("WAPI: pairwise key cipher suite: %02x-%02x-%02x-%02x (default)\n",
-            (UCHAR) (prWapiInfo->au4PairwiseKeyCipherSuite[0] & 0x000000FF),
-            (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[0] >> 8) & 0x000000FF),
-            (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[0] >> 16) & 0x000000FF),
-            (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[0] >> 24) & 0x000000FF)));
-    }
+		DBGLOG(SEC, LOUD, "WAPI: pairwise key cipher suite: %02x-%02x-%02x-%02x (default)\n",
+				   (UCHAR) (prWapiInfo->au4PairwiseKeyCipherSuite[0] & 0x000000FF),
+				   (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[0] >> 8) & 0x000000FF),
+				   (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[0] >> 16) & 0x000000FF),
+				   (UCHAR) ((prWapiInfo->au4PairwiseKeyCipherSuite[0] >> 24) & 0x000000FF));
+	}
 
-    if (pucAuthSuite) {
-        /* The information about the authentication and key management suites
-           is present. */
-        if (u2AuthSuiteCount > MAX_NUM_SUPPORTED_WAPI_AKM_SUITES) {
-            u2AuthSuiteCount = MAX_NUM_SUPPORTED_WAPI_AKM_SUITES;
-        }
+	if (pucAuthSuite) {
+		/* The information about the authentication and key management suites
+		   is present. */
+		if (u2AuthSuiteCount > MAX_NUM_SUPPORTED_WAPI_AKM_SUITES)
+			u2AuthSuiteCount = MAX_NUM_SUPPORTED_WAPI_AKM_SUITES;
 
-        prWapiInfo->u4AuthKeyMgtSuiteCount = (UINT_32) u2AuthSuiteCount;
+		prWapiInfo->u4AuthKeyMgtSuiteCount = (UINT_32) u2AuthSuiteCount;
 
-        for (i = 0; i < (UINT_32) u2AuthSuiteCount; i++) {
-            WLAN_GET_FIELD_32(pucAuthSuite, &prWapiInfo->au4AuthKeyMgtSuite[i]);
-            pucAuthSuite += 4;
+		for (i = 0; i < (UINT_32) u2AuthSuiteCount; i++) {
+			WLAN_GET_FIELD_32(pucAuthSuite, &prWapiInfo->au4AuthKeyMgtSuite[i]);
+			pucAuthSuite += 4;
 
-            DBGLOG(SEC, LOUD, ("WAPI: AKM suite [%d]: %02x-%02x-%02x-%02x\n",
-                (UINT_8)i, (UCHAR) (prWapiInfo->au4AuthKeyMgtSuite[i] & 0x000000FF),
-                (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[i] >> 8) & 0x000000FF),
-                (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[i] >> 16) & 0x000000FF),
-                (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[i] >> 24) & 0x000000FF)));
-        }
-    }
-    else {
-        /* The information about the authentication and key management suites
-           is not present. Use the default AKM suite for WAPI. */
-        prWapiInfo->u4AuthKeyMgtSuiteCount = 1;
-        prWapiInfo->au4AuthKeyMgtSuite[0] = WAPI_AKM_SUITE_802_1X;
+			DBGLOG(SEC, LOUD, "WAPI: AKM suite [%d]: %02x-%02x-%02x-%02x\n",
+					   (UINT_8) i, (UCHAR) (prWapiInfo->au4AuthKeyMgtSuite[i] & 0x000000FF),
+					   (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[i] >> 8) & 0x000000FF),
+					   (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[i] >> 16) & 0x000000FF),
+					   (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[i] >> 24) & 0x000000FF));
+		}
+	} else {
+		/* The information about the authentication and key management suites
+		   is not present. Use the default AKM suite for WAPI. */
+		prWapiInfo->u4AuthKeyMgtSuiteCount = 1;
+		prWapiInfo->au4AuthKeyMgtSuite[0] = WAPI_AKM_SUITE_802_1X;
 
-        DBGLOG(SEC, LOUD, ("WAPI: AKM suite: %02x-%02x-%02x-%02x (default)\n",
-            (UCHAR) (prWapiInfo->au4AuthKeyMgtSuite[0] & 0x000000FF),
-            (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[0] >> 8) & 0x000000FF),
-            (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[0] >> 16) & 0x000000FF),
-            (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[0] >> 24) & 0x000000FF)));
-    }
+		DBGLOG(SEC, LOUD, "WAPI: AKM suite: %02x-%02x-%02x-%02x (default)\n",
+				   (UCHAR) (prWapiInfo->au4AuthKeyMgtSuite[0] & 0x000000FF),
+				   (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[0] >> 8) & 0x000000FF),
+				   (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[0] >> 16) & 0x000000FF),
+				   (UCHAR) ((prWapiInfo->au4AuthKeyMgtSuite[0] >> 24) & 0x000000FF));
+	}
 
-    prWapiInfo->u2WapiCap = u2Cap;
-    DBGLOG(SEC, LOUD, ("WAPI: cap: 0x%04x\n", prWapiInfo->u2WapiCap));
+	prWapiInfo->u2WapiCap = u2Cap;
+	DBGLOG(SEC, LOUD, "WAPI: cap: 0x%04x\n", prWapiInfo->u2WapiCap);
 
-    return TRUE;
-}   /* wapiParseWapiIE */
-
+	return TRUE;
+}				/* wapiParseWapiIE */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -395,94 +375,86 @@ wapiParseWapiIE (
 * \note The Encrypt status matched score will save to bss for final ap select.
 */
 /*----------------------------------------------------------------------------*/
-BOOLEAN
-wapiPerformPolicySelection (
-    IN  P_ADAPTER_T         prAdapter,
-    IN  P_BSS_DESC_T        prBss
-    )
+BOOLEAN wapiPerformPolicySelection(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBss)
 {
-    UINT_32                 i;
-    UINT_32                 u4PairwiseCipher = 0;
-    UINT_32                 u4GroupCipher = 0;
-    UINT_32                 u4AkmSuite = 0;
-    P_WAPI_INFO_T           prBssWapiInfo;
-    P_WLAN_INFO_T           prWlanInfo;
+	UINT_32 i;
+	UINT_32 u4PairwiseCipher = 0;
+	UINT_32 u4GroupCipher = 0;
+	UINT_32 u4AkmSuite = 0;
+	P_WAPI_INFO_T prBssWapiInfo;
+	P_WLAN_INFO_T prWlanInfo;
 
-    DEBUGFUNC("wapiPerformPolicySelection");
+	DEBUGFUNC("wapiPerformPolicySelection");
 
-    ASSERT(prBss);
+	ASSERT(prBss);
 
-    /* Notice!!!! WAPI AP not set the privacy bit for WAI and WAI-PSK at WZC configuration mode */
-    prWlanInfo = &prAdapter->rWlanInfo;
+	/* Notice!!!! WAPI AP not set the privacy bit for WAI and WAI-PSK at WZC configuration mode */
+	prWlanInfo = &prAdapter->rWlanInfo;
 
-    if (prBss->fgIEWAPI) {
-        prBssWapiInfo = &prBss->rIEWAPI;
-    }
-    else {
-        if (prAdapter->rWifiVar.rConnSettings.fgWapiMode == FALSE) {
-            DBGLOG(SEC, TRACE,("-- No Protected BSS\n"));
-            return TRUE;
-        }
-        else {
-            DBGLOG(SEC, TRACE, ("WAPI Information Element does not exist.\n"));
-            return FALSE;
-        }
-    }
+	if (prBss->fgIEWAPI) {
+		prBssWapiInfo = &prBss->rIEWAPI;
+	} else {
+		if (prAdapter->rWifiVar.rConnSettings.fgWapiMode == FALSE) {
+			DBGLOG(SEC, TRACE, "-- No Protected BSS\n");
+			return TRUE;
+		} else {
+			DBGLOG(SEC, TRACE, "WAPI Information Element does not exist.\n");
+			return FALSE;
+		}
+	}
 
-    /* Select pairwise/group ciphers */
-    for (i = 0; i < prBssWapiInfo->u4PairwiseKeyCipherSuiteCount; i++) {
-        if (prBssWapiInfo->au4PairwiseKeyCipherSuite[i] ==
-            prAdapter->rWifiVar.rConnSettings.u4WapiSelectedPairwiseCipher) {
-                u4PairwiseCipher = prBssWapiInfo->au4PairwiseKeyCipherSuite[i];
-        }
-    }
-    if (prBssWapiInfo->u4GroupKeyCipherSuite ==
-        prAdapter->rWifiVar.rConnSettings.u4WapiSelectedGroupCipher)
-        u4GroupCipher = prBssWapiInfo->u4GroupKeyCipherSuite;
+	/* Select pairwise/group ciphers */
+	for (i = 0; i < prBssWapiInfo->u4PairwiseKeyCipherSuiteCount; i++) {
+		if (prBssWapiInfo->au4PairwiseKeyCipherSuite[i] ==
+		    prAdapter->rWifiVar.rConnSettings.u4WapiSelectedPairwiseCipher) {
+			u4PairwiseCipher = prBssWapiInfo->au4PairwiseKeyCipherSuite[i];
+		}
+	}
+	if (prBssWapiInfo->u4GroupKeyCipherSuite == prAdapter->rWifiVar.rConnSettings.u4WapiSelectedGroupCipher)
+		u4GroupCipher = prBssWapiInfo->u4GroupKeyCipherSuite;
 
-    /* Exception handler */
-    /* If we cannot find proper pairwise and group cipher suites to join the
-       BSS, do not check the supported AKM suites. */
-    if (u4PairwiseCipher == 0 || u4GroupCipher == 0) {
-        DBGLOG(SEC, TRACE, ("Failed to select pairwise/group cipher (0x%08x/0x%08x)\n",
-            u4PairwiseCipher, u4GroupCipher));
-        return FALSE;
-    }
+	/* Exception handler */
+	/* If we cannot find proper pairwise and group cipher suites to join the
+	   BSS, do not check the supported AKM suites. */
+	if (u4PairwiseCipher == 0 || u4GroupCipher == 0) {
+		DBGLOG(SEC, TRACE, "Failed to select pairwise/group cipher (0x%08x/0x%08x)\n",
+				    u4PairwiseCipher, u4GroupCipher);
+		return FALSE;
+	}
 
-    /* Select AKM */
-    /* If the driver cannot support any authentication suites advertised in
-       the given BSS, we fail to perform RSNA policy selection. */
-    /* Attempt to find any overlapping supported AKM suite. */
-    for (i = 0; i < prBssWapiInfo->u4AuthKeyMgtSuiteCount; i++) {
-        if (prBssWapiInfo->au4AuthKeyMgtSuite[i] == prAdapter->rWifiVar.rConnSettings.u4WapiSelectedAKMSuite) {
-            u4AkmSuite = prBssWapiInfo->au4AuthKeyMgtSuite[i];
-            break;
-        }
-    }
+	/* Select AKM */
+	/* If the driver cannot support any authentication suites advertised in
+	   the given BSS, we fail to perform RSNA policy selection. */
+	/* Attempt to find any overlapping supported AKM suite. */
+	for (i = 0; i < prBssWapiInfo->u4AuthKeyMgtSuiteCount; i++) {
+		if (prBssWapiInfo->au4AuthKeyMgtSuite[i] == prAdapter->rWifiVar.rConnSettings.u4WapiSelectedAKMSuite) {
+			u4AkmSuite = prBssWapiInfo->au4AuthKeyMgtSuite[i];
+			break;
+		}
+	}
 
-    if (u4AkmSuite == 0) {
-        DBGLOG(SEC, TRACE, ("Cannot support any AKM suites\n"));
-        return FALSE;
-    }
+	if (u4AkmSuite == 0) {
+		DBGLOG(SEC, TRACE, "Cannot support any AKM suites\n");
+		return FALSE;
+	}
 
-    DBGLOG(SEC, TRACE, ("Selected pairwise/group cipher: %02x-%02x-%02x-%02x/%02x-%02x-%02x-%02x\n",
-        (UINT_8) (u4PairwiseCipher & 0x000000FF),
-        (UINT_8) ((u4PairwiseCipher >> 8) & 0x000000FF),
-        (UINT_8) ((u4PairwiseCipher >> 16) & 0x000000FF),
-        (UINT_8) ((u4PairwiseCipher >> 24) & 0x000000FF),
-        (UINT_8) (u4GroupCipher & 0x000000FF),
-        (UINT_8) ((u4GroupCipher >> 8) & 0x000000FF),
-        (UINT_8) ((u4GroupCipher >> 16) & 0x000000FF),
-        (UINT_8) ((u4GroupCipher >> 24) & 0x000000FF)));
+	DBGLOG(SEC, TRACE, "Selected pairwise/group cipher: %02x-%02x-%02x-%02x/%02x-%02x-%02x-%02x\n",
+			    (UINT_8) (u4PairwiseCipher & 0x000000FF),
+			    (UINT_8) ((u4PairwiseCipher >> 8) & 0x000000FF),
+			    (UINT_8) ((u4PairwiseCipher >> 16) & 0x000000FF),
+			    (UINT_8) ((u4PairwiseCipher >> 24) & 0x000000FF),
+			    (UINT_8) (u4GroupCipher & 0x000000FF),
+			    (UINT_8) ((u4GroupCipher >> 8) & 0x000000FF),
+			    (UINT_8) ((u4GroupCipher >> 16) & 0x000000FF),
+			    (UINT_8) ((u4GroupCipher >> 24) & 0x000000FF));
 
-    DBGLOG(SEC, TRACE, ("Selected AKM suite: %02x-%02x-%02x-%02x\n",
-        (UINT_8) (u4AkmSuite & 0x000000FF),
-        (UINT_8) ((u4AkmSuite >> 8) & 0x000000FF),
-        (UINT_8) ((u4AkmSuite >> 16) & 0x000000FF),
-        (UINT_8) ((u4AkmSuite >> 24) & 0x000000FF)));
+	DBGLOG(SEC, TRACE, "Selected AKM suite: %02x-%02x-%02x-%02x\n",
+			    (UINT_8) (u4AkmSuite & 0x000000FF),
+			    (UINT_8) ((u4AkmSuite >> 8) & 0x000000FF),
+			    (UINT_8) ((u4AkmSuite >> 16) & 0x000000FF), (UINT_8) ((u4AkmSuite >> 24) & 0x000000FF));
 
-    return TRUE;
-}  /* wapiPerformPolicySelection */
+	return TRUE;
+}				/* wapiPerformPolicySelection */
 
 #if 0
 /*----------------------------------------------------------------------------*/
@@ -496,27 +468,25 @@ wapiPerformPolicySelection (
 * \retval FALSE - Failed
 */
 /*----------------------------------------------------------------------------*/
-BOOLEAN
-wapiUpdateTxKeyIdx (
-    IN  P_STA_RECORD_T     prStaRec,
-    IN  UINT_8             ucWlanIdx
-    )
+BOOLEAN wapiUpdateTxKeyIdx(IN P_STA_RECORD_T prStaRec, IN UINT_8 ucWlanIdx)
 {
-    UINT_8 ucKeyId;
+	UINT_8 ucKeyId;
 
-    if ((ucWlanIdx & BITS(0, 3)) == CIPHER_SUITE_WPI) {
+	if ((ucWlanIdx & BITS(0, 3)) == CIPHER_SUITE_WPI) {
 
-        ucKeyId = ((ucWlanIdx & BITS(4, 5)) >> 4);
+		ucKeyId = ((ucWlanIdx & BITS(4, 5)) >> 4);
 
-        if (ucKeyId != g_prWifiVar->rAisSpecificBssInfo.ucWpiActivedPWKey) {
-            DBGLOG(RSN, STATE, ("Change wapi key index from %d->%d\n", g_prWifiVar->rAisSpecificBssInfo.ucWpiActivedPWKey, ucKeyId));
-            g_prWifiVar->rAisSpecificBssInfo.ucWpiActivedPWKey = ucKeyId;
+		if (ucKeyId != g_prWifiVar->rAisSpecificBssInfo.ucWpiActivedPWKey) {
+			DBGLOG(RSN, STATE,
+			       "Change wapi key index from %d->%d\n",
+				g_prWifiVar->rAisSpecificBssInfo.ucWpiActivedPWKey, ucKeyId);
+			g_prWifiVar->rAisSpecificBssInfo.ucWpiActivedPWKey = ucKeyId;
 
-            prStaRec->ucWTEntry =
-                (ucKeyId == WTBL_AIS_BSSID_WAPI_IDX_0) ? WTBL_AIS_BSSID_WAPI_IDX_0 : WTBL_AIS_BSSID_WAPI_IDX_1;
-        }
-    }
+			prStaRec->ucWTEntry =
+			    (ucKeyId ==
+			     WTBL_AIS_BSSID_WAPI_IDX_0) ? WTBL_AIS_BSSID_WAPI_IDX_0 : WTBL_AIS_BSSID_WAPI_IDX_1;
+		}
+	}
 }
 #endif
 #endif
-

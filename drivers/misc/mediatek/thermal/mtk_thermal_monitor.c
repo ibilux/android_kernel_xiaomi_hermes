@@ -133,13 +133,16 @@ static struct delayed_work _mtm_sysinfo_poll_queue;
 /* ************************************ */
 /* Macro */
 /* ************************************ */
+#ifdef CONFIG_MTK_MT_LOGGER
 #define THRML_STORAGE_LOG(msg_id, func_name, ...) \
     do { \
 	if (unlikely(is_dump_mthermal()) && enable_ThermalMonitor) { \
 	    AddThrmlTrace(msg_id, func_name, __VA_ARGS__); \
 	} \
     } while (0)
-
+#else
+#define THRML_STORAGE_LOG(msg_id, func_name, ...)
+#endif
 
 #define THRML_LOG(fmt, args...) \
     do { \
@@ -1061,11 +1064,7 @@ static int _mtkthermal_check_cooler_conditions(struct mtk_thermal_cooler_data *c
 		int i = 0;
 		for (; i < MTK_THERMAL_MONITOR_COOLER_MAX_EXTRA_CONDITIONS; i++) {
 			if (NULL == cldata->condition_last_value[i]) {
-				if (0x0 == cldata->conditions[i][0] ) {
-					ret++;
-				} else if (0 == strncmp(cldata->conditions[i], "EXIT", 4)) {
-					ret++;
-				}
+				ret++;
 			} else {
 				if (*cldata->condition_last_value[i] > cldata->threshold[i]) {
 					ret++;

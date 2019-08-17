@@ -1,3 +1,39 @@
+/* Copyright Statement:
+ * Copyright (C) 2018 XiaoMi, Inc.
+ *
+ * This software/firmware and related documentation ("MediaTek Software") are
+ * protected under relevant copyright laws. The information contained herein
+ * is confidential and proprietary to MediaTek Inc. and/or its licensors.
+ * Without the prior written permission of MediaTek inc. and/or its licensors,
+ * any reproduction, modification, use or disclosure of MediaTek Software,
+ * and information contained herein, in whole or in part, shall be strictly prohibited.
+ */
+/* MediaTek Inc. (C) 2010. All rights reserved.
+ *
+ * BY OPENING THIS FILE, RECEIVER HEREBY UNEQUIVOCALLY ACKNOWLEDGES AND AGREES
+ * THAT THE SOFTWARE/FIRMWARE AND ITS DOCUMENTATIONS ("MEDIATEK SOFTWARE")
+ * RECEIVED FROM MEDIATEK AND/OR ITS REPRESENTATIVES ARE PROVIDED TO RECEIVER ON
+ * AN "AS-IS" BASIS ONLY. MEDIATEK EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE OR NONINFRINGEMENT.
+ * NEITHER DOES MEDIATEK PROVIDE ANY WARRANTY WHATSOEVER WITH RESPECT TO THE
+ * SOFTWARE OF ANY THIRD PARTY WHICH MAY BE USED BY, INCORPORATED IN, OR
+ * SUPPLIED WITH THE MEDIATEK SOFTWARE, AND RECEIVER AGREES TO LOOK ONLY TO SUCH
+ * THIRD PARTY FOR ANY WARRANTY CLAIM RELATING THERETO. RECEIVER EXPRESSLY ACKNOWLEDGES
+ * THAT IT IS RECEIVER'S SOLE RESPONSIBILITY TO OBTAIN FROM ANY THIRD PARTY ALL PROPER LICENSES
+ * CONTAINED IN MEDIATEK SOFTWARE. MEDIATEK SHALL ALSO NOT BE RESPONSIBLE FOR ANY MEDIATEK
+ * SOFTWARE RELEASES MADE TO RECEIVER'S SPECIFICATION OR TO CONFORM TO A PARTICULAR
+ * STANDARD OR OPEN FORUM. RECEIVER'S SOLE AND EXCLUSIVE REMEDY AND MEDIATEK'S ENTIRE AND
+ * CUMULATIVE LIABILITY WITH RESPECT TO THE MEDIATEK SOFTWARE RELEASED HEREUNDER WILL BE,
+ * AT MEDIATEK'S OPTION, TO REVISE OR REPLACE THE MEDIATEK SOFTWARE AT ISSUE,
+ * OR REFUND ANY SOFTWARE LICENSE FEES OR SERVICE CHARGE PAID BY RECEIVER TO
+ * MEDIATEK FOR SUCH MEDIATEK SOFTWARE AT ISSUE.
+ *
+ * The following software/firmware and/or related documentation ("MediaTek Software")
+ * have been modified by MediaTek Inc. All revisions are subject to any receiver's
+ * applicable license agreements with MediaTek Inc.
+ */
+
 /* 
  *
  * This software is licensed under the terms of the GNU General Public
@@ -45,6 +81,9 @@
 #define STK_PDT_ID_REG 			0x3E
 #define STK_RSRVD_REG 			0x3F
 #define STK_SW_RESET_REG		0x80
+	
+#define STK_GSCTRL_REG			0x1A
+#define STK_FLAG2_REG			0x1C	
 
 /* Define state reg */
 #define STK_STATE_EN_IRS_SHIFT  	7
@@ -120,10 +159,19 @@
 #define STK_FLG_IR_RDY_MASK		0x02
 #define STK_FLG_NF_MASK			0x01
 
+/* Define flag2 reg */
+#define STK_FLG2_INT_GS_SHIFT		6
+#define STK_FLG2_GS10_SHIFT		5
+#define STK_FLG2_GS01_SHIFT		4
+
+#define STK_FLG2_INT_GS_MASK	0x40
+#define STK_FLG2_GS10_MASK		0x20
+#define STK_FLG2_GS01_MASK		0x10
+
 /* misc define */
 #define ALS_MIN_DELAY   100
 #define PS_MIN_DELAY    10
 
-#define STK_ALS_CODE_CHANGE_THD	5
+#define STK_ALS_CODE_CHANGE_THD	30
 
 #endif

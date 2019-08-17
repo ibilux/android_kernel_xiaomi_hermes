@@ -57,7 +57,7 @@ static DEFINE_SPINLOCK(imgsensor_drv_lock);
 
 
 static imgsensor_info_struct imgsensor_info = { 
-	.sensor_id = OV5670MIPI_SENSOR_ID,		//record sensor id defined in Kd_imgsensor.h
+	.sensor_id = OV5670_MIPI_RAW_SENSOR_ID,		//record sensor id defined in Kd_imgsensor.h
 	
 	.checksum_value = 0x523c51f6,		//checksum value for Camera Auto Test
 	
@@ -1608,6 +1608,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 				    dev_ofilm->device_module = DEVINFO_NULL;
 				    dev_ofilm->device_info = DEVINFO_NULL;
 				    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);
+				    
 				    // dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 				    // dev_sunny->device_type = "Camera";
 				    // dev_sunny->device_vendor = "Sunny";
@@ -1657,6 +1658,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 		    dev_ofilm->device_module = DEVINFO_NULL;
 		    dev_ofilm->device_info = DEVINFO_NULL;
 		    LOG_INF("<%s:%d>devinfo_add[%d]dev[%x]\n", __func__, __LINE__, devinfo_add, dev_ofilm);
+		    
 		    // dev_sunny = (struct devinfo_struct*)kmalloc(sizeof(struct devinfo_struct), GFP_KERNEL);
 		    // dev_sunny->device_type = "Camera";
 		    // dev_sunny->device_vendor = "Sunny";

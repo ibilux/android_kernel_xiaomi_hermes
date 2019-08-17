@@ -4,12 +4,7 @@
 include $(srctree)/drivers/misc/mediatek/Makefile.custom
 
 obj-y				+= kd_flashlightlist.o
-
-ifeq ($(CONFIG_CM865_MAINBOARD),y)
-obj-y				+= strobe_main_sid2_part1_lm3643.o
-else
 obj-y				+= strobe_main_sid2_part1.o
-endif
 obj-y				+= strobe_main_sid2_part2.o
 obj-y				+= strobe_sub_sid2_part1.o
 obj-y				+= strobe_sub_sid2_part2.o

@@ -65,8 +65,11 @@ int ftrace_update_ftrace_func(ftrace_func_t func)
 	return ftrace_modify_code(ip, call, sizeof(call));
 }
 
-int __init ftrace_dyn_arch_init(void)
+int __init ftrace_dyn_arch_init(void *data)
 {
+	/* return value is done indirectly via data */
+	*(unsigned long *)data = 0;
+
 	return 0;
 }
 

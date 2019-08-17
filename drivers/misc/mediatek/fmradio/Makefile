@@ -110,6 +110,7 @@ $(warning MT6627_FM)
 	FM_CHIP := mt6627
 	FM_CHIP_PATH := $(FM_CHIP)/pub/$(FM_CHIP)
 	ccflags-y += -DMT6627_FM
+	ccflags-y += -DMT6625_FM
 	ccflags-y += -I$(src)/inc \
 					-I$(src)/$(FM_CHIP)/inc \
 					-I$(src)/../connectivity/conn_soc/common/include \
@@ -130,6 +131,37 @@ $(warning MT6627_FM)
 					$(FM_CHIP_PATH)_fm_cmd.o \
 					$(FM_CHIP_PATH)_fm_config.o
 	mtk_fm_drv-objs += $(mt6627-objs)
+$(warning $(mtk_fm_drv-objs))
+	#obj-$(CONFIG_MTK_FM) += private/
+endif
+
+# MT6580 FM driver
+
+ifeq ($(findstring MT6580_FM,$(CONFIG_MTK_FM_CHIP)),MT6580_FM)
+$(warning MT6580_FM)
+	FM_CHIP := mt6580
+	FM_CHIP_PATH := $(FM_CHIP)/pub/$(FM_CHIP)
+	ccflags-y += -DMT6580_FM
+	ccflags-y += -I$(src)/inc \
+					-I$(src)/$(FM_CHIP)/inc \
+					-I$(src)/../connectivity/conn_soc/common/include \
+					-I$(src)/../connectivity/conn_soc/common/linux/include \
+					-I$(src)/../connectivity/common_detect
+
+	obj-$(CONFIG_MTK_FM) += mtk_fm_drv.o
+	mt6580-objs	:= core/fm_module.o \
+					core/fm_main.o \
+					core/fm_config.o \
+					core/fm_rds_parser.o \
+					core/fm_patch.o \
+					core/fm_utils.o \
+					core/fm_link.o \
+					core/fm_eint.o \
+					$(FM_CHIP_PATH)_fm_lib.o \
+					$(FM_CHIP_PATH)_fm_rds.o \
+					$(FM_CHIP_PATH)_fm_cmd.o \
+					$(FM_CHIP_PATH)_fm_config.o
+	mtk_fm_drv-objs += $(mt6580-objs)
 $(warning $(mtk_fm_drv-objs))
 	#obj-$(CONFIG_MTK_FM) += private/
 endif

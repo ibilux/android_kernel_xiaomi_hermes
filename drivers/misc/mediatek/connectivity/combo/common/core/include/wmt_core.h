@@ -176,6 +176,7 @@ typedef struct _WMT_GEN_CONF {
 	UINT8 cfgExist;
 
 	UINT8 coex_wmt_ant_mode;
+	UINT8 coex_wmt_ext_component;
 	UINT8 coex_wmt_wifi_time_ctl;
 	UINT8 coex_wmt_ext_pta_dev_on;
 	/*combo chip and LTE coex filter mode setting */
@@ -248,10 +249,11 @@ typedef enum _WMT_IC_PIN_STATE_ {
 	WMT_IC_AIF_1 = 3,	/* = CMB_STUB_AIF_1, */
 	WMT_IC_AIF_2 = 4,	/* = CMB_STUB_AIF_2, */
 	WMT_IC_AIF_3 = 5,	/* = CMB_STUB_AIF_3, */
-	WMT_IC_PIN_MUX = 6,
-	WMT_IC_PIN_GPIO = 7,
-	WMT_IC_PIN_GPIO_HIGH = 8,
-	WMT_IC_PIN_GPIO_LOW = 9,
+	WMT_IC_AIF_4 = 6,	/* = CMB_STUB_AIF_4, */
+	WMT_IC_PIN_MUX = 7,
+	WMT_IC_PIN_GPIO = 8,
+	WMT_IC_PIN_GPIO_HIGH = 9,
+	WMT_IC_PIN_GPIO_LOW = 10,
 	WMT_IC_PIN_STATE_MAX
 } WMT_IC_PIN_STATE, *P_WMT_IC_PIN_STATE;
 

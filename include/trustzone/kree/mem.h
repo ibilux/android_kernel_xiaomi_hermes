@@ -11,7 +11,7 @@
 
 
 /// KREE session handle type.
-typedef void* KREE_SESSION_HANDLE;
+typedef uint32_t KREE_SESSION_HANDLE;
 
 #define KREE_SESSION_HANDLE_NULL    ((KREE_SESSION_HANDLE)0)
 #define KREE_SESSION_HANDLE_FAIL    ((KREE_SESSION_HANDLE)-1)
@@ -55,7 +55,7 @@ typedef struct {
 
 // map_p: 0 = no remap, 1 = remap
 TZ_RESULT kree_register_sharedmem (KREE_SESSION_HANDLE session, KREE_SHAREDMEM_HANDLE *mem_handle, 
-    uint32_t start, uint32_t size, uint32_t map_p);
+    void *start, uint32_t size, void *map_p);
 
 TZ_RESULT kree_unregister_sharedmem (KREE_SESSION_HANDLE session, KREE_SHAREDMEM_HANDLE mem_handle);    
 

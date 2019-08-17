@@ -1,7 +1,6 @@
 #include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/kobject.h>
 #include <linux/proc_fs.h>
@@ -21,14 +20,14 @@ extern struct proc_dir_entry * mtk_thermal_get_proc_drv_therm_dir_entry(void);
 extern int exec_ccci_kern_func_by_md_id(int md_id, unsigned int id, char *buf, unsigned int len);
 
 #define mtk_cooler_mutt_dprintk_always(fmt, args...) \
-    do { xlog_printk(ANDROID_LOG_INFO, "thermal/cooler/mutt", fmt, ##args); } while(0)
+	do { pr_debug("thermal/cooler/mutt" fmt, ##args); } while (0)
 
 #define mtk_cooler_mutt_dprintk(fmt, args...) \
-    do { \
-        if (1 == cl_mutt_klog_on) { \
-            xlog_printk(ANDROID_LOG_INFO, "thermal/cooler/mutt", fmt, ##args); \
-        } \
-    } while(0)
+	do { \
+		if (1 == cl_mutt_klog_on) { \
+			pr_debug("thermal/cooler/mutt" fmt, ##args); \
+		} \
+	} while (0)
 
 #define MAX_NUM_INSTANCE_MTK_COOLER_MUTT  4
 
@@ -99,7 +98,7 @@ mtk_cl_mutt_set_mutt_limit(void)
         cl_mutt_cur_limit = min_param;
         last_md_boot_cnt = ccci_get_md_boot_count(MD_SYS1);
         ret = exec_ccci_kern_func_by_md_id(MD_SYS1, ID_THROTTLING_CFG, (char*) &cl_mutt_cur_limit, 4);
-        mtk_cooler_mutt_dprintk_always("[%s] ret %d param %x bcnt %ul\n", __func__, ret, cl_mutt_cur_limit, last_md_boot_cnt);
+        mtk_cooler_mutt_dprintk_always("[%s] ret %d param %x bcnt %lul\n", __func__, ret, cl_mutt_cur_limit, last_md_boot_cnt);
     }
     else if (min_param != 0)
     {
@@ -108,7 +107,7 @@ mtk_cl_mutt_set_mutt_limit(void)
         {
             last_md_boot_cnt = cur_md_bcnt;
             ret = exec_ccci_kern_func_by_md_id(MD_SYS1, ID_THROTTLING_CFG, (char*) &cl_mutt_cur_limit, 4);
-            mtk_cooler_mutt_dprintk_always("[%s] mdrb ret %d param %x bcnt %ul\n", __func__, ret, cl_mutt_cur_limit, last_md_boot_cnt);
+            mtk_cooler_mutt_dprintk_always("[%s] mdrb ret %d param %x bcnt %lul\n", __func__, ret, cl_mutt_cur_limit, last_md_boot_cnt);
         }
     }
 
@@ -122,7 +121,7 @@ mtk_cl_mutt_get_max_state(struct thermal_cooling_device *cdev,
                           unsigned long *state)
 {
     *state = 1;
-    mtk_cooler_mutt_dprintk("mtk_cl_mutt_get_max_state() %s %d\n", cdev->type, *state);
+    mtk_cooler_mutt_dprintk("mtk_cl_mutt_get_max_state() %s %lu\n", cdev->type, *state);
     return 0;
 }
 
@@ -131,7 +130,7 @@ mtk_cl_mutt_get_cur_state(struct thermal_cooling_device *cdev,
                           unsigned long *state)
 {
     MTK_CL_MUTT_GET_CURR_STATE(*state, *((unsigned long*) cdev->devdata));
-    mtk_cooler_mutt_dprintk("mtk_cl_mutt_get_cur_state() %s %d\n", cdev->type, *state);
+    mtk_cooler_mutt_dprintk("mtk_cl_mutt_get_cur_state() %s %lu\n", cdev->type, *state);
     return 0;
 }
 
@@ -139,7 +138,7 @@ static int
 mtk_cl_mutt_set_cur_state(struct thermal_cooling_device *cdev,
                           unsigned long state)
 {
-    mtk_cooler_mutt_dprintk("mtk_cl_mutt_set_cur_state() %s %d\n", cdev->type, state);
+    mtk_cooler_mutt_dprintk("mtk_cl_mutt_set_cur_state() %s %lu\n", cdev->type, state);
     MTK_CL_MUTT_SET_CURR_STATE(state, *((unsigned long*) cdev->devdata));
     mtk_cl_mutt_set_mutt_limit();
 

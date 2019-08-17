@@ -27,6 +27,7 @@
 #endif /* CONFIG_PPC */
 
 #include <asm/page.h>
+#include <mach/mtk_memcfg.h>
 
 char *of_fdt_get_string(struct boot_param_header *blob, u32 offset)
 {
@@ -474,12 +475,21 @@ static int __init __reserved_mem_reserve_reg(unsigned long node,
 		size = dt_mem_next_cell(dt_root_size_cells, &prop);
 
 		if (base && size &&
-		    early_init_dt_reserve_memory_arch(base, size, nomap) == 0)
+		    early_init_dt_reserve_memory_arch(base, size, nomap) == 0) {
 			pr_debug("Reserved memory: reserved region for node '%s': base %pa, size %ld MiB\n",
 				uname, &base, (unsigned long)size / SZ_1M);
-		else
+			if (nomap)
+				MTK_MEMCFG_LOG_AND_PRINTK(KERN_ALERT
+					"[PHY layout]%s   :   "
+					"0x%08llx - 0x%08llx (0x%llx)\n",
+					uname,
+					(unsigned long long)base,
+					(unsigned long long)base + size - 1,
+					(unsigned long long)size);
+		} else {
 			pr_info("Reserved memory: failed to reserve memory for node '%s': base %pa, size %ld MiB\n",
 				uname, &base, (unsigned long)size / SZ_1M);
+		}
 
 		len -= t_len;
 		if (first) {

@@ -220,6 +220,57 @@ static void eccmni_mk_eth_header(void *_eth_hdr, KAL_UINT8 *mac_addr, KAL_UINT32
 	}
 }
 
+void eccmni_change_tx_qlen(KAL_UINT32 ccmni_idx, KAL_UINT32 qlen)
+{
+	struct net_device *net_dev;
+
+	net_dev = eccmni_inst[ccmni_idx].dev;
+	net_dev->tx_queue_len = qlen;
+
+	return;
+}
+
+KAL_UINT32 eccmni_get_tx_qlen(KAL_UINT32 ccmni_idx)
+{
+	struct net_device *net_dev;
+
+	net_dev = eccmni_inst[ccmni_idx].dev;
+
+	return net_dev->tx_queue_len;
+}
+
+KAL_INT32 eccmni_is_ack(struct sk_buff *skb)
+{
+	KAL_INT32 is_ack = 0;
+	KAL_UINT32 data_len, protoff;
+	struct tcphdr _tcph;
+	const struct tcphdr *th;
+
+	if ((skb->len<=100) && \
+		((skb->protocol==htons(ETH_P_IP)) || (skb->protocol==htons(ETH_P_IPV6)))) {
+		if ((ip_hdr(skb)->protocol) == IPPROTO_TCP) {
+			protoff = (ip_hdr(skb)->ihl*4);
+			th = skb_header_pointer(skb, protoff, sizeof(_tcph), &_tcph);
+			data_len = skb->len - protoff - th->doff*4;
+			if (data_len == 0)
+				is_ack = 1;
+		}
+	}
+
+#if ACK_DEBUG
+	struct iphdr* ip =  ip_hdr(skb);	
+	struct tcphdr* tcp = (struct tcphdr*)((u8*)(ip)+20);
+	DBGLOG(NETD,INF,"ip_hdr: ihl=%d, tos=%d, tot_len=%d, id=%d, frag_off=%d, ttl=%d, proto=%d, saddr=%d, daddr=%d",\
+          ip->ihl, ip->tos, ip->tot_len, ip->id, ip->frag_off, \
+          ip->ttl, ip->protocol, ip->saddr, ip->daddr);
+
+	DBGLOG(NETD,INF,"tcp_hdr: src=%d, dest=%d, seq=%d, ack_seq=%d, urg=%d, ack=%d, psh=%d, rst=%d, syn=%d, fin=%d",\
+          tcp->source, tcp->dest, tcp->seq, tcp->ack_seq, tcp->urg, \
+          tcp->ack, tcp->psh, tcp->rst, tcp->syn, tcp->fin);
+#endif
+	return is_ack;
+}
+
 static KAL_INT32 eccmni_rx_callback(struct sk_buff *skb, KAL_UINT32 private_data)
 {
     CCCI_BUFF_T *p_cccih = NULL;
@@ -346,11 +397,12 @@ KAL_INT32 eccmni_hard_start_xmit(struct sk_buff *skb, struct net_device *net_dev
     KAL_UINT32 tx_len;
     CCCI_BUFF_T * ccci_header ;
     eccmni_inst_t *p_priv_eccmni;
-    CCCI_CHANNEL_T ccci_tx_channel; 
+    CCCI_CHANNEL_T ccci_tx_channel;
+    CCCI_CHANNEL_T ccmni_tx_ch;
     static KAL_UINT32 tx_busy_retry_cnt = 0;
-#ifdef _ECCMNI_SEQ_SUPPORT_
+    static KAL_UINT32 tx_data_busy_cnt = 0;
+    KAL_INT32 is_ack = 0;
     KAL_UINT32 ccmni_index = 0;
-#endif
 
     DEBUG_LOG_FUNCTION_ENTRY;
     p_priv_eccmni = netdev_priv(net_dev);
@@ -380,48 +432,78 @@ KAL_INT32 eccmni_hard_start_xmit(struct sk_buff *skb, struct net_device *net_dev
         goto NET_XMIT_ERR;
     }
 	
-	ccmni_index = eccmni_cccich_to_devid(ccci_tx_channel);
-	if (ccci_write_space_alloc(ccci_tx_channel)==0){
+    ccmni_index = eccmni_cccich_to_devid(ccci_tx_channel);
+    ccmni_tx_ch = ccci_tx_channel;
+
+    #if defined (TDD_DL_DROP_SOLUTION2)
+    /* check if skb is data or ack packet */
+    is_ack = eccmni_is_ack(skb);
+    if (ccmni_index != ECCMNI2_ID) {
+        if (is_ack == 1) { // packet is tcp ack with data_len=0
+            ccmni_tx_ch = CH_NET2_TX;
+			
+            if (ccmni_index == ECCMNI0_ID)
+                ccci_tx_channel = CH_NET1_DL_ACK;
+            else
+                ccci_tx_channel = CH_NET2_DL_ACK;
+			
+        } else {// packet is data or tcp ack with data_len not equal to 0
+            ccmni_tx_ch = CH_NET1_TX;
+        }
+    } else {
+        ccmni_tx_ch = ccci_tx_channel;
+    }
+    #endif
+	
+    if (ccci_write_space_alloc(ccmni_tx_ch)==0){
         if(tx_busy_retry_cnt %20000 == 10000){
-		DBGLOG(NETD,WAR,"CCMNI%d TX busy: retry_times=%d", ccmni_index, tx_busy_retry_cnt);
+            DBGLOG(NETD,WAR,"CCMNI%d(ch%d) TX busy: retry_times=%d", ccmni_index, \
+				ccmni_tx_ch, tx_busy_retry_cnt);
         }
         tx_busy_retry_cnt++;
         ret = NETDEV_TX_BUSY;
         goto NET_XMIT_BUSY;
-	}	
-	/* Fill the CCCI header */
-	{
-		tx_busy_retry_cnt = 0;
-		ccci_header = (CCCI_BUFF_T *)skb_push(skb, sizeof(CCCI_BUFF_T)) ;
-		/* Fill the channel */
-		ccci_header->channel = ccci_tx_channel; 
-		/* reserved */
-		ccci_header->data[0] = 0 ;
-		/* Fill the packet length */
-		ccci_header->data[1] = skb->len ;
-#ifdef _ECCMNI_SEQ_SUPPORT_
-		/* Fill the magic number */
-		ccci_header->reserved = p_priv_eccmni->seqno.UL++;
-#else
-		ccci_header->reserved = 0 ;
-#endif
-	}
-    
-    tx_len = skb->len;
-    ret = ccci_write_desc_to_q(ccci_tx_channel, skb);
+    }	
 
-	if (KAL_SUCCESS != ret) {
-		//DBGLOG(NETD, ERR, "PKT DROP of ch%d!",ccci_tx_channel);
+NET_XMIT:
+    /* Fill the CCCI header */
+    {
+            tx_busy_retry_cnt = 0;
+            ccci_header = (CCCI_BUFF_T *)skb_push(skb, sizeof(CCCI_BUFF_T)) ;
+            /* Fill the channel */
+            ccci_header->channel = ccci_tx_channel; 
+            /* reserved */
+            ccci_header->data[0] = 0 ;
+            /* Fill the packet length */
+            ccci_header->data[1] = skb->len ;
 #ifdef _ECCMNI_SEQ_SUPPORT_
-		/* Rollback the magic number */
-		p_priv_eccmni->seqno.UL--;
+            /* Fill the magic number */
+            ccci_header->reserved = p_priv_eccmni->seqno.UL[is_ack]++;
+#else
+            ccci_header->reserved = 0 ;
 #endif
-		dev_kfree_skb(skb); 
-	} else {
-		/* queue skb to xmit wait queue and send it */
-		net_dev->stats.tx_packets++;
-		net_dev->stats.tx_bytes += (tx_len - sizeof(CCCI_BUFF_T));
-	}
+    }
+
+#if ACK_DEBUG
+    DBGLOG(NETD,INF,"ccmni_hard_xmit: CCMNI%d, seqno.UL=%d, ccci_ch=%d, ccmni_ch=%d, data_len=%d\n", \
+		ccmni_index, ccci_header->reserved, ccci_header->channel, ccmni_tx_ch, skb->len);
+#endif
+	
+    tx_len = skb->len;
+    ret = ccci_write_desc_to_q(ccmni_tx_ch, skb);
+
+    if (KAL_SUCCESS != ret) {
+        //DBGLOG(NETD, ERR, "PKT DROP of ch%d!",ccci_tx_channel);
+#ifdef _ECCMNI_SEQ_SUPPORT_
+        /* Rollback the magic number */
+        p_priv_eccmni->seqno.UL[is_ack]--;
+#endif
+        dev_kfree_skb(skb); 
+    } else {
+        /* queue skb to xmit wait queue and send it */
+        net_dev->stats.tx_packets++;
+        net_dev->stats.tx_bytes += (tx_len - sizeof(CCCI_BUFF_T));
+    }
 
     DEBUG_LOG_FUNCTION_LEAVE;	
     return ret;
@@ -457,7 +539,8 @@ void eccmni_state_callback_func(EEMCS_STATE state){
             {
                 netif_carrier_on(eccmni_inst[ccmni_idx].dev);
                 #if (defined(_ECCMNI_SEQ_SUPPORT_))
-                eccmni_inst[ccmni_idx].seqno.UL = 0;
+                eccmni_inst[ccmni_idx].seqno.UL[0] = 0;
+                eccmni_inst[ccmni_idx].seqno.UL[1] = 0;
                 eccmni_inst[ccmni_idx].seqno.DL = 0;
                 #endif
             }        
@@ -502,6 +585,7 @@ struct net_device* eccmni_dev_init(KAL_INT32 index, KAL_INT32 mtu_size)
     
 	/*clear memory before using*/
 	memset(&eccmni_ops[index],0,sizeof(struct net_device_ops));
+
 	eccmni_ops[index].ndo_open            = eccmni_open;		
 	eccmni_ops[index].ndo_stop            = eccmni_stop;
 	eccmni_ops[index].ndo_change_mtu      = eccmni_change_mtu;

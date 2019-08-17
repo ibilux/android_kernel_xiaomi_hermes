@@ -77,13 +77,11 @@ static const struct ctrl_word_operation PowerOnSetting[] = {
 
 static int Chip_Version = mt6626_E1;
 
-
 static fm_s32 mt6626_pwron(fm_s32 data)
 {
 	mt66x6_poweron(MT66x6_FM);
 	return 0;
 }
-
 
 static fm_s32 mt6626_pwroff(fm_s32 data)
 {
@@ -221,7 +219,6 @@ static fm_s32 mt6626_GetAntennaType(void)
 	else
 		return FM_LONG_ANA;	/* long antenna */
 }
-
 
 static fm_s32 mt6626_writeFA(fm_u16 *buff, fm_u8 fa)
 {
@@ -612,7 +609,7 @@ static fm_bool mt6626_SetFreq(fm_u16 freq)
 	fm_u32 CHAN = 0x0000;
 	fm_u16 dataRead, cnt = 0, tempbuff = 0;
 
- Rampdown_again:
+Rampdown_again:
 	mt6626_RampDown();
 
 	fm_cb_op->cur_freq_set(freq);
@@ -680,8 +677,7 @@ static fm_bool mt6626_SetFreq(fm_u16 freq)
 * pFreq: IN/OUT parm, IN start freq/OUT seek valid freq
 * return fm_true:seek success; fm_false:seek failed
 */
-static fm_bool mt6626_Seek(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u16 seekdir,
-			   fm_u16 space)
+static fm_bool mt6626_Seek(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u16 seekdir, fm_u16 space)
 {
 	fm_u16 tmp_reg;
 	fm_u16 startfreq = *pFreq;
@@ -731,8 +727,7 @@ static fm_bool mt6626_Seek(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u
 }
 
 static fm_bool mt6626_Scan(fm_u16 min_freq, fm_u16 max_freq,
-			   fm_u16 *pFreq,
-			   fm_u16 *pScanTBL, fm_u16 *ScanTBLsize, fm_u16 scandir, fm_u16 space)
+			   fm_u16 *pFreq, fm_u16 *pScanTBL, fm_u16 *ScanTBLsize, fm_u16 scandir, fm_u16 space)
 {
 	fm_u16 tmp_reg, space_val, startfreq, offset = 0;
 	fm_u16 tmp_scanTBLsize = *ScanTBLsize;
@@ -839,8 +834,7 @@ static fm_s32 mt6626_GetCurRSSI(fm_u16 *pRSSI)
 	rssi = tmp_reg & 0x03ff;
 
 	if (pRSSI) {
-		*pRSSI =
-		    (rssi > 511) ? ((fm_s16) (((rssi - 1024) * 6) >> 4) + 113) : ((rssi * 6) >> 4);
+		*pRSSI = (rssi > 511) ? ((fm_s16) (((rssi - 1024) * 6) >> 4) + 113) : ((rssi * 6) >> 4);
 	}
 
 	WCN_DBG(FM_DBG | CHIP, "rssi:%d, dBuV:%d\n", rssi, *pRSSI);
@@ -871,7 +865,6 @@ static fm_bool mt6626_GetMonoStereo(fm_u16 *pMonoStereo)
 	value = (TmpReg & FM_BF_STEREO) >> 12;
 	return value;
 }
-
 
 /*
  * mt6626_GetCurPamd - get current freq's PAMD value

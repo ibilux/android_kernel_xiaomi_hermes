@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/ehpi/colibri.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/ehpi/colibri.c#1
 */
 
 /*! \file   "colibri.c"
@@ -8,10 +8,8 @@
     Detail description.
 */
 
-
-
 /*
-** $Log: colibri.c $
+** Log: colibri.c
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -86,7 +84,6 @@
 */
 static void __iomem *mt5931_mcr_base;
 
-
 /*******************************************************************************
 *                             M A C R O S
 ********************************************************************************
@@ -105,7 +102,7 @@ static void __iomem *mt5931_mcr_base;
 	    MSC_RDF(12) | \
 	    MSC_RBW_16 | \
 	    MSC_RT_VLIO)
-#endif				/* CFG_EHPI_FASTER_BUS_TIMING */
+#endif /* CFG_EHPI_FASTER_BUS_TIMING */
 
 /*******************************************************************************
 *              F U N C T I O N   D E C L A R A T I O N S
@@ -161,7 +158,6 @@ WLAN_STATUS glRegisterBus(probe_card pfProbe, remove_card pfRemove)
 	return WLAN_STATUS_SUCCESS;
 }				/* end of glRegisterBus() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function will unregister sdio bus to the os
@@ -180,7 +176,6 @@ VOID glUnregisterBus(remove_card pfRemove)
 
 	return;
 }				/* end of glUnregisterBus() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -206,7 +201,6 @@ VOID glSetHifInfo(P_GLUE_INFO_T prGlueInfo, ULONG ulCookie)
 	return;
 }				/* end of glSetHifInfo() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function clears hif related info.
@@ -229,7 +223,6 @@ VOID glClearHifInfo(P_GLUE_INFO_T prGlueInfo)
 
 	return;
 }				/* end of glClearHifInfo() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -257,7 +250,6 @@ BOOL glBusInit(PVOID pvData)
 	return TRUE;
 };
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Stop bus operation and release resources.
@@ -277,7 +269,6 @@ VOID glBusRelease(PVOID pvData)
 
 	return;
 }				/* end of glBusRelease() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -303,25 +294,18 @@ INT_32 glBusSetIrq(PVOID pvData, PVOID pfnIsr, PVOID pvCookie)
 	pDev->irq = WLAN_STA_IRQ;
 
 	/* 3. register ISR callback */
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2, 6, 12)
-	i4Status = request_irq(pDev->irq, glEhpiInterruptHandler, SA_SHIRQ, pDev->name, pvCookie);
-#else
+
 	i4Status = request_irq(pDev->irq,
 			       glEhpiInterruptHandler,
-			       IRQF_DISABLED | IRQF_SHARED | IRQF_TRIGGER_FALLING,
-			       pDev->name, pvCookie);
-#endif
+			       IRQF_DISABLED | IRQF_SHARED | IRQF_TRIGGER_FALLING, pDev->name, pvCookie);
 
-	if (i4Status < 0) {
+	if (i4Status < 0)
 		pr_debug("request_irq(%d) failed\n", pDev->irq);
-	} else {
-		pr_info("request_irq(%d) success with dev_id(%x)\n", pDev->irq,
-		       (unsigned int)pvCookie);
-	}
+	else
+		pr_info("request_irq(%d) success with dev_id(%x)\n", pDev->irq, (unsigned int)pvCookie);
 
 	return i4Status;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -353,7 +337,6 @@ VOID glBusFreeIrq(PVOID pvData, PVOID pvCookie)
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Set power state
@@ -369,7 +352,6 @@ VOID glSetPowerState(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 ePowerMode)
 	return;
 }
 
-
 #if DBG
 /*----------------------------------------------------------------------------*/
 /*!
@@ -383,7 +365,6 @@ void setTrig(void)
 	GPSR1 = (0x1UL << 8);
 }				/* end of setTrig() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Clear the GPIO pin.
@@ -395,7 +376,6 @@ void clearTrig(void)
 {
 	GPCR1 = (0x1UL << 8);
 }				/* end of clearTrig() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -410,7 +390,6 @@ static void initTrig(void)
 	clearTrig();
 }				/* end of initTrig() */
 #endif
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -427,7 +406,6 @@ void busSetIrq(void)
 #endif
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function should restore settings changed by busSetIrq().
@@ -441,7 +419,6 @@ void busFreeIrq(void)
 	pxa_gpio_mode(WLAN_STA_IRQ_GPIO | GPIO_OUT);
 #endif
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -468,7 +445,6 @@ static VOID collibri_ehpi_reg_init(VOID)
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function restores colibri memory controller registers
@@ -488,7 +464,6 @@ static VOID collibri_ehpi_reg_uninit(VOID)
 	return;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function configures MT5931 mapped registers on colibri
@@ -501,9 +476,7 @@ static VOID mt5931_ehpi_reg_init(VOID)
 	struct resource *reso = NULL;
 
 	/* 1. request memory regioin */
-	reso =
-	    request_mem_region((unsigned long)MEM_MAPPED_ADDR, (unsigned long)MEM_MAPPED_LEN,
-			       (char *)MODULE_PREFIX);
+	reso = request_mem_region((unsigned long)MEM_MAPPED_ADDR, (unsigned long)MEM_MAPPED_LEN, (char *)MODULE_PREFIX);
 	if (!reso) {
 		pr_err("request_mem_region(0x%08X) failed.\n", MEM_MAPPED_ADDR);
 		return;
@@ -519,7 +492,6 @@ static VOID mt5931_ehpi_reg_init(VOID)
 
 	return;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -537,7 +509,6 @@ static VOID mt5931_ehpi_reg_uninit(VOID)
 
 	return;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!

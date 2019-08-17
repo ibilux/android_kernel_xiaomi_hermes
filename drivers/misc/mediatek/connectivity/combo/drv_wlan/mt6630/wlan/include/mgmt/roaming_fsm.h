@@ -1,5 +1,5 @@
 /*
-** $Id:
+** Id:
 */
 
 /*! \file   "roaming_fsm.h"
@@ -8,10 +8,8 @@
     This file defines the FSM for Roaming MODULE.
 */
 
-
-
 /*
-** $Log: roaming_fsm.h $
+** Log: roaming_fsm.h
 **
 ** 09 03 2013 tsaiyuan.hsu
 ** [BORA00002775] MT6630 unified MAC ROAMING
@@ -109,7 +107,6 @@ typedef struct _CMD_ROAMING_CTRL_T {
 	UINT_16 u2RcpiLowThr;
 	UINT_8 ucRoamingRetryLimit;
 	UINT_8 ucRoamingStableTimeout;
-	UINT_8 aucReserved[2];
 } CMD_ROAMING_CTRL_T, *P_CMD_ROAMING_CTRL_T;
 
  /**/ typedef enum _ENUM_ROAMING_STATE_T {
@@ -126,7 +123,6 @@ typedef struct _ROAMING_INFO_T {
 	ENUM_ROAMING_STATE_T eCurrentState;
 
 	OS_SYSTIME rRoamingDiscoveryUpdateTime;
-
 } ROAMING_INFO_T, *P_ROAMING_INFO_T;
 
 /*******************************************************************************
@@ -149,7 +145,7 @@ typedef struct _ROAMING_INFO_T {
 	(prAdapter->rWifiVar.rRoamingInfo.eCurrentState == ROAMING_STATE_ROAM)
 #else
 #define IS_ROAMING_ACTIVE(prAdapter) FALSE
-#endif				/* CFG_SUPPORT_ROAMING */
+#endif /* CFG_SUPPORT_ROAMING */
 
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
@@ -182,4 +178,4 @@ WLAN_STATUS roamingFsmProcessEvent(IN P_ADAPTER_T prAdapter, IN P_CMD_ROAMING_TR
 ********************************************************************************
 */
 
-#endif				/* _ROAMING_FSM_H */
+#endif /* _ROAMING_FSM_H */

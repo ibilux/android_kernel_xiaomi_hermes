@@ -5165,7 +5165,8 @@ static int __init xhci_hcd_init(void)
     mtk_xhci_wakelock_init();
 	return 0;
 }
-module_init(xhci_hcd_init);
+//module_init(xhci_hcd_init);
+late_initcall(xhci_hcd_init);
 
 static void __exit xhci_hcd_cleanup(void)
 {

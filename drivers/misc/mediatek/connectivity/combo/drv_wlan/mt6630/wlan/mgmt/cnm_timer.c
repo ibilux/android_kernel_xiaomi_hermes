@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/cnm_timer.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/cnm_timer.c#1
 */
 
 /*! \file   "cnm_timer.c"
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: cnm_timer.c $
+** Log: cnm_timer.c
 **
 ** 02 21 2013 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -178,8 +176,7 @@ VOID cnmTimerDestroy(IN P_ADAPTER_T prAdapter)
 */
 /*----------------------------------------------------------------------------*/
 VOID
-cnmTimerInitTimer(IN P_ADAPTER_T prAdapter,
-		  IN P_TIMER_T prTimer, IN PFN_MGMT_TIMEOUT_FUNC pfFunc, IN ULONG ulDataPtr)
+cnmTimerInitTimer(IN P_ADAPTER_T prAdapter, IN P_TIMER_T prTimer, IN PFN_MGMT_TIMEOUT_FUNC pfFunc, IN ULONG ulDataPtr)
 {
 	ASSERT(prAdapter);
 
@@ -187,9 +184,8 @@ cnmTimerInitTimer(IN P_ADAPTER_T prAdapter,
 
 #if DBG
 	/* Note: NULL function pointer is permitted for HEM POWER */
-	if (pfFunc == NULL) {
-		DBGLOG(CNM, WARN, ("Init timer with NULL callback function!\n"));
-	}
+	if (pfFunc == NULL)
+		DBGLOG(CNM, WARN, "Init timer with NULL callback function!\n");
 #endif
 
 #if DBG
@@ -212,11 +208,10 @@ cnmTimerInitTimer(IN P_ADAPTER_T prAdapter,
 	LINK_ENTRY_INITIALIZE(&prTimer->rLinkEntry);
 
 	prTimer->pfMgmtTimeOutFunc = pfFunc;
-	prTimer->ulDataPtr= ulDataPtr;
+	prTimer->ulDataPtr = ulDataPtr;
 
 	return;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -227,8 +222,7 @@ cnmTimerInitTimer(IN P_ADAPTER_T prAdapter,
 * \return (none)
 */
 /*----------------------------------------------------------------------------*/
-static VOID
-cnmTimerStopTimer_impl(IN P_ADAPTER_T prAdapter, IN P_TIMER_T prTimer, IN BOOLEAN fgAcquireSpinlock)
+static VOID cnmTimerStopTimer_impl(IN P_ADAPTER_T prAdapter, IN P_TIMER_T prTimer, IN BOOLEAN fgAcquireSpinlock)
 {
 	P_ROOT_TIMER prRootTimer;
 	KAL_SPIN_LOCK_DECLARATION();
@@ -238,9 +232,8 @@ cnmTimerStopTimer_impl(IN P_ADAPTER_T prAdapter, IN P_TIMER_T prTimer, IN BOOLEA
 
 	prRootTimer = &prAdapter->rRootTimer;
 
-	if (fgAcquireSpinlock) {
+	if (fgAcquireSpinlock)
 		KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_TIMER);
-	}
 
 	if (timerPendingTimer(prTimer)) {
 		LINK_REMOVE_KNOWN_ENTRY(&prRootTimer->rLinkHead, &prTimer->rLinkEntry);
@@ -259,9 +252,8 @@ cnmTimerStopTimer_impl(IN P_ADAPTER_T prAdapter, IN P_TIMER_T prTimer, IN BOOLEA
 		}
 	}
 
-	if (fgAcquireSpinlock) {
+	if (fgAcquireSpinlock)
 		KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_TIMER);
-	}
 }
 
 /*----------------------------------------------------------------------------*/
@@ -326,14 +318,12 @@ VOID cnmTimerStartTimer(IN P_ADAPTER_T prAdapter, IN P_TIMER_T prTimer, IN UINT_
 	/* The assertion check if MSEC_TO_SYSTIME() may be overflow. */
 	ASSERT(u4TimeoutMs < (((UINT_32) 0x80000000 - MSEC_PER_SEC) / KAL_HZ));
 	rTimeoutSystime = MSEC_TO_SYSTIME(u4TimeoutMs);
-	if (rTimeoutSystime == 0) {
+	if (rTimeoutSystime == 0)
 		rTimeoutSystime = 1;
-	}
 	rExpiredSysTime = kalGetTimeTick() + rTimeoutSystime;
 
 	/* If no timer pending or the fast time interval is used. */
-	if (LINK_IS_EMPTY(prTimerList) ||
-	    TIME_BEFORE(rExpiredSysTime, prRootTimer->rNextExpiredSysTime)) {
+	if (LINK_IS_EMPTY(prTimerList) || TIME_BEFORE(rExpiredSysTime, prRootTimer->rNextExpiredSysTime)) {
 
 		prRootTimer->rNextExpiredSysTime = rExpiredSysTime;
 		cnmTimerSetTimer(prAdapter, rTimeoutSystime);
@@ -342,9 +332,8 @@ VOID cnmTimerStartTimer(IN P_ADAPTER_T prAdapter, IN P_TIMER_T prTimer, IN UINT_
 	/* Add this timer to checking list */
 	prTimer->rExpiredSysTime = rExpiredSysTime;
 
-	if (!timerPendingTimer(prTimer)) {
+	if (!timerPendingTimer(prTimer))
 		LINK_INSERT_TAIL(prTimerList, &prTimer->rLinkEntry);
-	}
 
 	KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_TIMER);
 
@@ -398,8 +387,7 @@ VOID cnmTimerDoTimeOutCheck(IN P_ADAPTER_T prAdapter)
 
 			if (prTimer->u2Minutes > 0) {
 				prTimer->u2Minutes--;
-				prTimer->rExpiredSysTime =
-				    rCurSysTime + MSEC_TO_SYSTIME(MSEC_PER_MIN);
+				prTimer->rExpiredSysTime = rCurSysTime + MSEC_TO_SYSTIME(MSEC_PER_MIN);
 				LINK_INSERT_TAIL(prTimerList, &prTimer->rLinkEntry);
 			} else if (pfMgmtTimeOutFunc) {
 				KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_TIMER);
@@ -426,8 +414,7 @@ VOID cnmTimerDoTimeOutCheck(IN P_ADAPTER_T prAdapter)
 		ASSERT(TIME_AFTER(prRootTimer->rNextExpiredSysTime, rCurSysTime));
 
 		fgNeedWakeLock = cnmTimerSetTimer(prAdapter, (OS_SYSTIME)
-						  ((INT_32) prRootTimer->rNextExpiredSysTime -
-						   (INT_32) rCurSysTime));
+						  ((INT_32) prRootTimer->rNextExpiredSysTime - (INT_32) rCurSysTime));
 	}
 
 	if (prRootTimer->fgWakeLocked && !fgNeedWakeLock) {

@@ -275,17 +275,16 @@ static int autok_thread_func(void *data)
     if(stage == 1) {
         // call stage 1 auto-K callback function
         autok_thread_data->is_autok_done[host->id] = 0;
-		//Modify by qinhai for ALPS02452060 SDIO CRC Error cause Arp Tx Req fail 20151206 begin
-		i = 0;
-		while (i < RE_AUTOK_MAX_CNT) {
-			res = msdc_autok_stg1_cal(host, vcore_uv, autok_thread_data->p_autok_predata, i);
-			if (res)
-				i++;
-			else
-				break;
-		}
-		//Modify by qinhai for ALPS02452060 SDIO CRC Error cause Arp Tx Req fail 20151206 end
-		if(res){
+        i = 0;
+        while (i < RE_AUTOK_MAX_CNT) {
+            res = msdc_autok_stg1_cal(host, vcore_uv, autok_thread_data->p_autok_predata, i);
+            if (res)
+                i++;
+            else
+                break;
+        }
+        if(res){
+
             pr_debug("[%s] Auto-K stage 1 fail, res = %d, set msdc parameter settings stored in nvram to 0\n", __func__, res);
             memset(autok_thread_data->p_autok_predata->ai_data[0], 0, autok_thread_data->p_autok_predata->param_count * sizeof(unsigned int));
             autok_thread_data->is_autok_done[host->id] = 2;
@@ -410,7 +409,7 @@ int wait_sdio_autok_ready(void *data){
     int id;
 #ifdef CONFIG_SDIOAUTOK_SUPPORT    
     int is_screen_off;
-    //ALPS02087982 is_autok_lifecycle_before = true; 
+/* ALPS02096287 is_autok_lifecycle_before = true; */
 #endif    
     unsigned int vcore_uv = 0;
     int ret = 0;
@@ -505,7 +504,7 @@ EXIT_WAIT_AUTOK_READY:
 #ifdef MTK_SDIO30_ONLINE_TUNING_SUPPORT
         atomic_set(&host->ot_work.autok_done, 1);
         atomic_set(&host->ot_work.ot_disable, 0);
-        is_autok_lifecycle_before = true; //ALPS02087982
+        is_autok_lifecycle_before = true; /* ALPS02096287 */
 #endif  // MTK_SDIO30_ONLINE_TUNING_SUPPORT
 #endif
     }

@@ -298,7 +298,7 @@ void mu3d_hal_initr_dis(void)
 
 void mu3d_hal_clear_intr(void)
 {
-	os_printk(K_ERR, "%s\n", __func__);
+	os_printk(K_DEBUG, "%s\n", __func__);
 
 	/* Clear EP0 and Tx/Rx EPn interrupts status*/
 	os_writel(U3D_EPISR, 0xFFFFFFFF);
@@ -1203,7 +1203,7 @@ void mu3d_hal_unfigured_ep_num( DEV_UINT8 ep_num, USB_DIR dir)
 {
     struct USB_EP_SETTING *ep_setting;
 
-	os_printk(K_INFO, "%s %d\n", __func__, ep_num);
+	os_printk(K_DEBUG, "%s %d\n", __func__, ep_num);
 
 	if (dir == USB_TX) {
 		USB_WriteCsr32(U3D_TX1CSR0, ep_num, USB_ReadCsr32(U3D_TX1CSR0, ep_num) & (~0x7FF));

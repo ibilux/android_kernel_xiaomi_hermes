@@ -49,11 +49,11 @@ static UINT32 gDbgLevel = UART_LOG_INFO;
 
 #define UART_DBG_FUNC(fmt, arg...)	\
 do { if (gDbgLevel >= UART_LOG_DBG)	\
-		pr_info(PFX "%s: "  fmt, __func__ , ##arg);	\
+		pr_warn("%s: "  fmt, __func__ , ##arg);	\
 } while (0)
 #define UART_INFO_FUNC(fmt, arg...)	\
 do { if (gDbgLevel >= UART_LOG_INFO)	\
-		pr_info(PFX "%s: "  fmt, __func__ , ##arg);	\
+		pr_warn("%s: "  fmt, __func__ , ##arg);	\
 } while (0)
 #define UART_WARN_FUNC(fmt, arg...)	\
 do { if (gDbgLevel >= UART_LOG_WARN)	\
@@ -293,6 +293,7 @@ static INT32 stp_uart_fifo_init(VOID)
 		if (NULL == g_stp_uart_rx_fifo) {
 			UART_ERR_FUNC("kfifo_alloc failed (kernel version < 2.6.35)\n");
 			err = -1;
+			return err;
 		}
 	}
 #else
@@ -302,6 +303,7 @@ static INT32 stp_uart_fifo_init(VOID)
 			err = -2;
 			UART_ERR_FUNC
 			    ("kzalloc for g_stp_uart_rx_fifo failed (kernel version > 2.6.35)\n");
+			return err;
 		}
 		err = kfifo_alloc(g_stp_uart_rx_fifo, LDISC_RX_FIFO_SIZE, GFP_ATOMIC);
 		if (0 != err) {
@@ -310,6 +312,7 @@ static INT32 stp_uart_fifo_init(VOID)
 			kfree(g_stp_uart_rx_fifo);
 			g_stp_uart_rx_fifo = NULL;
 			err = -3;
+			return err;
 		}
 	}
 #endif
@@ -726,7 +729,7 @@ INT32 mtk_wcn_uart_tx(const PUINT8 data, const UINT32 size, PUINT32 written_size
 		return -1;
 	UART_DBG_FUNC("++\n");
 	(*written_size) = 0;
-
+	INT32 ret = 0;
 	/* put data into ring buffer */
 	/* down(&buf_mtx); */
 
@@ -770,21 +773,17 @@ INT32 mtk_wcn_uart_tx(const PUINT8 data, const UINT32 size, PUINT32 written_size
 		wr_idx = (wr_idx + size) % MTKSTP_BUFFER_SIZE;
 		UART_DBG_FUNC("r(%d)s(%d)wr_i(%d)rd_i(%d)\n\r", room, size, wr_idx, rd_idx);
 		i++;
-		if (size < 0) {
-			UART_ERR_FUNC
-			    ("Error(i-%d):[pid(%d)(%s)]len(%d)size(%d)wr_i(%d)rd_i(%d)\n\r", i,
-			     current->pid, current->comm, len, size, wr_idx, rd_idx);
-			(*written_size) = 0;
-		} else if (size == 0) {
+		if (size == 0) {
 			(*written_size) = 0;
 		} else if (size < MAX_PACKET_ALLOWED) {
 			/* only size ~(0, 2000) is allowed */
-			(*written_size) = stp_uart_tx_wakeup(stp_tty);
-			if (*written_size < 0) {
+			ret = stp_uart_tx_wakeup(stp_tty);
+			if (ret < 0) {
 				/* reset read and write index of tx_buffer, is there any risk? */
 				wr_idx = rd_idx = 0;
 				*written_size = 0;
-			}
+			} else
+				*written_size = ret;
 		} else {
 			/* we filter all packet with size > 2000 */
 			UART_ERR_FUNC

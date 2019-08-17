@@ -33,40 +33,7 @@ struct xlog_record {
 	int prio;
 };
 
-#if defined(HAVE_ALE_FEATURE)
-
-int __xlog_ale_printk(int prio, const struct ale_convert *convert, ...);
-
-#define xlog_printk(prio, tag, fmt, ...)				\
-  ({									\
-	  static const struct ale_convert ____xlogk_ale_rec____ =	\
-	      { tag, fmt, __FILE__, prio, 0, "" };                      \
-	  __xlog_ale_printk(prio, &____xlogk_ale_rec____,		\
-			    ##__VA_ARGS__);				\
-  })
-
-#else				/* HAVE_ALE_FEATURE */
-
-asmlinkage int __xlog_printk(const struct xlog_record *rec, ...);
-
-int __xlog_ksystem_printk(const struct xlog_record *rec, ...);
-#ifdef CONFIG_HAVE_XLOG_FEATURE
-#define xlog_printk(prio, tag, fmt, ...)				\
-	({								\
-		static const struct xlog_record _xlog_rec =		\
-			{tag, fmt, prio};				\
-		__xlog_printk(&_xlog_rec, ##__VA_ARGS__);		\
-	})
-#define xlog_ksystem_printk(prio, tag, fmt, ...)			\
-	({								\
-		static const struct xlog_record _xlog_rec =		\
-			{tag, fmt, prio};				\
-		__xlog_ksystem_printk(&_xlog_rec, ##__VA_ARGS__);	\
-	})
-#else				/* CONFIG_HAVE_XLOG_FEATURE */
 #define xlog_printk(prio, tag, fmt, ...) ((void)0)
 #define xlog_ksystem_printk(prio, tag, fmt, ...)    ((void)0)
-#endif				/* CONFIG_HAVE_XLOG_FEATURE */
-#endif				/* HAVE_ALE_FEATURE */
 
 #endif

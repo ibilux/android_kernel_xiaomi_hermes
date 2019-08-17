@@ -271,6 +271,11 @@ unsigned int arpt_do_table(struct sk_buff *skb,
 	local_bh_disable();
 	addend = xt_write_recseq_begin();
 	private = table->private;
+   /*
+	 * Ensure we load private-> members after we've fetched the base
+   * pointer.
+	 */
+	smp_read_barrier_depends();
 	table_base = private->entries[smp_processor_id()];
 
 	e = get_entry(table_base, private->hook_entry[hook]);
@@ -465,12 +470,14 @@ static int mark_source_chains(const struct xt_table_info *newinfo,
 	return 1;
 }
 
-static inline int check_entry(const struct arpt_entry *e)
+static inline int check_entry(const struct arpt_entry *e, const char *name)
 {
 	const struct xt_entry_target *t;
 
-	if (!arp_checkentry(&e->arp))
+	if (!arp_checkentry(&e->arp)) {
+		duprintf("arp_tables: arp check failed %p %s.\n", e, name);
 		return -EINVAL;
+	}
 
 	if (e->target_offset + sizeof(struct xt_entry_target) > e->next_offset)
 		return -EINVAL;
@@ -481,7 +488,6 @@ static inline int check_entry(const struct arpt_entry *e)
 
 	return 0;
 }
-
 
 static inline int check_target(struct arpt_entry *e, const char *name)
 {
@@ -511,6 +517,10 @@ find_check_entry(struct arpt_entry *e, const char *name, unsigned int size)
 	struct xt_entry_target *t;
 	struct xt_target *target;
 	int ret;
+
+	ret = check_entry(e, name);
+	if (ret)
+		return ret;
 
 	t = arpt_get_target(e);
 	target = xt_request_find_target(NFPROTO_ARP, t->u.user.name,
@@ -572,7 +582,7 @@ static inline int check_entry_size_and_hooks(struct arpt_entry *e,
 		return -EINVAL;
 	}
 
-	err = check_entry(e);
+	err = check_entry(e, "");
 	if (err)
 		return err;
 
@@ -1234,7 +1244,7 @@ check_compat_entry_size_and_hooks(struct compat_arpt_entry *e,
 	}
 
 	/* For purposes of check_entry casting the compat entry is fine */
-	ret = check_entry((struct arpt_entry *)e);
+	ret = check_entry((struct arpt_entry *)e, name);
 	if (ret)
 		return ret;
 

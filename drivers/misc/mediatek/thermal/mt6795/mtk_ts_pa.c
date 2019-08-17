@@ -6,7 +6,6 @@
 #include <linux/thermal.h>
 #include <linux/platform_device.h>
 #include <linux/aee.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/delay.h>
 #include <linux/proc_fs.h>
@@ -62,7 +61,7 @@ static int polling_factor2 = 10000;
 #define mtktspa_dprintk(fmt, args...)   \
 do {                                    \
 	if (mtktspa_debug_log) {                \
-		xlog_printk(ANDROID_LOG_INFO, "Power/PA_Thermal", fmt, ##args); \
+		pr_notice("Power/PA_Thermal" fmt, ##args); \
 	}                                   \
 } while(0)
 
@@ -503,15 +502,15 @@ int mtktspa_register_cooler(void)
 
 int mtktspa_register_thermal(void)
 {
-	mtktspa_dprintk("[mtktspa_register_thermal] \n");
+	mtktspa_dprintk("[mtktspa_register_thermal]\n");
 
-    /* trips */
-    if (NULL == thz_dev) {
-        thz_dev = mtk_thermal_zone_device_register("mtktspa", num_trip, NULL,
-                                                   &mtktspa_dev_ops, 0, 0, 0, interval*1000);
-    }
+	/* trips */
+	if (NULL == thz_dev) {
+		thz_dev = mtk_thermal_zone_device_register("mtktspa", num_trip, NULL,
+					&mtktspa_dev_ops, 0, 0, 0, interval*1000);
+	}
 
-    mtk_mdm_set_md1_signal_period(interval);
+	mtk_mdm_set_md1_signal_period(interval);
 
 	return 0;
 }
@@ -527,7 +526,7 @@ void mtktspa_unregister_cooler(void)
 
 void mtktspa_unregister_thermal(void)
 {
-	mtktspa_dprintk("[mtktspa_unregister_thermal] \n");
+	mtktspa_dprintk("[mtktspa_unregister_thermal]\n");
 
 	if (thz_dev)
 	{

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/gl_oid.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/gl_oid.c#1
 */
 
 /*! \file   gl_oid.c
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: gl_oid.c $
+** Log: gl_oid.c
 **
 ** 01 15 2014 eason.tsai
 ** [ALPS01070904] [Need Patch] [Volunteer Patch][MT6630][Driver]MT6630 Wi-Fi Patch
@@ -111,17 +109,21 @@
  * disable NVRAM/configuration type query OID on Win32 platform due to win32 always refer to registry.
  *
  * 11 01 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation
+ * with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation
+ * for querying current TX rate from firmware auto rate module
  * 1) Query link speed (TX rate) from firmware directly with buffering mechanism to reduce overhead
  * 2) Remove CNM CH-RECOVER event handling
  * 3) cfg read/write API renamed with kal prefix for unified naming rules.
  *
  * 10 27 2010 george.huang
- * [WCXRP00000127] [MT6620 Wi-Fi][Driver] Add a registry to disable Beacon Timeout function for SQA test by using E1 EVB
+ * [WCXRP00000127] [MT6620 Wi-Fi][Driver] Add a registry to disable Beacon
+ * Timeout function for SQA test by using E1 EVB
  * Support registry option for disable beacon lost detection.
  *
  * 10 26 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000137] [MT6620 Wi-Fi] [FW] Support NIC capability query command
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation
+ * with Version Check[WCXRP00000137] [MT6620 Wi-Fi] [FW] Support NIC capability query command
  * 1) update NVRAM content template to ver 1.02
  * 2) add compile option for querying NIC capability (default: off)
  * 3) modify AIS 5GHz support to run-time option, which could be turned on by registry or NVRAM setting
@@ -134,7 +136,8 @@
  * Add auto rate parameter in registry.
  *
  * 10 18 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation
+ * with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
  * complete implementation of Android NVRAM access
  *
  * 10 08 2010 cp.wu
@@ -315,7 +318,8 @@
  * [WPD00001943]Create WiFi test driver framework on WinXP
  * 1. eliminate improper variable in rHifInfo
  *  *  *  *  *  *  *  *  *  *  *  * 2. block TX/ordinary OID when RF test mode is engaged
- *  *  *  *  *  *  *  *  *  *  *  * 3. wait until firmware finish operation when entering into and leaving from RF test mode
+ *  *  *  *  *  *  *  *  *  *  *  * 3. wait until firmware finish operation
+ *  *  *  *  *  *  *  *  *  *  *  *    when entering into and leaving from RF test mode
  *  *  *  *  *  *  *  *  *  *  *  * 4. correct some HAL implementation
  *
  * 01 21 2010 cp.wu
@@ -335,7 +339,8 @@
 **  \main\maintrunk.MT6620WiFiDriver_Prj\8 2009-11-26 20:57:25 GMT mtk02752
 **  i4OidPendingCount should be increased when oid is pended
 **  \main\maintrunk.MT6620WiFiDriver_Prj\7 2009-11-23 18:13:12 GMT mtk02752
-**  utilize wlanIsHandlerNeedHwAccess() to decide the Set/Query could be served immediately without HW access or should be queued
+**  utilize wlanIsHandlerNeedHwAccess() to decide the Set/Query could
+**  be served immediately without HW access or should be queued
 **  \main\maintrunk.MT6620WiFiDriver_Prj\6 2009-10-13 21:59:31 GMT mtk01084
 **  \main\maintrunk.MT6620WiFiDriver_Prj\5 2009-09-09 17:26:25 GMT mtk01084
 **  modify for DDK related functions
@@ -352,7 +357,6 @@
 *                         C O M P I L E R   F L A G S
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                E X T E R N A L   R E F E R E N C E S
@@ -377,7 +381,6 @@
 #define OID_CUSTOM_EEPROM_RW                            0xFFA0C803
 #define OID_CUSTOM_SW_CTRL                              0xFFA0C805
 #define OID_CUSTOM_SEC_CHECK                            0xFFA0C806
-
 
 /* RF Test specific OIDs */
 #define OID_CUSTOM_TEST_MODE                            0xFFA0C901
@@ -421,12 +424,10 @@ typedef struct _WLAN_REG_ENTRY_T {
 	UINT u4GlueOffset;	/* target offset in GlueInfo */
 } WLAN_REG_ENTRY_T, *P_WLAN_REG_ENTRY_T;
 
-
 /*******************************************************************************
 *                        P U B L I C   D A T A
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                       P R I V A T E   D A T A
@@ -438,7 +439,8 @@ typedef struct _WLAN_REG_ENTRY_T {
 /* TODO: Check */
 WLAN_REQ_ENTRY arWlanOidReqTable[] = {
 	/* General Operational Characteristics */
-	/* (NDIS_OID)rOid,                          (PUINT_8)pucOidName,                 fgQryBufLenChecking, fgSetBufLenChecking, eOidMethod, u4InfoBufLen,                                pfOidQueryHandler,                  pfOidSetHandler} */
+	/* (NDIS_OID)rOid, (PUINT_8)pucOidName, fgQryBufLenChecking, fgSetBufLenChecking, eOidMethod, u4InfoBufLen,
+	 * pfOidQueryHandler, pfOidSetHandler} */
 	{OID_GEN_SUPPORTED_LIST, DISP_STRING("OID_GEN_SUPPORTED_LIST"), FALSE, FALSE,
 	 ENUM_OID_GLUE_ONLY, 0, reqQuerySupportedList, NULL},
 	{OID_GEN_HARDWARE_STATUS, DISP_STRING("OID_GEN_HARDWARE_STATUS"), TRUE, FALSE,
@@ -579,7 +581,8 @@ WLAN_REQ_ENTRY arWlanOidReqTable[] = {
 	 ENUM_OID_DRIVER_CORE, sizeof(NDIS_802_11_AUTHENTICATION_MODE), wlanoidQueryAuthMode,
 	 wlanoidSetAuthMode}
 	,
-/* { OID_802_11_PRIVACY_FILTER,              DISP_STRING("OID_802_11_PRIVACY_FILTER"),           TRUE,   TRUE,   ENUM_OID_DRIVER_CORE,  sizeof(NDIS_802_11_PRIVACY_FILTER),         wlanoidQueryPrivacyFilter,          wlanoidSetPirvacyFilter }, */
+	/* { OID_802_11_PRIVACY_FILTER, DISP_STRING("OID_802_11_PRIVACY_FILTER"), TRUE, TRUE, ENUM_OID_DRIVER_CORE,
+	 * sizeof(NDIS_802_11_PRIVACY_FILTER), wlanoidQueryPrivacyFilter, wlanoidSetPirvacyFilter }, */
 	{OID_802_11_BSSID_LIST_SCAN, DISP_STRING("OID_802_11_BSSID_LIST_SCAN"), FALSE, FALSE,
 	 ENUM_OID_DRIVER_CORE, 0, NULL, wlanoidSetBssidListScan}
 	,
@@ -718,9 +721,14 @@ WLAN_REQ_ENTRY arWlanOidReqTable[] = {
 	{OID_CUSTOM_TEST_ICAP_MODE, DISP_STRING("OID_CUSTOM_TEST_ICAP_MODE"), FALSE, FALSE,
 	 ENUM_OID_DRIVER_CORE, 0, NULL, wlanoidRftestSetTestIcapMode}
 	,
-/* { OID_CUSTOM_TEST_RX_STATUS,                DISP_STRING("OID_CUSTOM_TEST_RX_STATUS"),           TRUE,   FALSE,  ENUM_OID_DRIVER_CORE,  sizeof(PARAM_CUSTOM_RFTEST_RX_STATUS_STRUC_T),   wlanoidQueryRfTestRxStatus,    NULL }, */
-/* { OID_CUSTOM_TEST_TX_STATUS,                DISP_STRING("OID_CUSTOM_TEST_TX_STATUS"),           TRUE,   FALSE,  ENUM_OID_DRIVER_CORE,  sizeof(PARAM_CUSTOM_RFTEST_TX_STATUS_STRUC_T),   wlanoidQueryRfTestTxStatus,    NULL }, */
-	/* (NDIS_OID)rOid,                          (PUINT_8)pucOidName,                 fgQryBufLenChecking, fgSetBufLenChecking, fgIsHandleInGlueLayerOnly, u4InfoBufLen, pfOidQueryHandler,                  pfOidSetHandler} */
+/* { OID_CUSTOM_TEST_RX_STATUS, DISP_STRING("OID_CUSTOM_TEST_RX_STATUS"),
+ * TRUE,   FALSE,  ENUM_OID_DRIVER_CORE,  sizeof(PARAM_CUSTOM_RFTEST_RX_STATUS_STRUC_T),
+ * wlanoidQueryRfTestRxStatus,    NULL }, */
+/* { OID_CUSTOM_TEST_TX_STATUS, DISP_STRING("OID_CUSTOM_TEST_TX_STATUS"),
+ * TRUE,   FALSE,  ENUM_OID_DRIVER_CORE,  sizeof(PARAM_CUSTOM_RFTEST_TX_STATUS_STRUC_T),
+ * wlanoidQueryRfTestTxStatus,    NULL }, */
+/* (NDIS_OID)rOid, (PUINT_8)pucOidName, fgQryBufLenChecking, fgSetBufLenChecking,
+ * fgIsHandleInGlueLayerOnly, u4InfoBufLen, pfOidQueryHandler, pfOidSetHandler} */
 #if 0
 	{OID_CUSTOM_MTK_NVRAM_RW, DISP_STRING("OID_CUSTOM_MTK_NVRAM_RW"), TRUE, TRUE,
 	 ENUM_OID_DRIVER_CORE, sizeof(PARAM_CUSTOM_NVRAM_RW_STRUCT_T), wlanoidQueryNvramRead,
@@ -751,7 +759,7 @@ WLAN_REQ_ENTRY arWlanOidReqTable[] = {
    default value is used. */
 
 WLAN_REG_ENTRY_T arWlanRegTable[] = {
-	/* Registry parameter name              ANSI name           mandatory(1)    fieldSize       type ,                  Default Value,              Min         Max             GLUE offset   */
+	/* Registry parameter name ANSI name mandatory(1) fieldSize type, Default Value, Min Max GLUE offset */
 	{NDIS_STRING_CONST("SDBlockSize"), "SDBlockSize", 0, 4, NdisParameterHexInteger, 512, 0,
 	 2048, GLUE_GET_REG_OFFSET(u4SdBlockSize)}
 	,
@@ -1063,23 +1071,6 @@ WLAN_REG_ENTRY_T arWlanRegTable[] = {
 *                   F U N C T I O N   D E C L A R A T I O N S
 *******************************************************************************
 */
-WLAN_STATUS
-windowsQueryInformation(IN P_GLUE_INFO_T prGlueInfo,
-			IN P_WLAN_REQ_ENTRY prWlanReqEntry,
-			IN PVOID pvInfoBuf,
-			IN UINT_32 u4InfoBufLen,
-			OUT PUINT_32 pu4QryInfoLen,
-			IN PUINT_32 pu4ByteWritten,
-			IN PUINT_32 pu4ByteNeeded, IN BOOLEAN fgIsGlueExtension);
-
-WLAN_STATUS
-windowsSetInformation(IN P_GLUE_INFO_T prGlueInfo,
-		      IN P_WLAN_REQ_ENTRY prWlanReqEntry,
-		      IN PVOID pvInfoBuf,
-		      IN UINT_32 u4InfoBufLen,
-		      OUT PUINT_32 pu4SetInfoLen,
-		      IN PUINT_32 pu4ByteRead,
-		      IN PUINT_32 pu4ByteNeeded, IN BOOLEAN fgIsGlueExtension);
 
 /******************************************************************************
 *                              F U N C T I O N S
@@ -1104,17 +1095,17 @@ BOOLEAN reqCheckOrderOfSupportedOids(IN PVOID pvAdapter)
 
 	DEBUGFUNC("reqCheckOrderOfSupportedOids");
 
-	DBGLOG(REQ, TRACE, ("\n"));
+	DBGLOG1(REQ, TRACE, "\n");
 
 	previousOid = arWlanOidReqTable[0].rOid;
 
 	for (i = 1; i < NUM_SUPPORTED_OIDS; i++) {
 		if (previousOid > arWlanOidReqTable[i].rOid) {
-			DBGLOG(REQ, ERROR, ("Incorrect order in nicReqTable: [%d] %s vs [%d] %s\n",
+			DBGLOG2(REQ, ERROR, "Incorrect order in nicReqTable: [%d] %s vs [%d] %s\n",
 					    i - 1, arWlanOidReqTable[i - 1].pucOidName, i,
-					    arWlanOidReqTable[i].pucOidName));
+					    arWlanOidReqTable[i].pucOidName;
 
-			ASSERT(0);
+			ASSERT(0;
 
 			return FALSE;
 		}
@@ -1123,7 +1114,6 @@ BOOLEAN reqCheckOrderOfSupportedOids(IN PVOID pvAdapter)
 	return TRUE;
 }				/* reqCheckOrderOfSupportedOids */
 #endif
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1161,162 +1151,6 @@ BOOLEAN reqSearchSupportedOidEntry(IN NDIS_OID rOid, OUT P_WLAN_REQ_ENTRY * ppWl
 
 /*----------------------------------------------------------------------------*/
 /*!
-* \brief This function is a required function that returns information about
-*        the capabilities and status of the driver and/or its network adapter.
-*
-* \param miniportAdapterContext[in]     Follow MSDN definition.
-* \param oid[in]                        Follow MSDN definition.
-* \param pvInfomationBuffer[in]         Follow MSDN definition.
-* \param u4InformationBufferLength[in]  Follow MSDN definition.
-* \param pu4ByteWritten[out]            Follow MSDN definition.
-* \param pu4ByteNeeded[out]             Follow MSDN definition.
-*
-* \retval Follow MSDN definition.
-*/
-/*----------------------------------------------------------------------------*/
-NDIS_STATUS
-mpQueryInformation(IN NDIS_HANDLE miniportAdapterContext,
-		   IN NDIS_OID oid,
-		   IN PVOID pvInfomationBuffer,
-		   IN UINT_32 u4InformationBufferLength,
-		   OUT PUINT_32 pu4ByteWritten, OUT PUINT_32 pu4ByteNeeded)
-{
-	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) miniportAdapterContext;
-	P_WLAN_REQ_ENTRY prWlanReqEntry;
-	NDIS_STATUS status;
-	UINT_32 u4QueryInfoLen = u4InformationBufferLength;
-
-	DEBUGFUNC("mpQueryInformation");
-
-	*pu4ByteWritten = 0;
-	*pu4ByteNeeded = 0;
-
-	do {
-		if (prGlueInfo->fgIsCardRemoved) {
-			DBGLOG(REQ, WARN, ("Query OID: 0x%08x (card removed)\n", oid));
-			status = NDIS_STATUS_NOT_ACCEPTED;
-			break;
-		} else if (!reqSearchSupportedOidEntry(oid, &prWlanReqEntry)) {
-			DBGLOG(REQ, WARN, ("Query OID: 0x%08x (unknown)\n", oid));
-			status = NDIS_STATUS_NOT_SUPPORTED;
-			break;
-		} else {
-			DBGLOG(REQ, TRACE,
-			       ("Query OID: 0x%08x , %s\n", oid, prWlanReqEntry->pucOidName));
-		}
-
-		ASSERT(prWlanReqEntry);
-		if (prWlanReqEntry->pfOidQueryHandler == NULL) {
-			DBGLOG(REQ, WARN, ("Query %s: Null query handler\n",
-					   prWlanReqEntry->pucOidName));
-			status = NDIS_STATUS_NOT_SUPPORTED;
-			break;
-		}
-
-		if (prWlanReqEntry->fgQryBufLenChecking) {
-			if (u4InformationBufferLength < prWlanReqEntry->u4InfoBufLen) {
-				/* Not enough room in InformationBuffer. Punt */
-				*pu4ByteNeeded = prWlanReqEntry->u4InfoBufLen;
-
-				DBGLOG(REQ, WARN,
-				       ("Query %s: Buffer too short (current=%d, needed=%d)\n",
-					prWlanReqEntry->pucOidName, u4InformationBufferLength,
-					*pu4ByteNeeded));
-				status = NDIS_STATUS_INVALID_LENGTH;
-				break;
-			}
-		}
-
-		if (wlanQueryTestMode(prGlueInfo->prAdapter) == TRUE &&
-		    prWlanReqEntry->eOidMethod == ENUM_OID_DRIVER_CORE &&
-		    wlanIsHandlerAllowedInRFTest(prWlanReqEntry->pfOidQueryHandler,
-						 FALSE) == FALSE) {
-			DBGLOG(REQ, WARN,
-			       ("Query %s: prohibited in RF test mode\n",
-				prWlanReqEntry->pucOidName));
-			status = NDIS_STATUS_NOT_SUPPORTED;
-			break;
-		}
-
-		/* Check what kind of OID query method is used */
-		if (prWlanReqEntry->eOidMethod == ENUM_OID_GLUE_ONLY) {
-			status = prWlanReqEntry->pfOidQueryHandler(prGlueInfo,
-								   pvInfomationBuffer,
-								   u4InformationBufferLength,
-								   &u4QueryInfoLen);
-		} else if (prWlanReqEntry->eOidMethod == ENUM_OID_DRIVER_CORE) {
-			status =
-			    windowsQueryInformation(prGlueInfo,
-						    prWlanReqEntry,
-						    pvInfomationBuffer,
-						    u4InformationBufferLength,
-						    &u4QueryInfoLen,
-						    pu4ByteWritten, pu4ByteNeeded, FALSE);
-		} else if (prWlanReqEntry->eOidMethod == ENUM_OID_GLUE_EXTENSION) {
-			status =
-			    windowsQueryInformation(prGlueInfo,
-						    prWlanReqEntry,
-						    pvInfomationBuffer,
-						    u4InformationBufferLength,
-						    &u4QueryInfoLen,
-						    pu4ByteWritten, pu4ByteNeeded, TRUE);
-		} else {
-			ASSERT(0);
-		}
-
-		/* In order to pass the WHQL test, we set the variable BytesNeeded no
-		 * matter which status is returned.
-		 */
-		*pu4ByteNeeded = u4QueryInfoLen;
-
-		switch (status) {
-		case NDIS_STATUS_SUCCESS:
-			if (u4QueryInfoLen > u4InformationBufferLength) {
-				/* This case is added to solve the problem of both 32-bit
-				   and 64-bit counters supported for the general
-				   statistics OIDs. */
-				*pu4ByteWritten = u4InformationBufferLength;
-			} else {
-				*pu4ByteWritten = u4QueryInfoLen;
-			}
-			break;
-#if DBG
-		case NDIS_STATUS_INVALID_LENGTH:
-			DBGLOG(REQ, WARN, ("Query %s: Invalid length (current=%d, needed=%d)\n",
-					   prWlanReqEntry->pucOidName, u4InformationBufferLength,
-					   *pu4ByteNeeded));
-			break;
-
-		case NDIS_STATUS_INVALID_DATA:
-			DBGLOG(REQ, WARN, ("Query %s: Invalid data\n", prWlanReqEntry->pucOidName));
-			break;
-
-		case NDIS_STATUS_ADAPTER_NOT_READY:
-			DBGLOG(REQ, WARN, ("Query %s: Adapter not ready\n",
-					   prWlanReqEntry->pucOidName));
-			break;
-
-		case NDIS_STATUS_NOT_SUPPORTED:
-			DBGLOG(REQ, WARN, ("Query %s: OID not supported\n",
-					   prWlanReqEntry->pucOidName));
-			break;
-		case NDIS_STATUS_PENDING:
-			DBGLOG(REQ, LOUD, ("Query %s: OID return Pending.\n",
-					   prWlanReqEntry->pucOidName));
-			break;
-
-		default:
-			DBGLOG(REQ, WARN, ("Query %s: Failed (status=0x%08x)\n",
-					   prWlanReqEntry->pucOidName, status));
-#endif				/* DBG */
-		}
-	} while (FALSE);
-
-	return status;
-}				/* mpQueryInformation */
-
-/*----------------------------------------------------------------------------*/
-/*!
 * \brief This function is a required function that allows bound protocol
 *        drivers, or NDIS, to request changes in the state information that
 *        the miniport maintains for particular object identifiers, such as
@@ -1336,8 +1170,7 @@ NDIS_STATUS
 mpSetInformation(IN NDIS_HANDLE miniportAdapterContext,
 		 IN NDIS_OID oid,
 		 IN PVOID pvInfomationBuffer,
-		 IN UINT_32 u4InformationBufferLength,
-		 OUT PUINT_32 pu4ByteRead, OUT PUINT_32 pu4ByteNeeded)
+		 IN UINT_32 u4InformationBufferLength, OUT PUINT_32 pu4ByteRead, OUT PUINT_32 pu4ByteNeeded)
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) miniportAdapterContext;
 	P_WLAN_REQ_ENTRY prWlanReqEntry;
@@ -1351,24 +1184,21 @@ mpSetInformation(IN NDIS_HANDLE miniportAdapterContext,
 
 	do {
 		if (prGlueInfo->fgIsCardRemoved) {
-			DBGLOG(REQ, WARN, ("Set OID: 0x%08x (card removed)\n", oid));
+			DBGLOG1(REQ, WARN, "Set OID: 0x%08x (card removed)\n", oid);
 			status = NDIS_STATUS_NOT_ACCEPTED;
 			break;
 		} else if (!reqSearchSupportedOidEntry(oid, &prWlanReqEntry)) {
-			DBGLOG(REQ, WARN, ("Set OID: 0x%08x (unknown)\n", oid));
+			DBGLOG1(REQ, WARN, "Set OID: 0x%08x (unknown)\n", oid);
 			status = NDIS_STATUS_INVALID_OID;
 			break;
 		}
 #if DBG
-		else if (prWlanReqEntry->pucOidName[0]) {
-			DBGLOG(REQ, INFO,
-			       ("Set OID: 0x%08x , %s\n", oid, prWlanReqEntry->pucOidName));
-		}
+		else if (prWlanReqEntry->pucOidName[0])
+			DBGLOG1(REQ, INFO, "Set OID: 0x%08x , %s\n", oid, prWlanReqEntry->pucOidName);
 #endif
 
 		if (prWlanReqEntry->pfOidSetHandler == NULL) {
-			DBGLOG(REQ, WARN,
-			       ("Set %s: Null set handler\n", prWlanReqEntry->pucOidName));
+			DBGLOG1(REQ, WARN, "Set %s: Null set handler\n", prWlanReqEntry->pucOidName);
 			status = NDIS_STATUS_INVALID_OID;
 			break;
 		}
@@ -1376,10 +1206,9 @@ mpSetInformation(IN NDIS_HANDLE miniportAdapterContext,
 		if (prWlanReqEntry->fgSetBufLenChecking) {
 			if (u4InformationBufferLength != prWlanReqEntry->u4InfoBufLen) {
 				*pu4ByteNeeded = prWlanReqEntry->u4InfoBufLen;
-				DBGLOG(REQ, WARN,
-				       ("Set %s: Invalid length (current=%d, needed=%d)\n",
-					prWlanReqEntry->pucOidName, u4InformationBufferLength,
-					*pu4ByteNeeded));
+				DBGLOG2(REQ, WARN,
+				       "Set %s: Invalid length (current=%d, needed=%d)\n",
+					prWlanReqEntry->pucOidName, u4InformationBufferLength, *pu4ByteNeeded);
 				status = NDIS_STATUS_INVALID_LENGTH;
 				break;
 			}
@@ -1388,9 +1217,7 @@ mpSetInformation(IN NDIS_HANDLE miniportAdapterContext,
 		if (wlanQueryTestMode(prGlueInfo->prAdapter) == TRUE &&
 		    prWlanReqEntry->eOidMethod == ENUM_OID_DRIVER_CORE &&
 		    wlanIsHandlerAllowedInRFTest(prWlanReqEntry->pfOidSetHandler, TRUE) == FALSE) {
-			DBGLOG(REQ, WARN,
-			       ("Set %s: prohibited in RF test mode\n",
-				prWlanReqEntry->pucOidName));
+			DBGLOG1(REQ, WARN, "Set %s: prohibited in RF test mode\n", prWlanReqEntry->pucOidName);
 			status = NDIS_STATUS_NOT_SUPPORTED;
 			break;
 		}
@@ -1399,23 +1226,20 @@ mpSetInformation(IN NDIS_HANDLE miniportAdapterContext,
 		if (prWlanReqEntry->eOidMethod == ENUM_OID_GLUE_ONLY) {
 			status = prWlanReqEntry->pfOidSetHandler(prGlueInfo,
 								 pvInfomationBuffer,
-								 u4InformationBufferLength,
-								 &u4SetInfoLen);
+								 u4InformationBufferLength, &u4SetInfoLen);
 		} else if (prWlanReqEntry->eOidMethod == ENUM_OID_DRIVER_CORE) {
 			status = windowsSetInformation(prGlueInfo,
 						       prWlanReqEntry,
 						       pvInfomationBuffer,
 						       u4InformationBufferLength,
-						       &u4SetInfoLen,
-						       pu4ByteRead, pu4ByteNeeded, FALSE);
+						       &u4SetInfoLen, pu4ByteRead, pu4ByteNeeded, FALSE);
 
 		} else if (prWlanReqEntry->eOidMethod == ENUM_OID_GLUE_EXTENSION) {
 			status = windowsSetInformation(prGlueInfo,
 						       prWlanReqEntry,
 						       pvInfomationBuffer,
 						       u4InformationBufferLength,
-						       &u4SetInfoLen,
-						       pu4ByteRead, pu4ByteNeeded, TRUE);
+						       &u4SetInfoLen, pu4ByteRead, pu4ByteNeeded, TRUE);
 		} else {
 			ASSERT(0);
 		}
@@ -1428,35 +1252,30 @@ mpSetInformation(IN NDIS_HANDLE miniportAdapterContext,
 		case NDIS_STATUS_INVALID_LENGTH:
 			*pu4ByteNeeded = u4SetInfoLen;
 
-			DBGLOG(REQ, WARN, ("Set %s: Invalid length (current=%d, needed=%d)\n",
-					   prWlanReqEntry->pucOidName, u4InformationBufferLength,
-					   *pu4ByteNeeded));
+			DBGLOG2(REQ, WARN, "Set %s: Invalid length (current=%d, needed=%d)\n",
+					   prWlanReqEntry->pucOidName, u4InformationBufferLength, *pu4ByteNeeded;
 			break;
 #if DBG
 		case NDIS_STATUS_INVALID_DATA:
-			DBGLOG(REQ, WARN, ("Set %s: Invalid data\n", prWlanReqEntry->pucOidName));
+			DBGLOG1(REQ, WARN, "Set %s: Invalid data\n", prWlanReqEntry->pucOidName;
 			break;
 
 		case NDIS_STATUS_NOT_SUPPORTED:
-			DBGLOG(REQ, WARN, ("Set %s: OID not supported\n",
-					   prWlanReqEntry->pucOidName));
+			DBGLOG1(REQ, WARN, "Set %s: OID not supported\n", prWlanReqEntry->pucOidName);
 			break;
 
 		case NDIS_STATUS_PENDING:
-			DBGLOG(REQ, LOUD, ("Set %s: OID return Pending.\n",
-					   prWlanReqEntry->pucOidName));
+			DBGLOG1(REQ, LOUD, "Set %s: OID return Pending.\n", prWlanReqEntry->pucOidName);
 			break;
 
 		default:
-			DBGLOG(REQ, WARN, ("Set %s: Failed (status=0x%08x)\n",
-					   prWlanReqEntry->pucOidName, status));
+			DBGLOG1(REQ, WARN, "Set %s: Failed (status=0x%08x)\n", prWlanReqEntry->pucOidName, status);
 #endif
 		}
 	} while (FALSE);
 
 	return status;
 }				/* mpSetInformation */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1470,9 +1289,7 @@ mpSetInformation(IN NDIS_HANDLE miniportAdapterContext,
 * \retval
 */
 /*----------------------------------------------------------------------------*/
-NDIS_STATUS
-windowsReadRegistryParameters(IN P_GLUE_INFO_T prGlueInfo,
-			      IN NDIS_HANDLE wrapperConfigurationContext)
+NDIS_STATUS windowsReadRegistryParameters(IN P_GLUE_INFO_T prGlueInfo, IN NDIS_HANDLE wrapperConfigurationContext)
 {
 #define REG_NAME_MAX_LEN    32
 
@@ -1490,33 +1307,30 @@ windowsReadRegistryParameters(IN P_GLUE_INFO_T prGlueInfo,
 
 	DEBUGFUNC("windowsReadRegistryParameters");
 
-	DBGLOG(INIT, TRACE, ("\n"));
+	DBGLOG1(INIT, TRACE, "\n");
 
 	/* Open the registry for this adapter */
 	NdisOpenConfiguration(&rStatus, &configurationHandle, wrapperConfigurationContext);
 
 	if (rStatus != NDIS_STATUS_SUCCESS) {
-		DBGLOG(REQ, ERROR, ("NdisOpenConfiguration failed (status = 0x%x)\n", rStatus));
+		DBGLOG1(REQ, ERROR, "NdisOpenConfiguration failed (status = 0x%x)\n", rStatus);
 
 		return rStatus;
 	}
 
 	/* Read NetworkAddress registry value */
 	/* Use it as the current address if any */
-	NdisReadNetworkAddress(&rStatus,
-			       (PVOID) & pucNetworkAddress,
-			       &u4NetworkAddrLeng, configurationHandle);
+	NdisReadNetworkAddress(&rStatus, (PVOID) & pucNetworkAddress, &u4NetworkAddrLeng, configurationHandle);
 
 	/* If there is a NetworkAddress override in registry, use it */
 	if (rStatus == NDIS_STATUS_SUCCESS && u4NetworkAddrLeng == PARAM_MAC_ADDR_LEN) {
-		DBGLOG(REQ, INFO, ("NetworkAddress            %02x-%02x-%02x-%02x-%02x-%02x\n",
+		DBGLOG2(REQ, INFO, "NetworkAddress            %02x-%02x-%02x-%02x-%02x-%02x\n",
 				   pucNetworkAddress[0], pucNetworkAddress[1], pucNetworkAddress[2],
-				   pucNetworkAddress[3], pucNetworkAddress[4],
-				   pucNetworkAddress[5]));
+				   pucNetworkAddress[3], pucNetworkAddress[4], pucNetworkAddress[5];
 
 		if (pucNetworkAddress[0] & BIT(0)) {
-			DBGLOG(REQ, WARN,
-			       ("Overriding NetworkAddress is invalid - %02x-%02x-%02x-%02x-%02x-%02x\n",
+			DBGLOG2(REQ, WARN,
+			       "Overriding NetworkAddress is invalid - %02x-%02x-%02x-%02x-%02x-%02x\n",
 				pucNetworkAddress[0], pucNetworkAddress[1], pucNetworkAddress[2],
 				pucNetworkAddress[3], pucNetworkAddress[4], pucNetworkAddress[5]));
 			kalMemZero((PVOID) ((PUINT_8) prGlueInfo + GLUE_GET_REG_OFFSET(aucMacAddr)),
@@ -1535,10 +1349,8 @@ windowsReadRegistryParameters(IN P_GLUE_INFO_T prGlueInfo,
 	/* Read all the registry values. */
 	prRegEntry = arWlanRegTable;
 	for (i = 0; i < NUM_REG_PARAMS; i++, prRegEntry++) {
-		for (j = 0; j < (UINT) (prRegEntry->regName.Length / 2) &&
-		     j < REG_NAME_MAX_LEN - 1; j++) {
+		for (j = 0; j < (UINT) (prRegEntry->regName.Length / 2) && j < REG_NAME_MAX_LEN - 1; j++)
 			ansiRegName[j] = (UINT_8) prRegEntry->regName.Buffer[j];
-		}
 		ansiRegName[j] = '\0';
 
 		/* Get the configuration value for a specific parameter.  Under NT the
@@ -1554,70 +1366,57 @@ windowsReadRegistryParameters(IN P_GLUE_INFO_T prGlueInfo,
 			case NdisParameterBinary:
 				if (returnedValue_p->ParameterData.BinaryData.Length == 4) {
 					if (prRegEntry->fieldSize == 4) {
-						pc = (PUINT_32) returnedValue_p->ParameterData.
-						    BinaryData.Buffer;
+						pc = (PUINT_32) returnedValue_p->ParameterData.BinaryData.Buffer;
+						*(PUINT_32) ((PUINT_8) prGlueInfo +
+							     prRegEntry->u4GlueOffset) = (UINT_32) pc[0];
+						DBGLOG2(INIT, TRACE,
+						       "%-25s 0x%08x\n", ansiRegName,
+							(UINT_32) *
+							(PUINT_32) ((PUINT_8) prGlueInfo + prRegEntry->u4GlueOffset));
+					} else {
+						DBGLOG2(INIT, ERROR,
+						"Driver Support only 4 bytes binary to formart as DWORD Hex value");
+						DBGLOG2(INIT, ERROR,
+							"Add extra binary format here!!\n");
+					}
+					break;
+				}
+				if (prRegEntry->fieldSize == 4) {
+					/* Here to read the field size of 4 for already released inf file with
+					 * DWORD value now using binary format, for BWCS-related registry */
+					NdisReadConfiguration(&rStatus, &returnedValue_p,
+							      configurationHandle,
+							      &prRegEntry->regName, NdisParameterHexInteger);
+					if (rStatus != NDIS_STATUS_SUCCESS)
+						break;
+					if ((UINT) returnedValue_p->ParameterData.IntegerData <
+					    prRegEntry->min
+					    || (UINT) returnedValue_p->ParameterData.IntegerData >
+					    prRegEntry->max) {
 						*(PUINT_32) ((PUINT_8) prGlueInfo +
 							     prRegEntry->u4GlueOffset) =
-						    (UINT_32) pc[0];
-						DBGLOG(INIT, TRACE,
-						       ("%-25s 0x%08x\n", ansiRegName,
-							(UINT_32) *
-							(PUINT_32) ((PUINT_8) prGlueInfo +
-								    prRegEntry->u4GlueOffset)));
-					} else {
-						DBGLOG(INIT, ERROR,
-						       ("Driver Support only 4 bytes binary to formart as DWORD Hex value,"
-							"Add extra binary format here!!\n"));
+						    prRegEntry->rDefaultValue.u4IntData;
+					} else {	/* Use the value if it is within range */
+						*(PUINT_32) ((PUINT_8) prGlueInfo +
+							     prRegEntry->u4GlueOffset) =
+						    returnedValue_p->ParameterData.IntegerData;
 					}
-				} else {
-					if (prRegEntry->fieldSize == 4) {
-						/* Here to read the field size of 4 for already released inf file
-						   with DWORD value now using binary format, for BWCS-related registry */
-						NdisReadConfiguration(&rStatus, &returnedValue_p,
-								      configurationHandle,
-								      &prRegEntry->regName,
-								      NdisParameterHexInteger);
-						if (rStatus == NDIS_STATUS_SUCCESS) {
-							if ((UINT) returnedValue_p->ParameterData.
-							    IntegerData < prRegEntry->min
-							    || (UINT) returnedValue_p->
-							    ParameterData.IntegerData >
-							    prRegEntry->max) {
-								*(PUINT_32) ((PUINT_8) prGlueInfo +
-									     prRegEntry->
-									     u4GlueOffset) =
-								    prRegEntry->rDefaultValue.
-								    u4IntData;
-							} else {	/* Use the value if it is within range */
-								*(PUINT_32) ((PUINT_8) prGlueInfo +
-									     prRegEntry->
-									     u4GlueOffset) =
-								    returnedValue_p->ParameterData.
-								    IntegerData;
-							}
-							DBGLOG(INIT, TRACE,
-							       ("%-25s 0x%08x\n", ansiRegName,
-								*(PUINT_32) ((PUINT_8) prGlueInfo +
-									     prRegEntry->
-									     u4GlueOffset)));
-						}
-					} else if (prRegEntry->fieldSize == 1) {
-						*(PINT_8) ((PUINT_8) prGlueInfo +
-							   prRegEntry->u4GlueOffset) =
-						    (*(PINT_8)
-						     (returnedValue_p->ParameterData.BinaryData.
-						      Buffer));
+					DBGLOG2(INIT, TRACE,
+					       "%-25s 0x%08x\n", ansiRegName,
+						*(PUINT_32) ((PUINT_8) prGlueInfo +
+							     prRegEntry->u4GlueOffset));
+				} else if (prRegEntry->fieldSize == 1) {
+					*(PINT_8) ((PUINT_8) prGlueInfo + prRegEntry->u4GlueOffset) =
+						(*(PINT_8)(returnedValue_p->ParameterData.BinaryData.Buffer));
 
-						DBGLOG(INIT, TRACE, ("%-25s 0x%08x\n", ansiRegName,
-								     *(PINT_8) ((PUINT_8) prGlueInfo
-										+
-										prRegEntry->
-										u4GlueOffset)));
-					} else {
-						DBGLOG(INIT, ERROR,
-						       ("Driver Support only 1/4 bytes binary to formart as DWORD Hex value,"
-							"Add extra binary format here!!\n"));
-					}
+					DBGLOG2(INIT, TRACE, "%-25s 0x%08x\n", ansiRegName,
+							     *(PINT_8) ((PUINT_8) prGlueInfo
+									+ prRegEntry->u4GlueOffset);
+				} else {
+					DBGLOG2(INIT, ERROR,
+					"Driver Support only 1/4 bytes binary to formart as DWORD Hex value");
+					DBGLOG2(INIT, ERROR,
+						"Add extra binary format here!!\n");
 				}
 				break;
 
@@ -1625,60 +1424,50 @@ windowsReadRegistryParameters(IN P_GLUE_INFO_T prGlueInfo,
 			case NdisParameterInteger:
 				if ((UINT) returnedValue_p->ParameterData.IntegerData <
 				    prRegEntry->min ||
-				    (UINT) returnedValue_p->ParameterData.IntegerData >
-				    prRegEntry->max) {
+				    (UINT) returnedValue_p->ParameterData.IntegerData > prRegEntry->max) {
 					*(PUINT_32) ((PUINT_8) prGlueInfo +
-						     prRegEntry->u4GlueOffset) =
-					    prRegEntry->rDefaultValue.u4IntData;
+						     prRegEntry->u4GlueOffset) = prRegEntry->rDefaultValue.u4IntData;
 				} else {	/* Use the value if it is within range */
 					*(PUINT_32) ((PUINT_8) prGlueInfo +
 						     prRegEntry->u4GlueOffset) =
 					    returnedValue_p->ParameterData.IntegerData;
 				}
-				DBGLOG(INIT, TRACE, ("%-25s 0x%08x\n", ansiRegName,
-						     *(PUINT_32) ((PUINT_8) prGlueInfo +
-								  prRegEntry->u4GlueOffset)));
+				DBGLOG2(INIT, TRACE, "%-25s 0x%08x\n", ansiRegName,
+						     *(PUINT_32) ((PUINT_8) prGlueInfo + prRegEntry->u4GlueOffset);
 				break;
 
 			case NdisParameterString:
 			case NdisParameterMultiString:
 				u2StrLen = returnedValue_p->ParameterData.StringData.Length;
 				if (u2StrLen < prRegEntry->min || u2StrLen > prRegEntry->max) {
-					DBGLOG(INIT, TRACE, ("Out of range: %d, min: %d, max:%d\n",
-							     u2StrLen,
-							     prRegEntry->min, prRegEntry->max));
+					DBGLOG2(INIT, TRACE, "Out of range: %d, min: %d, max:%d\n",
+							     u2StrLen, prRegEntry->min, prRegEntry->max;
 					kalMemCopy((PUINT_8) prGlueInfo + prRegEntry->u4GlueOffset,
-						   prRegEntry->rDefaultValue.pucStrData,
-						   prRegEntry->fieldSize);
+						   prRegEntry->rDefaultValue.pucStrData, prRegEntry->fieldSize;
 				} else {	/* Use the value if it is within range */
 					PUINT_8 pucTerm;
 
 					kalMemCopy((PUINT_8) prGlueInfo + prRegEntry->u4GlueOffset,
-						   (PUINT_8) &returnedValue_p->ParameterData.
-						   StringData.Buffer[0], u2StrLen);
+						   (PUINT_8) &returnedValue_p->ParameterData.StringData.Buffer[0],
+						   u2StrLen);
 
-					pucTerm =
-					    (PUINT_8) prGlueInfo + prRegEntry->u4GlueOffset +
-					    u2StrLen;
+					pucTerm = (PUINT_8) prGlueInfo + prRegEntry->u4GlueOffset + u2StrLen;
 
 					*(pucTerm) = '\0';
 					*(pucTerm + 1) = '\0';
 				}
-				DBGLOG(INIT, TRACE, ("%-25s :%ws\n", ansiRegName,
-						     ((PUINT_8) prGlueInfo +
-						      prRegEntry->u4GlueOffset)));
+				DBGLOG2(INIT, TRACE, "%-25s :%ws\n", ansiRegName,
+						     ((PUINT_8) prGlueInfo + prRegEntry->u4GlueOffset);
 				break;
 
 			default:
-				DBGLOG(INIT, ERROR,
-				       ("parameter type error %d\n", prRegEntry->ParameterType));
+				DBGLOG1(INIT, ERROR, "parameter type error %d\n", prRegEntry->ParameterType);
 				break;
 			}
 
 		} else if (prRegEntry->mandatory) {
 			/* If a mandatory parameter wasn't present then error out. */
-			DBGLOG(REQ, ERROR, ("Could not find mandantory '%s' in registry\n\n",
-					    ansiRegName));
+			DBGLOG1(REQ, ERROR, "Could not find mandantory '%s' in registry\n\n", ansiRegName);
 			rStatus = NDIS_STATUS_FAILURE;
 			break;
 		} else {
@@ -1690,21 +1479,19 @@ windowsReadRegistryParameters(IN P_GLUE_INFO_T prGlueInfo,
 			case NdisParameterInteger:
 				if (prRegEntry->fieldSize == 4) {
 					*(PUINT_32) ((PUINT_8) prGlueInfo +
-						     prRegEntry->u4GlueOffset) =
-					    prRegEntry->rDefaultValue.u4IntData;
+						     prRegEntry->u4GlueOffset) = prRegEntry->rDefaultValue.u4IntData;
 
-					DBGLOG(INIT, TRACE, ("%-25s 0x%08x\n", ansiRegName,
+					DBGLOG2(INIT, TRACE, "%-25s 0x%08x\n", ansiRegName,
 							     *(PUINT_32) ((PUINT_8) prGlueInfo +
-									  prRegEntry->
-									  u4GlueOffset)));
+									  prRegEntry->u4GlueOffset);
 				} else if (prRegEntry->fieldSize == 1) {
 					*(PINT_8) ((PUINT_8) prGlueInfo +
 						   prRegEntry->u4GlueOffset) =
 					    (INT_8) (prRegEntry->rDefaultValue.u4IntData);
 
-					DBGLOG(INIT, TRACE, ("%-25s 0x%08x\n", ansiRegName,
+					DBGLOG2(INIT, TRACE, "%-25s 0x%08x\n", ansiRegName,
 							     *(PINT_8) ((PUINT_8) prGlueInfo +
-									prRegEntry->u4GlueOffset)));
+									prRegEntry->u4GlueOffset);
 				}
 				break;
 			case NdisParameterString:
@@ -1713,14 +1500,12 @@ windowsReadRegistryParameters(IN P_GLUE_INFO_T prGlueInfo,
 					memcpy((PUINT_8) prGlueInfo + prRegEntry->u4GlueOffset,
 					       prRegEntry->rDefaultValue.pucStrData,
 					       prRegEntry->fieldSize * sizeof(WCHAR));
-					DBGLOG(INIT, TRACE, ("%-25s \"%ws\"\n", ansiRegName,
-							     ((PUINT_8) prGlueInfo +
-							      prRegEntry->u4GlueOffset)));
+					DBGLOG2(INIT, TRACE, "%-25s \"%ws\"\n", ansiRegName,
+							     ((PUINT_8) prGlueInfo + prRegEntry->u4GlueOffset);
 				}
 				break;
 			default:
-				DBGLOG(INIT, ERROR, ("parameter type error %d\n",
-						     prRegEntry->ParameterType));
+				DBGLOG1(INIT, ERROR, "parameter type error %d\n", prRegEntry->ParameterType);
 				break;
 			}
 
@@ -1733,7 +1518,6 @@ windowsReadRegistryParameters(IN P_GLUE_INFO_T prGlueInfo,
 
 	return rStatus;
 }				/* nicReadRegistryParameters */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1768,16 +1552,14 @@ reqQuerySupportedList(IN P_GLUE_INFO_T prGlueInfo,
 		return WLAN_STATUS_INVALID_LENGTH;
 	}
 
-	for (i = 0; i < NUM_SUPPORTED_OIDS; i++) {
+	for (i = 0; i < NUM_SUPPORTED_OIDS; i++)
 		*((PNDIS_OID) pvQryBuf + i) = arWlanOidReqTable[i].rOid;
-	}
 
-	DBGLOG(REQ, LOUD, ("Supported OIDs:\n"));
+	DBGLOG1(REQ, LOUD, "Supported OIDs:\n");
 	DBGLOG_MEM32(REQ, LOUD, pvQryBuf, *pu4QryInfoLen);
 
 	return WLAN_STATUS_SUCCESS;
 }				/* reqQuerySupportedList */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1806,16 +1588,14 @@ windowsQueryInformation(P_GLUE_INFO_T prGlueInfo,
 			IN PVOID pvInfoBuf,
 			IN UINT_32 u4InfoBufLen,
 			OUT PUINT_32 pu4QryInfoLen,
-			IN PUINT_32 pu4ByteWritten,
-			IN PUINT_32 pu4ByteNeeded, IN BOOLEAN fgIsGlueExtension)
+			IN PUINT_32 pu4ByteWritten, IN PUINT_32 pu4ByteNeeded, IN BOOLEAN fgIsGlueExtension)
 {
 	ASSERT(prGlueInfo);
 	ASSERT(prWlanReqEntry);
 
 	if (wlanIsHandlerNeedHwAccess(prWlanReqEntry->pfOidQueryHandler, FALSE) == FALSE) {
 		return wlanQueryInformation(prGlueInfo->prAdapter,
-					    prWlanReqEntry->pfOidQueryHandler,
-					    pvInfoBuf, u4InfoBufLen, pu4QryInfoLen);
+					    prWlanReqEntry->pfOidQueryHandler, pvInfoBuf, u4InfoBufLen, pu4QryInfoLen);
 	}
 
 	ASSERT(!(prGlueInfo->rHifInfo.u4ReqFlag & REQ_FLAG_OID));
@@ -1869,13 +1649,11 @@ windowsSetInformation(IN P_GLUE_INFO_T prGlueInfo,
 		      IN PVOID pvInfoBuf,
 		      IN UINT_32 u4InfoBufLen,
 		      OUT PUINT_32 pu4SetInfoLen,
-		      OUT PUINT_32 pu4ByteRead,
-		      OUT PUINT_32 pu4ByteNeeded, IN BOOLEAN fgIsGlueExtension)
+		      OUT PUINT_32 pu4ByteRead, OUT PUINT_32 pu4ByteNeeded, IN BOOLEAN fgIsGlueExtension)
 {
 	if (wlanIsHandlerNeedHwAccess(prWlanReqEntry->pfOidSetHandler, TRUE) == FALSE) {
 		return wlanSetInformation(prGlueInfo->prAdapter,
-					  prWlanReqEntry->pfOidSetHandler,
-					  pvInfoBuf, u4InfoBufLen, pu4SetInfoLen);
+					  prWlanReqEntry->pfOidSetHandler, pvInfoBuf, u4InfoBufLen, pu4SetInfoLen);
 	}
 
 	ASSERT(!(prGlueInfo->rHifInfo.u4ReqFlag & REQ_FLAG_OID));
@@ -1901,3 +1679,144 @@ windowsSetInformation(IN P_GLUE_INFO_T prGlueInfo,
 
 	return NDIS_STATUS_PENDING;
 }
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief This function is a required function that returns information about
+*        the capabilities and status of the driver and/or its network adapter.
+*
+* \param miniportAdapterContext[in]     Follow MSDN definition.
+* \param oid[in]                        Follow MSDN definition.
+* \param pvInfomationBuffer[in]         Follow MSDN definition.
+* \param u4InformationBufferLength[in]  Follow MSDN definition.
+* \param pu4ByteWritten[out]            Follow MSDN definition.
+* \param pu4ByteNeeded[out]             Follow MSDN definition.
+*
+* \retval Follow MSDN definition.
+*/
+/*----------------------------------------------------------------------------*/
+NDIS_STATUS
+mpQueryInformation(IN NDIS_HANDLE miniportAdapterContext,
+		   IN NDIS_OID oid,
+		   IN PVOID pvInfomationBuffer,
+		   IN UINT_32 u4InformationBufferLength, OUT PUINT_32 pu4ByteWritten, OUT PUINT_32 pu4ByteNeeded)
+{
+	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) miniportAdapterContext;
+	P_WLAN_REQ_ENTRY prWlanReqEntry;
+	NDIS_STATUS status;
+	UINT_32 u4QueryInfoLen = u4InformationBufferLength;
+
+	DEBUGFUNC("mpQueryInformation");
+
+	*pu4ByteWritten = 0;
+	*pu4ByteNeeded = 0;
+
+	do {
+		if (prGlueInfo->fgIsCardRemoved) {
+			DBGLOG1(REQ, WARN, "Query OID: 0x%08x (card removed)\n", oid);
+			status = NDIS_STATUS_NOT_ACCEPTED;
+			break;
+		} else if (!reqSearchSupportedOidEntry(oid, &prWlanReqEntry)) {
+			DBGLOG1(REQ, WARN, "Query OID: 0x%08x (unknown)\n", oid);
+			status = NDIS_STATUS_NOT_SUPPORTED;
+			break;
+		} else {
+			DBGLOG1(REQ, TRACE, "Query OID: 0x%08x , %s\n", oid, prWlanReqEntry->pucOidName);
+		}
+
+		ASSERT(prWlanReqEntry);
+		if (prWlanReqEntry->pfOidQueryHandler == NULL) {
+			DBGLOG1(REQ, WARN, "Query %s: Null query handler\n", prWlanReqEntry->pucOidName);
+			status = NDIS_STATUS_NOT_SUPPORTED;
+			break;
+		}
+
+		if (prWlanReqEntry->fgQryBufLenChecking) {
+			if (u4InformationBufferLength < prWlanReqEntry->u4InfoBufLen) {
+				/* Not enough room in InformationBuffer. Punt */
+				*pu4ByteNeeded = prWlanReqEntry->u4InfoBufLen;
+
+				DBGLOG2(REQ, WARN,
+				       "Query %s: Buffer too short (current=%d, needed=%d)\n",
+					prWlanReqEntry->pucOidName, u4InformationBufferLength, *pu4ByteNeeded);
+				status = NDIS_STATUS_INVALID_LENGTH;
+				break;
+			}
+		}
+
+		if (wlanQueryTestMode(prGlueInfo->prAdapter) == TRUE &&
+		    prWlanReqEntry->eOidMethod == ENUM_OID_DRIVER_CORE &&
+		    wlanIsHandlerAllowedInRFTest(prWlanReqEntry->pfOidQueryHandler, FALSE) == FALSE) {
+			DBGLOG1(REQ, WARN, "Query %s: prohibited in RF test mode\n", prWlanReqEntry->pucOidName);
+			status = NDIS_STATUS_NOT_SUPPORTED;
+			break;
+		}
+
+		/* Check what kind of OID query method is used */
+		if (prWlanReqEntry->eOidMethod == ENUM_OID_GLUE_ONLY) {
+			status = prWlanReqEntry->pfOidQueryHandler(prGlueInfo,
+								   pvInfomationBuffer,
+								   u4InformationBufferLength, &u4QueryInfoLen);
+		} else if (prWlanReqEntry->eOidMethod == ENUM_OID_DRIVER_CORE) {
+			status =
+			    windowsQueryInformation(prGlueInfo,
+						    prWlanReqEntry,
+						    pvInfomationBuffer,
+						    u4InformationBufferLength,
+						    &u4QueryInfoLen, pu4ByteWritten, pu4ByteNeeded, FALSE);
+		} else if (prWlanReqEntry->eOidMethod == ENUM_OID_GLUE_EXTENSION) {
+			status =
+			    windowsQueryInformation(prGlueInfo,
+						    prWlanReqEntry,
+						    pvInfomationBuffer,
+						    u4InformationBufferLength,
+						    &u4QueryInfoLen, pu4ByteWritten, pu4ByteNeeded, TRUE);
+		} else {
+			ASSERT(0);
+		}
+
+		/* In order to pass the WHQL test, we set the variable BytesNeeded no
+		 * matter which status is returned.
+		 */
+		*pu4ByteNeeded = u4QueryInfoLen;
+
+		switch (status) {
+		case NDIS_STATUS_SUCCESS:
+			if (u4QueryInfoLen > u4InformationBufferLength) {
+				/* This case is added to solve the problem of both 32-bit
+				   and 64-bit counters supported for the general
+				   statistics OIDs. */
+				*pu4ByteWritten = u4InformationBufferLength;
+			} else {
+				*pu4ByteWritten = u4QueryInfoLen;
+			}
+			break;
+#if DBG
+		case NDIS_STATUS_INVALID_LENGTH:
+			DBGLOG2(REQ, WARN, "Query %s: Invalid length (current=%d, needed=%d)\n",
+					   prWlanReqEntry->pucOidName, u4InformationBufferLength, *pu4ByteNeeded;
+			break;
+
+		case NDIS_STATUS_INVALID_DATA:
+			DBGLOG1(REQ, WARN, "Query %s: Invalid data\n", prWlanReqEntry->pucOidName;
+			break;
+
+		case NDIS_STATUS_ADAPTER_NOT_READY:
+			DBGLOG1(REQ, WARN, "Query %s: Adapter not ready\n", prWlanReqEntry->pucOidName);
+			break;
+
+		case NDIS_STATUS_NOT_SUPPORTED:
+			DBGLOG1(REQ, WARN, "Query %s: OID not supported\n", prWlanReqEntry->pucOidName);
+			break;
+		case NDIS_STATUS_PENDING:
+			DBGLOG1(REQ, LOUD, "Query %s: OID return Pending.\n", prWlanReqEntry->pucOidName);
+			break;
+
+		default:
+			DBGLOG1(REQ, WARN, "Query %s: Failed (status=0x%08x)\n", prWlanReqEntry->pucOidName, status);
+#endif /* DBG */
+		}
+	} while (FALSE);
+
+	return status;
+}				/* mpQueryInformation */
+

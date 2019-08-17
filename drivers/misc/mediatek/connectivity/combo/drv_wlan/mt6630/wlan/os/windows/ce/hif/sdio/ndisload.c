@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/sdio/ndisload.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/sdio/ndisload.c#1
 */
 
 /*! \file   ndisload.c
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: ndisload.c $
+** Log: ndisload.c
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -41,7 +39,6 @@
 */
 #define MAX_NUMBER_OF_ADAPTERS                  8
 
-
 /*******************************************************************************
 *                         D A T A   T Y P E S
 ********************************************************************************
@@ -58,7 +55,6 @@
 */
 
 #define LOADER_INSTANCE_KEY     TEXT("Instance")
-
 
 #if 0
 #define MAX_MINIPORT_NAME_PATH                  256
@@ -89,16 +85,223 @@ BOOL devicePowerDown;
 *              F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-BOOL LoaderEntry(HINSTANCE hInstance, ULONG Reason, LPVOID pReserved);
-
-BOOL LoadMiniport(PMINIPORT_INSTANCE_INFO pInstance);
-
-VOID UnloadMiniport(PMINIPORT_INSTANCE_INFO pInstance);
 
 /*******************************************************************************
 *                          F U N C T I O N S
 ********************************************************************************
 */
+
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief Init loader
+*
+* \param[in] hInstance  the instance that is attaching
+* \param[in] Reason     the reason for attaching
+* \param[in] pReserved  not much
+*
+* \retval TRUE  success
+*
+* \note     This is only used to initialize the zones
+*
+/*----------------------------------------------------------------------------*/
+BOOL LoaderEntry(HINSTANCE hInstance, ULONG Reason, LPVOID pReserved)
+{
+	if (Reason == DLL_PROCESS_ATTACH) {
+		DEBUGREGISTER(hInstance);
+		InitializeCriticalSection(&LoaderCriticalSection);
+		memset(&AllocatedInstance, 0, sizeof(AllocatedInstance));
+	}
+
+	if (Reason == DLL_PROCESS_DETACH)
+		DeleteCriticalSection(&LoaderCriticalSection);
+
+	return TRUE;
+}				/* LoaderEntry */
+
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief Load the miniport for this instance
+*
+* \param[in] pInstance  information for this instance
+*
+* \retval TRUE  success
+*
+/*----------------------------------------------------------------------------*/
+BOOL LoadMiniport(PMINIPORT_INSTANCE_INFO pInstance)
+{
+#define STRING_BUF_SZ       128
+#define INSTANCE_NAME_SZ    32
+#define INSTANCE_NUMBER_SZ  10
+
+	HKEY hKey;		/* registry key */
+	DWORD win32Status;	/* status */
+	DWORD dataSize;		/*  data size for query */
+	WCHAR stringBuff[STRING_BUF_SZ];	/*  string buffer */
+	WCHAR instanceKey[INSTANCE_NAME_SZ];	/*  instance name */
+	WCHAR instanceNumber[INSTANCE_NUMBER_SZ];	/*  instance number */
+	WCHAR *token;		/*  tokenizer */
+	NDIS_STATUS NdisStatus;	/*  ndis status */
+	win32Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, pInstance->RegPath, 0, 0, &hKey);
+	/* open the registry path for this instance */
+	if (win32Status != ERROR_SUCCESS) {
+		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR:Failed to open path %s; %d\n"),
+					       pInstance->RegPath, win32Status));
+		return FALSE;
+	}
+
+	dataSize = sizeof(stringBuff);
+
+	/* build up the instance key */
+	wcscpy(instanceKey, LOADER_INSTANCE_KEY);
+	_ultow(pInstance->InstanceNumber, instanceNumber, INSTANCE_NUMBER_SZ);
+	wcscat(instanceKey, instanceNumber);
+
+	/* retrieve the real reg path to the device parameters */
+	if (RegQueryValueEx(hKey, instanceKey, 0, NULL, (PUCHAR) stringBuff, &dataSize) != ERROR_SUCCESS) {
+
+		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to get the instance key : %d\n"), instanceKey));
+		RegCloseKey(hKey);
+		return FALSE;
+	}
+
+	RegCloseKey(hKey);
+
+	SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNDISLDR: Tokenizing instance information: %s\n"), stringBuff));
+
+	/* extract the miniport name and instance name, in the form of
+	 *  "<Miniport Name>:<Miniport Instance>
+	 */
+	token = wcstok(stringBuff, TEXT(":"));
+
+	if (token != NULL) {
+
+		wcscpy(pInstance->MiniportName, token);
+
+		/* search for the next one */
+		token = wcstok(NULL, TEXT(":"));
+
+		if (token != NULL) {
+			wcscpy(pInstance->MiniportInstance, token);
+		} else {
+			SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to get miniport instance\n")));
+			return FALSE;
+		}
+	} else {
+		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to get miniport name\n")));
+		return FALSE;
+	}
+
+	/* build up the miniport instance path in order to stick in the
+	   "ActivePath" key */
+	wcscpy(stringBuff, TEXT("\\Comm\\"));
+	wcscat(stringBuff, pInstance->MiniportInstance);
+	wcscat(stringBuff, TEXT("\\Parms"));
+
+	SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNDISLDR: Miniport instance path %s\n"), stringBuff));
+	win32Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, stringBuff, 0, 0, &hKey);
+	if (win32Status != ERROR_SUCCESS) {
+		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR:Failed to open path %s; %d\n"),
+					       stringBuff, win32Status));
+		return FALSE;
+	}
+
+	/* make sure the key is deleted first */
+	RegDeleteValue(hKey, TEXT("ActivePath"));
+
+	SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNDISLDR: Storing ActiveKey Path %s\n"), pInstance->ActiveKeyPath));
+
+	/* save the active ActivePath in the registry path for the miniport.
+	   The miniport portion will look up this key */
+	if (RegSetValueEx(hKey,
+			  TEXT("ActivePath"),
+			  0,
+			  REG_SZ,
+			  (PUCHAR) pInstance->ActiveKeyPath,
+			  ((sizeof(WCHAR)) * (wcslen(pInstance->ActiveKeyPath) + 1))) != ERROR_SUCCESS) {
+		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to set ActiveKey path\n")));
+		RegCloseKey(hKey);
+		return FALSE;
+	}
+
+	/* close the key */
+	RegCloseKey(hKey);
+
+	/* build up the miniport name path in order to add the "Group" key */
+	wcscpy(stringBuff, TEXT("\\Comm\\"));
+	wcscat(stringBuff, pInstance->MiniportName);
+	SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNDISLDR: Miniport name path %s\n"), stringBuff));
+	win32Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, stringBuff, 0, 0, &hKey);
+	if (win32Status != ERROR_SUCCESS) {
+		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR:Failed to open path %s; %d\n"),
+					       stringBuff, win32Status));
+		return FALSE;
+	}
+
+	/* Set the "Group" in the registry path for the miniport */
+	wcscpy(stringBuff, TEXT("NDIS"));
+	if (RegSetValueEx(hKey,
+			  TEXT("Group"),
+			  0,
+			  REG_SZ, (PUCHAR) stringBuff, ((sizeof(WCHAR)) * (wcslen(stringBuff) + 1))) != ERROR_SUCCESS) {
+		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to set Group entry\n")));
+		RegCloseKey(hKey);
+		return FALSE;
+	}
+
+	/* close the key */
+	RegCloseKey(hKey);
+
+	/* register the adapter */
+	NdisRegisterAdapter(&NdisStatus, pInstance->MiniportName, pInstance->MiniportInstance);
+
+	if (!NDIS_SUCCESS(NdisStatus)) {
+		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to register the adapter\n")));
+		return FALSE;
+	}
+
+	/* build up the miniport instance path in order to stick in the "ActivePath" key */
+	wcscpy(stringBuff, TEXT("\\Comm\\"));
+	wcscat(stringBuff, pInstance->MiniportInstance);
+	wcscat(stringBuff, TEXT("\\Parms"));
+	win32Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, stringBuff, 0, 0, &hKey);
+	if (win32Status != ERROR_SUCCESS)
+		return FALSE;
+	RegDeleteValue(hKey, TEXT("ActivePath"));
+	RegCloseKey(hKey);
+
+	/* build up the miniport name path in order to delete "Group" entry */
+	wcscpy(stringBuff, TEXT("\\Comm\\"));
+	wcscat(stringBuff, pInstance->MiniportName);
+	win32Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, stringBuff, 0, 0, &hKey);
+	if (win32Status != ERROR_SUCCESS)
+		return FALSE;
+	RegDeleteValue(hKey, TEXT("Group"));
+	RegCloseKey(hKey);
+
+	return TRUE;
+
+}				/* LoadMiniport */
+
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief Unload the miniport
+*
+* \param[in] pInstance  the instance to unload
+*
+* \retval none
+*
+/*----------------------------------------------------------------------------*/
+VOID UnloadMiniport(PMINIPORT_INSTANCE_INFO pInstance)
+{
+	NDIS_STATUS NdisStatus;
+
+	SdDbgPrint(SDCARD_ZONE_INIT,
+		   (TEXT("SDNDISLDR: Unloading Miniport Instance %s\n"), pInstance->MiniportInstance));
+
+	NdisDeregisterAdapter(&NdisStatus, pInstance->MiniportInstance);
+
+	SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNDISLDR: Miniport Unloaded 0x%08X\n"), NdisStatus));
+}				/* UnloadMiniport */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -132,244 +335,11 @@ BOOL WINAPI DllEntry(HINSTANCE hInstance, INT Reason, LPVOID Reserved)
 
 		SDDeleteMemoryTagging();
 
-		SdDbgPrint(SDCARD_ZONE_INIT,
-			   (TEXT("SDNdis: DllEntry - Reason == DLL_PROCESS_DETACH\n")));
+		SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNdis: DllEntry - Reason == DLL_PROCESS_DETACH\n")));
 	}
 
 	return LoaderEntry(hInstance, Reason, Reserved);
 }				/* DllEntry */
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief Init loader
-*
-* \param[in] hInstance  the instance that is attaching
-* \param[in] Reason     the reason for attaching
-* \param[in] pReserved  not much
-*
-* \retval TRUE  success
-*
-* \note     This is only used to initialize the zones
-*
-/*----------------------------------------------------------------------------*/
-BOOL LoaderEntry(HINSTANCE hInstance, ULONG Reason, LPVOID pReserved)
-{
-	if (Reason == DLL_PROCESS_ATTACH) {
-		DEBUGREGISTER(hInstance);
-		InitializeCriticalSection(&LoaderCriticalSection);
-		memset(&AllocatedInstance, 0, sizeof(AllocatedInstance));
-	}
-
-	if (Reason == DLL_PROCESS_DETACH) {
-		DeleteCriticalSection(&LoaderCriticalSection);
-	}
-
-	return (TRUE);
-}				/* LoaderEntry */
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief Load the miniport for this instance
-*
-* \param[in] pInstance  information for this instance
-*
-* \retval TRUE  success
-*
-/*----------------------------------------------------------------------------*/
-BOOL LoadMiniport(PMINIPORT_INSTANCE_INFO pInstance)
-{
-#define STRING_BUF_SZ       128
-#define INSTANCE_NAME_SZ    32
-#define INSTANCE_NUMBER_SZ  10
-
-	HKEY hKey;		/* registry key */
-	DWORD win32Status;	/* status */
-	DWORD dataSize;		/*  data size for query */
-	WCHAR stringBuff[STRING_BUF_SZ];	/*  string buffer */
-	WCHAR instanceKey[INSTANCE_NAME_SZ];	/*  instance name */
-	WCHAR instanceNumber[INSTANCE_NUMBER_SZ];	/*  instance number */
-	WCHAR *token;		/*  tokenizer */
-	NDIS_STATUS NdisStatus;	/*  ndis status */
-
-	/* open the registry path for this instance */
-	if ((win32Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-					pInstance->RegPath, 0, 0, &hKey)) != ERROR_SUCCESS) {
-		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR:Failed to open path %s; %d\n"),
-					       pInstance->RegPath, win32Status));
-		return FALSE;
-	}
-
-	dataSize = sizeof(stringBuff);
-
-	/* build up the instance key */
-	wcscpy(instanceKey, LOADER_INSTANCE_KEY);
-	_ultow(pInstance->InstanceNumber, instanceNumber, INSTANCE_NUMBER_SZ);
-	wcscat(instanceKey, instanceNumber);
-
-	/* retrieve the real reg path to the device parameters */
-	if (RegQueryValueEx(hKey,
-			    instanceKey,
-			    0, NULL, (PUCHAR) stringBuff, &dataSize) != ERROR_SUCCESS) {
-
-		SdDbgPrint(SDCARD_ZONE_ERROR,
-			   (TEXT("SDNDISLDR: Failed to get the instance key : %d\n"),
-			    instanceKey));
-		RegCloseKey(hKey);
-		return FALSE;
-	}
-
-	RegCloseKey(hKey);
-
-	SdDbgPrint(SDCARD_ZONE_INIT,
-		   (TEXT("SDNDISLDR: Tokenizing instance information: %s\n"), stringBuff));
-
-	/* extract the miniport name and instance name, in the form of
-	 *  "<Miniport Name>:<Miniport Instance>
-	 */
-	token = wcstok(stringBuff, TEXT(":"));
-
-	if (token != NULL) {
-
-		wcscpy(pInstance->MiniportName, token);
-
-		/* search for the next one */
-		token = wcstok(NULL, TEXT(":"));
-
-		if (token != NULL) {
-			wcscpy(pInstance->MiniportInstance, token);
-		} else {
-			SdDbgPrint(SDCARD_ZONE_ERROR,
-				   (TEXT("SDNDISLDR: Failed to get miniport instance\n")));
-			return FALSE;
-		}
-	} else {
-		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to get miniport name\n")));
-		return FALSE;
-	}
-
-	/* build up the miniport instance path in order to stick in the
-	   "ActivePath" key */
-	wcscpy(stringBuff, TEXT("\\Comm\\"));
-	wcscat(stringBuff, pInstance->MiniportInstance);
-	wcscat(stringBuff, TEXT("\\Parms"));
-
-	SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNDISLDR: Miniport instance path %s\n"), stringBuff));
-
-	if ((win32Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-					stringBuff, 0, 0, &hKey)) != ERROR_SUCCESS) {
-		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR:Failed to open path %s; %d\n"),
-					       stringBuff, win32Status));
-		return FALSE;
-	}
-
-	/* make sure the key is deleted first */
-	RegDeleteValue(hKey, TEXT("ActivePath"));
-
-	SdDbgPrint(SDCARD_ZONE_INIT,
-		   (TEXT("SDNDISLDR: Storing ActiveKey Path %s\n"), pInstance->ActiveKeyPath));
-
-	/* save the active ActivePath in the registry path for the miniport.
-	   The miniport portion will look up this key */
-	if (RegSetValueEx(hKey,
-			  TEXT("ActivePath"),
-			  0,
-			  REG_SZ,
-			  (PUCHAR) pInstance->ActiveKeyPath,
-			  ((sizeof(WCHAR)) * (wcslen(pInstance->ActiveKeyPath) + 1))) !=
-	    ERROR_SUCCESS) {
-		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to set ActiveKey path\n")));
-		RegCloseKey(hKey);
-		return FALSE;
-	}
-
-	/* close the key */
-	RegCloseKey(hKey);
-
-	/* build up the miniport name path in order to add the "Group" key */
-	wcscpy(stringBuff, TEXT("\\Comm\\"));
-	wcscat(stringBuff, pInstance->MiniportName);
-	SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNDISLDR: Miniport name path %s\n"), stringBuff));
-
-	if ((win32Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-					stringBuff, 0, 0, &hKey)) != ERROR_SUCCESS) {
-		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR:Failed to open path %s; %d\n"),
-					       stringBuff, win32Status));
-		return FALSE;
-	}
-
-	/* Set the "Group" in the registry path for the miniport */
-	wcscpy(stringBuff, TEXT("NDIS"));
-	if (RegSetValueEx(hKey,
-			  TEXT("Group"),
-			  0,
-			  REG_SZ,
-			  (PUCHAR) stringBuff,
-			  ((sizeof(WCHAR)) * (wcslen(stringBuff) + 1))) != ERROR_SUCCESS) {
-		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to set Group entry\n")));
-		RegCloseKey(hKey);
-		return FALSE;
-	}
-
-	/* close the key */
-	RegCloseKey(hKey);
-
-	/* register the adapter */
-	NdisRegisterAdapter(&NdisStatus, pInstance->MiniportName, pInstance->MiniportInstance);
-
-	if (!NDIS_SUCCESS(NdisStatus)) {
-		SdDbgPrint(SDCARD_ZONE_ERROR,
-			   (TEXT("SDNDISLDR: Failed to register the adapter\n")));
-		return FALSE;
-	}
-
-	/* build up the miniport instance path in order to stick in the "ActivePath" key */
-	wcscpy(stringBuff, TEXT("\\Comm\\"));
-	wcscat(stringBuff, pInstance->MiniportInstance);
-	wcscat(stringBuff, TEXT("\\Parms"));
-
-
-	if ((win32Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-					stringBuff, 0, 0, &hKey)) != ERROR_SUCCESS) {
-		return FALSE;
-	}
-	RegDeleteValue(hKey, TEXT("ActivePath"));
-	RegCloseKey(hKey);
-
-	/* build up the miniport name path in order to delete "Group" entry */
-	wcscpy(stringBuff, TEXT("\\Comm\\"));
-	wcscat(stringBuff, pInstance->MiniportName);
-	if ((win32Status = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-					stringBuff, 0, 0, &hKey)) != ERROR_SUCCESS) {
-		return FALSE;
-	}
-	RegDeleteValue(hKey, TEXT("Group"));
-	RegCloseKey(hKey);
-
-	return TRUE;
-
-}				/* LoadMiniport */
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief Unload the miniport
-*
-* \param[in] pInstance  the instance to unload
-*
-* \retval none
-*
-/*----------------------------------------------------------------------------*/
-VOID UnloadMiniport(PMINIPORT_INSTANCE_INFO pInstance)
-{
-	NDIS_STATUS NdisStatus;
-
-	SdDbgPrint(SDCARD_ZONE_INIT,
-		   (TEXT("SDNDISLDR: Unloading Miniport Instance %s\n"),
-		    pInstance->MiniportInstance));
-
-	NdisDeregisterAdapter(&NdisStatus, pInstance->MiniportInstance);
-
-	SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNDISLDR: Miniport Unloaded 0x%08X\n"), NdisStatus));
-}				/* UnloadMiniport */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -419,15 +389,13 @@ DWORD NDL_Init(DWORD dwContext)
 	PMINIPORT_INSTANCE_INFO pInstance;	/* this instance of the device */
 	ULONG ii;
 
-
 	SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNDISLDR: +NDL_Init\n")));
 
 	pInstance = (PMINIPORT_INSTANCE_INFO)
 	    LocalAlloc(LPTR, sizeof(MINIPORT_INSTANCE_INFO));
 
 	if (pInstance == NULL) {
-		SdDbgPrint(SDCARD_ZONE_ERROR,
-			   (TEXT("SDNDISLDR: Failed to allocate device info\n")));
+		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to allocate device info\n")));
 		SdDbgPrint(SDCARD_ZONE_INIT, (TEXT("SDNDISLDR: -NDL_Init\n")));
 		return 0;
 	}
@@ -438,8 +406,7 @@ DWORD NDL_Init(DWORD dwContext)
 	wcscpy(pInstance->ActiveKeyPath, (PWCHAR) dwContext);
 
 	if (SDGetRegPathFromInitContext((PWCHAR) dwContext,
-					pInstance->RegPath,
-					sizeof(pInstance->RegPath)) != ERROR_SUCCESS) {
+					pInstance->RegPath, sizeof(pInstance->RegPath)) != ERROR_SUCCESS) {
 		SdDbgPrint(SDCARD_ZONE_ERROR, (TEXT("SDNDISLDR: Failed to get reg path\n")));
 		LocalFree(pInstance);
 		return 0;
@@ -465,7 +432,6 @@ DWORD NDL_Init(DWORD dwContext)
 		LocalFree(pInstance);
 		return 0;
 	}
-
 
 	if (!LoadMiniport(pInstance)) {
 		LocalFree(pInstance);
@@ -497,8 +463,7 @@ DWORD NDL_Init(DWORD dwContext)
 /*----------------------------------------------------------------------------*/
 BOOL
 NDL_IOControl(DWORD Handle,
-	      DWORD IoctlCode,
-	      PBYTE pInBuf, DWORD InBufSize, PBYTE pOutBuf, DWORD OutBufSize, PDWORD pBytesReturned)
+	      DWORD IoctlCode, PBYTE pInBuf, DWORD InBufSize, PBYTE pOutBuf, DWORD OutBufSize, PDWORD pBytesReturned)
 {
 	return FALSE;
 

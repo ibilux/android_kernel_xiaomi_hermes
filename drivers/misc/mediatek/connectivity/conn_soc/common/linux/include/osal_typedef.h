@@ -1,10 +1,10 @@
 /*
 * Copyright (C) 2011-2014 MediaTek Inc.
-* 
-* This program is free software: you can redistribute it and/or modify it under the terms of the 
+*
+* This program is free software: you can redistribute it and/or modify it under the terms of the
 * GNU General Public License version 2 as published by the Free Software Foundation.
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU General Public License for more details.
 *
@@ -17,7 +17,6 @@
 
     Any definitions in this file will be shared among GLUE Layer and internal Driver Stack.
 */
-
 
 #ifndef _OSAL_TYPEDEF_H_
 #define _OSAL_TYPEDEF_H_
@@ -47,31 +46,38 @@
 #include <linux/jiffies.h>
 #include <linux/slab.h>
 #include <linux/err.h>
+#ifdef CONFIG_EARLYSUSPEND
 #include <linux/earlysuspend.h>
+#else
+#include <linux/fb.h>
+#endif
+#include <linux/device.h>
+#include <linux/platform_device.h>
 #ifdef WMT_PLAT_ALPS
 #include <linux/aee.h>
 #endif
 #include <linux/kfifo.h>
+#ifdef CONFIG_PM_WAKELOCKS
+#include <linux/pm_wakeup.h>
+#else
 #include <linux/wakelock.h>
+#endif
 #include <linux/log2.h>
 
-
-#ifndef _TYPEDEFS_H     /*fix redifine*/
-typedef char		INT8;
+#ifndef _TYPEDEFS_H		/*fix redifine */
+typedef char INT8;
 #endif
 
-
-
 typedef void VOID, *PVOID, **PPVOID;
-typedef char		*PINT8, **PPINT8;
-typedef short		INT16, *PINT16, **PPINT16;
-typedef int		INT32, *PINT32, **PPINT32;
-typedef long long	INT64, *PINT64, **PPINT64;
+typedef char *PINT8, **PPINT8;
+typedef short INT16, *PINT16, **PPINT16;
+typedef int INT32, *PINT32, **PPINT32;
+typedef long long INT64, *PINT64, **PPINT64;
 
-typedef unsigned char		UINT8, *PUINT8, **PPUINT8;
-typedef unsigned short		UINT16, *PUINT16, **PPUINT16;
-typedef unsigned int		UINT32, *PUINT32, **PPUINT32;
-typedef unsigned long long	UINT64, *PUINT64, **PPUINT64;
+typedef unsigned char UINT8, *PUINT8, **PPUINT8;
+typedef unsigned short UINT16, *PUINT16, **PPUINT16;
+typedef unsigned int UINT32, *PUINT32, **PPUINT32;
+typedef unsigned long long UINT64, *PUINT64, **PPUINT64;
 
 typedef size_t SIZE_T;
 
@@ -82,4 +88,3 @@ typedef int MTK_WCN_BOOL;
 #endif
 
 #endif /*_OSAL_TYPEDEF_H_*/
-

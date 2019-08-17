@@ -2289,7 +2289,7 @@ struct devinfo {
 #include "mach/mt_spm_idle.h"
 #include "mach/mt_pmic_wrap.h"
 #include "mach/mt_clkmgr.h"
-#include "mach/mt_freqhopping.h"
+#include "mt_freqhopping.h"
 #include "mach/mtk_rtc_hal.h"
 #include "mach/mt_rtc_hw.h"
 #include "mach/mt_gpufreq.h"
@@ -2419,14 +2419,14 @@ static void _mt_ptp_aee_init(void)
 /*
  * LOG
  */
-#define ptp_emerg(fmt, args...)     printk(KERN_EMERG "[PTP] " fmt, ##args)
-#define ptp_alert(fmt, args...)     printk(KERN_ALERT "[PTP] " fmt, ##args)
-#define ptp_crit(fmt, args...)      printk(KERN_CRIT "[PTP] " fmt, ##args)
-#define ptp_error(fmt, args...)     printk(KERN_ERR "[PTP] " fmt, ##args)
-#define ptp_warning(fmt, args...)   printk(KERN_WARNING "[PTP] " fmt, ##args)
-#define ptp_notice(fmt, args...)    printk(KERN_NOTICE "[PTP] " fmt, ##args)
-#define ptp_info(fmt, args...)      printk(KERN_INFO "[PTP] " fmt, ##args)
-#define ptp_debug(fmt, args...)     printk(KERN_DEBUG "[PTP] " fmt, ##args)
+#define ptp_emerg(fmt, args...)     pr_err("[PTP] " fmt, ##args)
+#define ptp_alert(fmt, args...)     pr_err("[PTP] " fmt, ##args)
+#define ptp_crit(fmt, args...)      pr_err("[PTP] " fmt, ##args)
+#define ptp_error(fmt, args...)     pr_err("[PTP] " fmt, ##args)
+#define ptp_warning(fmt, args...)   pr_warn("[PTP] " fmt, ##args)
+#define ptp_notice(fmt, args...)    pr_warn("[PTP] " fmt, ##args)
+#define ptp_info(fmt, args...)      pr_warn("[PTP] " fmt, ##args)
+#define ptp_debug(fmt, args...)     pr_warn("[PTP] " fmt, ##args)
 
 #if EN_ISR_LOG
 #define ptp_isr_info(fmt, args...)  ptp_notice(fmt, ##args)
@@ -4743,7 +4743,8 @@ static int ptp_probe(struct platform_device *pdev)
 
 	{
 		extern unsigned int ckgen_meter(int val);
-		printk(KERN_ALERT "@%s(), hf_faxi_ck = %d, hd_faxi_ck = %d, 0xF0001010 = 0x%08X\n", __func__, ckgen_meter(1), ckgen_meter(2), ptp_read(0xF0001010));
+		pr_notice("@%s(), hf_faxi_ck = %d, hd_faxi_ck = %d, 0xF0001010 = 0x%08X\n",
+			__func__, ckgen_meter(1), ckgen_meter(2), ptp_read(0xF0001010));
 	}
 
 	ptp_data[0] = 0xffffffff;
@@ -4758,7 +4759,8 @@ static int ptp_probe(struct platform_device *pdev)
 
 	{
 		extern unsigned int ckgen_meter(int val);
-		printk(KERN_ALERT "@%s(), hf_faxi_ck = %d, hd_faxi_ck = %d, 0xF0001010 = 0x%08X\n", __func__, ckgen_meter(1), ckgen_meter(2), ptp_read(0xF0001010));
+		pr_notice("@%s(), hf_faxi_ck = %d, hd_faxi_ck = %d, 0xF0001010 = 0x%08X\n",
+			__func__, ckgen_meter(1), ckgen_meter(2), ptp_read(0xF0001010));
 	}
 
 	disable_clock(MT_CG_MFG_AXI, "PTP");
@@ -4787,13 +4789,6 @@ static int ptp_suspend(struct platform_device *pdev, pm_message_t state)
 
 static int ptp_resume(struct platform_device *pdev)
 {
-	/*
-	ptp_volt_thread = kthread_run(ptp_volt_thread_handler, 0, "ptp volt");
-	if (IS_ERR(ptp_volt_thread))
-	{
-	    printk("[%s]: failed to create ptp volt thread\n", __func__);
-	}
-	*/
 	FUNC_ENTER(FUNC_LV_MODULE);
 	ptp_init02();
 	FUNC_EXIT(FUNC_LV_MODULE);

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/nic/nic_cmd_event.c#3 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/nic/nic_cmd_event.c#3
 */
 
 /*! \file   nic_cmd_event.c
@@ -9,10 +9,8 @@
     a command packet.
 */
 
-
-
 /*
-** $Log: nic_cmd_event.c $
+** Log: nic_cmd_event.c
 **
 ** 06 12 2014 eason.tsai
 ** [ALPS01070904] [Need Patch] [Volunteer Patch]
@@ -108,7 +106,8 @@
  * Add security check code.
  *
  * 02 24 2011 cp.wu
- * [WCXRP00000493] [MT6620 Wi-Fi][Driver] Do not indicate redundant disconnection to host when entering into RF test mode
+ * [WCXRP00000493] [MT6620 Wi-Fi][Driver] Do not indicate redundant
+ * disconnection to host when entering into RF test mode
  * only indicate DISCONNECTION to host when entering RF test if necessary (connected -> disconnected cases)
  *
  * 01 20 2011 eddie.chen
@@ -116,15 +115,19 @@
  * Add Oid for sw control debug command
  *
  * 12 31 2010 cp.wu
- * [WCXRP00000335] [MT6620 Wi-Fi][Driver] change to use milliseconds sleep instead of delay to avoid blocking to system scheduling
- * change to use msleep() and shorten waiting interval to reduce blocking to other task while Wi-Fi driver is being loaded
+ * [WCXRP00000335] [MT6620 Wi-Fi][Driver] change to use milliseconds sleep
+ * instead of delay to avoid blocking to system scheduling
+ * change to use msleep() and shorten waiting interval to reduce
+ * blocking to other task while Wi-Fi driver is being loaded
  *
  * 12 01 2010 cp.wu
  * [WCXRP00000223] MT6620 Wi-Fi][Driver][FW] Adopt NVRAM parameters when enter/exit RF test mode
  * reload NVRAM settings before entering RF test mode and leaving from RF test mode.
  *
  * 11 01 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation
+ * with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add
+ * implementation for querying current TX rate from firmware auto rate module
  * 1) Query link speed (TX rate) from firmware directly with buffering mechanism to reduce overhead
  * 2) Remove CNM CH-RECOVER event handling
  * 3) cfg read/write API renamed with kal prefix for unified naming rules.
@@ -135,11 +138,13 @@
  * by dropping pending TX packets
  *
  * 10 18 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation
+ * with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
  * complete implementation of Android NVRAM access
  *
  * 09 21 2010 cp.wu
- * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and might leads to BSOD when entering RF test with AIS associated
+ * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete
+ * and might leads to BSOD when entering RF test with AIS associated
  * Do a complete reset with STA-REC null checking for RF test re-entry
  *
  * 09 15 2010 yuche.tsai
@@ -327,7 +332,8 @@
  *
  * 01 29 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
- * when entering RF test mode and leaving from RF test mode, wait for W_FUNC_RDY bit to be asserted forever until it is set or card is removed.
+ * when entering RF test mode and leaving from RF test mode,
+ * wait for W_FUNC_RDY bit to be asserted forever until it is set or card is removed.
  *
  * 01 27 2010 cp.wu
  * [WPD00001943]Create WiFi test driver framework on WinXP
@@ -408,14 +414,12 @@
 ********************************************************************************
 */
 
-VOID
-nicCmdEventQueryMcrRead(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryMcrRead(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_PARAM_CUSTOM_MCR_RW_STRUC_T prMcrRdInfo;
 	P_GLUE_INFO_T prGlueInfo;
 	P_CMD_ACCESS_REG prCmdAccessReg;
-
 
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
@@ -432,18 +436,14 @@ nicCmdEventQueryMcrRead(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN 
 		prMcrRdInfo->u4McrOffset = prCmdAccessReg->u4Address;
 		prMcrRdInfo->u4McrData = prCmdAccessReg->u4Data;
 
-		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-			       WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 
 	return;
 
 }
 
-
-VOID
-nicCmdEventQuerySwCtrlRead(IN P_ADAPTER_T prAdapter,
-			   IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQuerySwCtrlRead(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_PARAM_CUSTOM_SW_CTRL_STRUC_T prSwCtrlInfo;
@@ -465,17 +465,14 @@ nicCmdEventQuerySwCtrlRead(IN P_ADAPTER_T prAdapter,
 		prSwCtrlInfo->u4Id = prCmdSwCtrl->u4Id;
 		prSwCtrlInfo->u4Data = prCmdSwCtrl->u4Data;
 
-		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-			       WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 
 	return;
 
 }
 
-VOID
-nicCmdEventQueryChipConfig(IN P_ADAPTER_T prAdapter,
-			   IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryChipConfig(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_PARAM_CUSTOM_CHIP_CONFIG_STRUC_T prChipConfigInfo;
@@ -495,37 +492,29 @@ nicCmdEventQueryChipConfig(IN P_ADAPTER_T prAdapter,
 
 		if (prCmdInfo->u4InformationBufferLength < sizeof(PARAM_CUSTOM_CHIP_CONFIG_STRUC_T)) {
 			DBGLOG(REQ, INFO,
-			       ("Chip config u4InformationBufferLength %u is not valid (event)\n",
-				prCmdInfo->u4InformationBufferLength));
+			       "Chip config u4InformationBufferLength %u is not valid (event)\n",
+				prCmdInfo->u4InformationBufferLength);
 		}
-		prChipConfigInfo =
-		    (P_PARAM_CUSTOM_CHIP_CONFIG_STRUC_T) prCmdInfo->pvInformationBuffer;
+		prChipConfigInfo = (P_PARAM_CUSTOM_CHIP_CONFIG_STRUC_T) prCmdInfo->pvInformationBuffer;
 		prChipConfigInfo->ucRespType = prCmdChipConfig->ucRespType;
 		prChipConfigInfo->u2MsgSize = prCmdChipConfig->u2MsgSize;
-		DBGLOG(REQ, INFO,
-		       ("%s: RespTyep  %u\n", __func__, prChipConfigInfo->ucRespType));
-		DBGLOG(REQ, INFO,
-		       ("%s: u2MsgSize %u\n", __func__, prChipConfigInfo->u2MsgSize));
+		DBGLOG(REQ, INFO, "%s: RespTyep  %u\n", __func__, prChipConfigInfo->ucRespType);
+		DBGLOG(REQ, INFO, "%s: u2MsgSize %u\n", __func__, prChipConfigInfo->u2MsgSize);
 
 		if (prChipConfigInfo->u2MsgSize > CHIP_CONFIG_RESP_SIZE) {
 			DBGLOG(REQ, INFO,
-			       ("Chip config Msg Size %u is not valid (event)\n",
-				prChipConfigInfo->u2MsgSize));
+			       "Chip config Msg Size %u is not valid (event)\n", prChipConfigInfo->u2MsgSize);
 			prChipConfigInfo->u2MsgSize = CHIP_CONFIG_RESP_SIZE;
 		}
-		kalMemCopy(prChipConfigInfo->aucCmd, prCmdChipConfig->aucCmd,
-			   prChipConfigInfo->u2MsgSize);
-		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-			       WLAN_STATUS_SUCCESS);
+		kalMemCopy(prChipConfigInfo->aucCmd, prCmdChipConfig->aucCmd, prChipConfigInfo->u2MsgSize);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 
 	return;
 
 }
 
-
-VOID
-nicCmdEventSetCommon(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventSetCommon(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
@@ -533,24 +522,20 @@ nicCmdEventSetCommon(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUI
 	if (prCmdInfo->fgIsOid) {
 		/* Update Set Infomation Length */
 		kalOidComplete(prAdapter->prGlueInfo,
-			       prCmdInfo->fgSetQuery,
-			       prCmdInfo->u4InformationBufferLength, WLAN_STATUS_SUCCESS);
+			       prCmdInfo->fgSetQuery, prCmdInfo->u4InformationBufferLength, WLAN_STATUS_SUCCESS);
 	}
 
 	return;
 }
 
-VOID
-nicCmdEventSetDisassociate(IN P_ADAPTER_T prAdapter,
-			   IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventSetDisassociate(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
 
 	if (prCmdInfo->fgIsOid) {
 		/* Update Set Infomation Length */
-		kalOidComplete(prAdapter->prGlueInfo,
-			       prCmdInfo->fgSetQuery, 0, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prAdapter->prGlueInfo, prCmdInfo->fgSetQuery, 0, WLAN_STATUS_SUCCESS);
 	}
 
 	kalIndicateStatusAndComplete(prAdapter->prGlueInfo, WLAN_STATUS_MEDIA_DISCONNECT, NULL, 0);
@@ -562,8 +547,7 @@ nicCmdEventSetDisassociate(IN P_ADAPTER_T prAdapter,
 	return;
 }
 
-VOID
-nicCmdEventSetIpAddress(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventSetIpAddress(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4Count;
 
@@ -585,9 +569,7 @@ nicCmdEventSetIpAddress(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN 
 	return;
 }
 
-VOID
-nicCmdEventQueryRfTestATInfo(IN P_ADAPTER_T prAdapter,
-			     IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryRfTestATInfo(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_TEST_STATUS prTestStatus, prQueryBuffer;
 	P_GLUE_INFO_T prGlueInfo;
@@ -607,16 +589,13 @@ nicCmdEventQueryRfTestATInfo(IN P_ADAPTER_T prAdapter,
 		u4QueryInfoLen = sizeof(EVENT_TEST_STATUS);
 
 		/* Update Query Infomation Length */
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 
 	return;
 }
 
-VOID
-nicCmdEventQueryLinkQuality(IN P_ADAPTER_T prAdapter,
-			    IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryLinkQuality(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	PARAM_RSSI rRssi, *prRssi;
 	P_EVENT_LINK_QUALITY prLinkQuality;
@@ -646,11 +625,9 @@ nicCmdEventQueryLinkQuality(IN P_ADAPTER_T prAdapter,
 		kalMemCopy(prRssi, &rRssi, sizeof(PARAM_RSSI));
 		u4QueryInfoLen = sizeof(PARAM_RSSI);
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -663,9 +640,7 @@ nicCmdEventQueryLinkQuality(IN P_ADAPTER_T prAdapter,
 * @retval none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-nicCmdEventQueryLinkSpeed(IN P_ADAPTER_T prAdapter,
-			  IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryLinkSpeed(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_LINK_QUALITY prLinkQuality;
 	P_GLUE_INFO_T prGlueInfo;
@@ -681,19 +656,15 @@ nicCmdEventQueryLinkSpeed(IN P_ADAPTER_T prAdapter,
 		prGlueInfo = prAdapter->prGlueInfo;
 		pu4LinkSpeed = (PUINT_32) (prCmdInfo->pvInformationBuffer);
 
-        *pu4LinkSpeed = prLinkQuality->u2LinkSpeed * 5000;
+		*pu4LinkSpeed = prLinkQuality->u2LinkSpeed * 5000;
 
 		u4QueryInfoLen = sizeof(UINT_32);
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-
-VOID
-nicCmdEventQueryStatistics(IN P_ADAPTER_T prAdapter,
-			   IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryStatistics(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_PARAM_802_11_STATISTICS_STRUCT_T prStatistics;
 	P_EVENT_STATISTICS prEventStatistics;
@@ -712,10 +683,8 @@ nicCmdEventQueryStatistics(IN P_ADAPTER_T prAdapter,
 		prStatistics = (P_PARAM_802_11_STATISTICS_STRUCT_T) prCmdInfo->pvInformationBuffer;
 
 		prStatistics->u4Length = sizeof(PARAM_802_11_STATISTICS_STRUCT_T);
-		prStatistics->rTransmittedFragmentCount
-		    = prEventStatistics->rTransmittedFragmentCount;
-		prStatistics->rMulticastTransmittedFrameCount
-		    = prEventStatistics->rMulticastTransmittedFrameCount;
+		prStatistics->rTransmittedFragmentCount = prEventStatistics->rTransmittedFragmentCount;
+		prStatistics->rMulticastTransmittedFrameCount = prEventStatistics->rMulticastTransmittedFrameCount;
 		prStatistics->rFailedCount = prEventStatistics->rFailedCount;
 		prStatistics->rRetryCount = prEventStatistics->rRetryCount;
 		prStatistics->rMultipleRetryCount = prEventStatistics->rMultipleRetryCount;
@@ -724,8 +693,7 @@ nicCmdEventQueryStatistics(IN P_ADAPTER_T prAdapter,
 		prStatistics->rACKFailureCount = prEventStatistics->rACKFailureCount;
 		prStatistics->rFrameDuplicateCount = prEventStatistics->rFrameDuplicateCount;
 		prStatistics->rReceivedFragmentCount = prEventStatistics->rReceivedFragmentCount;
-		prStatistics->rMulticastReceivedFrameCount
-		    = prEventStatistics->rMulticastReceivedFrameCount;
+		prStatistics->rMulticastReceivedFrameCount = prEventStatistics->rMulticastReceivedFrameCount;
 		prStatistics->rFCSErrorCount = prEventStatistics->rFCSErrorCount;
 		prStatistics->rTKIPLocalMICFailures.QuadPart = 0;
 		prStatistics->rTKIPICVErrors.QuadPart = 0;
@@ -740,33 +708,37 @@ nicCmdEventQueryStatistics(IN P_ADAPTER_T prAdapter,
 		prStatistics->rDecryptSuccessCount.QuadPart = 0;
 		prStatistics->rDecryptFailureCount.QuadPart = 0;
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		DBGLOG(REQ, STATE,
+				"Failed:%llu Retry:%llu MultipleRetry:%llu ACKFailure:%llu FCSError:%llu Tx:%llu Rx:%llu\n",
+				prStatistics->rFailedCount, prStatistics->rRetryCount,
+				prStatistics->rMultipleRetryCount, prStatistics->rACKFailureCount,
+				prStatistics->rFCSErrorCount, prStatistics->rTransmittedFragmentCount,
+				prStatistics->rReceivedFragmentCount);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-VOID
-nicCmdEventEnterRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventEnterRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
+#define WAIT_FW_READY_RETRY_CNT 200
+
 	UINT_32 u4WHISR = 0, u4Value = 0;
 	UINT_16 au2TxCount[16];
+	UINT_16 u2RetryCnt = 0;
 
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
 
 	/* [driver-land] */
 	/* prAdapter->fgTestMode = TRUE; */
-	if (prAdapter->fgTestMode) {
+	if (prAdapter->fgTestMode)
 		prAdapter->fgTestMode = FALSE;
-	} else {
+	else
 		prAdapter->fgTestMode = TRUE;
-	}
 
 	/* 0. always indicate disconnection */
-	if (kalGetMediaStateIndicated(prAdapter->prGlueInfo) != PARAM_MEDIA_STATE_DISCONNECTED) {
-		kalIndicateStatusAndComplete(prAdapter->prGlueInfo,
-					     WLAN_STATUS_MEDIA_DISCONNECT, NULL, 0);
-	}
+	if (kalGetMediaStateIndicated(prAdapter->prGlueInfo) != PARAM_MEDIA_STATE_DISCONNECTED)
+		kalIndicateStatusAndComplete(prAdapter->prGlueInfo, WLAN_STATUS_MEDIA_DISCONNECT, NULL, 0);
 	/* 1. Remove pending TX */
 	nicTxRelease(prAdapter, TRUE);
 
@@ -793,8 +765,8 @@ nicCmdEventEnterRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN P
 
 		if (u4Value & WCIR_WLAN_READY) {
 			break;
-		} else if (kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
-			   || fgIsBusAccessFailed == TRUE) {
+		} else if (kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE || fgIsBusAccessFailed == TRUE ||
+			kalIsResetting() || u2RetryCnt >= WAIT_FW_READY_RETRY_CNT) {
 			if (prCmdInfo->fgIsOid) {
 				/* Update Set Infomation Length */
 				kalOidComplete(prAdapter->prGlueInfo,
@@ -803,15 +775,15 @@ nicCmdEventEnterRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN P
 
 			}
 			return;
-		} else
-			kalMsleep(10);
+		}
+		kalMsleep(10);
+		u2RetryCnt++;
 	}
 
 	/* 5. Clear Interrupt Status */
 	HAL_READ_INTR_STATUS(prAdapter, 4, (PUINT_8) & u4WHISR);
-	if (HAL_IS_TX_DONE_INTR(u4WHISR)) {
+	if (HAL_IS_TX_DONE_INTR(u4WHISR))
 		HAL_READ_TX_RELEASED_COUNT(prAdapter, au2TxCount);
-	}
 	/* 6. Reset TX Counter */
 	nicTxResetResource(prAdapter);
 
@@ -826,21 +798,22 @@ nicCmdEventEnterRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN P
 	}
 #if CFG_SUPPORT_NVRAM
 	/* 9. load manufacture data */
-	if (kalIsConfigurationExist(prAdapter->prGlueInfo) == TRUE) {
+	if (kalIsConfigurationExist(prAdapter->prGlueInfo) == TRUE)
 		wlanLoadManufactureData(prAdapter, kalGetConfiguration(prAdapter->prGlueInfo));
-	} else {
-		DBGLOG(REQ, WARN, ("%s: load manufacture data fail\n", __func__));	
-	}
+	else
+		DBGLOG(REQ, WARN, "%s: load manufacture data fail\n", __func__);
 #endif
 
 	return;
 }
 
-VOID
-nicCmdEventLeaveRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventLeaveRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
+#define WAIT_FW_READY_RETRY_CNT 200
+
 	UINT_32 u4WHISR = 0, u4Value = 0;
 	UINT_16 au2TxCount[16];
+	UINT_16 u2RetryCnt = 0;
 
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
@@ -855,8 +828,8 @@ nicCmdEventLeaveRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN P
 
 		if (u4Value & WCIR_WLAN_READY) {
 			break;
-		} else if (kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE
-			   || fgIsBusAccessFailed == TRUE) {
+		} else if (kalIsCardRemoved(prAdapter->prGlueInfo) == TRUE || fgIsBusAccessFailed == TRUE ||
+			kalIsResetting() || u2RetryCnt >= WAIT_FW_READY_RETRY_CNT) {
 			if (prCmdInfo->fgIsOid) {
 				/* Update Set Infomation Length */
 				kalOidComplete(prAdapter->prGlueInfo,
@@ -865,16 +838,15 @@ nicCmdEventLeaveRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN P
 
 			}
 			return;
-		} else {
-			kalMsleep(10);
 		}
+		u2RetryCnt++;
+		kalMsleep(10);
 	}
 
 	/* 3. Clear Interrupt Status */
 	HAL_READ_INTR_STATUS(prAdapter, 4, (PUINT_8) & u4WHISR);
-	if (HAL_IS_TX_DONE_INTR(u4WHISR)) {
+	if (HAL_IS_TX_DONE_INTR(u4WHISR))
 		HAL_READ_TX_RELEASED_COUNT(prAdapter, au2TxCount);
-	}
 	/* 4. Reset TX Counter */
 	nicTxResetResource(prAdapter);
 
@@ -895,18 +867,16 @@ nicCmdEventLeaveRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN P
 	/* 8. Indicate as disconnected */
 	if (kalGetMediaStateIndicated(prAdapter->prGlueInfo) != PARAM_MEDIA_STATE_DISCONNECTED) {
 
-		kalIndicateStatusAndComplete(prAdapter->prGlueInfo,
-					     WLAN_STATUS_MEDIA_DISCONNECT, NULL, 0);
+		kalIndicateStatusAndComplete(prAdapter->prGlueInfo, WLAN_STATUS_MEDIA_DISCONNECT, NULL, 0);
 
 		prAdapter->rWlanInfo.u4SysTime = kalGetTimeTick();
 	}
 #if CFG_SUPPORT_NVRAM
 	/* 9. load manufacture data */
-	if (kalIsConfigurationExist(prAdapter->prGlueInfo) == TRUE) {
+	if (kalIsConfigurationExist(prAdapter->prGlueInfo) == TRUE)
 		wlanLoadManufactureData(prAdapter, kalGetConfiguration(prAdapter->prGlueInfo));
-	} else {
-		DBGLOG(REQ, WARN, ("%s: load manufacture data fail\n", __func__));	
-	}
+	else
+		DBGLOG(REQ, WARN, "%s: load manufacture data fail\n", __func__);
 #endif
 
 	/* 10. Override network address */
@@ -915,10 +885,7 @@ nicCmdEventLeaveRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN P
 	return;
 }
 
-
-VOID
-nicCmdEventQueryMcastAddr(IN P_ADAPTER_T prAdapter,
-			  IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryMcastAddr(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_GLUE_INFO_T prGlueInfo;
@@ -937,22 +904,18 @@ nicCmdEventQueryMcastAddr(IN P_ADAPTER_T prAdapter,
 
 		/* buffer length check */
 		if (prCmdInfo->u4InformationBufferLength < u4QueryInfoLen) {
-			kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-				       WLAN_STATUS_BUFFER_TOO_SHORT);
+			kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_BUFFER_TOO_SHORT);
 		} else {
 			kalMemCopy(prCmdInfo->pvInformationBuffer,
 				   prEventMacMcastAddr->arAddress,
 				   prEventMacMcastAddr->u4NumOfGroupAddr * MAC_ADDR_LEN);
 
-			kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-				       WLAN_STATUS_SUCCESS);
+			kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 		}
 	}
 }
 
-VOID
-nicCmdEventQueryEepromRead(IN P_ADAPTER_T prAdapter,
-			   IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryEepromRead(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_PARAM_CUSTOM_EEPROM_RW_STRUC_T prEepromRdInfo;
@@ -974,18 +937,14 @@ nicCmdEventQueryEepromRead(IN P_ADAPTER_T prAdapter,
 		prEepromRdInfo->ucEepromIndex = (UINT_8) (prEventAccessEeprom->u2Offset);
 		prEepromRdInfo->u2EepromData = prEventAccessEeprom->u2Data;
 
-		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-			       WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 
 	return;
 
 }
 
-
-VOID
-nicCmdEventSetMediaStreamMode(IN P_ADAPTER_T prAdapter,
-			      IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventSetMediaStreamMode(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	PARAM_MEDIA_STREAMING_INDICATION rParamMediaStreamIndication;
 
@@ -1000,46 +959,38 @@ nicCmdEventSetMediaStreamMode(IN P_ADAPTER_T prAdapter,
 
 	rParamMediaStreamIndication.rStatus.eStatusType = ENUM_STATUS_TYPE_MEDIA_STREAM_MODE;
 	rParamMediaStreamIndication.eMediaStreamMode =
-	    prAdapter->rWlanInfo.eLinkAttr.ucMediaStreamMode == 0 ?
-	    ENUM_MEDIA_STREAM_OFF : ENUM_MEDIA_STREAM_ON;
+	    prAdapter->rWlanInfo.eLinkAttr.ucMediaStreamMode == 0 ? ENUM_MEDIA_STREAM_OFF : ENUM_MEDIA_STREAM_ON;
 
 	kalIndicateStatusAndComplete(prAdapter->prGlueInfo,
 				     WLAN_STATUS_MEDIA_SPECIFIC_INDICATION,
-				     (PVOID) & rParamMediaStreamIndication,
-				     sizeof(PARAM_MEDIA_STREAMING_INDICATION));
+				     (PVOID) & rParamMediaStreamIndication, sizeof(PARAM_MEDIA_STREAMING_INDICATION));
 }
 
-
-VOID
-nicCmdEventSetStopSchedScan(IN P_ADAPTER_T prAdapter,
-			    IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventSetStopSchedScan(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
-
-    //DBGLOG(SCN, INFO, ("--->nicCmdEventSetStopSchedScan  \n" ));
+	/*
+	   DBGLOG(SCN, INFO, "--->nicCmdEventSetStopSchedScan\n" ));
+	 */
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
-    //DBGLOG(SCN, INFO, ("<--kalSchedScanStopped  \n" ));
-
+	/*
+	   DBGLOG(SCN, INFO, "<--kalSchedScanStopped\n" );
+	 */
 	if (prCmdInfo->fgIsOid) {
 		/* Update Set Infomation Length */
 		kalOidComplete(prAdapter->prGlueInfo,
-			       prCmdInfo->fgSetQuery,
-			       prCmdInfo->u4InformationBufferLength, WLAN_STATUS_SUCCESS);
+			       prCmdInfo->fgSetQuery, prCmdInfo->u4InformationBufferLength, WLAN_STATUS_SUCCESS);
 	}
 
-
-    DBGLOG(SCN, INFO, ("nicCmdEventSetStopSchedScan OID done, release lock and send event to uplayer \n" ));   
-
-    kalSchedScanStopped(prAdapter->prGlueInfo);  /*Due to dead lock issue, need to release the IO control before calling kernel APIs*/
-
+	DBGLOG(SCN, INFO, "nicCmdEventSetStopSchedScan OID done, release lock and send event to uplayer\n");
+	/*Due to dead lock issue, need to release the IO control before calling kernel APIs */
+	kalSchedScanStopped(prAdapter->prGlueInfo);
 
 	return;
 }
 
-
 /* Statistics responder */
-VOID
-nicCmdEventQueryXmitOk(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryXmitOk(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
@@ -1067,14 +1018,11 @@ nicCmdEventQueryXmitOk(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN P
 			*pu8Data = prEventStatistics->rTransmittedFragmentCount.QuadPart;
 		}
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-
-VOID
-nicCmdEventQueryRecvOk(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryRecvOk(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
@@ -1102,14 +1050,11 @@ nicCmdEventQueryRecvOk(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN P
 			*pu8Data = prEventStatistics->rReceivedFragmentCount.QuadPart;
 		}
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-VOID
-nicCmdEventQueryXmitError(IN P_ADAPTER_T prAdapter,
-			  IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryXmitError(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
@@ -1137,15 +1082,11 @@ nicCmdEventQueryXmitError(IN P_ADAPTER_T prAdapter,
 			*pu8Data = (UINT_64) prEventStatistics->rFailedCount.QuadPart;
 		}
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-
-VOID
-nicCmdEventQueryRecvError(IN P_ADAPTER_T prAdapter,
-			  IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryRecvError(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
@@ -1175,17 +1116,12 @@ nicCmdEventQueryRecvError(IN P_ADAPTER_T prAdapter,
 			/* @FIXME, RX_ERROR_DROP_COUNT/RX_FIFO_FULL_DROP_COUNT is not calculated */
 		}
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-
-VOID
-nicCmdEventQueryRecvNoBuffer(IN P_ADAPTER_T prAdapter,
-			     IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryRecvNoBuffer(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
-	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
 	UINT_32 u4QueryInfoLen;
 	PUINT_32 pu4Data;
@@ -1193,8 +1129,6 @@ nicCmdEventQueryRecvNoBuffer(IN P_ADAPTER_T prAdapter,
 
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
-
-	prEventStatistics = (P_EVENT_STATISTICS) pucEventBuf;
 
 	if (prCmdInfo->fgIsOid) {
 		prGlueInfo = prAdapter->prGlueInfo;
@@ -1211,15 +1145,11 @@ nicCmdEventQueryRecvNoBuffer(IN P_ADAPTER_T prAdapter,
 			*pu8Data = 0;	/* @FIXME? */
 		}
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-
-VOID
-nicCmdEventQueryRecvCrcError(IN P_ADAPTER_T prAdapter,
-			     IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryRecvCrcError(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
@@ -1247,17 +1177,12 @@ nicCmdEventQueryRecvCrcError(IN P_ADAPTER_T prAdapter,
 			*pu8Data = prEventStatistics->rFCSErrorCount.QuadPart;
 		}
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-
-VOID
-nicCmdEventQueryRecvErrorAlignment(IN P_ADAPTER_T prAdapter,
-				   IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryRecvErrorAlignment(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
-	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
 	UINT_32 u4QueryInfoLen;
 	PUINT_32 pu4Data;
@@ -1265,8 +1190,6 @@ nicCmdEventQueryRecvErrorAlignment(IN P_ADAPTER_T prAdapter,
 
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
-
-	prEventStatistics = (P_EVENT_STATISTICS) pucEventBuf;
 
 	if (prCmdInfo->fgIsOid) {
 		prGlueInfo = prAdapter->prGlueInfo;
@@ -1283,15 +1206,11 @@ nicCmdEventQueryRecvErrorAlignment(IN P_ADAPTER_T prAdapter,
 			*pu8Data = 0;	/* @FIXME */
 		}
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-
-VOID
-nicCmdEventQueryXmitOneCollision(IN P_ADAPTER_T prAdapter,
-				 IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryXmitOneCollision(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
@@ -1323,15 +1242,11 @@ nicCmdEventQueryXmitOneCollision(IN P_ADAPTER_T prAdapter,
 				       prEventStatistics->rRetryCount.QuadPart);
 		}
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-
-VOID
-nicCmdEventQueryXmitMoreCollisions(IN P_ADAPTER_T prAdapter,
-				   IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryXmitMoreCollisions(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
@@ -1359,15 +1274,11 @@ nicCmdEventQueryXmitMoreCollisions(IN P_ADAPTER_T prAdapter,
 			*pu8Data = (UINT_64) prEventStatistics->rMultipleRetryCount.QuadPart;
 		}
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
 
-
-VOID
-nicCmdEventQueryXmitMaxCollisions(IN P_ADAPTER_T prAdapter,
-				  IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryXmitMaxCollisions(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
@@ -1395,11 +1306,9 @@ nicCmdEventQueryXmitMaxCollisions(IN P_ADAPTER_T prAdapter,
 			*pu8Data = (UINT_64) prEventStatistics->rFailedCount.QuadPart;
 		}
 
-		kalOidComplete(prGlueInfo,
-			       prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1416,12 +1325,9 @@ VOID nicOidCmdTimeoutCommon(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo)
 {
 	ASSERT(prAdapter);
 
-	if (prCmdInfo->fgIsOid) {
-		kalOidComplete(prAdapter->prGlueInfo,
-			       prCmdInfo->fgSetQuery, 0, WLAN_STATUS_FAILURE);
-	}
+	if (prCmdInfo->fgIsOid)
+		kalOidComplete(prAdapter->prGlueInfo, prCmdInfo->fgSetQuery, 0, WLAN_STATUS_FAILURE);
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1436,7 +1342,6 @@ VOID nicCmdTimeoutCommon(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo)
 {
 	ASSERT(prAdapter);
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1468,7 +1373,6 @@ VOID nicOidCmdEnterRFTestTimeout(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmd
 	kalOidComplete(prAdapter->prGlueInfo, prCmdInfo->fgSetQuery, 0, WLAN_STATUS_FAILURE);
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function is called to handle dump burst event
@@ -1482,7 +1386,6 @@ VOID nicOidCmdEnterRFTestTimeout(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmd
 */
 /*----------------------------------------------------------------------------*/
 
-
 VOID nicEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucEventBuf)
 {
 	P_EVENT_DUMP_MEM_T prEventDumpMem;
@@ -1493,15 +1396,14 @@ VOID nicEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucEventBuf)
 	ASSERT(prAdapter);
 	ASSERT(pucEventBuf);
 
-	sprintf(aucPath, "/data/blbist/dump_%05ld.hex", g_u2DumpIndex);
+	sprintf(aucPath, "/data/blbist/dump_%05d.hex", g_u2DumpIndex);
 
 	prEventDumpMem = (P_EVENT_DUMP_MEM_T) (pucEventBuf);
 
 	if (kalCheckPath(aucPath) == -1) {
 		kalMemSet(aucPath, 0x00, 256);
-		sprintf(aucPath, "/data/dump_%05ld.hex", g_u2DumpIndex);
+		sprintf(aucPath, "/data/dump_%05d.hex", g_u2DumpIndex);
 	}
-
 
 	if (prEventDumpMem->ucFragNum == 1) {
 		/* Store memory dump into sdcard,
@@ -1511,27 +1413,24 @@ VOID nicEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucEventBuf)
 #if defined(LINUX)
 
 		/*if blbist mkdir undre /data/blbist, the dump files wouls put on it */
-		sprintf(aucPath, "/data/blbist/dump_%05ld.hex", g_u2DumpIndex);
+		sprintf(aucPath, "/data/blbist/dump_%05d.hex", g_u2DumpIndex);
 		if (kalCheckPath(aucPath) == -1) {
 			kalMemSet(aucPath, 0x00, 256);
-			sprintf(aucPath, "/data/dump_%05ld.hex", g_u2DumpIndex);
+			sprintf(aucPath, "/data/dump_%05d.hex", g_u2DumpIndex);
 		}
 #else
 		kal_sprintf_ddk(aucPath, sizeof(aucPath),
 				u4CurTimeTick,
-				prEventDumpMem->u4Address,
-				prEventDumpMem->u4Length + prEventDumpMem->u4RemainLength);
+				prEventDumpMem->u4Address, prEventDumpMem->u4Length + prEventDumpMem->u4RemainLength);
 #endif
-		kalWriteToFile(aucPath, FALSE, &prEventDumpMem->aucBuffer[0],
-			       prEventDumpMem->u4Length);
+		kalWriteToFile(aucPath, FALSE, &prEventDumpMem->aucBuffer[0], prEventDumpMem->u4Length);
 	} else {
 		/* Append current memory dump to the hex file */
-		kalWriteToFile(aucPath, TRUE, &prEventDumpMem->aucBuffer[0],
-			       prEventDumpMem->u4Length);
+		kalWriteToFile(aucPath, TRUE, &prEventDumpMem->aucBuffer[0], prEventDumpMem->u4Length);
 	}
 	DBGLOG(INIT, INFO,
-	       (": ==> (u4RemainLength = %x, u4Address=%x )\n", prEventDumpMem->u4RemainLength,
-		prEventDumpMem->u4Address));
+	       ": ==> (u4RemainLength = %x, u4Address=%x )\n", prEventDumpMem->u4RemainLength,
+		prEventDumpMem->u4Address);
 
 	if (prEventDumpMem->u4RemainLength == 0 || prEventDumpMem->u4Address == 0xFFFFFFFF) {
 
@@ -1546,7 +1445,7 @@ VOID nicEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucEventBuf)
 			kalMemSet(aucPath_done, 0x00, 256);
 			sprintf(aucPath_done, "/data/file_dump_done.txt");
 		}
-		DBGLOG(INIT, INFO, (": ==> gen done_file\n"));
+		DBGLOG(INIT, INFO, ": ==> gen done_file\n");
 		kalWriteToFile(aucPath_done, FALSE, aucPath_done, sizeof(aucPath_done));
 		g_u2DumpIndex++;
 
@@ -1567,8 +1466,7 @@ VOID nicEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucEventBuf)
 *
 */
 /*----------------------------------------------------------------------------*/
-VOID
-nicCmdEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_PARAM_CUSTOM_MEM_DUMP_STRUC_T prMemDumpInfo;
@@ -1598,16 +1496,14 @@ nicCmdEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN 
 #if 0
 		do {
 			UINT_32 i = 0;
-			printk("Rx dump address 0x%X, Length %d, FragNum %d, remain %d\n",
+			DBGLOG(REQ, TRACE, "Rx dump address 0x%X, Length %d, FragNum %d, remain %d\n",
 			       prEventDumpMem->u4Address,
-			       prEventDumpMem->u4Length,
-			       prEventDumpMem->ucFragNum, prEventDumpMem->u4RemainLength);
+			       prEventDumpMem->u4Length, prEventDumpMem->ucFragNum, prEventDumpMem->u4RemainLength);
 #if 0
 			for (i = 0; i < prEventDumpMem->u4Length; i++) {
-				printk("%02X ", prEventDumpMem->aucBuffer[i]);
-				if (i % 32 == 31) {
-					printk("\n");
-				}
+				DBGLOG(REQ, TRACE, "%02X ", prEventDumpMem->aucBuffer[i]);
+				if (i % 32 == 31)
+					DBGLOG(REQ, TRACE, "\n");
 			}
 #endif
 		} while (FALSE);
@@ -1622,15 +1518,14 @@ nicCmdEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN 
 #if 0
 			sprintf(aucPath, "/sdcard/dump_%ld_0x%08lX_%ld.hex",
 				u4CurTimeTick,
-				prEventDumpMem->u4Address,
-				prEventDumpMem->u4Length + prEventDumpMem->u4RemainLength);
+				prEventDumpMem->u4Address, prEventDumpMem->u4Length + prEventDumpMem->u4RemainLength);
 #else
 
 			/*if blbist mkdir undre /data/blbist, the dump files wouls put on it */
-			sprintf(aucPath, "/data/blbist/dump_%05ld.hex", g_u2DumpIndex);
+			sprintf(aucPath, "/data/blbist/dump_%05d.hex", g_u2DumpIndex);
 			if (kalCheckPath(aucPath) == -1) {
 				kalMemSet(aucPath, 0x00, 256);
-				sprintf(aucPath, "/data/dump_%05ld.hex", g_u2DumpIndex);
+				sprintf(aucPath, "/data/dump_%05d.hex", g_u2DumpIndex);
 			}
 #endif
 #else
@@ -1640,12 +1535,10 @@ nicCmdEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN 
 					prEventDumpMem->u4Length + prEventDumpMem->u4RemainLength);
 			/* strcpy(aucPath, "dump.hex"); */
 #endif
-			kalWriteToFile(aucPath, FALSE, &prEventDumpMem->aucBuffer[0],
-				       prEventDumpMem->u4Length);
+			kalWriteToFile(aucPath, FALSE, &prEventDumpMem->aucBuffer[0], prEventDumpMem->u4Length);
 		} else {
 			/* Append current memory dump to the hex file */
-			kalWriteToFile(aucPath, TRUE, &prEventDumpMem->aucBuffer[0],
-				       prEventDumpMem->u4Length);
+			kalWriteToFile(aucPath, TRUE, &prEventDumpMem->aucBuffer[0], prEventDumpMem->u4Length);
 		}
 
 		if (prEventDumpMem->u4RemainLength == 0 || prEventDumpMem->u4Address == 0xFFFFFFFF) {
@@ -1653,10 +1546,10 @@ nicCmdEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN 
 			/* Reply time tick to iwpriv */
 			if (prCmdInfo->fgIsOid) {
 
-				/* the oid would be complete only in oid-trigger  mode, that is no need to if the event-trigger */
+				/* the oid would be complete only in oid-trigger  mode,
+				 * that is no need to if the event-trigger */
 				if (g_bIcapEnable == FALSE) {
-					*((PUINT_32) prCmdInfo->pvInformationBuffer) =
-					    u4CurTimeTick;
+					*((PUINT_32) prCmdInfo->pvInformationBuffer) = u4CurTimeTick;
 					kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery,
 						       u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 				}
@@ -1669,7 +1562,7 @@ nicCmdEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN 
 				kalMemSet(aucPath_done, 0x00, 256);
 				sprintf(aucPath_done, "/data/file_dump_done.txt");
 			}
-			DBGLOG(INIT, INFO, (": ==> gen done_file\n"));
+			DBGLOG(INIT, INFO, ": ==> gen done_file\n");
 			kalWriteToFile(aucPath_done, FALSE, aucPath_done, sizeof(aucPath_done));
 			g_u2DumpIndex++;
 
@@ -1680,11 +1573,10 @@ nicCmdEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN 
 		} else {
 #if defined(LINUX)
 
-#else				/* 2013/05/26 fw would try to send the buffer successfully */
+#else /* 2013/05/26 fw would try to send the buffer successfully */
 			/* The memory dump request is not finished, Send next command */
 			wlanSendMemDumpCmd(prAdapter,
-					   prCmdInfo->pvInformationBuffer,
-					   prCmdInfo->u4InformationBufferLength);
+					   prCmdInfo->pvInformationBuffer, prCmdInfo->u4InformationBufferLength);
 #endif
 		}
 	}
@@ -1692,7 +1584,6 @@ nicCmdEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN 
 	return;
 
 }
-
 
 #if CFG_SUPPORT_BATCH_SCAN
 /*----------------------------------------------------------------------------*/
@@ -1707,15 +1598,13 @@ nicCmdEventQueryMemDump(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN 
 *
 */
 /*----------------------------------------------------------------------------*/
-VOID
-nicCmdEventBatchScanResult(IN P_ADAPTER_T prAdapter,
-			   IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventBatchScanResult(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_EVENT_BATCH_RESULT_T prEventBatchResult;
 	P_GLUE_INFO_T prGlueInfo;
 
-	DBGLOG(SCN, TRACE, ("nicCmdEventBatchScanResult"));
+	DBGLOG(SCN, TRACE, "nicCmdEventBatchScanResult");
 
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
@@ -1727,17 +1616,14 @@ nicCmdEventBatchScanResult(IN P_ADAPTER_T prAdapter,
 		prEventBatchResult = (P_EVENT_BATCH_RESULT_T) pucEventBuf;
 
 		u4QueryInfoLen = sizeof(EVENT_BATCH_RESULT_T);
-		kalMemCopy(prCmdInfo->pvInformationBuffer, prEventBatchResult,
-			   sizeof(EVENT_BATCH_RESULT_T));
+		kalMemCopy(prCmdInfo->pvInformationBuffer, prEventBatchResult, sizeof(EVENT_BATCH_RESULT_T));
 
-		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-			       WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 
 	return;
 }
 #endif
-
 
 #if CFG_SUPPORT_BUILD_DATE_CODE
 /*----------------------------------------------------------------------------*/
@@ -1753,9 +1639,7 @@ nicCmdEventBatchScanResult(IN P_ADAPTER_T prAdapter,
 *
 */
 /*----------------------------------------------------------------------------*/
-VOID
-nicCmdEventBuildDateCode(IN P_ADAPTER_T prAdapter,
-			 IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventBuildDateCode(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_EVENT_BUILD_DATE_CODE prEvent;
@@ -1771,18 +1655,14 @@ nicCmdEventBuildDateCode(IN P_ADAPTER_T prAdapter,
 		prEvent = (P_EVENT_BUILD_DATE_CODE) pucEventBuf;
 
 		u4QueryInfoLen = sizeof(UINT_8) * 16;
-		kalMemCopy(prCmdInfo->pvInformationBuffer, prEvent->aucDateCode,
-			   sizeof(UINT_8) * 16);
+		kalMemCopy(prCmdInfo->pvInformationBuffer, prEvent->aucDateCode, sizeof(UINT_8) * 16);
 
-		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-			       WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 
 	return;
 }
 #endif
-
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1797,19 +1677,18 @@ nicCmdEventBuildDateCode(IN P_ADAPTER_T prAdapter,
 *
 */
 /*----------------------------------------------------------------------------*/
-VOID
-nicCmdEventQueryStaStatistics(IN P_ADAPTER_T prAdapter,
-			      IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryStaStatistics(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_EVENT_STA_STATISTICS_T prEvent;
 	P_GLUE_INFO_T prGlueInfo;
 	P_PARAM_GET_STA_STATISTICS prStaStatistics;
+	ENUM_WMM_ACI_T eAci;
+	P_STA_RECORD_T prStaRec;
 
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
 	ASSERT(pucEventBuf);
-	ASSERT(prCmdInfo->pvInformationBuffer);
 
 	if (prCmdInfo->fgIsOid) {
 		prGlueInfo = prAdapter->prGlueInfo;
@@ -1828,19 +1707,33 @@ nicCmdEventQueryStaStatistics(IN P_ADAPTER_T prAdapter,
 			prStaStatistics->u4TxFailCount = prEvent->u4TxFailCount;
 			prStaStatistics->u4TxLifeTimeoutCount = prEvent->u4TxLifeTimeoutCount;
 
-			if (prEvent->u4TxCount) {
-				UINT_32 u4TxDoneAirTimeMs =
-				    USEC_TO_MSEC(prEvent->u4TxDoneAirTime * 32);
+			prStaRec = cnmGetStaRecByIndex(prAdapter, prEvent->ucStaRecIdx);
 
-				prStaStatistics->u4TxAverageAirTime =
-				    (u4TxDoneAirTimeMs / prEvent->u4TxCount);
+			if (prStaRec) {
+				/*link layer statistics */
+				for (eAci = 0; eAci < WMM_AC_INDEX_NUM; eAci++) {
+					prStaStatistics->arLinkStatistics[eAci].u4TxFailMsdu =
+					    prEvent->arLinkStatistics[eAci].u4TxFailMsdu;
+					prStaStatistics->arLinkStatistics[eAci].u4TxRetryMsdu =
+					    prEvent->arLinkStatistics[eAci].u4TxRetryMsdu;
+
+					/*for dump bss statistics */
+					prStaRec->arLinkStatistics[eAci].u4TxFailMsdu =
+					    prEvent->arLinkStatistics[eAci].u4TxFailMsdu;
+					prStaRec->arLinkStatistics[eAci].u4TxRetryMsdu =
+					    prEvent->arLinkStatistics[eAci].u4TxRetryMsdu;
+				}
+			}
+			if (prEvent->u4TxCount) {
+				UINT_32 u4TxDoneAirTimeMs = USEC_TO_MSEC(prEvent->u4TxDoneAirTime * 32);
+
+				prStaStatistics->u4TxAverageAirTime = (u4TxDoneAirTimeMs / prEvent->u4TxCount);
 			} else {
 				prStaStatistics->u4TxAverageAirTime = 0;
 			}
 		}
 
-		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-			       WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 
 }
@@ -1862,9 +1755,7 @@ nicCmdEventQueryStaStatistics(IN P_ADAPTER_T prAdapter,
 *
 */
 /*----------------------------------------------------------------------------*/
-VOID
-nicCmdEventQueryChannelLoad(IN P_ADAPTER_T prAdapter,
-			    IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryChannelLoad(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_EVENT_CHN_LOAD_T prEvent;
@@ -1874,12 +1765,12 @@ nicCmdEventQueryChannelLoad(IN P_ADAPTER_T prAdapter,
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
 	ASSERT(pucEventBuf);
-	ASSERT(prCmdInfo->pvInformationBuffer);
 
 	if (prCmdInfo->fgIsOid) {
 		prGlueInfo = prAdapter->prGlueInfo;
 		prEvent = (P_EVENT_CHN_LOAD_T) pucEventBuf;	/* 4 The firmware responsed data */
-		prChnLoad = (P_PARAM_GET_CHN_LOAD) prCmdInfo->pvInformationBuffer;	/* 4 Fill the firmware data in and send it back to host */
+		/* 4 Fill the firmware data in and send it back to host */
+		prChnLoad = (P_PARAM_GET_CHN_LOAD) prCmdInfo->pvInformationBuffer;
 
 		u4QueryInfoLen = sizeof(PARAM_GET_CHN_LOAD);
 
@@ -1887,19 +1778,16 @@ nicCmdEventQueryChannelLoad(IN P_ADAPTER_T prAdapter,
 		if (prEvent->u4Flags & BIT(0)) {
 			prChnLoad->rEachChnLoad[0].ucChannel = prEvent->ucChannel;
 			prChnLoad->rEachChnLoad[0].u2ChannelLoad = prEvent->u2ChannelLoad;
-			printk("CHN[%d]=%d\n", prEvent->ucChannel, prEvent->u2ChannelLoad);
+			DBGLOG(P2P, INFO, "CHN[%d]=%d\n", prEvent->ucChannel, prEvent->u2ChannelLoad);
 
 		}
 
-		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-			       WLAN_STATUS_SUCCESS);
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 
 }
 
-VOID
-nicCmdEventQueryLTESafeChn(IN P_ADAPTER_T prAdapter,
-			   IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+VOID nicCmdEventQueryLTESafeChn(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
 	UINT_32 u4QueryInfoLen;
 	P_EVENT_LTE_MODE_T prEvent;
@@ -1909,7 +1797,6 @@ nicCmdEventQueryLTESafeChn(IN P_ADAPTER_T prAdapter,
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
 	ASSERT(pucEventBuf);
-	ASSERT(prCmdInfo->pvInformationBuffer);
 	if (prCmdInfo->fgIsOid) {
 		prGlueInfo = prAdapter->prGlueInfo;
 		prEvent = (P_EVENT_LTE_MODE_T) pucEventBuf;	/* 4 The firmware responsed data */
@@ -1922,16 +1809,21 @@ nicCmdEventQueryLTESafeChn(IN P_ADAPTER_T prAdapter,
 		if (prEvent->u4Flags & BIT(0)) {
 			/* prLteSafeChnInfo->rLteSafeChnList.ucChannelHigh= prEvent->rLteSafeChn.ucChannelHigh; */
 			/* prLteSafeChnInfo->rLteSafeChnList.ucChannelLow= prEvent->rLteSafeChn.ucChannelLow; */
-			prLteSafeChnInfo->rLteSafeChnList.u4SafeChannelBitmask[0] = prEvent->rLteSafeChn.u4SafeChannelBitmask[0];
-        		if (prEvent->ucVersion != 0) {
-            			prLteSafeChnInfo->rLteSafeChnList.u4SafeChannelBitmask[1] = prEvent->rLteSafeChn.u4SafeChannelBitmask[1];
-            			prLteSafeChnInfo->rLteSafeChnList.u4SafeChannelBitmask[2] = prEvent->rLteSafeChn.u4SafeChannelBitmask[2];
-            			prLteSafeChnInfo->rLteSafeChnList.u4SafeChannelBitmask[3] = prEvent->rLteSafeChn.u4SafeChannelBitmask[3];
-        		}
-			DBGLOG(P2P, INFO,("[Query-info Auto Channel]LTE safe channels 0x%08x\n", prLteSafeChnInfo->rLteSafeChnList.u4SafeChannelBitmask[0]));
-        	}
-		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen,
-			       WLAN_STATUS_SUCCESS);
+			prLteSafeChnInfo->rLteSafeChnList.u4SafeChannelBitmask[0] =
+			    prEvent->rLteSafeChn.u4SafeChannelBitmask[0];
+			if (prEvent->ucVersion != 0) {
+				prLteSafeChnInfo->rLteSafeChnList.u4SafeChannelBitmask[1] =
+				    prEvent->rLteSafeChn.u4SafeChannelBitmask[1];
+				prLteSafeChnInfo->rLteSafeChnList.u4SafeChannelBitmask[2] =
+				    prEvent->rLteSafeChn.u4SafeChannelBitmask[2];
+				prLteSafeChnInfo->rLteSafeChnList.u4SafeChannelBitmask[3] =
+				    prEvent->rLteSafeChn.u4SafeChannelBitmask[3];
+			}
+			DBGLOG(P2P, INFO,
+			       "[Query-info Auto Channel]LTE safe channels 0x%08x\n",
+				prLteSafeChnInfo->rLteSafeChnList.u4SafeChannelBitmask[0]);
+		}
+		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
 	}
 
 }

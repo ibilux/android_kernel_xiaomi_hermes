@@ -40,6 +40,7 @@
 #include <asm/system_misc.h>
 #include <asm/cacheflush.h>
 
+#include <mach/mt_hooks.h>
 static const char *handler[]= {
 	"Synchronous Abort",
 	"IRQ",
@@ -96,7 +97,7 @@ static void dump_backtrace_entry(unsigned long where, unsigned long stack)
 	print_ip_sym(where);
 	if (in_exception_text(where))
 		dump_mem("", "Exception stack", stack,
-			 stack + sizeof(struct pt_regs));
+			 stack + sizeof(struct pt_regs) + 180); /* Additional 180 to workaround sp offset */
 }
 
 static void dump_instr(const char *lvl, struct pt_regs *regs)
@@ -276,7 +277,7 @@ void register_undef_hook(struct undef_hook *hook)
 static int call_undef_hook(struct pt_regs *regs, unsigned int instr)
 {
 	struct undef_hook *hook;
-	int (*fn)(struct pt_regs *regs, unsigned int instr) = NULL;
+	int (*fn)(struct pt_regs *regs, unsigned int instr) = arm_undefinstr_retry;
 
 	list_for_each_entry(hook, &undef_hook, node)
 		if ((instr & hook->instr_mask) == hook->instr_val &&

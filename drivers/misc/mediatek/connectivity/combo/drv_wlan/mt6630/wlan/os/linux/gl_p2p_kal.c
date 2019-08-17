@@ -1,14 +1,11 @@
 /*
-** $Id: @(#) gl_p2p_cfg80211.c@@
+** Id: @(#) gl_p2p_cfg80211.c@@
 */
 
 /*! \file   gl_p2p_kal.c
     \brief
 
 */
-
-
-
 
 /*******************************************************************************
 *                         C O M P I L E R   F L A G S
@@ -52,13 +49,8 @@
 *                   F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-BOOLEAN
-kalP2pFuncGetChannelType(IN ENUM_CHNL_EXT_T rChnlSco, OUT enum nl80211_channel_type *channel_type);
 
-
-struct ieee80211_channel *kalP2pFuncGetChannelEntry(IN P_GL_P2P_INFO_T prP2pInfo,
-						    IN P_RF_CHANNEL_INFO_T prChannelInfo);
-
+struct ieee80211_channel *kalP2pFuncGetChannelEntry(IN P_GL_P2P_INFO_T prP2pInfo, IN P_RF_CHANNEL_INFO_T prChannelInfo);
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -83,7 +75,6 @@ ENUM_PARAM_MEDIA_STATE_T kalP2PGetState(IN P_GLUE_INFO_T prGlueInfo)
 	return prGlueInfo->prP2PInfo->eState;
 }				/* end of kalP2PGetState() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to update the assoc req to p2p
@@ -99,8 +90,7 @@ ENUM_PARAM_MEDIA_STATE_T kalP2PGetState(IN P_GLUE_INFO_T prGlueInfo)
 /*----------------------------------------------------------------------------*/
 VOID
 kalP2PUpdateAssocInfo(IN P_GLUE_INFO_T prGlueInfo,
-		      IN PUINT_8 pucFrameBody,
-		      IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest)
+		      IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest)
 {
 	union iwreq_data wrqu;
 	unsigned char *pucExtraInfo = NULL;
@@ -161,14 +151,12 @@ kalP2PUpdateAssocInfo(IN P_GLUE_INFO_T prGlueInfo,
 	wrqu.data.length = pucDesiredIE[1] + 2;
 
 	/* Send event to user space */
-	wireless_send_event(prGlueInfo->prP2PInfo->prDevHandler, IWEVASSOCREQIE, &wrqu,
-			    pucExtraInfo);
+	wireless_send_event(prGlueInfo->prP2PInfo->prDevHandler, IWEVASSOCREQIE, &wrqu, pucExtraInfo);
 
 skip_indicate_event:
 	return;
 
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -196,29 +184,24 @@ kalP2PSetState(IN P_GLUE_INFO_T prGlueInfo,
 	if (eState == PARAM_MEDIA_STATE_CONNECTED) {
 		prGlueInfo->prP2PInfo->eState = PARAM_MEDIA_STATE_CONNECTED;
 
-		snprintf(aucBuffer, IW_CUSTOM_MAX - 1, "P2P_STA_CONNECT=" MACSTR,
-			 MAC2STR(rPeerAddr));
+		snprintf(aucBuffer, IW_CUSTOM_MAX - 1, "P2P_STA_CONNECT=" MACSTR, MAC2STR(rPeerAddr));
 		evt.data.length = strlen(aucBuffer);
 
 		/* indicate in IWECUSTOM event */
-		wireless_send_event(prGlueInfo->prP2PInfo->prDevHandler,
-				    IWEVCUSTOM, &evt, aucBuffer);
+		wireless_send_event(prGlueInfo->prP2PInfo->prDevHandler, IWEVCUSTOM, &evt, aucBuffer);
 
 	} else if (eState == PARAM_MEDIA_STATE_DISCONNECTED) {
-		snprintf(aucBuffer, IW_CUSTOM_MAX - 1, "P2P_STA_DISCONNECT=" MACSTR,
-			 MAC2STR(rPeerAddr));
+		snprintf(aucBuffer, IW_CUSTOM_MAX - 1, "P2P_STA_DISCONNECT=" MACSTR, MAC2STR(rPeerAddr));
 		evt.data.length = strlen(aucBuffer);
 
 		/* indicate in IWECUSTOM event */
-		wireless_send_event(prGlueInfo->prP2PInfo->prDevHandler,
-				    IWEVCUSTOM, &evt, aucBuffer);
+		wireless_send_event(prGlueInfo->prP2PInfo->prDevHandler, IWEVCUSTOM, &evt, aucBuffer);
 	} else {
 		ASSERT(0);
 	}
 
 	return;
 }				/* end of kalP2PSetState() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -237,7 +220,6 @@ UINT_32 kalP2PGetFreqInKHz(IN P_GLUE_INFO_T prGlueInfo)
 
 	return prGlueInfo->prP2PInfo->u4FreqInKHz;
 }				/* end of kalP2PGetFreqInKHz() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -258,7 +240,6 @@ UINT_8 kalP2PGetRole(IN P_GLUE_INFO_T prGlueInfo)
 
 	return prGlueInfo->prP2PInfo->ucRole;
 }				/* end of kalP2PGetRole() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -302,9 +283,8 @@ kalP2PSetRole(IN P_GLUE_INFO_T prGlueInfo,
 
 	memset(&evt, 0, sizeof(evt));
 
-	if (ucResult == 0) {
+	if (ucResult == 0)
 		prGlueInfo->prP2PInfo->ucRole = ucRole;
-	}
 
 	if (pucSSID)
 		snprintf(aucBuffer, IW_CUSTOM_MAX - 1, "P2P_FORMATION_RST=%d%d%d%c%c", ucResult,
@@ -346,7 +326,6 @@ VOID kalP2PSetCipher(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Cipher)
 
 	return;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -391,7 +370,6 @@ BOOLEAN kalP2PGetCcmpCipher(IN P_GLUE_INFO_T prGlueInfo)
 	return FALSE;
 }
 
-
 BOOLEAN kalP2PGetTkipCipher(IN P_GLUE_INFO_T prGlueInfo)
 {
 	ASSERT(prGlueInfo);
@@ -424,7 +402,6 @@ VOID kalP2PSetWscMode(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucWscMode)
 	prGlueInfo->prP2PInfo->ucWSCRunning = ucWscMode;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to get the status of WSC
@@ -442,7 +419,6 @@ UINT_8 kalP2PGetWscMode(IN P_GLUE_INFO_T prGlueInfo)
 
 	return prGlueInfo->prP2PInfo->ucWSCRunning;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -465,7 +441,6 @@ UINT_16 kalP2PCalWSC_IELen(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucType)
 	return prGlueInfo->prP2PInfo->u2WSCIELen[ucType];
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to copy the wsc ie setting from p2p supplicant
@@ -482,43 +457,32 @@ VOID kalP2PGenWSC_IE(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucType, IN PUINT_8 p
 	P_GL_P2P_INFO_T prGlP2pInfo = (P_GL_P2P_INFO_T) NULL;
 
 	do {
-		if ((prGlueInfo == NULL) || (ucType >= 3) || (pucBuffer == NULL)) {
+		if ((prGlueInfo == NULL) || (ucType >= 3) || (pucBuffer == NULL))
 			break;
-		}
-
 
 		prGlP2pInfo = prGlueInfo->prP2PInfo;
 
-		kalMemCopy(pucBuffer, prGlP2pInfo->aucWSCIE[ucType],
-			   prGlP2pInfo->u2WSCIELen[ucType]);
+		kalMemCopy(pucBuffer, prGlP2pInfo->aucWSCIE[ucType], prGlP2pInfo->u2WSCIELen[ucType]);
 
 	} while (FALSE);
 
 	return;
 }
 
-
-VOID
-kalP2PUpdateWSC_IE(IN P_GLUE_INFO_T prGlueInfo,
-		   IN UINT_8 ucType, IN PUINT_8 pucBuffer, IN UINT_16 u2BufferLength)
+VOID kalP2PUpdateWSC_IE(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucType, IN PUINT_8 pucBuffer, IN UINT_16 u2BufferLength)
 {
 	P_GL_P2P_INFO_T prGlP2pInfo = (P_GL_P2P_INFO_T) NULL;
 
 	do {
-		if ((prGlueInfo == NULL) ||
-		    (ucType >= 3) || ((u2BufferLength > 0) && (pucBuffer == NULL))) {
+		if ((prGlueInfo == NULL) || (ucType >= 3) || ((u2BufferLength > 0) && (pucBuffer == NULL)))
 			break;
-		}
-
 
 		if (u2BufferLength > 400) {
 			DBGLOG(P2P, ERROR,
-			       ("Buffer length is not enough, GLUE only 400 bytes but %d received\n",
-				u2BufferLength));
+			       "Buffer length is not enough, GLUE only 400 bytes but %d received\n", u2BufferLength);
 			ASSERT(FALSE);
 			break;
 		}
-
 
 		prGlP2pInfo = prGlueInfo->prP2PInfo;
 
@@ -526,13 +490,10 @@ kalP2PUpdateWSC_IE(IN P_GLUE_INFO_T prGlueInfo,
 
 		prGlP2pInfo->u2WSCIELen[ucType] = u2BufferLength;
 
-
 	} while (FALSE);
 
 	return;
 }				/* kalP2PUpdateWSC_IE */
-
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -543,8 +504,10 @@ kalP2PUpdateWSC_IE(IN P_GLUE_INFO_T prGlueInfo,
 * \retval none
 */
 /*----------------------------------------------------------------------------*/
-VOID kalP2PIndicateConnReq(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucDevName, IN INT_32 u4NameLength, IN PARAM_MAC_ADDRESS rPeerAddr, IN UINT_8 ucDevType,	/* 0: P2P Device / 1: GC / 2: GO */
-			   IN INT_32 i4ConfigMethod, IN INT_32 i4ActiveConfigMethod)
+VOID kalP2PIndicateConnReq(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucDevName,
+				IN INT_32 u4NameLength, IN PARAM_MAC_ADDRESS rPeerAddr,
+				IN UINT_8 ucDevType,	/* 0: P2P Device / 1: GC / 2: GO */
+				IN INT_32 i4ConfigMethod, IN INT_32 i4ActiveConfigMethod)
 {
 	union iwreq_data evt;
 	UINT_8 aucBuffer[IW_CUSTOM_MAX];
@@ -553,8 +516,7 @@ VOID kalP2PIndicateConnReq(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucDevName, I
 
 	/* buffer peer information for later IOC_P2P_GET_REQ_DEVICE_INFO access */
 	prGlueInfo->prP2PInfo->u4ConnReqNameLength = u4NameLength > 32 ? 32 : u4NameLength;
-	kalMemCopy(prGlueInfo->prP2PInfo->aucConnReqDevName,
-		   pucDevName, prGlueInfo->prP2PInfo->u4ConnReqNameLength);
+	kalMemCopy(prGlueInfo->prP2PInfo->aucConnReqDevName, pucDevName, prGlueInfo->prP2PInfo->u4ConnReqNameLength);
 	COPY_MAC_ADDR(prGlueInfo->prP2PInfo->rConnReqPeerAddr, rPeerAddr);
 	prGlueInfo->prP2PInfo->ucConnReqDevType = ucDevType;
 	prGlueInfo->prP2PInfo->i4ConnReqConfigMethod = i4ConfigMethod;
@@ -572,7 +534,6 @@ VOID kalP2PIndicateConnReq(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucDevName, I
 	return;
 }				/* end of kalP2PIndicateConnReq() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Indicate an event to supplicant for device connection request from other device.
@@ -588,8 +549,7 @@ kalP2PInvitationIndication(IN P_GLUE_INFO_T prGlueInfo,
 			   IN P_P2P_DEVICE_DESC_T prP2pDevDesc,
 			   IN PUINT_8 pucSsid,
 			   IN UINT_8 ucSsidLen,
-			   IN UINT_8 ucOperatingChnl,
-			   IN UINT_8 ucInvitationType, IN PUINT_8 pucGroupBssid)
+			   IN UINT_8 ucOperatingChnl, IN UINT_8 ucInvitationType, IN PUINT_8 pucGroupBssid)
 {
 #if 1
 	union iwreq_data evt;
@@ -626,7 +586,6 @@ kalP2PInvitationIndication(IN P_GLUE_INFO_T prGlueInfo,
 	do {
 		ASSERT_BREAK((prGlueInfo != NULL) && (prP2pDevDesc != NULL));
 
-
 		/* Not a real solution */
 
 		prP2pSpecificBssInfo = prGlueInfo->prAdapter->rWifiVar.prP2pSpecificBssInfo;
@@ -634,13 +593,10 @@ kalP2PInvitationIndication(IN P_GLUE_INFO_T prGlueInfo,
 
 		prP2pConnReq = (P_MSG_P2P_CONNECTION_REQUEST_T) cnmMemAlloc(prGlueInfo->prAdapter,
 									    RAM_TYPE_MSG,
-									    sizeof
-									    (MSG_P2P_CONNECTION_REQUEST_T));
+									    sizeof(MSG_P2P_CONNECTION_REQUEST_T));
 
-		if (prP2pConnReq == NULL) {
+		if (prP2pConnReq == NULL)
 			break;
-		}
-
 
 		kalMemZero(prP2pConnReq, sizeof(MSG_P2P_CONNECTION_REQUEST_T));
 
@@ -659,29 +615,21 @@ kalP2PInvitationIndication(IN P_GLUE_INFO_T prGlueInfo,
 		}
 
 		else if (ucInvitationType == P2P_INVITATION_TYPE_REINVOKE) {
-			DBGLOG(P2P, TRACE, ("Re-invoke Persistent Group\n"));
+			DBGLOG(P2P, TRACE, "Re-invoke Persistent Group\n");
 			prP2pConnReq->fgIsPersistentGroup = TRUE;
-			prP2pConnReq->fgIsTobeGO =
-			    (prGlueInfo->prP2PInfo->ucRole == 2) ? TRUE : FALSE;
+			prP2pConnReq->fgIsTobeGO = (prGlueInfo->prP2PInfo->ucRole == 2) ? TRUE : FALSE;
 
 		}
-
 
 		p2pFsmRunEventDeviceDiscoveryAbort(prGlueInfo->prAdapter, NULL);
 
-		if (ucOperatingChnl != 0) {
+		if (ucOperatingChnl != 0)
 			prP2pSpecificBssInfo->ucPreferredChannel = ucOperatingChnl;
-		}
 
-		if ((ucSsidLen < 32) && (pucSsid != NULL)) {
-			COPY_SSID(prP2pConnSettings->aucSSID,
-				  prP2pConnSettings->ucSSIDLen, pucSsid, ucSsidLen);
-		}
+		if ((ucSsidLen < 32) && (pucSsid != NULL))
+			COPY_SSID(prP2pConnSettings->aucSSID, prP2pConnSettings->ucSSIDLen, pucSsid, ucSsidLen);
 
-		mboxSendMsg(prGlueInfo->prAdapter,
-			    MBOX_ID_0, (P_MSG_HDR_T) prP2pConnReq, MSG_SEND_METHOD_BUF);
-
-
+		mboxSendMsg(prGlueInfo->prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prP2pConnReq, MSG_SEND_METHOD_BUF);
 
 	} while (FALSE);
 
@@ -692,7 +640,6 @@ kalP2PInvitationIndication(IN P_GLUE_INFO_T prGlueInfo,
 #endif
 
 }				/* kalP2PInvitationIndication */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -734,9 +681,7 @@ VOID kalP2PInvitationStatus(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4InvStatus)
 * \retval none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-kalP2PIndicateSDRequest(IN P_GLUE_INFO_T prGlueInfo,
-			IN PARAM_MAC_ADDRESS rPeerAddr, IN UINT_8 ucSeqNum)
+VOID kalP2PIndicateSDRequest(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rPeerAddr, IN UINT_8 ucSeqNum)
 {
 	union iwreq_data evt;
 	UINT_8 aucBuffer[IW_CUSTOM_MAX];
@@ -754,7 +699,6 @@ kalP2PIndicateSDRequest(IN P_GLUE_INFO_T prGlueInfo,
 	return;
 }				/* end of kalP2PIndicateSDRequest() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Indicate an event to supplicant for Service Discovery response
@@ -765,9 +709,7 @@ kalP2PIndicateSDRequest(IN P_GLUE_INFO_T prGlueInfo,
 * \retval none
 */
 /*----------------------------------------------------------------------------*/
-void
-kalP2PIndicateSDResponse(IN P_GLUE_INFO_T prGlueInfo,
-			 IN PARAM_MAC_ADDRESS rPeerAddr, IN UINT_8 ucSeqNum)
+void kalP2PIndicateSDResponse(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rPeerAddr, IN UINT_8 ucSeqNum)
 {
 	union iwreq_data evt;
 	UINT_8 aucBuffer[IW_CUSTOM_MAX];
@@ -784,7 +726,6 @@ kalP2PIndicateSDResponse(IN P_GLUE_INFO_T prGlueInfo,
 
 	return;
 }				/* end of kalP2PIndicateSDResponse() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -815,7 +756,6 @@ VOID kalP2PIndicateTXDone(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucSeqNum, IN UI
 
 	return;
 }				/* end of kalP2PIndicateSDResponse() */
-
 
 struct net_device *kalP2PGetDevHdlr(P_GLUE_INFO_T prGlueInfo)
 {
@@ -856,7 +796,6 @@ VOID kalP2PIndicateSecCheckRsp(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucRsp, I
 }				/* p2pFsmRunEventRxDisassociation */
 #endif
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief
@@ -869,11 +808,9 @@ VOID kalP2PIndicateSecCheckRsp(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucRsp, I
 VOID
 kalGetChnlList(IN P_GLUE_INFO_T prGlueInfo,
 	       IN ENUM_BAND_T eSpecificBand,
-	       IN UINT_8 ucMaxChannelNum,
-	       IN PUINT_8 pucNumOfChannel, IN P_RF_CHANNEL_INFO_T paucChannelList)
+	       IN UINT_8 ucMaxChannelNum, IN PUINT_8 pucNumOfChannel, IN P_RF_CHANNEL_INFO_T paucChannelList)
 {
-	rlmDomainGetChnlList(prGlueInfo->prAdapter,
-			     eSpecificBand, ucMaxChannelNum, pucNumOfChannel, paucChannelList);
+	rlmDomainGetChnlList(prGlueInfo->prAdapter, eSpecificBand, ucMaxChannelNum, pucNumOfChannel, paucChannelList);
 }				/* kalGetChnlList */
 
 /* ////////////////////////////////////ICS SUPPORT////////////////////////////////////// */
@@ -889,35 +826,23 @@ kalP2PIndicateChannelReady(IN P_GLUE_INFO_T prGlueInfo,
 	enum nl80211_channel_type eChnlType = NL80211_CHAN_NO_HT;
 
 	do {
-		if (prGlueInfo == NULL) {
+		if (prGlueInfo == NULL)
 			break;
-		}
-
 
 		kalMemZero(&rChannelInfo, sizeof(RF_CHANNEL_INFO_T));
 
 		rChannelInfo.ucChannelNum = u4ChannelNum;
 		rChannelInfo.eBand = eBand;
 
-		prIEEE80211ChnlStruct =
-		    kalP2pFuncGetChannelEntry(prGlueInfo->prP2PInfo, &rChannelInfo);
+		prIEEE80211ChnlStruct = kalP2pFuncGetChannelEntry(prGlueInfo->prP2PInfo, &rChannelInfo);
 
 		kalP2pFuncGetChannelType(eSco, &eChnlType);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
-		cfg80211_ready_on_channel(&prGlueInfo->prP2PInfo->wdev,	/* struct wireless_dev, */
+		cfg80211_ready_on_channel(prGlueInfo->prP2PInfo->prWdev,	/* struct wireless_dev, */
 					  u8SeqNum,	/* u64 cookie, */
 					  prIEEE80211ChnlStruct,	/* struct ieee80211_channel * chan, */
 					  u4Duration,	/* unsigned int duration, */
-					  GFP_KERNEL);	/* gfp_t gfp */ /* allocation flags */
-#else
-		cfg80211_ready_on_channel(prGlueInfo->prP2PInfo->prDevHandler,	/* struct net_device * dev, */
-					  u8SeqNum,	/* u64 cookie, */
-					  prIEEE80211ChnlStruct,	/* struct ieee80211_channel * chan, */
-					  eChnlType,	/* enum nl80211_channel_type channel_type, */
-					  u4Duration,	/* unsigned int duration, */
-					  GFP_KERNEL);	/* gfp_t gfp */ /* allocation flags */
-#endif
+					  GFP_KERNEL);	/* gfp_t gfp *//* allocation flags */
 	} while (FALSE);
 
 }				/* kalP2PIndicateChannelReady */
@@ -946,31 +871,22 @@ kalP2PIndicateChannelExpired(IN P_GLUE_INFO_T prGlueInfo,
 			break;
 		}
 
-
-		DBGLOG(P2P, TRACE, ("kalP2PIndicateChannelExpired\n"));
+		DBGLOG(P2P, TRACE, "kalP2PIndicateChannelExpired\n");
 
 		rRfChannelInfo.eBand = eBand;
 		rRfChannelInfo.ucChannelNum = u4ChannelNum;
 
 		prIEEE80211ChnlStruct = kalP2pFuncGetChannelEntry(prGlueP2pInfo, &rRfChannelInfo);
 
-
 		kalP2pFuncGetChannelType(eSco, &eChnlType);
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
-		cfg80211_remain_on_channel_expired(&prGlueP2pInfo->wdev,	/* struct wireless_dev, */
+		cfg80211_remain_on_channel_expired(prGlueP2pInfo->prWdev,	/* struct wireless_dev, */
 						   u8SeqNum, prIEEE80211ChnlStruct, GFP_KERNEL);
-#else
-		cfg80211_remain_on_channel_expired(prGlueP2pInfo->prDevHandler,	/* struct net_device * dev, */
-						   u8SeqNum,
-						   prIEEE80211ChnlStruct, eChnlType, GFP_KERNEL);
-#endif
 	} while (FALSE);
 
 }				/* kalP2PIndicateChannelExpired */
 
-VOID
-kalP2PIndicateScanDone(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucRoleIndex, IN BOOLEAN fgIsAbort)
+VOID kalP2PIndicateScanDone(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucRoleIndex, IN BOOLEAN fgIsAbort)
 {
 	P_GL_P2P_INFO_T prGlueP2pInfo = (P_GL_P2P_INFO_T) NULL;
 	struct cfg80211_scan_request *prScanRequest = NULL;
@@ -990,7 +906,7 @@ kalP2PIndicateScanDone(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucRoleIndex, IN BO
 			break;
 		}
 
-		DBGLOG(INIT, INFO, ("[p2p] scan complete %p\n", prGlueP2pInfo->prScanRequest));
+		DBGLOG(INIT, INFO, "[p2p] scan complete %p\n", prGlueP2pInfo->prScanRequest);
 
 		GLUE_ACQUIRE_SPIN_LOCK(prGlueInfo, SPIN_LOCK_NET_DEV);
 
@@ -1005,20 +921,18 @@ kalP2PIndicateScanDone(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucRoleIndex, IN BO
 			/* report all queued beacon/probe response frames  to upper layer */
 			scanReportBss2Cfg80211(prGlueInfo->prAdapter, BSS_TYPE_P2P_DEVICE, NULL);
 
-			DBGLOG(INIT, INFO, ("DBG:p2p_cfg_scan_done\n"));
+			DBGLOG(INIT, INFO, "DBG:p2p_cfg_scan_done\n");
 			cfg80211_scan_done(prScanRequest, fgIsAbort);
 		}
 
 	} while (FALSE);
-
 
 }				/* kalP2PIndicateScanDone */
 
 VOID
 kalP2PIndicateBssInfo(IN P_GLUE_INFO_T prGlueInfo,
 		      IN PUINT_8 pucFrameBuf,
-		      IN UINT_32 u4BufLen,
-		      IN P_RF_CHANNEL_INFO_T prChannelInfo, IN INT_32 i4SignalStrength)
+		      IN UINT_32 u4BufLen, IN P_RF_CHANNEL_INFO_T prChannelInfo, IN INT_32 i4SignalStrength)
 {
 	P_GL_P2P_INFO_T prGlueP2pInfo = (P_GL_P2P_INFO_T) NULL;
 	struct ieee80211_channel *prChannelEntry = (struct ieee80211_channel *)NULL;
@@ -1038,28 +952,21 @@ kalP2PIndicateBssInfo(IN P_GLUE_INFO_T prGlueInfo,
 			break;
 		}
 
-
 		prChannelEntry = kalP2pFuncGetChannelEntry(prGlueP2pInfo, prChannelInfo);
 
 		if (prChannelEntry == NULL) {
-			DBGLOG(P2P, TRACE, ("Unknown channel info\n"));
+			DBGLOG(P2P, TRACE, "Unknown channel info\n");
 			break;
 		}
 
 		/* rChannelInfo.center_freq = nicChannelNum2Freq((UINT_32)prChannelInfo->ucChannelNum) / 1000; */
 
-		prCfg80211Bss = cfg80211_inform_bss_frame(prGlueP2pInfo->wdev.wiphy,	/* struct wiphy * wiphy, */
+		prCfg80211Bss = cfg80211_inform_bss_frame(prGlueP2pInfo->prWdev->wiphy,	/* struct wiphy * wiphy, */
 							  prChannelEntry,
-							  prBcnProbeRspFrame,
-							  u4BufLen, i4SignalStrength, GFP_KERNEL);
-
+							  prBcnProbeRspFrame, u4BufLen, i4SignalStrength, GFP_KERNEL);
 
 		/* Return this structure. */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 9, 0)
-		cfg80211_put_bss(prGlueP2pInfo->wdev.wiphy, prCfg80211Bss);
-#else
-		cfg80211_put_bss(prCfg80211Bss);
-#endif
+		cfg80211_put_bss(prGlueP2pInfo->prWdev->wiphy, prCfg80211Bss);
 
 	} while (FALSE);
 
@@ -1067,9 +974,7 @@ kalP2PIndicateBssInfo(IN P_GLUE_INFO_T prGlueInfo,
 
 }				/* kalP2PIndicateBssInfo */
 
-VOID
-kalP2PIndicateMgmtTxStatus(IN P_GLUE_INFO_T prGlueInfo,
-			   IN P_MSDU_INFO_T prMsduInfo, IN BOOLEAN fgIsAck)
+VOID kalP2PIndicateMgmtTxStatus(IN P_GLUE_INFO_T prGlueInfo, IN P_MSDU_INFO_T prMsduInfo, IN BOOLEAN fgIsAck)
 {
 	P_GL_P2P_INFO_T prGlueP2pInfo = (P_GL_P2P_INFO_T) NULL;
 	PUINT_64 pu8GlCookie = (PUINT_64) NULL;
@@ -1077,14 +982,17 @@ kalP2PIndicateMgmtTxStatus(IN P_GLUE_INFO_T prGlueInfo,
 
 	do {
 		if ((prGlueInfo == NULL) || (prMsduInfo == NULL)) {
-			DBGLOG(P2P, WARN,
-			       ("Unexpected pointer PARAM. 0x%lx, 0x%lx.\n", prGlueInfo,
-				prMsduInfo));
+			DBGLOG(P2P, WARN, "Unexpected pointer PARAM. 0x%lx, 0x%lx.\n", prGlueInfo, prMsduInfo);
 			ASSERT(FALSE);
 			break;
 		}
 
 		prGlueP2pInfo = prGlueInfo->prP2PInfo;
+
+		if (!prMsduInfo->prPacket) {
+			DBGLOG(P2P, INFO, "Buffer Cookie has been freed, do not access cookie\n");
+			break;
+		}
 
 		pu8GlCookie =
 		    (PUINT_64) ((ULONG) prMsduInfo->prPacket +
@@ -1099,11 +1007,7 @@ kalP2PIndicateMgmtTxStatus(IN P_GLUE_INFO_T prGlueInfo,
 			prNetdevice = prGlueP2pInfo->aprRoleHandler[prP2pBssInfo->u4PrivateData];
 		}
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
-		cfg80211_mgmt_tx_status(&prGlueP2pInfo->wdev,	/* struct net_device * dev, */
-#else
-		cfg80211_mgmt_tx_status(prGlueP2pInfo->prDevHandler,	/* struct net_device * dev, */
-#endif				/* LINUX_VERSION_CODE */
+		cfg80211_mgmt_tx_status(prGlueP2pInfo->prWdev,	/* struct net_device * dev, */
 					*pu8GlCookie,
 					(PUINT_8) ((ULONG) prMsduInfo->prPacket +
 						   MAC_TX_RESERVED_FIELD),
@@ -1125,7 +1029,6 @@ kalP2PIndicateRxMgmtFrame(IN P_GLUE_INFO_T prGlueInfo,
 	P_WLAN_MAC_HEADER_T prWlanHeader = (P_WLAN_MAC_HEADER_T) NULL;
 #endif
 
-
 	do {
 		if ((prGlueInfo == NULL) || (prSwRfb == NULL)) {
 			ASSERT(FALSE);
@@ -1146,38 +1049,27 @@ kalP2PIndicateRxMgmtFrame(IN P_GLUE_INFO_T prGlueInfo,
 
 		switch (prWlanHeader->u2FrameCtrl) {
 		case MAC_FRAME_PROBE_REQ:
-			DBGLOG(P2P, TRACE, ("RX Probe Req at channel %d ", ucChnlNum));
+			DBGLOG(P2P, TRACE, "RX Probe Req at channel %d ", ucChnlNum);
 			break;
 		case MAC_FRAME_PROBE_RSP:
-			DBGLOG(P2P, TRACE, ("RX Probe Rsp at channel %d ", ucChnlNum));
+			DBGLOG(P2P, TRACE, "RX Probe Rsp at channel %d ", ucChnlNum);
 			break;
 		case MAC_FRAME_ACTION:
-			DBGLOG(P2P, TRACE, ("RX Action frame at channel %d ", ucChnlNum));
+			DBGLOG(P2P, TRACE, "RX Action frame at channel %d ", ucChnlNum);
 			break;
 		default:
-			DBGLOG(P2P, TRACE,
-			       ("RX Packet:%d at channel %d ", prWlanHeader->u2FrameCtrl,
-				ucChnlNum));
+			DBGLOG(P2P, TRACE, "RX Packet:%d at channel %d ", prWlanHeader->u2FrameCtrl, ucChnlNum);
 			break;
 		}
 
-		DBGLOG(P2P, TRACE, ("from: " MACSTR "\n", MAC2STR(prWlanHeader->aucAddr2)));
+		DBGLOG(P2P, TRACE, "from: " MACSTR "\n", MAC2STR(prWlanHeader->aucAddr2));
 #endif
 		i4Freq = nicChannelNum2Freq(ucChnlNum) / 1000;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 0)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
-		cfg80211_rx_mgmt(&prGlueP2pInfo->wdev,	/* struct net_device * dev, */
-#else
-		cfg80211_rx_mgmt((fgIsDevInterface) ? prGlueP2pInfo->prDevHandler : prGlueP2pInfo->aprRoleHandler[ucRoleIdx],	/* struct net_device * dev, */
-#endif				/* LINUX_VERSION_CODE */
+		cfg80211_rx_mgmt(prGlueP2pInfo->prWdev,	/* struct net_device * dev, */
 				 i4Freq,
 				 RCPI_TO_dBm(HAL_RX_STATUS_GET_RCPI(prSwRfb->prRxStatusGroup3)),
 				 prSwRfb->pvHeader, prSwRfb->u2PacketLen, GFP_ATOMIC);
-#else
-		cfg80211_rx_mgmt((fgIsDevInterface) ? prGlueP2pInfo->prDevHandler : prGlueP2pInfo->aprRoleHandler[ucRoleIdx],	/* struct net_device * dev, */
-				 i4Freq, prSwRfb->pvHeader, prSwRfb->u2PacketLen, GFP_ATOMIC);
-#endif
 
 	} while (FALSE);
 
@@ -1187,8 +1079,7 @@ VOID
 kalP2PGCIndicateConnectionStatus(IN P_GLUE_INFO_T prGlueInfo,
 				 IN UINT_8 ucRoleIndex,
 				 IN P_P2P_CONNECTION_REQ_INFO_T prP2pConnInfo,
-				 IN PUINT_8 pucRxIEBuf,
-				 IN UINT_16 u2RxIELen, IN UINT_16 u2StatusReason)
+				 IN PUINT_8 pucRxIEBuf, IN UINT_16 u2RxIELen, IN UINT_16 u2StatusReason)
 {
 	P_GL_P2P_INFO_T prGlueP2pInfo = (P_GL_P2P_INFO_T) NULL;
 
@@ -1201,21 +1092,27 @@ kalP2PGCIndicateConnectionStatus(IN P_GLUE_INFO_T prGlueInfo,
 		prGlueP2pInfo = prGlueInfo->prP2PInfo;
 
 		if (prP2pConnInfo) {
-			cfg80211_connect_result(prGlueP2pInfo->aprRoleHandler[ucRoleIndex],	/* struct net_device * dev, */
-						prP2pConnInfo->aucBssid, prP2pConnInfo->aucIEBuf, prP2pConnInfo->u4BufLength, pucRxIEBuf, u2RxIELen, u2StatusReason, GFP_KERNEL);	/* gfp_t gfp *//* allocation flags */
+			cfg80211_connect_result(prGlueP2pInfo->aprRoleHandler[ucRoleIndex],
+						/* struct net_device * dev, */
+						prP2pConnInfo->aucBssid,
+						prP2pConnInfo->aucIEBuf,
+						prP2pConnInfo->u4BufLength,
+						pucRxIEBuf,
+						u2RxIELen,
+						u2StatusReason,
+						GFP_KERNEL);	/* gfp_t gfp *//* allocation flags */
 
 			prP2pConnInfo->eConnRequest = P2P_CONNECTION_TYPE_IDLE;
 		} else {
 			/* Disconnect, what if u2StatusReason == 0? */
-			cfg80211_disconnected(prGlueP2pInfo->aprRoleHandler[ucRoleIndex],	/* struct net_device * dev, */
+			cfg80211_disconnected(prGlueP2pInfo->aprRoleHandler[ucRoleIndex],
+						/* struct net_device * dev, */
 					      u2StatusReason, pucRxIEBuf, u2RxIELen, GFP_KERNEL);
 		}
 
 	} while (FALSE);
 
-
 }				/* kalP2PGCIndicateConnectionStatus */
-
 
 VOID
 kalP2PGOStationUpdate(IN P_GLUE_INFO_T prGlueInfo,
@@ -1224,9 +1121,8 @@ kalP2PGOStationUpdate(IN P_GLUE_INFO_T prGlueInfo,
 	P_GL_P2P_INFO_T prP2pGlueInfo = (P_GL_P2P_INFO_T) NULL;
 
 	do {
-		if ((prGlueInfo == NULL) || (prCliStaRec == NULL) || (ucRoleIndex >= 2)) {
+		if ((prGlueInfo == NULL) || (prCliStaRec == NULL) || (ucRoleIndex >= 1))
 			break;
-		}
 
 		prP2pGlueInfo = prGlueInfo->prP2PInfo;
 
@@ -1241,15 +1137,16 @@ kalP2PGOStationUpdate(IN P_GLUE_INFO_T prGlueInfo,
 			rStationInfo.assoc_req_ies = prCliStaRec->pucAssocReqIe;
 			rStationInfo.assoc_req_ies_len = prCliStaRec->u2AssocReqIeLen;
 
-			cfg80211_new_sta(prGlueInfo->prP2PInfo->aprRoleHandler[ucRoleIndex],	/* struct net_device * dev, */
+			cfg80211_new_sta(prGlueInfo->prP2PInfo->aprRoleHandler[ucRoleIndex],
+					/* struct net_device * dev, */
 					 prCliStaRec->aucMacAddr, &rStationInfo, GFP_KERNEL);
 		} else {
 			++prP2pGlueInfo->i4Generation;
 
-			cfg80211_del_sta(prGlueInfo->prP2PInfo->aprRoleHandler[ucRoleIndex],	/* struct net_device * dev, */
+			cfg80211_del_sta(prGlueInfo->prP2PInfo->aprRoleHandler[ucRoleIndex],
+					/* struct net_device * dev, */
 					 prCliStaRec->aucMacAddr, GFP_KERNEL);
 		}
-
 
 	} while (FALSE);
 
@@ -1257,11 +1154,7 @@ kalP2PGOStationUpdate(IN P_GLUE_INFO_T prGlueInfo,
 
 }				/* kalP2PGOStationUpdate */
 
-
-
-
-BOOLEAN
-kalP2pFuncGetChannelType(IN ENUM_CHNL_EXT_T rChnlSco, OUT enum nl80211_channel_type *channel_type)
+BOOLEAN kalP2pFuncGetChannelType(IN ENUM_CHNL_EXT_T rChnlSco, OUT enum nl80211_channel_type *channel_type)
 {
 	BOOLEAN fgIsValid = FALSE;
 
@@ -1292,56 +1185,42 @@ kalP2pFuncGetChannelType(IN ENUM_CHNL_EXT_T rChnlSco, OUT enum nl80211_channel_t
 	return fgIsValid;
 }				/* kalP2pFuncGetChannelType */
 
-
-
-
-struct ieee80211_channel *kalP2pFuncGetChannelEntry(IN P_GL_P2P_INFO_T prP2pInfo,
-						    IN P_RF_CHANNEL_INFO_T prChannelInfo)
+struct ieee80211_channel *kalP2pFuncGetChannelEntry(IN P_GL_P2P_INFO_T prP2pInfo, IN P_RF_CHANNEL_INFO_T prChannelInfo)
 {
 	struct ieee80211_channel *prTargetChannelEntry = (struct ieee80211_channel *)NULL;
 	UINT_32 u4TblSize = 0, u4Idx = 0;
+	struct wiphy *wiphy = prP2pInfo->prWdev->wiphy;
 
 	do {
-		if ((prP2pInfo == NULL) || (prChannelInfo == NULL)) {
+		if ((prP2pInfo == NULL) || (prChannelInfo == NULL))
 			break;
-		}
-
 
 		switch (prChannelInfo->eBand) {
 		case BAND_2G4:
-			prTargetChannelEntry =
-			    prP2pInfo->wdev.wiphy->bands[IEEE80211_BAND_2GHZ]->channels;
-			u4TblSize = prP2pInfo->wdev.wiphy->bands[IEEE80211_BAND_2GHZ]->n_channels;
+			prTargetChannelEntry = wiphy->bands[IEEE80211_BAND_2GHZ]->channels;
+			u4TblSize = wiphy->bands[IEEE80211_BAND_2GHZ]->n_channels;
 			break;
 		case BAND_5G:
-			prTargetChannelEntry =
-			    prP2pInfo->wdev.wiphy->bands[IEEE80211_BAND_5GHZ]->channels;
-			u4TblSize = prP2pInfo->wdev.wiphy->bands[IEEE80211_BAND_5GHZ]->n_channels;
+			prTargetChannelEntry = wiphy->bands[IEEE80211_BAND_5GHZ]->channels;
+			u4TblSize = wiphy->bands[IEEE80211_BAND_5GHZ]->n_channels;
 			break;
 		default:
 			break;
 		}
 
-
-		if (prTargetChannelEntry == NULL) {
+		if (prTargetChannelEntry == NULL)
 			break;
-		}
-
-
 
 		for (u4Idx = 0; u4Idx < u4TblSize; u4Idx++, prTargetChannelEntry++) {
-			if (prTargetChannelEntry->hw_value == prChannelInfo->ucChannelNum) {
+			if (prTargetChannelEntry->hw_value == prChannelInfo->ucChannelNum)
 				break;
-			}
 
 		}
-
 
 		if (u4Idx == u4TblSize) {
 			prTargetChannelEntry = NULL;
 			break;
 		}
-
 
 	} while (FALSE);
 
@@ -1360,8 +1239,7 @@ struct ieee80211_channel *kalP2pFuncGetChannelEntry(IN P_GL_P2P_INFO_T prP2pInfo
 * \return
 */
 /*----------------------------------------------------------------------------*/
-BOOLEAN
-kalP2PSetBlackList(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rbssid, IN BOOLEAN fgIsblock)
+BOOLEAN kalP2PSetBlackList(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rbssid, IN BOOLEAN fgIsblock)
 {
 	UINT_8 aucNullAddr[] = NULL_MAC_ADDR;
 	BOOLEAN fgIsValid = FALSE;
@@ -1373,13 +1251,9 @@ kalP2PSetBlackList(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rbssid, IN 
 	if (fgIsblock) {
 		for (i = 0; i < P2P_MAXIMUM_CLIENT_COUNT; i++) {
 			if (UNEQUAL_MAC_ADDR(rbssid, aucNullAddr)) {
-				if (UNEQUAL_MAC_ADDR
-				    (&(prGlueInfo->prP2PInfo->aucblackMACList[i]), rbssid)) {
-					if (EQUAL_MAC_ADDR
-					    (&(prGlueInfo->prP2PInfo->aucblackMACList[i]),
-					     aucNullAddr)) {
-						COPY_MAC_ADDR(&
-							      (prGlueInfo->prP2PInfo->aucblackMACList[i]), rbssid);
+				if (UNEQUAL_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]), rbssid)) {
+					if (EQUAL_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]), aucNullAddr)) {
+						COPY_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]), rbssid);
 						fgIsValid = FALSE;
 						return fgIsValid;
 					}
@@ -1389,8 +1263,7 @@ kalP2PSetBlackList(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rbssid, IN 
 	} else {
 		for (i = 0; i < P2P_MAXIMUM_CLIENT_COUNT; i++) {
 			if (EQUAL_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]), rbssid)) {
-				COPY_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]),
-					      aucNullAddr);
+				COPY_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]), aucNullAddr);
 				fgIsValid = FALSE;
 				return fgIsValid;
 			}
@@ -1400,7 +1273,6 @@ kalP2PSetBlackList(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rbssid, IN 
 	return fgIsValid;
 
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1434,7 +1306,6 @@ BOOLEAN kalP2PCmpBlackList(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rbs
 
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief to return the max clients of Hotspot
@@ -1455,7 +1326,6 @@ VOID kalP2PSetMaxClients(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4MaxClient)
 	else
 		prGlueInfo->prP2PInfo->ucMaxClients = u4MaxClient;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!

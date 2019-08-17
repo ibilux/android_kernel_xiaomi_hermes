@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013 TRUSTONIC LIMITED
+ * Copyright (c) 2013-2015 TRUSTONIC LIMITED
  * All Rights Reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -64,6 +64,8 @@ struct session {
 
 	/* Descriptors of additional bulk buffer of a session */
 	struct list_head		bulk_buffer_descriptors;
+/* lock used to prevent concurrent add/delete action on the descriptor list */
+	struct mutex			bulk_buffer_descriptors_lock;
 
 	/* Information about session */
 	struct session_information	session_info;

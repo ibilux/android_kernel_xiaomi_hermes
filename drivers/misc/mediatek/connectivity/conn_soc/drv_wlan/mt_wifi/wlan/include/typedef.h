@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/typedef.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/typedef.h#1
 */
 
 /*! \file   typedef.h
@@ -9,10 +9,8 @@
     to the GLUE Layer.
 */
 
-
-
 /*
-** $Log: typedef.h $
+** Log: typedef.h
  *
  * 07 18 2011 chinghwa.yu
  * [WCXRP00000063] Update BCM CoEx design and settings[WCXRP00000612] [MT6620 Wi-Fi] [FW] CSD update SWRDD algorithm
@@ -31,19 +29,19 @@
  * Refine AAA functions
  *
  * 07 19 2010 jeffrey.chang
- * 
+ *
  * Linux port modification
  *
  * 07 08 2010 cp.wu
- * 
+ *
  * [WPD00003833] [MT6620 and MT5931] Driver migration - move to new repository.
  *
  * 06 23 2010 cp.wu
- * [WPD00003833][MT6620 and MT5931] Driver migration 
+ * [WPD00003833][MT6620 and MT5931] Driver migration
  * integrate .
  *
  * 06 18 2010 cm.chang
- * [WPD00003841][LITE Driver] Migrate RLM/CNM to host driver 
+ * [WPD00003841][LITE Driver] Migrate RLM/CNM to host driver
  * Provide cnmMgtPktAlloc() and alloc/free function of msg/buf
  *
  * 06 11 2010 cp.wu
@@ -158,7 +156,6 @@
 
 #define WLAN_STATUS_CONNECT_INDICATION          ((WLAN_STATUS) 0xC0010018L)
 
-
 /* NIC status flags */
 #define ADAPTER_FLAG_HW_ERR                     0x00400000
 
@@ -166,22 +163,21 @@
 #define TL_IPV4     0x0008
 #define TL_IPV6     0xDD86
 
-
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
 */
 /* Type definition for GLUE_INFO structure */
-typedef struct _GLUE_INFO_T     GLUE_INFO_T, *P_GLUE_INFO_T;
+typedef struct _GLUE_INFO_T GLUE_INFO_T, *P_GLUE_INFO_T;
 
 /* Type definition for WLAN STATUS */
-typedef UINT_32                 WLAN_STATUS, *P_WLAN_STATUS;
+typedef UINT_32 WLAN_STATUS, *P_WLAN_STATUS;
 
 /* Type definition for ADAPTER structure */
-typedef struct _ADAPTER_T       ADAPTER_T, *P_ADAPTER_T;
+typedef struct _ADAPTER_T ADAPTER_T, *P_ADAPTER_T;
 
 /* Type definition for MESSAGE HEADER structure */
-typedef struct _MSG_HDR_T       MSG_HDR_T, *P_MSG_HDR_T;
+typedef struct _MSG_HDR_T MSG_HDR_T, *P_MSG_HDR_T;
 
 /* Type definition for WLAN configuration */
 typedef struct _WLAN_CFG_T WLAN_CFG_T, *P_WLAN_CFG_T;
@@ -191,37 +187,35 @@ typedef struct _WLAN_CFG_ENTRY_T WLAN_CFG_ENTRY_T, *P_WLAN_CFG_ENTRY_T;
 
 /* Type definition for WLAN configuration callback */
 typedef WLAN_STATUS(*WLAN_CFG_SET_CB) (P_ADAPTER_T prAdapter,
-				       PUINT_8 pucKey, PUINT_8 pucValue, PVOID pPrivate,
-				       UINT_32 u4Flags);
+				       PUINT_8 pucKey, PUINT_8 pucValue, PVOID pPrivate, UINT_32 u4Flags);
 
 /* Type definition for Pointer to OS Native Packet */
-typedef void                    *P_NATIVE_PACKET;
+typedef void *P_NATIVE_PACKET;
 
 /* Type definition for STA_RECORD_T structure to handle the connectivity and packet reception
  * for a particular STA.
  */
-typedef struct _STA_RECORD_T    STA_RECORD_T, *P_STA_RECORD_T, **PP_STA_RECORD_T;
+typedef struct _STA_RECORD_T STA_RECORD_T, *P_STA_RECORD_T, **PP_STA_RECORD_T;
 
 /* CMD_INFO_T is used by Glue Layer to send a cluster of Command(OID) information to
  * the TX Path to reduce the parameters of a function call.
  */
-typedef struct _CMD_INFO_T      CMD_INFO_T, *P_CMD_INFO_T;
+typedef struct _CMD_INFO_T CMD_INFO_T, *P_CMD_INFO_T;
 
 /* Following typedef should be removed later, because Glue Layer should not
  * be aware of following data type.
  */
-typedef struct _SW_RFB_T        SW_RFB_T, *P_SW_RFB_T, **PP_SW_RFB_T;
+typedef struct _SW_RFB_T SW_RFB_T, *P_SW_RFB_T, **PP_SW_RFB_T;
 
-typedef struct _MSDU_INFO_T     MSDU_INFO_T, *P_MSDU_INFO_T;
+typedef struct _MSDU_INFO_T MSDU_INFO_T, *P_MSDU_INFO_T;
 
-typedef struct _REG_ENTRY_T     REG_ENTRY_T, *P_REG_ENTRY_T;
+typedef struct _REG_ENTRY_T REG_ENTRY_T, *P_REG_ENTRY_T;
 
 /* IST handler definition */
-typedef VOID (*IST_EVENT_FUNCTION)(P_ADAPTER_T);
+typedef VOID(*IST_EVENT_FUNCTION) (P_ADAPTER_T);
 
 /* Type definition for function pointer of timer handler */
-typedef VOID (*PFN_TIMER_CALLBACK)(IN P_GLUE_INFO_T);
-
+typedef VOID(*PFN_TIMER_CALLBACK) (IN P_GLUE_INFO_T);
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -248,5 +242,3 @@ typedef VOID (*PFN_TIMER_CALLBACK)(IN P_GLUE_INFO_T);
 ********************************************************************************
 */
 #endif /* _TYPEDEF_H */
-
-

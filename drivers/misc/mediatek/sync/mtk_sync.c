@@ -12,8 +12,6 @@
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define DEBUG_LOG_TAG "mtk_sync"
-
 #include <linux/debugfs.h>
 #include <linux/export.h>
 #include <linux/seq_file.h>
@@ -23,18 +21,6 @@
 #include <linux/delay.h>
 
 #include "mtk_sync.h"
-
-#define SYNC_LOGV(...) xlog_printk(ANDROID_LOG_VERBOSE,             \
-				DEBUG_LOG_TAG, __VA_ARGS__)
-#define SYNC_LOGD(...) xlog_printk(ANDROID_LOG_DEBUG,               \
-				DEBUG_LOG_TAG, __VA_ARGS__)
-
-#define SYNC_LOGI(...) xlog_printk(ANDROID_LOG_INFO,                \
-				DEBUG_LOG_TAG, __VA_ARGS__)
-#define SYNC_LOGW(...) xlog_printk(ANDROID_LOG_WARN,                \
-				DEBUG_LOG_TAG, __VA_ARGS__)
-#define SYNC_LOGE(...) xlog_printk(ANDROID_LOG_ERROR,               \
-				DEBUG_LOG_TAG, __VA_ARGS__)
 
 /* -------------------------------------------------------------------------- */
 

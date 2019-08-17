@@ -1,5 +1,5 @@
 /*
-** $Id: include/tdls.h#1 $
+** Id: include/tdls.h#1
 */
 
 /*! \file   "tdls.h"
@@ -8,7 +8,7 @@
 */
 
 /*
-** $Log: tdls.h $
+** Log: tdls.h
  *
  * 11 18 2013 vend_samp.lin
  * NULL
@@ -33,18 +33,15 @@
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
-extern int
-wlanHardStartXmit(
-	struct sk_buff *prSkb,
-	struct net_device *prDev
-	);
-
+extern int wlanHardStartXmit(struct sk_buff *prSkb, struct net_device *prDev);
+extern BOOLEAN flgTdlsTestExtCapElm;
+extern UINT8 aucTdlsTestExtCapElm[];
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
 */
 typedef struct _TDLS_LINK_HIS_OTHERS_T {
-	BOOLEAN fgIsHt; /* TRUE: HT device */
+	BOOLEAN fgIsHt;		/* TRUE: HT device */
 
 } TDLS_LINK_HIS_OTHERS_T;
 
@@ -75,9 +72,9 @@ typedef enum _TDLS_CMD_ID {
 } TDLS_CMD_ID;
 
 typedef enum _TDLS_EVENT_HOST_ID {
-	TDLS_HOST_EVENT_TEAR_DOWN = 0x00, /* TDLS_EVENT_HOST_SUBID_TEAR_DOWN */
+	TDLS_HOST_EVENT_TEAR_DOWN = 0x00,	/* TDLS_EVENT_HOST_SUBID_TEAR_DOWN */
 	TDLS_HOST_EVENT_TX_DONE,
-	TDLS_HOST_EVENT_FME_STATUS, /* TDLS_EVENT_HOST_SUBID_SPECIFIC_FRAME */
+	TDLS_HOST_EVENT_FME_STATUS,	/* TDLS_EVENT_HOST_SUBID_SPECIFIC_FRAME */
 	TDLS_HOST_EVENT_STATISTICS
 } TDLS_EVENT_HOST_ID;
 
@@ -115,7 +112,7 @@ typedef enum _TDLS_FRM_ACTION_ID {
 	TDLS_FRM_ACTION_CHAN_SWITCH_RSP,
 	TDLS_FRM_ACTION_PEER_PSM_REQ,
 	TDLS_FRM_ACTION_PEER_PSM_RSP,
-	TDLS_FRM_ACTION_PTI_RSP, /* 0x09 */
+	TDLS_FRM_ACTION_PTI_RSP,	/* 0x09 */
 	TDLS_FRM_ACTION_DISCOVERY_REQ,
 
 	TDLS_FRM_ACTION_EVENT_TEAR_DOWN_TO_SUPPLICANT = 0x30,
@@ -124,7 +121,6 @@ typedef enum _TDLS_FRM_ACTION_ID {
 } TDLS_FRM_ACTION_ID;
 
 #define TDLS_FRM_ACTION_DISCOVERY_RESPONSE			14
-
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -135,43 +131,43 @@ typedef enum _TDLS_FRM_ACTION_ID {
 #define ELEM_LEN_LINK_IDENTIFIER					18
 
 typedef struct _IE_LINK_IDENTIFIER_T {
-	UINT_8		ucId;
-	UINT_8		ucLength;
-	UINT_8		aBSSID[6];
-	UINT_8		aInitiator[6];
-	UINT_8		aResponder[6];
+	UINT_8 ucId;
+	UINT_8 ucLength;
+	UINT_8 aBSSID[6];
+	UINT_8 aInitiator[6];
+	UINT_8 aResponder[6];
 } __KAL_ATTRIB_PACKED__ IE_LINK_IDENTIFIER_T;
-	
+
 #define TDLS_LINK_IDENTIFIER_IE(__ie__)	((IE_LINK_IDENTIFIER_T *)(__ie__))
 
 /* test command use */
 typedef struct _PARAM_CUSTOM_TDLS_CMD_STRUC_T {
-	
-	UINT_8				ucFmeType; /* TDLS_FRM_ACTION_ID */
 
-	UINT_8				ucToken;
-	UINT_16				u2Cap;
+	UINT_8 ucFmeType;	/* TDLS_FRM_ACTION_ID */
+
+	UINT_8 ucToken;
+	UINT_16 u2Cap;
 
 	/* bit0: TDLS, bit1: Peer U-APSD Buffer, bit2: Channel Switching */
 #define TDLS_EX_CAP_PEER_UAPSD				BIT(0)
 #define TDLS_EX_CAP_CHAN_SWITCH				BIT(1)
 #define TDLS_EX_CAP_TDLS					BIT(2)
-	UINT_8				ucExCap;
+	UINT_8 ucExCap;
 
-	UINT_8				arSupRate[4];
-	UINT_8				arSupChan[4];
+	UINT_8 arSupRate[4];
+	UINT_8 arSupChan[4];
 
-	UINT_32 			u4Timeout;
+	UINT_32 u4Timeout;
 
 #define TDLS_FME_MAC_ADDR_LEN				6
-	UINT_8				arRspAddr[TDLS_FME_MAC_ADDR_LEN];
-	UINT_8				arBssid[TDLS_FME_MAC_ADDR_LEN];
+	UINT_8 arRspAddr[TDLS_FME_MAC_ADDR_LEN];
+	UINT_8 arBssid[TDLS_FME_MAC_ADDR_LEN];
 
 /*
 	Linux Kernel-3.10
 	struct station_parameters {
 		const u8 *supported_rates;
-		struct net_device *vlan;	
+		struct net_device *vlan;
 		u32 sta_flags_mask, sta_flags_set;
 		u32 sta_modify_mask;
 		int listen_interval;
@@ -189,11 +185,9 @@ typedef struct _PARAM_CUSTOM_TDLS_CMD_STRUC_T {
 		u8 ext_capab_len;
 	};
 */
-	struct ieee80211_ht_cap 	rHtCapa;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
-	struct ieee80211_vht_cap	rVhtCapa;
-#endif
-	struct station_parameters	rPeerInfo;
+	struct ieee80211_ht_cap rHtCapa;
+	struct ieee80211_vht_cap rVhtCapa; /* LINUX_KERNEL_VERSION >= 3.10.0 */
+	struct station_parameters rPeerInfo;
 
 } PARAM_CUSTOM_TDLS_CMD_STRUC_T;
 
@@ -227,12 +221,14 @@ typedef struct _TDLS_MGMT_TX_INFO {
 
 /* increase TDLS link count */
 #define TDLS_LINK_INCREASE(__GlueInfo__)									\
-	((__GlueInfo__)->rTdlsLink.cLinkCnt ++)
+	((__GlueInfo__)->rTdlsLink.cLinkCnt++)
 
 /* decrease TDLS link count */
-#define TDLS_LINK_DECREASE(__GlueInfo__)									\
-	if ((__GlueInfo__)->rTdlsLink.cLinkCnt > 0)								\
-		(__GlueInfo__)->rTdlsLink.cLinkCnt --;
+#define TDLS_LINK_DECREASE(__GlueInfo__) \
+do { \
+	if ((__GlueInfo__)->rTdlsLink.cLinkCnt > 0) \
+		(__GlueInfo__)->rTdlsLink.cLinkCnt--; \
+} while (0)
 
 /* get TDLS link count */
 #define TDLS_LINK_COUNT(__GlueInfo__)										\
@@ -247,25 +243,14 @@ typedef struct _TDLS_MGMT_TX_INFO {
 ********************************************************************************
 */
 /* Note: these functions are used only in tdls module, not other modules */
-UINT_32
-TdlsFrameGeneralIeAppend(
-	ADAPTER_T							*prAdapter,
-	STA_RECORD_T						*prStaRec,
-	UINT_16								u2StatusCode,
-	UINT_8								*pPkt
-	);
+UINT_32 TdlsFrameGeneralIeAppend(ADAPTER_T *prAdapter, STA_RECORD_T *prStaRec, UINT_16 u2StatusCode, UINT_8 *pPkt);
 
 TDLS_STATUS
-TdlsDataFrameSend(
-	ADAPTER_T							*prAdapter,
-	STA_RECORD_T						*prStaRec,
-	UINT_8								*pPeerMac,
-	UINT_8								ucActionCode,
-	UINT_8								ucDialogToken,
-	UINT_16								u2StatusCode,
-	UINT_8								*pAppendIe,
-	UINT_32								AppendIeLen
-	);
+TdlsDataFrameSend(ADAPTER_T *prAdapter,
+		  STA_RECORD_T *prStaRec,
+		  UINT_8 *pPeerMac,
+		  UINT_8 ucActionCode,
+		  UINT_8 ucDialogToken, UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -275,4 +260,3 @@ TdlsDataFrameSend(
 #endif /* CFG_SUPPORT_TDLS */
 
 #endif /* _TDLS_H */
-

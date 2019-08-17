@@ -1,10 +1,10 @@
 /*
 * Copyright (C) 2011-2014 MediaTek Inc.
-* 
-* This program is free software: you can redistribute it and/or modify it under the terms of the 
+*
+* This program is free software: you can redistribute it and/or modify it under the terms of the
 * GNU General Public License version 2 as published by the Free Software Foundation.
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU General Public License for more details.
 *
@@ -17,9 +17,6 @@
 
     Any definitions in this file will be shared among GLUE Layer and internal Driver Stack.
 */
-
-
-
 
 #ifndef _DBG_CORE_H
 #define _DBG_CORE_H
@@ -34,13 +31,10 @@
 ********************************************************************************
 */
 
-
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
-
-
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -52,7 +46,6 @@
 ********************************************************************************
 */
 
-
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -62,7 +55,6 @@
 *                           P R I V A T E   D A T A
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
@@ -74,4 +66,4 @@
 ********************************************************************************
 */
 
-#endif 
+#endif

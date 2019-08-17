@@ -1017,7 +1017,7 @@ void toi_try_resume(void)
 
 	get_online_cpus();	/* to protect against hotplug interference */
 	num_threaded = toi_start_other_threads();
-	printk(KERN_ERR "[resume] Starting other threads (%d).", num_threaded);
+	pr_warn("[resume] Starting other threads (%d).", num_threaded);
 
 	if (do_toi_step(STEP_RESUME_CAN_RESUME) && !do_toi_step(STEP_RESUME_LOAD_PS1)) {
 		put_online_cpus();	/* to protect against hotplug interference */

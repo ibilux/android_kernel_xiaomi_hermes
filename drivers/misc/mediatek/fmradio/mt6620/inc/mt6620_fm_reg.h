@@ -94,4 +94,4 @@ enum FM_PAGE {
 	FM_PGMAX
 };
 
-#endif				/* __MT6620_FM_REG_H__ */
+#endif /* __MT6620_FM_REG_H__ */

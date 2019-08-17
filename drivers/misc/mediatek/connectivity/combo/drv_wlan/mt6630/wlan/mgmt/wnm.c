@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/TRUNK/MT6620_5931_WiFi_Driver/mgmt/wnm.c#1 $
+** Id: //Department/DaVinci/TRUNK/MT6620_5931_WiFi_Driver/mgmt/wnm.c#1
 */
 
 /*! \file   "wnm.c"
     \brief  This file includes the 802.11v default vale and functions.
 */
 
-
-
 /*
-** $Log: wnm.c $
+** Log: wnm.c
 **
 ** 08 13 2013 terry.wu
 ** [BORA00002207] [MT6630 Wi-Fi] TXM & MQM Implementation
@@ -84,11 +82,9 @@ wnmRunEventTimgingMeasTxDone(IN P_ADAPTER_T prAdapter,
 			     IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
 
 static VOID
-wnmComposeTimingMeasFrame(IN P_ADAPTER_T prAdapter,
-			  IN P_STA_RECORD_T prStaRec, IN PFN_TX_DONE_HANDLER pfTxDoneHandler);
+wnmComposeTimingMeasFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN PFN_TX_DONE_HANDLER pfTxDoneHandler);
 
-static VOID
-wnmTimingMeasRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
+static VOID wnmTimingMeasRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -121,7 +117,7 @@ VOID wnmWNMAction(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb)
 	}
 #endif
 
-	DBGLOG(WNM, TRACE, ("Unsupport WNM action frame: %d\n", prRxFrame->ucAction));
+	DBGLOG(WNM, TRACE, "Unsupport WNM action frame: %d\n", prRxFrame->ucAction);
 }
 
 #if CFG_SUPPORT_802_11V_TIMING_MEASUREMENT
@@ -132,19 +128,16 @@ VOID wnmWNMAction(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb)
 *
 */
 /*----------------------------------------------------------------------------*/
-VOID
-wnmReportTimingMeas(IN P_ADAPTER_T prAdapter,
-		    IN UINT_8 ucStaRecIndex, IN UINT_32 u4ToD, IN UINT_32 u4ToA)
+VOID wnmReportTimingMeas(IN P_ADAPTER_T prAdapter, IN UINT_8 ucStaRecIndex, IN UINT_32 u4ToD, IN UINT_32 u4ToA)
 {
 	P_STA_RECORD_T prStaRec;
 
 	prStaRec = cnmGetStaRecByIndex(prAdapter, ucStaRecIndex);
 
-	if ((!prStaRec) || (!prStaRec->fgIsInUse)) {
+	if ((!prStaRec) || (!prStaRec->fgIsInUse))
 		return;
-	}
 
-	DBGLOG(WNM, TRACE, ("wnmReportTimingMeas: u4ToD %x u4ToA %x", u4ToD, u4ToA));
+	DBGLOG(WNM, TRACE, "wnmReportTimingMeas: u4ToD %x u4ToA %x", u4ToD, u4ToA);
 
 	if (!prStaRec->rWNMTimingMsmt.ucTrigger)
 		return;
@@ -173,19 +166,18 @@ wnmRunEventTimgingMeasTxDone(IN P_ADAPTER_T prAdapter,
 	ASSERT(prAdapter);
 	ASSERT(prMsduInfo);
 
-	DBGLOG(WNM, LOUD, ("EVENT-TX DONE: Current Time = %ld\n", kalGetTimeTick()));
+	DBGLOG(WNM, LOUD, "EVENT-TX DONE: Current Time = %ld\n", kalGetTimeTick());
 
 	prStaRec = cnmGetStaRecByIndex(prAdapter, prMsduInfo->ucStaRecIndex);
 
-	if ((!prStaRec) || (!prStaRec->fgIsInUse)) {
+	if ((!prStaRec) || (!prStaRec->fgIsInUse))
 		return WLAN_STATUS_SUCCESS;	/* For the case of replying ERROR STATUS CODE */
-	}
 
 	DBGLOG(WNM, TRACE,
-	       ("wnmRunEventTimgingMeasTxDone: ucDialog %d ucFollowUp %d u4ToD %x u4ToA %x",
+	       "wnmRunEventTimgingMeasTxDone: ucDialog %d ucFollowUp %d u4ToD %x u4ToA %x",
 		prStaRec->rWNMTimingMsmt.ucDialogToken,
 		prStaRec->rWNMTimingMsmt.ucFollowUpDialogToken, prStaRec->rWNMTimingMsmt.u4ToD,
-		prStaRec->rWNMTimingMsmt.u4ToA));
+		prStaRec->rWNMTimingMsmt.u4ToA);
 
 	prStaRec->rWNMTimingMsmt.ucFollowUpDialogToken = prStaRec->rWNMTimingMsmt.ucDialogToken;
 	prStaRec->rWNMTimingMsmt.ucDialogToken = ++ucTimingMeasToken;
@@ -207,8 +199,7 @@ wnmRunEventTimgingMeasTxDone(IN P_ADAPTER_T prAdapter,
 */
 /*----------------------------------------------------------------------------*/
 static VOID
-wnmComposeTimingMeasFrame(IN P_ADAPTER_T prAdapter,
-			  IN P_STA_RECORD_T prStaRec, IN PFN_TX_DONE_HANDLER pfTxDoneHandler)
+wnmComposeTimingMeasFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN PFN_TX_DONE_HANDLER pfTxDoneHandler)
 {
 	P_MSDU_INFO_T prMsduInfo;
 	P_BSS_INFO_T prBssInfo;
@@ -218,8 +209,7 @@ wnmComposeTimingMeasFrame(IN P_ADAPTER_T prAdapter,
 	prBssInfo = &prAdapter->rWifiVar.arBssInfo[prStaRec->ucNetTypeIndex];
 	ASSERT(prBssInfo);
 
-	prMsduInfo = (P_MSDU_INFO_T) cnmMgtPktAlloc(prAdapter,
-						    MAC_TX_RESERVED_FIELD + PUBLIC_ACTION_MAX_LEN);
+	prMsduInfo = (P_MSDU_INFO_T) cnmMgtPktAlloc(prAdapter, MAC_TX_RESERVED_FIELD + PUBLIC_ACTION_MAX_LEN);
 
 	if (!prMsduInfo)
 		return;
@@ -255,9 +245,8 @@ wnmComposeTimingMeasFrame(IN P_ADAPTER_T prAdapter,
 		     WLAN_MAC_MGMT_HEADER_LEN + u2PayloadLen, pfTxDoneHandler, MSDU_RATE_MODE_AUTO);
 
 	DBGLOG(WNM, TRACE,
-	       ("wnmComposeTimingMeasFrame: ucDialogToken %d ucFollowUpDialogToken %d u4ToD %x u4ToA %x\n",
-		prTxFrame->ucDialogToken, prTxFrame->ucFollowUpDialogToken, prTxFrame->u4ToD,
-		prTxFrame->u4ToA));
+	       "wnmComposeTimingMeasFrame: ucDialogToken %d ucFollowUpDialogToken %d u4ToD %x u4ToA %x\n",
+		prTxFrame->ucDialogToken, prTxFrame->ucFollowUpDialogToken, prTxFrame->u4ToD, prTxFrame->u4ToA);
 
 	/* 4 Enqueue the frame to send this action frame. */
 	nicTxEnqueueMsdu(prAdapter, prMsduInfo);
@@ -286,12 +275,11 @@ static VOID wnmTimingMeasRequest(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb
 		return;
 
 	prStaRec = cnmGetStaRecByIndex(prAdapter, prSwRfb->ucStaRecIdx);
-	if ((!prStaRec) || (!prStaRec->fgIsInUse)) {
+	if ((!prStaRec) || (!prStaRec->fgIsInUse))
 		return;
-	}
 
-	DBGLOG(WNM, TRACE, ("IEEE 802.11: Received Timing Measuremen Request from "
-			    MACSTR "\n", MAC2STR(prStaRec->aucMacAddr)));
+	DBGLOG(WNM, TRACE, "IEEE 802.11: Received Timing Measuremen Request from "
+			    MACSTR "\n", MAC2STR(prStaRec->aucMacAddr);
 
 	/* reset timing msmt */
 	prStaRec->rWNMTimingMsmt.fgInitiator = TRUE;
@@ -311,12 +299,11 @@ VOID wnmTimingMeasUnitTest1(P_ADAPTER_T prAdapter, UINT_8 ucStaRecIndex)
 	P_STA_RECORD_T prStaRec;
 
 	prStaRec = cnmGetStaRecByIndex(prAdapter, ucStaRecIndex);
-	if ((!prStaRec) || (!prStaRec->fgIsInUse)) {
+	if ((!prStaRec) || (!prStaRec->fgIsInUse))
 		return;
-	}
 
-	DBGLOG(WNM, INFO, ("IEEE 802.11v: Test Timing Measuremen Request from "
-			   MACSTR "\n", MAC2STR(prStaRec->aucMacAddr)));
+	DBGLOG(WNM, INFO, "IEEE 802.11v: Test Timing Measuremen Request from "
+			   MACSTR "\n", MAC2STR(prStaRec->aucMacAddr);
 
 	prStaRec->rWNMTimingMsmt.fgInitiator = TRUE;
 	prStaRec->rWNMTimingMsmt.ucTrigger = 1;
@@ -328,6 +315,6 @@ VOID wnmTimingMeasUnitTest1(P_ADAPTER_T prAdapter, UINT_8 ucStaRecIndex)
 }
 #endif
 
-#endif				/* CFG_SUPPORT_802_11V_TIMING_MEASUREMENT */
+#endif /* CFG_SUPPORT_802_11V_TIMING_MEASUREMENT */
 
-#endif				/* CFG_SUPPORT_802_11V */
+#endif /* CFG_SUPPORT_802_11V */

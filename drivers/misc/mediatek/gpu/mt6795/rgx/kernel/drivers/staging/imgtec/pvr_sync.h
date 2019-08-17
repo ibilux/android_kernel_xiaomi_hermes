@@ -44,31 +44,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PVR_SYNC_H
 #define _PVR_SYNC_H
 
-#include "pvr_fd_sync_user.h"
+#include "pvr_fd_sync_kernel.h"
 #include "rgx_fwif_shared.h"
 
 /* Services internal interface */
 enum PVRSRV_ERROR pvr_sync_init(void);
 void pvr_sync_deinit(void);
 
-struct pvr_sync_append_data
-{
-	u32				nr_updates;
-	PRGXFWIF_UFO_ADDR		*update_ufo_addresses;
-	u32				*update_values;
-	u32				nr_checks;
-	PRGXFWIF_UFO_ADDR		*check_ufo_addresses;
-	u32				*check_values;
-
-	/* The cleanup list is needed for rollback (as that's the only op taken) */
-	u32				nr_cleaup_syncs;
-	struct pvr_sync_native_sync_prim	**cleanup_syncs;
-
-	/* Keep the sync points around for fput and if rollback is needed */
-	struct pvr_sync_alloc_data      *update_sync_data;
-	u32				nr_fences;
-	struct sync_fence		*fences[];
-};
+struct pvr_sync_append_data;
 
 enum PVRSRV_ERROR
 pvr_sync_append_fences(
@@ -84,8 +67,20 @@ pvr_sync_append_fences(
 	const u32			*check_values,
 	struct pvr_sync_append_data	**append_sync_data);
 
-void pvr_sync_rollback_append_fences(struct pvr_sync_append_data		*sync_check_data);
-void pvr_sync_nohw_complete_fences(struct pvr_sync_append_data	*sync_check_data);
-void pvr_sync_free_append_fences_data(struct pvr_sync_append_data		*sync_check_data);
+void pvr_sync_get_updates(const struct pvr_sync_append_data *sync_data,
+	u32 *nr_fences,
+	PRGXFWIF_UFO_ADDR **ufo_addrs,
+	u32 **values);
+void pvr_sync_get_checks(const struct pvr_sync_append_data *sync_data,
+	u32 *nr_fences,
+	PRGXFWIF_UFO_ADDR **ufo_addrs,
+	u32 **values);
+
+void pvr_sync_rollback_append_fences(
+	struct pvr_sync_append_data	*sync_check_data);
+void pvr_sync_nohw_complete_fences(
+	struct pvr_sync_append_data	*sync_check_data);
+void pvr_sync_free_append_fences_data(
+	struct pvr_sync_append_data	*sync_check_data);
 
 #endif /* _PVR_SYNC_H */

@@ -34,6 +34,7 @@
 #include <linux/uart/mtk_uart_intf.h>
 #include <linux/of_irq.h>
 #include <linux/of_address.h>
+#include <mach/memory.h>
 
 static void save_tx_raw_data(struct mtk_uart *uart, void *addr);
 static void reset_rx_raw_data(struct mtk_uart *uart);
@@ -64,8 +65,8 @@ static struct mtk_uart_setting mtk_uart_default_settings[] = {
 	 .sysrq = FALSE, .hw_flow = TRUE, .vff = TRUE,
 	 },
 	{
-	 //.tx_mode = UART_NON_DMA, .rx_mode = UART_NON_DMA, .dma_mode = UART_DMA_MODE_0,
-	 .tx_mode = UART_TX_VFIFO_DMA, .rx_mode = UART_RX_VFIFO_DMA, .dma_mode = UART_DMA_MODE_0,
+	 .tx_mode = UART_NON_DMA, .rx_mode = UART_NON_DMA, .dma_mode = UART_DMA_MODE_0,
+	 //.tx_mode = UART_TX_VFIFO_DMA, .rx_mode = UART_RX_VFIFO_DMA, .dma_mode = UART_DMA_MODE_0,
 	 .tx_trig = UART_FCR_TXFIFO_1B_TRI, .rx_trig = UART_FCR_RXFIFO_12B_TRI,
 
         //.uart_base = AP_UART1_BASE, .irq_num = UART1_IRQ_BIT_ID, .irq_sen = MT_LEVEL_SENSITIVE,  
@@ -153,17 +154,20 @@ void set_uart_default_settings(int idx)
 
     /* phys registers */
     if (of_property_read_u32_index(node, "reg", 0, &phys_base)){
-	printk("[UART%d] get phys regs from DTS fail!!\n", idx);
+	pr_debug("[UART%d] get phys regs from DTS fail!!\n", idx);
     }
     mtk_uart_default_settings[idx].uart_phys_base = phys_base;
 
     /* get the interrupt line behaviour */
     if (of_property_read_u32_array(node, "interrupts",
 			irq_info, ARRAY_SIZE(irq_info))){
-	printk("[UART%d] get irq flags from DTS fail!!\n", idx);
+	pr_debug("[UART%d] get irq flags from DTS fail!!\n", idx);
     }
     mtk_uart_default_settings[idx].irq_flags = (unsigned long)irq_info[2];
-    printk("[UART%d] phys_regs=0x%lx, regs=0x%lx, irq=%d, irq_flags=0x%lx \n", idx, mtk_uart_default_settings[idx].uart_phys_base, mtk_uart_default_settings[idx].uart_base, mtk_uart_default_settings[idx].irq_num, mtk_uart_default_settings[idx].irq_flags);
+	pr_debug("[UART%d] phys_regs=0x%lx, regs=0x%lx, irq=%d, irq_flags=0x%lx\n",
+		idx, mtk_uart_default_settings[idx].uart_phys_base,
+		mtk_uart_default_settings[idx].uart_base, mtk_uart_default_settings[idx].irq_num,
+		mtk_uart_default_settings[idx].irq_flags);
 }
 /*---------------------------------------------------------------------------*/
 void* get_apdma_uart0_base(void)
@@ -181,15 +185,15 @@ void* get_apdma_uart0_base(void)
     base = of_iomap(node, 0);
 
     if (of_property_read_u32_index(node, "reg", 0, &apdma_reg)){
-	printk("[UART] get AP_DMA reg from DTS fail!!\n");
+	pr_debug("[UART] get AP_DMA reg from DTS fail!!\n");
     }
     if (of_property_read_u32_index(apdma_uart0_node, "reg", 0, &apdma_uart0_reg)){
-	printk("[UART] get AP_DMA_UART0_TX reg from DTS fail!!\n");
+	pr_debug("[UART] get AP_DMA_UART0_TX reg from DTS fail!!\n");
     }
 
     apdma_uart0_offset = apdma_uart0_reg - apdma_reg;
     base += apdma_uart0_offset;
-    printk("[UART] apdma uart0 base=0x%p\n", base);
+	pr_debug("[UART] apdma uart0 base=0x%p\n", base);
 
     return base;
 }
@@ -228,7 +232,7 @@ unsigned int get_uart_vfifo_irq_id(int idx)
   	break;
     }
     irq_id = irq_of_parse_and_map(node, 0);
-    printk("[UART_DMA%d] irq=%d\n", idx, irq_id);
+	pr_debug("[UART_DMA%d] irq=%d\n", idx, irq_id);
 
     return irq_id;
 }
@@ -572,7 +576,7 @@ void mtk_uart_tx_vfifo_flush(struct mtk_uart *uart, int timeout)
 #endif
 		}
 	} else {
-		MSG(ERR, "%p, %p\n", dma, uart);
+		MSG(ERR, "%s dma or uart ptr is null\n", __func__);
 		/* del_timer(&dma->vfifo->timer); */
 	}
 #else
@@ -583,7 +587,7 @@ void mtk_uart_tx_vfifo_flush(struct mtk_uart *uart, int timeout)
 			    UART_READ32(VFF_WPT(base)));
 		}
 	} else {
-		MSG(ERR, "%p, %p\n", dma, uart);
+		MSG(ERR, "%s dma or uart ptr is null\n", __func__);
 	}
 #endif				/* ENABE_HRTIMER_FLUSH */
 }
@@ -627,6 +631,7 @@ static void mtk_uart_dma_vfifo_tx_tasklet_byte(unsigned long arg)
 		}
 		DGBUF_PUSH_CH(vfifo, (char)xmit->buf[xmit->tail]);
 		uart->write_byte(uart, xmit->buf[xmit->tail]);
+		update_history_byte(1, uart->nport, xmit->buf[xmit->tail]);
 		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
 		port->icount.tx++;
 	}
@@ -671,6 +676,7 @@ static void mtk_uart_dma_vfifo_tx_tasklet_byte(unsigned long arg)
 	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(port);
 
+	update_history_time(1, uart->nport);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -750,13 +756,13 @@ static void mtk_uart_dma_vfifo_tx_tasklet_byte(unsigned long arg)
 #if defined(ENABLE_VFIFO_DEBUG)
     if (UART_DEBUG_EVT(DBG_EVT_DAT) && UART_DEBUG_EVT(DBG_EVT_BUF)) {
 	int i;
-	printk("[UART%d_TX] %4d bytes:", uart->nport, vfifo->cur->idx);
+	pr_debug("[UART%d_TX] %4d bytes:", uart->nport, vfifo->cur->idx);
 	for (i = 0; i < vfifo->cur->idx; i++) {
 	    if (i % 16 == 0)
-		printk("\n");
-	    printk("%.2x ", (unsigned char)vfifo->cur->dat[i]);
+		pr_debug("\n");
+	    pr_debug("%.2x ", (unsigned char)vfifo->cur->dat[i]);
 	}
-	printk("\n");
+	pr_debug("\n");
     }
 #endif
 
@@ -777,7 +783,7 @@ void mtk_uart_dma_vfifo_tx_tasklet(unsigned long arg)
 	unsigned long flags;
 
 	spin_lock_irqsave(&vfifo->iolock, flags);
-	if (atomic_inc_and_test(&vfifo->entry) > 1) {
+	if (atomic_inc_return(&vfifo->entry) > 1) {
 		MSG(ERR, "tx entry!!\n");
 		tasklet_schedule(&vfifo->dma->tasklet);
 	} else {
@@ -890,14 +896,14 @@ void mtk_uart_dma_vfifo_tx_tasklet(unsigned long arg)
 #if defined(ENABLE_VFIFO_DEBUG)
     if (UART_DEBUG_EVT(DBG_EVT_DAT) && UART_DEBUG_EVT(DBG_EVT_BUF)) {
 	int i;
-	printk("[UART%d_RX] %4d bytes:", uart->nport, vfifo->cur->idx);
+	pr_debug("[UART%d_RX] %4d bytes:", uart->nport, vfifo->cur->idx);
 
 	for (i = 0; i < vfifo->cur->idx; i++) {
 	    if (i % 16 == 0)
-		printk("\n");
-	    printk("%.2x ", (unsigned char)vfifo->cur->dat[i]);
+		pr_debug("\n");
+	    pr_debug("%.2x ", (unsigned char)vfifo->cur->dat[i]);
 	}
-	printk("\n");
+	pr_debug("\n");
 
     }
 #endif
@@ -985,14 +991,17 @@ static void mtk_uart_dma_vfifo_rx_tasklet_str(unsigned long arg)
 		ptr = (unsigned char *)(rxptr + vfifo->addr);
 		mtk_uart_tty_insert_flip_string(uart, ptr, count);
 		DGBUF_PUSH_STR(vfifo, ptr, count);
+		update_history_bulk(0, uart->nport, ptr, count);
 	} else {
 		ptr = (unsigned char *)(rxptr + vfifo->addr);
 		mtk_uart_tty_insert_flip_string(uart, ptr, vfifo->size - rxptr);
 		DGBUF_PUSH_STR(vfifo, ptr, vfifo->size - rxptr);
+		update_history_bulk(0, uart->nport, ptr, vfifo->size-rxptr);
 		if (txptr) {
 			ptr = (unsigned char *)(vfifo->addr);
 			mtk_uart_tty_insert_flip_string(uart, ptr, txptr);
 			DGBUF_PUSH_STR(vfifo, ptr, txptr);
+			update_history_bulk(0, uart->nport, ptr, txptr);
 		}
 	}
 	dsb();			/* make sure read point updated after VFIFO read. */
@@ -1053,7 +1062,7 @@ void mtk_uart_dma_vfifo_rx_tasklet(unsigned long arg)
 	MSG(DMA, "%d, %x, %x\n", uart->read_allow(uart), UART_READ32(VFF_VALID_SIZE(vfifo->base)),
 	    vfifo->trig);
 	spin_lock_irqsave(&vfifo->iolock, flags);
-	if (atomic_inc_and_test(&vfifo->entry) > 1) {
+	if (atomic_inc_return(&vfifo->entry) > 1) {
 		MSG(ERR, "rx entry!!\n");
 		tasklet_schedule(&vfifo->dma->tasklet);
 	} else {
@@ -1080,6 +1089,8 @@ void mtk_uart_dma_setup(struct mtk_uart *uart, struct mtk_uart_dma *dma)
 		reg_sync_writel(dma->vfifo->dmahd, VFF_ADDR(base));
 		reg_sync_writel(dma->vfifo->trig, VFF_THRE(base));
 		reg_sync_writel(dma->vfifo->size, VFF_LEN(base));
+		if (enable_4G())
+			reg_sync_writel(1, VFF_4G_DRAM_SUPPORT(base));
 
 		if (dma->vfifo->type == UART_RX_VFIFO)
 			/* reg_sync_writel(VFF_RX_INT_EN0_B, VFF_INT_EN(base)); */
@@ -1123,10 +1134,11 @@ int mtk_uart_dma_start(struct mtk_uart *uart, struct mtk_uart_dma *dma)
 void mtk_uart_stop_dma(struct mtk_uart_dma *dma)
 {
 	int polling_cnt = 0;
-	struct mtk_uart *uart = dma->uart;
+	struct mtk_uart *uart;
 	void *base;
 	if (!dma)
 		return;
+	uart = dma->uart;
 	if (dma->mode == UART_RX_VFIFO_DMA || dma->mode == UART_TX_VFIFO_DMA) {
 		MSG(DMA, "stop dma (%d)\n", dma->mode);
 		if (!dma->vfifo) {
@@ -1171,10 +1183,12 @@ void mtk_uart_stop_dma(struct mtk_uart_dma *dma)
 /*---------------------------------------------------------------------------*/
 void mtk_uart_reset_dma(struct mtk_uart_dma *dma)
 {
-	struct mtk_uart *uart = dma->uart;
+	struct mtk_uart *uart;
 	void *base;
+
 	if (!dma)
 		return;
+	uart = dma->uart;
 
 	if (dma->mode == UART_RX_VFIFO_DMA || dma->mode == UART_TX_VFIFO_DMA) {
 		if (!dma->vfifo) {
@@ -1528,10 +1542,11 @@ void mtk_uart_power_up(struct mtk_uart *uart)
 {
 #ifndef CONFIG_MTK_FPGA
 	struct mtk_uart_setting *setting;
-	setting = uart->setting;
 
 	if (!uart || uart->nport >= UART_NR)
 		return;
+
+	setting = uart->setting;
 
 	if (uart->poweron_count > 0) {
 		MSG(FUC, "%s(%d)\n", __func__, uart->poweron_count);
@@ -1556,10 +1571,11 @@ void mtk_uart_power_down(struct mtk_uart *uart)
 {
 #ifndef CONFIG_MTK_FPGA
 	struct mtk_uart_setting *setting;
-	setting = uart->setting;
 
 	if (!uart || uart->nport >= UART_NR)
 		return;
+
+	setting = uart->setting;
 
 	if (uart->poweron_count == 0) {
 		MSG(FUC, "%s(%d)\n", __func__, uart->poweron_count);
@@ -2287,7 +2303,8 @@ void mtk_uart_switch_to_rx(struct mtk_uart *uart)
 void mtk_uart_enable_dpidle(struct mtk_uart *uart)
 {
 /* FIX-ME early porting */
-	//enable_dpidle_by_bit(uart->setting->pll_id);
+	enable_dpidle_by_bit(uart->setting->pll_id);
+	enable_soidle_by_bit(uart->setting->pll_id);
 	return;
 }
 
@@ -2295,7 +2312,8 @@ void mtk_uart_enable_dpidle(struct mtk_uart *uart)
 void mtk_uart_disable_dpidle(struct mtk_uart *uart)
 {
 /* FIX-ME early porting */
-	//disable_dpidle_by_bit(uart->setting->pll_id);
+	disable_dpidle_by_bit(uart->setting->pll_id);
+	disable_soidle_by_bit(uart->setting->pll_id);
 	return;
 }
 

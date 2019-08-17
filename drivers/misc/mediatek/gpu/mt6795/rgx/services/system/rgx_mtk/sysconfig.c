@@ -75,12 +75,22 @@ static PHYS_HEAP_CONFIG		gsPhysHeapConfig;
 */
 static
 IMG_VOID UMAPhysHeapCpuPAddrToDevPAddr(IMG_HANDLE hPrivData,
+                                       IMG_UINT32 ui32NumOfAddr,
 									   IMG_DEV_PHYADDR *psDevPAddr,
 									   IMG_CPU_PHYADDR *psCpuPAddr)
 {
 	PVR_UNREFERENCED_PARAMETER(hPrivData);
 
-	psDevPAddr->uiAddr = psCpuPAddr->uiAddr;
+	/* Optimise common case */
+	psDevPAddr[0].uiAddr = psCpuPAddr[0].uiAddr;
+	if (ui32NumOfAddr > 1)
+	{
+		IMG_UINT32 ui32Idx;
+		for (ui32Idx = 1; ui32Idx < ui32NumOfAddr; ++ui32Idx)
+		{
+			psDevPAddr[ui32Idx].uiAddr = psCpuPAddr[ui32Idx].uiAddr;
+		}
+	}
 }
 
 /*
@@ -88,12 +98,22 @@ IMG_VOID UMAPhysHeapCpuPAddrToDevPAddr(IMG_HANDLE hPrivData,
 */
 static
 IMG_VOID UMAPhysHeapDevPAddrToCpuPAddr(IMG_HANDLE hPrivData,
+                                       IMG_UINT32 ui32NumOfAddr,
 									   IMG_CPU_PHYADDR *psCpuPAddr,
 									   IMG_DEV_PHYADDR *psDevPAddr)
 {
 	PVR_UNREFERENCED_PARAMETER(hPrivData);
 
-	psCpuPAddr->uiAddr = psDevPAddr->uiAddr;
+    /* Optimise common case */
+    psCpuPAddr[0].uiAddr = psDevPAddr[0].uiAddr;
+    if (ui32NumOfAddr > 1)
+    {
+        IMG_UINT32 ui32Idx;
+        for (ui32Idx = 1; ui32Idx < ui32NumOfAddr; ++ui32Idx)
+        {
+            psCpuPAddr[ui32Idx].uiAddr = psDevPAddr[ui32Idx].uiAddr;
+        }
+    }
 }
 
 #if defined(MTK_CONFIG_OF) && defined(CONFIG_OF)
@@ -107,8 +127,10 @@ int MTKSysGetIRQ()
 /*
 	SysCreateConfigData
 */
-PVRSRV_ERROR SysCreateConfigData(PVRSRV_SYSTEM_CONFIG **ppsSysConfig)
+PVRSRV_ERROR SysCreateConfigData(PVRSRV_SYSTEM_CONFIG **ppsSysConfig, void *hDevice)
 {
+    PVR_UNREFERENCED_PARAMETER(hDevice); // TBEX: what for ?
+    
 	/*
 	 * Setup information about physaical memory heap(s) we have
 	 */
@@ -168,12 +190,13 @@ PVRSRV_ERROR SysCreateConfigData(PVRSRV_SYSTEM_CONFIG **ppsSysConfig)
 	{
 		struct resource *irq_res;
 		struct resource *reg_res;
-
+dump_stack();
 		irq_res = platform_get_resource(gpsPVRLDMDev, IORESOURCE_IRQ, 0);
 
 		if (irq_res)
 		{
 			gsDevices[0].ui32IRQ				= irq_res->start;
+			gsDevices[0].bIRQIsShared			= IMG_FALSE;
 
 			g32SysIrq = irq_res->start;
 
@@ -202,9 +225,11 @@ err_out:
 		}
 	}
 #else
+dump_stack();
 	gsDevices[0].sRegsCpuPBase.uiAddr   = SYS_MTK_RGX_REGS_SYS_PHYS_BASE;
 	gsDevices[0].ui32RegsSize           = SYS_MTK_RGX_REGS_SIZE;
 	gsDevices[0].ui32IRQ                = SYS_MTK_RGX_IRQ;
+	gsDevices[0].bIRQIsShared           = IMG_FALSE;
 #endif
 
 	/*  power management on  HW system */

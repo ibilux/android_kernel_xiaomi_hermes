@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/include/nic/p2p_nic.h#1 $
+** Id: //Department/DaVinci/TRUNK/WiFi_P2P_Driver/include/nic/p2p_nic.h#1
 */
 
 /*! \file   "p2p_nic.h"
@@ -7,10 +7,6 @@
  *
  *  Detail description.
  */
-
-
-
-
 
 #ifndef _P2P_NIC_H
 #define _P2P_NIC_H
@@ -54,7 +50,6 @@
  *                  F U N C T I O N   D E C L A R A T I O N S
  ********************************************************************************
  */
-
 
 VOID
 nicP2pMediaStateChange(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex, IN P_EVENT_CONNECTION_STATUS prConnectionStatus);

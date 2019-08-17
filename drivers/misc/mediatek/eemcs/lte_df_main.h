@@ -18,6 +18,9 @@
 #define BUFFER_POOL_FOR_EACH_QUE     1 
 #define EXPT_HELP_WAKELOCK_FOR_UART  1
 
+#ifdef DBG_FEATURE_ADD_CCCI_SEQNO
+#define DEBUG_SDIO
+#endif
 
 //#define DEV_MAX_PKT_SIZE		(65536) 
 //#define DEV_MAX_PKT_SIZE		(4096)
@@ -102,10 +105,11 @@ typedef struct {
 
 struct mtlte_df_core {
 	
-	struct mtlte_df_to_dev_callback cb_handle[RXQ_NUM] ;
+    struct mtlte_df_to_dev_callback cb_handle[RXQ_NUM] ;
     struct mtlte_df_to_dev_callback tx_cb_handle[TXQ_NUM] ;
     MTLTE_DF_TO_DEV_CALLBACK cb_sw_int;
     MTLTE_DF_TO_DEV_CALLBACK cb_wd_timeout;
+    MTLTE_DF_TO_DEV_CALLBACK cb_seq_err;
 	
 	/* For Down Link path */	
 #if BUFFER_POOL_FOR_EACH_QUE
@@ -284,6 +288,8 @@ int mtlte_df_register_WDT_callback(MTLTE_DF_TO_DEV_CALLBACK func_ptr);
 int mtlte_df_unregister_WDT_callback(void);
 int mtlte_df_WDT_handle(int wd_handle_data);
 void mtlte_enable_WDT_flow(void);
+int mtlte_df_register_seq_err_callback(MTLTE_DF_TO_DEV_CALLBACK func_ptr);
+int mtlte_df_unregister_seq_err_callback(void);
 
 
 /******************************************************
@@ -326,6 +332,9 @@ void mtlte_df_DL_fl_ctrl_print_status(MTLTE_DF_RX_QUEUE_TYPE qno);
 
 #define D2H_INT_except_wakelock         (1 << 24)
 
+#define H2D_INT_CCCI_force_MD_assert    (0x1 << 21) 
+#define D2H_INT_except_seq_err          (0x1 << 25)
+
 
 #define EX_INIT          (0)
 #define EX_DHL_DL_RDY    (1)
@@ -362,6 +371,35 @@ int mtlte_expt_probe(void) ;
 int mtlte_expt_remove(void) ;
 
 int mtlte_expt_deinit(void);
+
+#ifdef DEBUG_SDIO
+
+#define TX_QUEUE_LEN TXQ_NUM
+#define HISTORY_NUM 20
+
+typedef enum {
+	IN_PHYSICAL_QUE=1,
+	IN_SDIO_BUFFER,
+	SDIO_SEND_OUT,
+} SKB_LIFE;
+
+struct sdio_memdump {
+	unsigned int data[2];
+	unsigned short log_ch;
+	unsigned short seq;
+	unsigned int reserved;
+	SKB_LIFE flag;
+};
+
+typedef struct tx_data_kthread_q{
+	unsigned int index;
+	struct sdio_memdump dump_data[HISTORY_NUM];
+}TX_DATA_KTHREAD_Q;
+
+void DumpKthreadBuffer();
+void setBufferFlag(unsigned short qno, unsigned int start, unsigned int length);
+void PutInKthreadDumpBuffer(unsigned short qno, struct sk_buff *skb, SKB_LIFE flag);
+#endif
 
 
 #endif

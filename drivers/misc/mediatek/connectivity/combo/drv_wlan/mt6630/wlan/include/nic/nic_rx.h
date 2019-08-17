@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/nic_rx.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/nic_rx.h#1
 */
 
 /*! \file   "nic_rx.h"
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: nic_rx.h $
+** Log: nic_rx.h
 **
 ** 07 30 2013 tsaiyuan.hsu
 ** [BORA00002222] MT6630 unified MAC RXM
@@ -68,7 +66,8 @@
  * Remove flag CFG_WIFI_DIRECT_MOVED.
  *
  * 01 24 2011 cm.chang
- * [WCXRP00000384] [MT6620 Wi-Fi][Driver][FW] Handle 20/40 action frame in AP mode and stop ampdu timer when sta_rec is freed
+ * [WCXRP00000384] [MT6620 Wi-Fi][Driver][FW] Handle 20/40 action frame in AP mode
+ * and stop ampdu timer when sta_rec is freed
  * Process received 20/40 coexistence action frame for AP mode
  *
  * 09 08 2010 cp.wu
@@ -186,7 +185,8 @@
 **  \main\maintrunk.MT6620WiFiDriver_Prj\13 2009-11-13 13:45:50 GMT mtk02752
 **  add port param for nicRxEnhanceReadBuffer()
 **  \main\maintrunk.MT6620WiFiDriver_Prj\12 2009-11-11 10:12:31 GMT mtk02752
-**  nicSDIOReadIntStatus() always read sizeof(ENHANCE_MODE_DATA_STRUCT_T) for int response, thus the number should be set to 0(:=16) instead of 10
+**  nicSDIOReadIntStatus() always read sizeof(ENHANCE_MODE_DATA_STRUCT_T) for int response,
+**  thus the number should be set to 0(:=16) instead of 10
 **  \main\maintrunk.MT6620WiFiDriver_Prj\11 2009-10-29 19:53:32 GMT mtk01084
 **  modify structure naming
 **  \main\maintrunk.MT6620WiFiDriver_Prj\10 2009-10-23 16:08:23 GMT mtk01084
@@ -243,7 +243,6 @@
 #define RX_HEADER_OFFSET            2
 
 #define RX_RETURN_INDICATED_RFB_TIMEOUT_SEC     3
-
 
 #if defined(_HIF_SDIO) && defined(WINDOWS_DDK)
 /*! On XP, maximum Tx+Rx Statue <= 64-4(HISR)*/
@@ -361,12 +360,10 @@
 #define RX_STATUS_PF_MODE_BLACK_LIST    BIT(30)
 #define RX_STATUS_PF_STS_CHECKED        BIT(31)
 
-
 /* DW 12 */
 #define RX_STATUS_FRAG_NUM_MASK         BITS(0, 3)
 #define RX_STATUS_SEQ_NUM_MASK          BITS(4, 15)
 #define RX_STATUS_SEQ_NUM_OFFSET        4
-
 
 #define RX_STATUS_GROUP1_VALID    BIT(0)
 #define RX_STATUS_GROUP2_VALID    BIT(1)
@@ -377,7 +374,6 @@
 
 #define RX_STATUS_CHAN_FREQ_MASK_FOR_BY_PASS_MPDE      BITS(0, 7)
 #define RX_STATUS_FLAG_FCS_ERROR_FOR_BY_PASS_MODE      BIT(16)
-
 
 /* Timing Measurement Report */
 /* DW0 Word 1 */
@@ -393,8 +389,6 @@
 #define RX_TMR_NOISY_CHAN         BIT(1)
 #define RX_TMR_RESPONDER          BIT(0)
 
-
-
 /* TBD */
 #define DMA_OWN_TO_HW          BIT(0)
 #define DMA_OWN_TO_FW_PENDING  BIT(1)
@@ -404,14 +398,12 @@
 /* DW 2 */
 #define RX_STATUS_PACKET_LENGTH_MASK    BITS(0, 16)
 
-
 #define RX_STATUS_HEADER_TRAN_MASK          BIT(7)
 #define RX_STATUS_HEADER_TRAN_OFFSET        7
 #define RX_STATUS_HEADER_TRAN_BSS0_MASK     BIT(6)
 #define RX_STATUS_HEADER_TRAN_BSS0_OFFSET   6
 #define RX_STATUS_HEADER_TRAN_BSS1_MASK     BIT(7)
 #define RX_STATUS_HEADER_TRAN_BSS1_OFFSET   7
-
 
 /* DW 4 */
 #define RX_STATUS_MATCH_PACKET        BIT(4)
@@ -425,7 +417,6 @@
 */
 /* DW 2 */
 #define RX_VECTOR_FOR_BA_ACK        BIT(7)
-
 
 /*! HIF RX DMA Descriptor */
 /* DW 2 */
@@ -444,18 +435,18 @@
 */
 
 /* RX Vector, 1st Cycle */
-#define RX_VT_RX_RATE_AC_MASK      BITS(0,3)
-#define RX_VT_RX_RATE_MASK         BITS(0,6)
+#define RX_VT_RX_RATE_AC_MASK      BITS(0, 3)
+#define RX_VT_RX_RATE_MASK         BITS(0, 6)
 #define RX_VT_RX_RATE_OFFSET       0
-#define RX_VT_STBC_MASK            BITS(7,8)
+#define RX_VT_STBC_MASK            BITS(7, 8)
 #define RX_VT_STBC_OFFSET          7
 #define RX_VT_LDPC                 BIT(9)
-#define RX_VT_NESS_MASK            BITS(10,11)
+#define RX_VT_NESS_MASK            BITS(10, 11)
 #define RX_VT_NESS_OFFSET          10
-#define RX_VT_RX_MODE_MASK         BITS(12,14)
+#define RX_VT_RX_MODE_MASK         BITS(12, 14)
 #define RX_VT_RX_MODE_OFFSET       12
 #define RX_VT_RX_MODE_VHT          BIT(14)
-#define RX_VT_FR_MODE_MASK         BITS(15,16)
+#define RX_VT_FR_MODE_MASK         BITS(15, 16)
 #define RX_VT_FR_MODE_OFFSET       15
 #define RX_VT_TXOP_PS_NOT_ALLOWED  BIT(17)
 #define RX_VT_AGGREGATION          BIT(18)
@@ -464,13 +455,11 @@
 #define RX_VT_NO_SOUNDING          BIT(21)
 #define RX_VT_SOUNDING             BIT(21)
 #define RX_VT_SHORT_GI_NSYM        BIT(22)
-#define RX_VT_CODING_MASK          BITS(23,24)
+#define RX_VT_CODING_MASK          BITS(23, 24)
 #define RX_VT_CODING_OFFSET        23
 #define RX_VT_BEAMFORMED           BIT(29)
-#define RX_VT_GROUPID_0_MASK       BITS(30,31)
+#define RX_VT_GROUPID_0_MASK       BITS(30, 31)
 #define RX_VT_GROUPID_0_OFFSET     30
-
-
 
 #define RX_VT_RX_RATE_1M      0x0
 #define RX_VT_RX_RATE_2M      0x1
@@ -501,7 +490,6 @@
 #define RX_VT_GREEN_MODE      3
 #define RX_VT_VHT_MODE        4
 
-
 #define RX_VT_LG20_HT20       0
 #define RX_VT_DL40_HT40       1
 #define RX_VT_U20             2
@@ -512,26 +500,24 @@
 #define RX_VT_FR_MODE_80      2
 #define RX_VT_FR_MODE_160     3
 
-
 #define RX_VT_CCK_SHORT_PREAMBLE   BIT(2)
 
-
 /* RX Vector, 2nd Cycle */
-#define RX_VT_RX_LEN_HT_MASK       BITS(0,15)
-#define RX_VT_RX_LEN_LEACY_MASK    BITS(0,11)
-#define RX_VT_RX_LEN_VHT_MASK      BITS(0,20)
-#define RX_VT_GROUPID_1_MASK       BITS(21,24)
+#define RX_VT_RX_LEN_HT_MASK       BITS(0, 15)
+#define RX_VT_RX_LEN_LEACY_MASK    BITS(0, 11)
+#define RX_VT_RX_LEN_VHT_MASK      BITS(0, 20)
+#define RX_VT_GROUPID_1_MASK       BITS(21, 24)
 #define RX_VT_GROUPID_1_OFFSET     21
-#define RX_VT_NSTS_MASK            BITS(25,27)
+#define RX_VT_NSTS_MASK            BITS(25, 27)
 #define RX_VT_NSTS_OFFSET          25
-#define RX_VT_AID_0_MASK           BITS(28,31)
+#define RX_VT_AID_0_MASK           BITS(28, 31)
 #define RX_VT_AID_0_OFFSET         28
 
 /* RX Vector, 3rd Cycle */
-#define RX_VT_AID_1_MASK          BITS(0,4)
+#define RX_VT_AID_1_MASK          BITS(0, 4)
 #define RX_VT_AID_1_OFFSET        0
 #define RX_VT_SEL_ANT             BIT(7)
-#define RX_VT_RCPI_MASK           BITS(8,15)
+#define RX_VT_RCPI_MASK           BITS(8, 15)
 #define RX_VT_RCPI_OFFSET         8
 #define RX_VT_OFDM_FREQ_TRANS_DET BIT(5)
 #define RX_VT_FAGC0_EQ_CAL        BIT(16)
@@ -542,7 +528,7 @@
 #define RX_VT_WB_RSSI_OFFSET    8
 
 /* RX Vector, 6th Cycle */
-#define RX_VT_NF0_MASK          BITS(0,7)
+#define RX_VT_NF0_MASK          BITS(0, 7)
 #define RX_VT_NF0_OFFSET        0
 
 /* RX Vector Group 2, the 1st cycle */
@@ -553,14 +539,11 @@
 #define RX_VT_SEC_ITFR_ENV      BIT(1)
 #define RX_VT_SEC40_ITFR_ENV    BIT(2)
 
-
 /* RX Vector Group 2, the 2nd cycle */
 #define RX_VT_DYNA_BW_IN_NON_HT_DYNA   BIT(29)
 #define RX_VT_CH_BW_IN_NON_HT_CBW40    BIT(30)
 #define RX_VT_CH_BW_IN_NON_HT_CBW80    BIT(31)
 #define RX_VT_CH_BW_IN_NON_HT_CBW160   BITS(30, 31)
-
-
 
 /* RX Data Type */
 #define RX_DATA_TYPE_RX_VECTOR  0
@@ -568,7 +551,6 @@
 #define RX_DATA_TYPE_RX_EVM     2
 #define RX_DATA_TYPE_RX_AMBI    3
 #define RX_DATA_TYPE_RX_BT      4
-
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -675,12 +657,10 @@ typedef struct _HW_MAC_RX_STS_GROUP_1_T {
 	UINT_8 aucPN[16];
 } HW_MAC_RX_STS_GROUP_1_T, *P_HW_MAC_RX_STS_GROUP_1_T;
 
-
 typedef struct _HW_MAC_RX_STS_GROUP_2_T {
 	UINT_32 u4Timestamp;	/* DW 12 */
 	UINT_32 u4CRC;		/* DW 13 */
 } HW_MAC_RX_STS_GROUP_2_T, *P_HW_MAC_RX_STS_GROUP_2_T;
-
 
 typedef struct _HW_MAC_RX_STS_GROUP_4_T {
 	/* For HDR_TRAN */
@@ -690,7 +670,6 @@ typedef struct _HW_MAC_RX_STS_GROUP_4_T {
 	UINT_16 u2Qos;		/* DW 6 */
 	UINT_32 u4HTC;		/* DW 7 */
 } HW_MAC_RX_STS_GROUP_4_T, *P_HW_MAC_RX_STS_GROUP_4_T;
-
 
 typedef struct _HW_MAC_RX_STS_GROUP_3_T {
 	/*!  RX Vector Info */
@@ -804,7 +783,7 @@ typedef struct _RX_CTRL_T {
 #endif
 
 #if CFG_SUPPORT_SNIFFER
-    UINT_32 u4AmpduRefNum;
+	UINT_32 u4AmpduRefNum;
 #endif
 } RX_CTRL_T, *P_RX_CTRL_T;
 
@@ -829,32 +808,32 @@ typedef struct _EMU_MAC_RATE_INFO_T {
 ********************************************************************************
 */
 #define RATE_INFO(_RateCode, _Bw20, _Bw20SGI, _Bw40, _BW40SGI, _Bw80, _Bw80SGI, _Bw160, _Bw160SGI) \
-				{ \
-					.ucPhyRateCode									  = (_RateCode), \
-					.u4PhyRate[RX_VT_FR_MODE_20][MAC_GI_NORMAL] 	  = (_Bw20), \
-					.u4PhyRate[RX_VT_FR_MODE_20][MAC_GI_SHORT]		  = (_Bw20SGI), \
-					.u4PhyRate[RX_VT_FR_MODE_40][MAC_GI_NORMAL] 	  = (_Bw40), \
-					.u4PhyRate[RX_VT_FR_MODE_40][MAC_GI_SHORT]		  = (_BW40SGI), \
-					.u4PhyRate[RX_VT_FR_MODE_80][MAC_GI_NORMAL] 	  = (_Bw80), \
-					.u4PhyRate[RX_VT_FR_MODE_80][MAC_GI_SHORT]		  = (_Bw80SGI), \
-					.u4PhyRate[RX_VT_FR_MODE_160][MAC_GI_NORMAL]	  = (_Bw160), \
-					.u4PhyRate[RX_VT_FR_MODE_160][MAC_GI_SHORT] 	  = (_Bw160SGI), \
-				}
+	    { \
+		.ucPhyRateCode                                    = (_RateCode), \
+		.u4PhyRate[RX_VT_FR_MODE_20][MAC_GI_NORMAL]       = (_Bw20), \
+		.u4PhyRate[RX_VT_FR_MODE_20][MAC_GI_SHORT]        = (_Bw20SGI), \
+		.u4PhyRate[RX_VT_FR_MODE_40][MAC_GI_NORMAL]       = (_Bw40), \
+		.u4PhyRate[RX_VT_FR_MODE_40][MAC_GI_SHORT]        = (_BW40SGI), \
+		.u4PhyRate[RX_VT_FR_MODE_80][MAC_GI_NORMAL]       = (_Bw80), \
+		.u4PhyRate[RX_VT_FR_MODE_80][MAC_GI_SHORT]        = (_Bw80SGI), \
+		.u4PhyRate[RX_VT_FR_MODE_160][MAC_GI_NORMAL]      = (_Bw160), \
+		.u4PhyRate[RX_VT_FR_MODE_160][MAC_GI_SHORT]       = (_Bw160SGI), \
+	    }
 
 #define RX_INC_CNT(prRxCtrl, eCounter)              \
-    {((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter]++; }
+	{((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter]++; }
 
 #define RX_ADD_CNT(prRxCtrl, eCounter, u8Amount)    \
-    {((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter] += (UINT_64)u8Amount; }
+	{((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter] += (UINT_64)u8Amount; }
 
 #define RX_GET_CNT(prRxCtrl, eCounter)              \
-    (((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter])
+	(((P_RX_CTRL_T)prRxCtrl)->au8Statistics[eCounter])
 
 #define RX_RESET_ALL_CNTS(prRxCtrl)                 \
-    {kalMemZero(&prRxCtrl->au8Statistics[0], sizeof(prRxCtrl->au8Statistics)); }
+	{kalMemZero(&prRxCtrl->au8Statistics[0], sizeof(prRxCtrl->au8Statistics)); }
 
-#define RX_STATUS_TEST_MORE_FLAG(flag) \
-    ((BOOL)((flag & RX_STATUS_FLAG_MORE_PACKET) ? TRUE : FALSE))
+#define RX_STATUS_TEST_MORE_FLAG(flag)	\
+	((BOOL)((flag & RX_STATUS_FLAG_MORE_PACKET) ? TRUE : FALSE))
 
 /*------------------------------------------------------------------------------
  * MACRO for HW_MAC_RX_DESC_T
@@ -862,66 +841,101 @@ typedef struct _EMU_MAC_RATE_INFO_T {
 */
 /* DW 0 */
 #define HAL_RX_STATUS_GET_RX_BYTE_CNT(_prHwMacRxDesc) ((_prHwMacRxDesc)->u2RxByteCount)
-#define HAL_RX_STATUS_GET_ETH_TYPE_OFFSET(_prHwMacRxDesc) (((_prHwMacRxDesc)->u2PktTYpe & RX_STATUS_ETH_TYPE_OFFSET_MASK) >> RX_STATUS_ETH_TYPE_OFFSET)
-#define HAL_RX_STATUS_GET_GROUP_VLD(_prHwMacRxDesc) (((_prHwMacRxDesc)->u2PktTYpe & RX_STATUS_GROUP_VLD_MASK) >> RX_STATUS_GROUP_VLD_OFFSET)
-#define HAL_RX_STATUS_GET_PKT_TYPE(_prHwMacRxDesc) (((_prHwMacRxDesc)->u2PktTYpe & RX_STATUS_PKT_TYPE_MASK) >> RX_STATUS_PKT_TYPE_OFFSET)
+#define HAL_RX_STATUS_GET_ETH_TYPE_OFFSET(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2PktTYpe & RX_STATUS_ETH_TYPE_OFFSET_MASK) >> RX_STATUS_ETH_TYPE_OFFSET)
+#define HAL_RX_STATUS_GET_GROUP_VLD(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2PktTYpe & RX_STATUS_GROUP_VLD_MASK) >> RX_STATUS_GROUP_VLD_OFFSET)
+#define HAL_RX_STATUS_GET_PKT_TYPE(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2PktTYpe & RX_STATUS_PKT_TYPE_MASK) >> RX_STATUS_PKT_TYPE_OFFSET)
 
 /* DW 1 */
 #define HAL_RX_STATUS_IS_HTC_EXIST(_prHwMacRxDesc)        (((_prHwMacRxDesc)->ucMatchPacket & RX_STATUS_HTC)?TRUE:FALSE)
 #define HAL_RX_STATUS_IS_UC2ME(_prHwMacRxDesc)        (((_prHwMacRxDesc)->ucMatchPacket & RX_STATUS_UC2ME)?TRUE:FALSE)
 #define HAL_RX_STATUS_IS_MC(_prHwMacRxDesc)        (((_prHwMacRxDesc)->ucMatchPacket & RX_STATUS_MC_FRAME)?TRUE:FALSE)
 #define HAL_RX_STATUS_IS_BC(_prHwMacRxDesc)        (((_prHwMacRxDesc)->ucMatchPacket & RX_STATUS_BC_FRAME)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_BCN_WITH_BMC(_prHwMacRxDesc)     (((_prHwMacRxDesc)->ucMatchPacket & RX_STATUS_BCN_WITH_BMC)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_BCN_WITH_UC(_prHwMacRxDesc)      (((_prHwMacRxDesc)->ucMatchPacket & RX_STATUS_BCN_WITH_UC)?TRUE:FALSE)
-#define HAL_RX_STATUS_GET_KEY_ID(_prHwMacRxDesc)          (((_prHwMacRxDesc)->ucMatchPacket & RX_STATUS_KEYID_MASK) >> RX_STATUS_KEYID_OFFSET)
-#define HAL_RX_STATUS_GET_CHAN_FREQ(_prHwMacRxDesc) ((_prHwMacRxDesc)->ucChanFreq)
+#define HAL_RX_STATUS_IS_BCN_WITH_BMC(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->ucMatchPacket & RX_STATUS_BCN_WITH_BMC)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_BCN_WITH_UC(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->ucMatchPacket & RX_STATUS_BCN_WITH_UC)?TRUE:FALSE)
+#define HAL_RX_STATUS_GET_KEY_ID(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->ucMatchPacket & RX_STATUS_KEYID_MASK) >> RX_STATUS_KEYID_OFFSET)
+#define HAL_RX_STATUS_GET_CHAN_FREQ(_prHwMacRxDesc)	\
+	((_prHwMacRxDesc)->ucChanFreq)
 #define HAL_RX_STATUS_GET_HEADER_LEN(_prHwMacRxDesc) ((_prHwMacRxDesc)->ucHeaderLen & RX_STATUS_HEADER_LEN_MASK)
-#define HAL_RX_STATUS_IS_HEADER_OFFSET(_prHwMacRxDesc) (((_prHwMacRxDesc)->ucHeaderLen & RX_STATUS_HEADER_OFFSET)?TRUE:FALSE)
-#define HAL_RX_STATUS_GET_HEADER_OFFSET(_prHwMacRxDesc) (((_prHwMacRxDesc)->ucHeaderLen & RX_STATUS_HEADER_OFFSET) ? 2 : 0)
-#define HAL_RX_STATUS_IS_HEADER_TRAN(_prHwMacRxDesc) (((_prHwMacRxDesc)->ucHeaderLen & RX_STATUS_HEADER_TRAN)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_HEADER_OFFSET(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->ucHeaderLen & RX_STATUS_HEADER_OFFSET)?TRUE:FALSE)
+#define HAL_RX_STATUS_GET_HEADER_OFFSET(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->ucHeaderLen & RX_STATUS_HEADER_OFFSET) ? 2 : 0)
+#define HAL_RX_STATUS_IS_HEADER_TRAN(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->ucHeaderLen & RX_STATUS_HEADER_TRAN)?TRUE:FALSE)
 #define HAL_RX_STATUS_GET_HEADER_TRAN(_prHwMacRxDesc) HAL_RX_STATUS_IS_HEADER_TRAN(_prHwMacRxDesc)
-#define HAL_RX_STATUS_GET_PAYLOAD_FORMAT(_prHwMacRxDesc)  (((_prHwMacRxDesc)->ucBssid & RX_STATUS_PAYLOAD_FORMAT_MASK) >> RX_STATUS_PAYLOAD_FORMAT_OFFSET)
-#define HAL_RX_STATUS_GET_BSSID(_prHwMacRxDesc) (((_prHwMacRxDesc)->ucBssid & RX_STATUS_BSSID_MASK) >> RX_STATUS_BSSID_OFFSET)
+#define HAL_RX_STATUS_GET_PAYLOAD_FORMAT(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->ucBssid & RX_STATUS_PAYLOAD_FORMAT_MASK) >> RX_STATUS_PAYLOAD_FORMAT_OFFSET)
+#define HAL_RX_STATUS_GET_BSSID(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->ucBssid & RX_STATUS_BSSID_MASK) >> RX_STATUS_BSSID_OFFSET)
 
 /* DW 2 */
 #define HAL_RX_STATUS_GET_WLAN_IDX(_prHwMacRxDesc) ((_prHwMacRxDesc)->ucWlanIdx)
 #define HAL_RX_STATUS_GET_TID(_prHwMacRxDesc)        (((_prHwMacRxDesc)->ucTidSecMode & RX_STATUS_TID_MASK))
-#define HAL_RX_STATUS_GET_SEC_MODE(_prHwMacRxDesc)        (((_prHwMacRxDesc)->ucTidSecMode & RX_STATUS_SEC_MASK) >> RX_STATUS_SEC_OFFSET)
-#define HAL_RX_STATUS_GET_SW_BIT(_prHwMacRxDesc)        (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_SW_BIT)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_FCS_ERROR(_prHwMacRxDesc)        (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_FCS_ERROR)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_CIPHER_MISMATCH(_prHwMacRxDesc)  (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_CIPHER_MISMATCH)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_CLM_ERROR(_prHwMacRxDesc)        (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_CIPHER_LENGTH_MISMATCH)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_ICV_ERROR(_prHwMacRxDesc)        (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_ICV_ERROR)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_TKIP_MIC_ERROR(_prHwMacRxDesc)   (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_TKIPMIC_ERROR) > 0?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_ERROR(_prHwMacRxDesc)            (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_ERROR_MASK)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_LEN_MISMATCH(_prHwMacRxDesc)     (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_LEN_MISMATCH)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_DE_AMSDU_FAIL(_prHwMacRxDesc)    (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_DE_AMSDU_FAIL)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_EXCEED_LEN(_prHwMacRxDesc)       (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_EXCEED_LEN)?TRUE:FALSE)
+#define HAL_RX_STATUS_GET_SEC_MODE(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->ucTidSecMode & RX_STATUS_SEC_MASK) >> RX_STATUS_SEC_OFFSET)
+#define HAL_RX_STATUS_GET_SW_BIT(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_SW_BIT)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_FCS_ERROR(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_FCS_ERROR)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_CIPHER_MISMATCH(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_CIPHER_MISMATCH)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_CLM_ERROR(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_CIPHER_LENGTH_MISMATCH)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_ICV_ERROR(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_ICV_ERROR)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_TKIP_MIC_ERROR(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_TKIPMIC_ERROR) > 0?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_ERROR(_prHwMacRxDesc)		\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_ERROR_MASK)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_LEN_MISMATCH(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_LEN_MISMATCH)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_DE_AMSDU_FAIL(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_DE_AMSDU_FAIL)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_EXCEED_LEN(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FLAG_EXCEED_LEN)?TRUE:FALSE)
 #define HAL_RX_STATUS_IS_LLC_MIS(_prHwMacRxDesc) (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_LLC_MIS)?TRUE:FALSE)
 #define HAL_RX_STATUS_IS_UDF_VLT(_prHwMacRxDesc) (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_UDF_VLT)?TRUE:FALSE)
 #define HAL_RX_STATUS_IS_FRAG(_prHwMacRxDesc)        (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_FRAG)?TRUE:FALSE)
 #define HAL_RX_STATUS_IS_NULL(_prHwMacRxDesc)        (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_NULL)?TRUE:FALSE)
 #define HAL_RX_STATUS_IS_DATA(_prHwMacRxDesc)        (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_DATA)?FALSE:TRUE)
-#define HAL_RX_STATUS_IS_AMPDU_SUB_FRAME(_prHwMacRxDesc)  (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_AMPDU_SUB_FRAME)?FALSE:TRUE)
-#define HAL_RX_STATUS_IS_AMPDU_FORMAT(_prHwMacRxDesc)     (((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_AMPDU_FORMAT)?FALSE:TRUE)
+#define HAL_RX_STATUS_IS_AMPDU_SUB_FRAME(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_AMPDU_SUB_FRAME)?FALSE:TRUE)
+#define HAL_RX_STATUS_IS_AMPDU_FORMAT(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u2StatusFlag & RX_STATUS_AMPDU_FORMAT)?FALSE:TRUE)
 
 /* DW 3 */
-#define HAL_RX_STATUS_IS_RV_VALID(_prHwMacRxDesc)         (((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_RXV_SEQ_NO_MASK)?TRUE:FALSE)
-#define HAL_RX_STATUS_GET_RXV_SEQ_NO(_prHwMacRxDesc)      ((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_RXV_SEQ_NO_MASK)
-#define HAL_RX_STATUS_GET_TCL(_prHwMacRxDesc)            (((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_TCL)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_CLS(_prHwMacRxDesc)              (((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_CLS)?TRUE:FALSE)
-#define HAL_RX_STATUS_GET_OFLD(_prHwMacRxDesc)            (((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_OFLD_MASK) >> RX_STATUS_OFLD_OFFSET)
-#define HAL_RX_STATUS_IS_MGC(_prHwMacRxDesc)              (((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_MGC)?TRUE:FALSE)
-#define HAL_RX_STATUS_GET_WOL(_prHwMacRxDesc)             (((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_WOL_MASK) >> RX_STATUS_WOL_OFFSET)
-#define HAL_RX_STATUS_GET_CLS_BITMAP(_prHwMacRxDesc)      (((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_CLS_BITMAP_MASK) >> RX_STATUS_CLS_BITMAP_OFFSET)
-#define HAL_RX_STATUS_IS_PF_BLACK_LIST(_prHwMacRxDesc)    (((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_PF_MODE_BLACK_LIST)?TRUE:FALSE)
-#define HAL_RX_STATUS_IS_PF_CHECKED(_prHwMacRxDesc)       (((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_PF_STS_CHECKED)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_RV_VALID(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_RXV_SEQ_NO_MASK)?TRUE:FALSE)
+#define HAL_RX_STATUS_GET_RXV_SEQ_NO(_prHwMacRxDesc)	\
+	((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_RXV_SEQ_NO_MASK)
+#define HAL_RX_STATUS_GET_TCL(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_TCL)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_CLS(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_CLS)?TRUE:FALSE)
+#define HAL_RX_STATUS_GET_OFLD(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_OFLD_MASK) >> RX_STATUS_OFLD_OFFSET)
+#define HAL_RX_STATUS_IS_MGC(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_MGC)?TRUE:FALSE)
+#define HAL_RX_STATUS_GET_WOL(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_WOL_MASK) >> RX_STATUS_WOL_OFFSET)
+#define HAL_RX_STATUS_GET_CLS_BITMAP(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_CLS_BITMAP_MASK) >> RX_STATUS_CLS_BITMAP_OFFSET)
+#define HAL_RX_STATUS_IS_PF_BLACK_LIST(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_PF_MODE_BLACK_LIST)?TRUE:FALSE)
+#define HAL_RX_STATUS_IS_PF_CHECKED(_prHwMacRxDesc)	\
+	(((_prHwMacRxDesc)->u4PatternFilterInfo & RX_STATUS_PF_STS_CHECKED)?TRUE:FALSE)
 
 /* DW 4~7 */
 #define HAL_RX_STATUS_GET_FRAME_CTL_FIELD(_prHwMacRxStsGroup4) ((_prHwMacRxStsGroup4)->u2FrameCtl)
 #define HAL_RX_STATUS_GET_TA(_prHwMacRxStsGroup4, pucTA)   \
 {\
-    kalMemCopy(pucTA, &(_prHwMacRxStsGroup4)->aucTA[0], 6); \
+	kalMemCopy(pucTA, &(_prHwMacRxStsGroup4)->aucTA[0], 6); \
 }
 #define HAL_RX_STATUS_GET_SEQ_FRAG_NUM(_prHwMacRxStsGroup4)   ((_prHwMacRxStsGroup4)->u2SeqFrag)
 #define HAL_RX_STATUS_GET_QOS_CTL_FIELD(_prHwMacRxStsGroup4) ((_prHwMacRxStsGroup4)->u2Qos)
@@ -932,38 +946,37 @@ typedef struct _EMU_MAC_RATE_INFO_T {
 /* DW 8~11 */
 #define HAL_RX_STATUS_GET_RSC(_prHwMacRxStsGroup1, pucRSC)   \
 {\
-    kalMemCopy(pucRSC, &(_prHwMacRxStsGroup1)->aucPN[0], 6); \
+	kalMemCopy(pucRSC, &(_prHwMacRxStsGroup1)->aucPN[0], 6); \
 }
 
 #define HAL_RX_STATUS_GET_PN(_prHwMacRxStsGroup1, pucPN)   \
 {\
-    kalMemCopy(pucPN, &(_prHwMacRxStsGroup1)->aucPN[0], 16); \
+	kalMemCopy(pucPN, &(_prHwMacRxStsGroup1)->aucPN[0], 16); \
 }
 
 /* DW 12~13 */
 #define HAL_RX_STATUS_GET_TIMESTAMP(_prHwMacRxStsGroup2, _ucIdx) ((_prHwMacRxStsGroup2)->u4Timestamp)
 #define HAL_RX_STATUS_GET_FCS32(_prHwMacRxStsGroup2)             ((_prHwMacRxStsGroup2)->u4CRC)
 
-
 /* DW 14~19 */
 #define HAL_RX_STATUS_GET_RX_VECTOR(_prHwMacRxStsGroup3, _ucIdx) ((_prHwMacRxStsGroup3)->u4RxVector[_ucIdx])
 
-#define HAL_RX_STATUS_GET_RCPI(_prHwMacRxStsGroup3) (((_prHwMacRxStsGroup3)->u4RxVector[2] & RX_VT_RCPI_MASK) >> RX_VT_RCPI_OFFSET)
-
+#define HAL_RX_STATUS_GET_RCPI(_prHwMacRxStsGroup3)	\
+	(((_prHwMacRxStsGroup3)->u4RxVector[2] & RX_VT_RCPI_MASK) >> RX_VT_RCPI_OFFSET)
 
 /* TBD */
 #define HAL_RX_STATUS_GET_RX_PACKET_LEN(_prHwMacRxDesc)
 #define HAL_RX_STATUS_IS_MATCH_PACKET(_prHwMacRxDesc)
 
 #define HAL_RX_STATUS_GET_CHNL_NUM(_prHwMacRxDesc) \
-    ((((_prHwMacRxDesc)->ucChanFreq) > HW_CHNL_NUM_MAX_4G_5G) ? \
-      (((_prHwMacRxDesc)->ucChanFreq) - HW_CHNL_NUM_MAX_4G_5G) : \
-      ((_prHwMacRxDesc)->ucChanFreq))
+	((((_prHwMacRxDesc)->ucChanFreq) > HW_CHNL_NUM_MAX_4G_5G) ? \
+	(((_prHwMacRxDesc)->ucChanFreq) - HW_CHNL_NUM_MAX_4G_5G) : \
+	((_prHwMacRxDesc)->ucChanFreq))
 
 /* To do: support more bands other than 2.4G and 5G */
 #define HAL_RX_STATUS_GET_RF_BAND(_prHwMacRxDesc) \
-    ((((_prHwMacRxDesc)->ucChanFreq) <= HW_CHNL_NUM_MAX_2G4) ? \
-      BAND_2G4 : BAND_5G)
+	((((_prHwMacRxDesc)->ucChanFreq) <= HW_CHNL_NUM_MAX_2G4) ? \
+	BAND_2G4 : BAND_5G)
 
 /*------------------------------------------------------------------------------
  * MACRO for HW_RX_VECTOR_DESC_T
@@ -971,7 +984,7 @@ typedef struct _EMU_MAC_RATE_INFO_T {
 */
 #define HAL_RX_VECTOR_GET_TA(_prHwRxVector, pucTA)   \
 {\
-    kalMemCopy(pucTA, &(_prHwRxVector)->aucTA[0], 6); \
+	kalMemCopy(pucTA, &(_prHwRxVector)->aucTA[0], 6); \
 }
 
 #define HAL_RX_VECTOR_GET_SEQ_NO(_prHwRxVector)       ((_prHwRxVector)->ucRxVtSeqNo & RX_STATUS_RXV_SEQ_NO_MASK)
@@ -979,7 +992,7 @@ typedef struct _EMU_MAC_RATE_INFO_T {
 #define HAL_RX_VECTOR_GET_RX_VECTOR(_prHwRxVector, _ucIdx) ((_prHwRxVector)->u4RxVector[_ucIdx])
 
 #define RXM_IS_QOS_DATA_FRAME(_u2FrameCtrl) \
-       (((_u2FrameCtrl & MASK_FRAME_TYPE) == MAC_FRAME_QOS_DATA) ? TRUE : FALSE)
+	(((_u2FrameCtrl & MASK_FRAME_TYPE) == MAC_FRAME_QOS_DATA) ? TRUE : FALSE)
 
 /*******************************************************************************
 *                   F U N C T I O N   D E C L A R A T I O N S
@@ -1003,8 +1016,7 @@ VOID nicRxSDIOReceiveRFBs(IN P_ADAPTER_T prAdapter);
 WLAN_STATUS
 nicRxEnhanceReadBuffer(IN P_ADAPTER_T prAdapter,
 		       IN UINT_32 u4DataPort, IN UINT_16 u2RxLength, IN OUT P_SW_RFB_T prSwRfb);
-#endif				/* CFG_SDIO_INTR_ENHANCE */
-
+#endif /* CFG_SDIO_INTR_ENHANCE */
 
 #if CFG_SDIO_RX_AGG
 VOID nicRxSDIOAggReceiveRFBs(IN P_ADAPTER_T prAdapter);
@@ -1022,11 +1034,9 @@ VOID nicRxProcessForwardPkt(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
 VOID nicRxProcessGOBroadcastPkt(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
-
 VOID nicRxFillRFB(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb);
 
-P_SW_RFB_T
-incRxDefragMPDU(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSWRfb, OUT P_QUE_T prReturnedQue);
+P_SW_RFB_T incRxDefragMPDU(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSWRfb, OUT P_QUE_T prReturnedQue);
 
 BOOLEAN nicRxIsDuplicateFrame(IN OUT P_SW_RFB_T prSwRfb);
 
@@ -1041,14 +1051,10 @@ VOID nicRxProcessEventPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb
 VOID nicRxProcessMgmtPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb);
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
-VOID
-nicRxFillChksumStatus(IN P_ADAPTER_T prAdapter,
-		      IN OUT P_SW_RFB_T prSwRfb, IN UINT_32 u4TcpUdpIpCksStatus);
+VOID nicRxFillChksumStatus(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb, IN UINT_32 u4TcpUdpIpCksStatus);
 
-VOID nicRxUpdateCSUMStatistics(IN P_ADAPTER_T prAdapter, IN const ENUM_CSUM_RESULT_T aeCSUM[]
-    );
-#endif				/* CFG_TCP_IP_CHKSUM_OFFLOAD */
-
+VOID nicRxUpdateCSUMStatistics(IN P_ADAPTER_T prAdapter, IN const ENUM_CSUM_RESULT_T aeCSUM[]);
+#endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
 
 VOID nicRxQueryStatus(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuffer, OUT PUINT_32 pu4Count);
 
@@ -1058,18 +1064,16 @@ VOID nicRxQueryStatistics(IN P_ADAPTER_T prAdapter, IN PUINT_8 pucBuffer, OUT PU
 
 WLAN_STATUS
 nicRxWaitResponse(IN P_ADAPTER_T prAdapter,
-		  IN UINT_8 ucPortIdx,
-		  OUT PUINT_8 pucRspBuffer, IN UINT_32 u4MaxRespBufferLen, OUT PUINT_32 pu4Length);
+		  IN UINT_8 ucPortIdx, OUT PUINT_8 pucRspBuffer, IN UINT_32 u4MaxRespBufferLen, OUT PUINT_32 pu4Length);
 
 VOID nicRxEnablePromiscuousMode(IN P_ADAPTER_T prAdapter);
 
-
 VOID nicRxDisablePromiscuousMode(IN P_ADAPTER_T prAdapter);
-
 
 WLAN_STATUS nicRxFlush(IN P_ADAPTER_T prAdapter);
 
 WLAN_STATUS nicRxProcessActionFrame(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
 VOID nicRxMgmtNoWTBLHandling(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb);
-#endif				/* _NIC_RX_H */
+
+#endif /* _NIC_RX_H */

@@ -25,20 +25,16 @@
 
 #define  CCCI_FS_MAX_BUF_SIZE   (16384)
 #define  CCCI_FS_MAX_BUFFERS    (5)
+struct fs_stream_msg_t {
+	unsigned length;
+	unsigned index;
+};
 
-typedef struct
-{
-    unsigned length;
-    unsigned index;
-} fs_stream_msg_t;
-  
+struct fs_stream_buffer_t {
+	unsigned fs_ops;
+	unsigned char buffer[CCCI_FS_MAX_BUF_SIZE];
+};
 
-typedef struct
-{
-    unsigned fs_ops;
-    unsigned char buffer[CCCI_FS_MAX_BUF_SIZE];
-} fs_stream_buffer_t;
+#define CCCI_FS_SMEM_SIZE (sizeof(struct fs_stream_buffer_t) * CCCI_FS_MAX_BUFFERS)
 
-#define CCCI_FS_SMEM_SIZE (sizeof(fs_stream_buffer_t) * CCCI_FS_MAX_BUFFERS)
-
-#endif // __CCCI_FS_H__
+#endif				/*  __CCCI_FS_H__ */

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/spi/include/colibri.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/spi/include/colibri.h#1
 */
 
 /*! \file   "colibri.h"
@@ -13,7 +13,7 @@
 */
 
 /*
-** $Log: colibri.h $
+** Log: colibri.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -54,7 +54,7 @@
 
 #if CONFIG_SPI_8_BIT_MODE
 #define SPI_LOOP_COUNT          4
-#else				/* define for 32 bit mode */
+#else /* define for 32 bit mode */
 #define SPI_LOOP_COUNT          1
 #endif
 
@@ -78,15 +78,19 @@
 /* SSCR0 : Macro definition for port 0/1/2 */
 #define SSCR0_MOD                  (0x1<<31)	/* 0: Normal SSP mode */
 #define SSCR0_ACS                  (0x1<<30)	/* 1: Audio Clock, 0: decided by NCS and ECS */
-#define SSCR0_TIM                  (0x1<<23)	/* Transmit FIFO underrun Interrupt Mask, 0: TUR will generate SSP interrupt */
+#define SSCR0_TIM                  (0x1<<23)	/* Transmit FIFO underrun Interrupt Mask,
+						 * 0: TUR will generate SSP interrupt */
 #define SSCR0_RIM                  (0x1<<22)	/* Receive FIFO Over Run Interrupt Mask 0: will generate interrupt */
 #define SSCR0_NCS                  (0x1<<21)	/* Select network Clock 0: ECS bit determine clock selection */
-#define SSCR0_EDSS                 (0x1<<20)	/* Extended data size select is used in conjunction with DSS to select the size of data transimitted */
-						     /* 1: one is pre-appended to the DSS value that sets DSS range from 17-32 bit. */
+#define SSCR0_EDSS                 (0x1<<20)	/* Extended data size select is used in conjunction
+						 * with DSS to select the size of data transimitted */
+						/* 1: one is pre-appended to the DSS value
+						 * that sets DSS range from 17-32 bit. */
 #define SSCR0_SCR_512K             (0x19<<8)	/* SCR value is 25 based on system SSP clock is 13MHZ */
 #define SSCR0_SCR_128K             (0x67<<8)
 #define SSCR0_SSE                  (0x1<<7)	/* 1: SSP operation is enabled */
-#define SSCR0_ECS                  (0x1<<6)	/* External Clock Select, 0: on_chip clock used to produce the SSP port's serial clock */
+#define SSCR0_ECS                  (0x1<<6)	/* External Clock Select,
+						 * 0: on_chip clock used to produce the SSP port's serial clock */
 #define SSCR0_FRF_TISSP            (0x1<<4)	/* TI SSP */
 #define SSCR0_FRF_PSP              (0x3<<4)	/* PSP: programmable serial protocol */
 #define SSCR0_DSS_14BIT            0xD	/* 14 bit data transfer */
@@ -97,44 +101,63 @@
 /* SSCR1 */
 #define SSCR1_THLD_8               (0x8<<10)	/* threshold is 8 bytes, written to */
 #define SSCR1_TTELP                (0x1<<31)	/* 1: TXD line will be tristated 1/2 clock after TXD is to be flopped */
-#define SSCR1_TTE                  (0x1<<30)	/* 1: TXD line will not be tristated, 0: TXD line will be tristated when not transmitting data */
-#define SSCR1_EBCE1                (0x1<<29)	/* 1: Interrupt due to a bit error is enabled. 00: Interrupt due to a bit count is disabled. */
+#define SSCR1_TTE                  (0x1<<30)	/* 1: TXD line will not be tristated,
+						 * 0: TXD line will be tristated when not transmitting data */
+#define SSCR1_EBCE1                (0x1<<29)	/* 1: Interrupt due to a bit error is enabled.
+						 * 00: Interrupt due to a bit count is disabled. */
 #define SSCR1_SCFR                 (0x1<<28)	/* 1: clock iput to SSPSCLK is active only during trnasfers */
-#define SSCR1_ECRA                 (0x1<<27)	/* Enable Clock request A, 1 = Clcok request from other SSP port is enabled */
+#define SSCR1_ECRA                 (0x1<<27)	/* Enable Clock request A, 1 = Clcok request from
+						 * other SSP port is enabled */
 #define SSCR1_ECRB                 (0x1<<26)	/* Enable Clock Request B */
-#define SSCR1_SCLKDIR              (0x1<<25)	/* 0: Master Mode, the port generate SSPSCLK internally, acts as master and drive SSPSCLK */
-#define SSCR1_SFRMDIR              (0x1<<24)	/* SSP frame direction determine whether SSP port is the master or slave 0: Master */
+#define SSCR1_SCLKDIR              (0x1<<25)	/* 0: Master Mode, the port generate SSPSCLK internally,
+						 * acts as master and drive SSPSCLK */
+#define SSCR1_SFRMDIR              (0x1<<24)	/* SSP frame direction determine whether SSP port
+						 * is the master or slave 0: Master */
 #define SSCR1_RWOT                 (0x1<<23)	/* 0: Transmit/Receive mode, 1: Receive with out Transmit mode */
-#define SSCR1_TRAIL                (0x1<<22)	/* Trailing byte is used to configure how trailing byte are handled, 0: Processor Based, Trailing byte are handled by processor */
-#define SSCR1_TSRE                 (0x1<<21)	/* Transmit Service Request Enables the transmit FIFO DMA service request.1: DMA service request is enabled */
-#define SSCR1_RSRE                 (0x1<<20)	/* Receive Service Request enables the Receive FIFO DMa Service Request */
-#define SSCR1_TINTE                (0x1<<19)	/* Receiver time-out interrupt enables the receiver time-out interrupt, 1: receive time-out interrupts are enabled, 1 -- peripheral trailing byte interrupt are enabled */
-#define SSCR1_PINTE                (0x1<<18)	/* Peripheral trailing byte interrupt enables the peripheral trailing byte interrupt */
-#define SSCR1_STRF                 (0x1<<15)	/* Select whether the transmit FIFO or receive FIFO is enabled for writes and reads (test mode) */
+#define SSCR1_TRAIL                (0x1<<22)	/* Trailing byte is used to configure how trailing byte are handled,
+						 * 0: Processor Based, Trailing byte are handled by processor */
+#define SSCR1_TSRE                 (0x1<<21)	/* Transmit Service Request Enables the transmit FIFO DMA
+						 * service request.1: DMA service request is enabled */
+#define SSCR1_RSRE                 (0x1<<20)	/* Receive Service Request enables the Receive
+						 * FIFO DMa Service Request */
+#define SSCR1_TINTE                (0x1<<19)	/* Receiver time-out interrupt enables the receiver time-out interrupt,
+						 * 1: receive time-out interrupts are enabled,
+						 * 1 -- peripheral trailing byte interrupt are enabled */
+#define SSCR1_PINTE                (0x1<<18)	/* Peripheral trailing byte interrupt enables the
+						 * peripheral trailing byte interrupt */
+#define SSCR1_STRF                 (0x1<<15)	/* Select whether the transmit FIFO or receive FIFO is enabled
+						 * for writes and reads (test mode) */
 #define SSCR1_EFWR                 (0x1<<14)	/* Enable FIFO Write/Read (Test mode bit) for the SSP port */
-#define SSCR1_MWDS                 (0x1<<5)	/* Mircowire Transmit Data size.1 = 16 bit command word is transmitted */
-#define SSCR1_SPH                  (0x1<<4)	/* SPI SSPSCLK phase setting  0 = SSPSCLK is inactive one cycle at the start of frame and 1/2 cycle at the end of frame */
-#define SSCR1_SPO                  (0x1<<3)	/* Motoroloa SPI SSPSCLK polarity setting selects the polarity of the inactive state of the SSPSCLK pins */
+#define SSCR1_MWDS                 (0x1<<5)	/* Mircowire Transmit Data size.1=16 bit command word is transmitted */
+#define SSCR1_SPH                  (0x1<<4)	/* SPI SSPSCLK phase setting  0 = SSPSCLK is inactive on
+						 * cycle at the start of frame and 1/2 cycle at the end of frame */
+#define SSCR1_SPO                  (0x1<<3)	/* Motoroloa SPI SSPSCLK polarity setting selects the
+						 * polarity of the inactive state of the SSPSCLK pins */
 #define SSCR1_LBM                  (0x1<<2)	/* Loop-back mode */
 #define SSCR1_TIE                  (0x1<<1)	/* 0: Transmit FIFO level interrupt is disabled. */
-#define SSCR1_RIE                  (0x1)	/* 0: Receive FIFO level interrupt is disabled. The interrupt is masked. */
+#define SSCR1_RIE                  (0x1)	/* 0: Receive FIFO level interrupt is disabled.
+						 * The interrupt is masked. */
 
 /* SSPSP : programmable Serial Protocol Register */
-/* SSTO : SSP time-out register   0-23 bits R/W time-out interval =
-					(TIMEOUT)/Peripheral Clock Frequency */
+/* SSTO : SSP time-out register   0-23 bits R/W time-out interval = (TIMEOUT)/Peripheral Clock Frequency */
 
 /* SSSP : SSP status Register */
-#define SSSP_BCE                   (0x1<<23)	/* Bit Count Error 1: the SSPSFRM signal has been asserted when the bit counter was not 0 */
-#define SSSP_CSS                   (0x1<<22)	/* Clock Synchronous Status  1: The SSP is currently busy synchronizing slave mode operation. */
+#define SSSP_BCE                   (0x1<<23)	/* Bit Count Error 1: the SSPSFRM signal has been asserted when
+						 * the bit counter was not 0 */
+#define SSSP_CSS                   (0x1<<22)	/* Clock Synchronous Status  1: The SSP is currently busy
+						 * synchronizing slave mode operation. */
 #define SSSP_TUR                   (0x1<<21)	/* 1: Attempted read from the tramit FIFO when the FIFO was empty */
-#define SSSP_EOC                   (0x1<<20)	/* 1: DMA has singaled an end of chain condition, there is no more data to be processed */
+#define SSSP_EOC                   (0x1<<20)	/* 1: DMA has singaled an end of chain condition,
+						 * there is no more data to be processed */
 #define SSSP_TINT                  (0x1<<19)	/* 1: Receiver Time-out pending */
 #define SSSP_PINT                  (0x1<<18)	/* 1: Peripheral Trailing Byte Interrupt Pending */
 #define SSSP_RFL_MASK              (0xf<<12)	/* Receive FIFO Level is the number of valid entries. */
-#define SSSP_TFL_MASK              (0xf<<8)	/* The Transmit FIFO level the number of valid entries currently in the transmit FIFO */
+#define SSSP_TFL_MASK              (0xf<<8)	/* The Transmit FIFO level the number of valid entries
+						 * currently in the transmit FIFO */
 #define SSSP_ROR                   (0x1<<7)	/* 1: attempted data write to full receive FIFO */
 #define SSSP_RFS                   (0x1<<6)	/* 1: Receive FIFO level is at or above RFT tirgger */
-#define SSSP_TFS                   (0x1<<5)	/* 1: Transmit FIFO level is at or below TFT tigger threshold, request interrupt */
+#define SSSP_TFS                   (0x1<<5)	/* 1: Transmit FIFO level is at or below TFT tigger threshold,
+						 * request interrupt */
 #define SSSP_BSY                   (0x1<<4)	/* 1: SSP port is currently transmitting or receiving a frame */
 #define SSSP_RNE                   (0x1<<3)	/* 1: Receive FIFO is not empty */
 #define SSSP_TNF                   (0x1<<2)	/* 1: Transmit FIFO is not full */
@@ -221,7 +244,6 @@ typedef struct {
 	VUINT_32 omcr11;	/* OS timer match control register 11 */
 } OST_Timer, *P_OST_Timer;
 
-
 /* Clock Manager (CLKMGR) Register Bank */
 typedef struct {
 	VUINT_32 cccr;		/* Core Clock Configuration register */
@@ -229,7 +251,6 @@ typedef struct {
 	VUINT_32 oscc;		/* Oscillator Configuration register */
 	VUINT_32 ccsr;		/* Core Clock Status register */
 } CLK_MGR, *P_CLK_MGR;
-
 
 /* SSP */
 typedef struct {
@@ -248,7 +269,6 @@ typedef struct {
 	unsigned long sstsa;	/* SSP2 TX time slot active */
 	unsigned long ssrsa;	/* SSP2 RX time slot active */
 } SSP_REG, *P_SSP_REG;
-
 
 /* GPIO Register Definitions */
 typedef struct {
@@ -315,25 +335,30 @@ typedef struct {
 #define SSCR0_DSS_SIZE(x) ((x > 16) ? (((x-17) & BITS(0, 3)) | (1<<20)) : ((x-1) & BITS(0, 3)))
 
 #define WAIT_BUS_CLEAR(cmdRespBuff)    do { \
-	    unsigned long u4Value; \
-            while ((pVSsp->sssr & BITS(8, 11)) || !(pVSsp->sssr & SSSR_TNF));  \
-	    while (pVSsp->sssr & SSSR_RNE) {    \
-		u4Value = pVSsp->ssdr;   \
-	    }   \
+		unsigned long u4Value; \
+		while ((pVSsp->sssr & BITS(8, 11)) || !(pVSsp->sssr & SSSR_TNF)) \
+			;  \
+		while (pVSsp->sssr & SSSR_RNE) {    \
+			u4Value = pVSsp->ssdr;   \
+		}   \
 	} while (0)
 
 #define WAIT_BUS_DONE() do { \
-            while ((pVSsp->sssr & BITS(8, 11)) || !(pVSsp->sssr & SSSR_TNF));  \
-	    while (pVSsp->sssr & SSSR_BSY); \
+		while ((pVSsp->sssr & BITS(8, 11)) || !(pVSsp->sssr & SSSR_TNF)) \
+			;  \
+		while (pVSsp->sssr & SSSR_BSY) \
+			; \
 	} while (0)
 
 #define WAIT_BUS_READY_TX()    do { \
-	    while (!(pVSsp->sssr & SSSR_TNF));   \
+		while (!(pVSsp->sssr & SSSR_TNF)) \
+			;   \
 	} while (0)
 
 #define WAIT_BUS_READY_RX(x)    do { \
-	    x = 10000;   \
-	    while (!(pVSsp->sssr & SSSR_RNE) && (x--));   \
+		x = 10000;   \
+		while (!(pVSsp->sssr & SSSR_RNE) && (x--)) \
+			;   \
 	} while (0)
 
 /*******************************************************************************
@@ -347,18 +372,13 @@ static INT_32 SpiSetBusWidth(UINT_32 u4BusSize);
 
 static VOID SpiSetOpMode(VOID);
 
-static VOID GpioSetDirectionIn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]
-    );
+static VOID GpioSetDirectionIn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]);
 
-static VOID GpioSetDirectionOut(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]
-    );
+static VOID GpioSetDirectionOut(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]);
 
-static VOID
-GpioSetAlternateFn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[], UINT_32 au4AfValueArray[]
-    );
+static VOID GpioSetAlternateFn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[], UINT_32 au4AfValueArray[]);
 
-static VOID GpioSetFallingEdgeDetectEnable(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]
-    );
+static VOID GpioSetFallingEdgeDetectEnable(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]);
 
 VOID GPIOConfigBackup(IN VOID);
 
@@ -373,4 +393,4 @@ void SpiReadWriteData32(UINT_32 u4Cmd, UINT_32 u4Offset, UINT_8 *pucDataBuff, UI
 ********************************************************************************
 */
 
-#endif				/* _COLIBRI_H */
+#endif /* _COLIBRI_H */

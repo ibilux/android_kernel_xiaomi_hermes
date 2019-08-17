@@ -2,7 +2,8 @@
 #define _MT_PMIC_COMMON_H_
 
 #include <mach/mt_typedefs.h>
-
+//Read efuse common API
+extern u32 pmic_Read_Efuse_HPOffset(int i);
 //MT6331
 extern void mt6331_upmu_set_thr_det_dis(kal_uint32 val);
 extern void mt6331_upmu_set_rg_thr_tmode(kal_uint32 val);

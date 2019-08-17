@@ -86,4 +86,4 @@ enum {
 #define OSC_FREQ_BITS 0x0070	/* 0x60 bit4~6 */
 #define OSC_FREQ_MASK (~OSC_FREQ_BITS)
 
-#endif				/* __MT6630_FM_REG_H__ */
+#endif /* __MT6630_FM_REG_H__ */

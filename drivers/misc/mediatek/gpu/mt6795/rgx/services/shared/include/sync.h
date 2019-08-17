@@ -51,7 +51,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SYNC_
 #define _SYNC_
 
-#if defined(KERNEL) && defined(ANDROID)
+#if defined(__KERNEL__) && defined(ANDROID) && !defined(__GENKSYMS__)
 #define __pvrsrv_defined_struct_enum__
 #include <services_kernel_client.h>
 #endif
@@ -102,6 +102,8 @@ SyncPrimContextDestroy(PSYNC_PRIM_CONTEXT hSyncPrimContext);
 
 @Output         ppsSync                 Created synchronisation primitive
 
+@Input          pszClassName            Sync source annotation
+
 @Return         PVRSRV_OK if the synchronisation primitive was
                 successfully created
 */
@@ -109,7 +111,31 @@ SyncPrimContextDestroy(PSYNC_PRIM_CONTEXT hSyncPrimContext);
 PVRSRV_ERROR
 SyncPrimAlloc(PSYNC_PRIM_CONTEXT		hSyncPrimContext,
 			  PVRSRV_CLIENT_SYNC_PRIM	**ppsSync,
-			  const IMG_CHAR 		*pszClassName);
+			  const IMG_CHAR 			*pszClassName);
+
+#if defined(__KERNEL__)
+/*************************************************************************/ /*!
+@Function       SyncPrimAllocForServerSync
+
+@Description    Allocate a new synchronisation primitive on the specified
+                synchronisation context for a server sync
+
+@Input          hSyncPrimContext        Handle to the synchronisation
+                                        primitive context
+
+@Output         ppsSync                 Created synchronisation primitive
+
+@Input          pszClassName            Sync source annotation
+
+@Return         PVRSRV_OK if the synchronisation primitive was
+                successfully created
+*/
+/*****************************************************************************/
+PVRSRV_ERROR
+SyncPrimAllocForServerSync(PSYNC_PRIM_CONTEXT   hSyncPrimContext,
+						PVRSRV_CLIENT_SYNC_PRIM **ppsSync,
+						const IMG_CHAR          *pszClassName);
+#endif
 
 /*************************************************************************/ /*!
 @Function       SyncPrimFree

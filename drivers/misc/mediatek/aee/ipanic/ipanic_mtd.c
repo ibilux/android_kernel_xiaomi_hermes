@@ -222,7 +222,7 @@ static void ipanic_mtd_notify_add(struct mtd_info *mtd)
 	LOGI("Bound to '%s', write size(%d), write size shift(%d)\n",
 	     mtd->name, mtd->writesize, mtd->writesize_shift);
 	ctx->bufsize = ALIGN(PAGE_SIZE, mtd->writesize);
-	ctx->buf = (u64) (int)kmalloc(ctx->bufsize, GFP_KERNEL);
+	ctx->buf = (u64) (unsigned long)kmalloc(ctx->bufsize, GFP_KERNEL);
 	ipanic_mtd_ctx = ctx;
 	return;
 

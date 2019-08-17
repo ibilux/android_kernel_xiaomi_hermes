@@ -24,7 +24,7 @@ typedef enum {
 	AP = 0,
 	MD,
 	GPS,
-	ADC_USER_MAX	
+	AUX_USER_MAX	
 } upmu_adc_user_list_enum;
 typedef enum {
 	MT6325_CHIP = 0,

@@ -9,8 +9,6 @@
     enable/disable such switch or adjust numeric parameters.
 */
 
-
-
 #ifndef _P2P_PRECOMP_H
 #define _P2P_PRECOMP_H
 
@@ -32,13 +30,11 @@
 #include "link.h"
 #include "queue.h"
 
-
 /*------------------------------------------------------------------------------
  * .\include\mgmt
  *------------------------------------------------------------------------------
  */
 #include "wlan_typedef.h"
-
 
 #include "mac.h"
 
@@ -47,7 +43,6 @@
 
 #include "roaming_fsm.h"
 
-
 /*------------------------------------------------------------------------------
  * .\include\nic
  *------------------------------------------------------------------------------
@@ -55,10 +50,8 @@
 /* Dependency:  wlan_def.h (ENUM_NETWORK_TYPE_T) */
 #include "cmd_buf.h"
 
-
 /* Dependency:  mac.h (MAC_ADDR_LEN) */
 #include "nic_cmd_event.h"
-
 
 /* Dependency:  nic_cmd_event.h (P_EVENT_CONNECTION_STATUS) */
 #include "nic.h"
@@ -85,7 +78,6 @@
 #include "p2p_nic.h"
 #endif
 
-
 /*------------------------------------------------------------------------------
  * .\include\mgmt
  *------------------------------------------------------------------------------
@@ -102,9 +94,6 @@
 
 #include "wlan_p2p.h"
 
-
-
-
 #include "hal.h"
 
 #if defined(MT6630)
@@ -117,7 +106,6 @@
 #include "rlm_obss.h"
 #include "rate.h"
 
-
 #include "aa_fsm.h"
 
 #include "cnm_timer.h"
@@ -128,7 +116,6 @@
 #endif
 
 #include "pwr_mgt.h"
-
 
 #include "cnm.h"
 /* Dependency:  aa_fsm.h (ENUM_AA_STATE_T), p2p_fsm.h (WPS_ATTRI_MAX_LEN_DEVICE_NAME) */
@@ -147,7 +134,6 @@
 #include "p2p_assoc.h"
 #include "p2p_ie.h"
 
-
 #include "privacy.h"
 
 #include "mib.h"
@@ -155,12 +141,9 @@
 #include "auth.h"
 #include "assoc.h"
 
-
 #include "ais_fsm.h"
 
-
 #include "adapter.h"
-
 
 #include "que_mgt.h"
 #include "rftest.h"
@@ -179,7 +162,6 @@
 #include "CFG_Wifi_File.h"
 
 #include "gl_p2p_kal.h"
-
 
 /*******************************************************************************
 *                              C O N S T A N T S

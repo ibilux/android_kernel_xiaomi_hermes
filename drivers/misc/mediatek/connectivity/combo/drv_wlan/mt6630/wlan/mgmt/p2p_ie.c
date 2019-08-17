@@ -1,10 +1,6 @@
 #include "precomp.h"
 
-
-
-UINT_32
-p2pCalculate_IEForAssocReq(IN P_ADAPTER_T prAdapter,
-			   IN UINT_8 ucBssIndex, IN P_STA_RECORD_T prStaRec)
+UINT_32 p2pCalculate_IEForAssocReq(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex, IN P_STA_RECORD_T prStaRec)
 {
 	P_P2P_ROLE_FSM_INFO_T prP2pRoleFsmInfo = (P_P2P_ROLE_FSM_INFO_T) NULL;
 	P_BSS_INFO_T prP2pBssInfo = (P_BSS_INFO_T) NULL;
@@ -16,8 +12,7 @@ p2pCalculate_IEForAssocReq(IN P_ADAPTER_T prAdapter,
 
 		prP2pBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex);
 
-		prP2pRoleFsmInfo =
-		    P2P_ROLE_INDEX_2_ROLE_FSM_INFO(prAdapter, (UINT_8) prP2pBssInfo->u4PrivateData);
+		prP2pRoleFsmInfo = P2P_ROLE_INDEX_2_ROLE_FSM_INFO(prAdapter, (UINT_8) prP2pBssInfo->u4PrivateData);
 
 		prConnReqInfo = &(prP2pRoleFsmInfo->rConnReqInfo);
 
@@ -43,8 +38,6 @@ p2pCalculate_IEForAssocReq(IN P_ADAPTER_T prAdapter,
 	return u4RetValue;
 }				/* p2pCalculate_IEForAssocReq */
 
-
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function is used to generate P2P IE for Beacon frame.
@@ -66,14 +59,11 @@ VOID p2pGenerate_IEForAssocReq(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsdu
 
 		prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, prMsduInfo->ucBssIndex);
 
-		prP2pRoleFsmInfo =
-		    P2P_ROLE_INDEX_2_ROLE_FSM_INFO(prAdapter, (UINT_8) prBssInfo->u4PrivateData);
+		prP2pRoleFsmInfo = P2P_ROLE_INDEX_2_ROLE_FSM_INFO(prAdapter, (UINT_8) prBssInfo->u4PrivateData);
 
 		prConnReqInfo = &(prP2pRoleFsmInfo->rConnReqInfo);
 
-		pucIEBuf =
-		    (PUINT_8) ((ULONG) prMsduInfo->prPacket +
-			       (ULONG) prMsduInfo->u2FrameLength);
+		pucIEBuf = (PUINT_8) ((ULONG) prMsduInfo->prPacket + (ULONG) prMsduInfo->u2FrameLength);
 
 		kalMemCopy(pucIEBuf, prConnReqInfo->aucIEBuf, prConnReqInfo->u4BufLength);
 
@@ -95,11 +85,9 @@ VOID p2pGenerate_IEForAssocReq(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsdu
 
 }				/* p2pGenerate_IEForAssocReq */
 
-
 UINT_32
 wfdFuncAppendAttriDevInfo(IN P_ADAPTER_T prAdapter,
-			  IN BOOLEAN fgIsAssocFrame,
-			  IN PUINT_16 pu2Offset, IN PUINT_8 pucBuf, IN UINT_16 u2BufSize)
+			  IN BOOLEAN fgIsAssocFrame, IN PUINT_16 pu2Offset, IN PUINT_8 pucBuf, IN UINT_16 u2BufSize)
 {
 	UINT_32 u4AttriLen = 0;
 	PUINT_8 pucBuffer = NULL;
@@ -128,11 +116,9 @@ wfdFuncAppendAttriDevInfo(IN P_ADAPTER_T prAdapter,
 
 		WLAN_SET_FIELD_BE16(&prWfdDevInfo->u2WfdDevInfo, prWfdCfgSettings->u2WfdDevInfo);
 
-		WLAN_SET_FIELD_BE16(&prWfdDevInfo->u2SessionMgmtCtrlPort,
-				    prWfdCfgSettings->u2WfdControlPort);
+		WLAN_SET_FIELD_BE16(&prWfdDevInfo->u2SessionMgmtCtrlPort, prWfdCfgSettings->u2WfdControlPort);
 
-		WLAN_SET_FIELD_BE16(&prWfdDevInfo->u2WfdDevMaxSpeed,
-				    prWfdCfgSettings->u2WfdMaximumTp);
+		WLAN_SET_FIELD_BE16(&prWfdDevInfo->u2WfdDevMaxSpeed, prWfdCfgSettings->u2WfdMaximumTp);
 
 		WLAN_SET_FIELD_BE16(&prWfdDevInfo->u2Length, WFD_ATTRI_MAX_LEN_DEV_INFO);
 

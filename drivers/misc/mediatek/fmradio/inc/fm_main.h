@@ -164,7 +164,6 @@ struct fm_tune_t {
 	void *priv;
 };
 
-
 #ifdef CONFIG_MTK_FM_50KHZ_SUPPORT
 struct fm_rssi_req {
 	fm_u16 num;
@@ -308,18 +307,16 @@ struct fm_search_threshold_t {
 	fm_s32 reserve;
 };
 
-typedef struct
-{
+typedef struct {
 	int which;
 	bool stat;
-}fm_status_t;
+} fm_status_t;
 
 /* init and deinit APIs */
 extern fm_s32 fm_env_setup(void);
 extern fm_s32 fm_env_destroy(void);
 extern struct fm *fm_dev_init(fm_u32 arg);
 extern fm_s32 fm_dev_destroy(struct fm *fm);
-
 
 /* fm main basic APIs */
 extern enum fm_pwr_state fm_pwr_state_get(struct fm *fmp);
@@ -397,4 +394,4 @@ extern fm_s32 fm_rdstx_enable(struct fm *fm, fm_s32 enable);
 extern fm_s32 fm_tx_scan(struct fm *fm, struct fm_tx_scan_parm *parm);
 fm_s32 fm_full_cqi_logger(fm_full_cqi_log_t *setting);
 
-#endif				/* __FM_MAIN_H__ */
+#endif /* __FM_MAIN_H__ */

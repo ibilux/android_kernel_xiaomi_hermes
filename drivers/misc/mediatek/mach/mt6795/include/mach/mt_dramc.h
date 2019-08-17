@@ -17,6 +17,9 @@
 #define DMA_INT_EN_BIT          (0x00000001)
 #define DMA_INT_FLAG_CLR_BIT (0x00000000)
 
+#define DMA_LEN2           IOMEM((CQDMA_BASE_ADDR + 0x0028))
+#define DMA_SRC2          IOMEM((CQDMA_BASE_ADDR + 0x002C))
+#define DMA_CON_WPEN            0x00008000
 #if 0
 #define CHA_DRAMCAO_BASE	0xF0004000
 #define CHA_DDRPHY_BASE	0xF000F000
@@ -36,7 +39,7 @@
 #define PATTERN1 0x5A5A5A5A
 #define PATTERN2 0xA5A5A5A5
 /*Config*/
-//#define APDMA_TEST
+#define APDMA_TEST
 #define FREQ_HOPPING_TEST
 //#define APDMAREG_DUMP
 #define PHASE_NUMBER 3
@@ -56,6 +59,10 @@ typedef struct {
     unsigned long high_freq_chb_setting_addr;
 } vcore_dvfs_info_t;
 
+enum RANKNUM {
+	SINGLE_RANK = 1,
+	DULE_RANK,
+};
 extern unsigned int DMA_TIMES_RECORDER;
 extern phys_addr_t get_max_DRAM_size(void);
 

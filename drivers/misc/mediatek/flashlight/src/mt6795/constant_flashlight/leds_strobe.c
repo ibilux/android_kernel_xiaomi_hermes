@@ -46,26 +46,14 @@
 // ANDROID_LOG_INFO
 // ANDROID_LOG_DEBUG
 // ANDROID_LOG_VERBOSE
-#define TAG_NAME "leds_strobe.c"
-#define PK_DBG_NONE(fmt, arg...)    do {} while (0)
-#define PK_DBG_FUNC(fmt, arg...)    xlog_printk(ANDROID_LOG_ERROR  , TAG_NAME, KERN_INFO  "%s: " fmt, __FUNCTION__ ,##arg)
-#define PK_WARN(fmt, arg...)        xlog_printk(ANDROID_LOG_WARNING, TAG_NAME, KERN_WARNING  "%s: " fmt, __FUNCTION__ ,##arg)
-#define PK_NOTICE(fmt, arg...)      xlog_printk(ANDROID_LOG_DEBUG  , TAG_NAME, KERN_NOTICE  "%s: " fmt, __FUNCTION__ ,##arg)
-#define PK_INFO(fmt, arg...)        xlog_printk(ANDROID_LOG_INFO   , TAG_NAME, KERN_INFO  "%s: " fmt, __FUNCTION__ ,##arg)
-#define PK_TRC_FUNC(f)              xlog_printk(ANDROID_LOG_DEBUG  , TAG_NAME,  "<%s>\n", __FUNCTION__);
-#define PK_TRC_VERBOSE(fmt, arg...) xlog_printk(ANDROID_LOG_VERBOSE, TAG_NAME,  fmt, ##arg)
-#define PK_ERROR(fmt, arg...)       xlog_printk(ANDROID_LOG_ERROR  , TAG_NAME, KERN_ERR "%s: " fmt, __FUNCTION__ ,##arg)
+#define TAG_NAME "[leds_strobe.c]"
+#define PK_DBG_FUNC(fmt, arg...)    pr_debug(TAG_NAME "%s: " fmt, __FUNCTION__ ,##arg)
 
-
-#define DEBUG_LEDS_STROBE
+//#define DEBUG_LEDS_STROBE
 #ifdef  DEBUG_LEDS_STROBE
 	#define PK_DBG PK_DBG_FUNC
-	#define PK_VER PK_TRC_VERBOSE
-	#define PK_ERR PK_ERROR
 #else
 	#define PK_DBG(a,...)
-	#define PK_VER(a,...)
-	#define PK_ERR(a,...)
 #endif
 
 /******************************************************************************
@@ -216,15 +204,12 @@ void FL_Torch_Mode(void)
 /*****************************************************************************
 User interface
 *****************************************************************************/
-
 static void work_timeOutFunc(struct work_struct *data)
 {
     FL_Disable();
     PK_DBG("ledTimeOut_callback\n");
     //printk(KERN_ALERT "work handler function./n");
 }
-
-
 
 enum hrtimer_restart ledTimeOutCallback(struct hrtimer *timer)
 {
@@ -251,7 +236,6 @@ static int constant_flashlight_ioctl(MUINT32 cmd, MUINT32 arg)
 	ior_shift = cmd - (_IOR(FLASHLIGHT_MAGIC,0, int));
 	iow_shift = cmd - (_IOW(FLASHLIGHT_MAGIC,0, int));
 	iowr_shift = cmd - (_IOWR(FLASHLIGHT_MAGIC,0, int));
-	PK_DBG("constant_flashlight_ioctl() line=%d ior_shift=%d, iow_shift=%d iowr_shift=%d arg=%d\n",__LINE__, ior_shift, iow_shift, iowr_shift, arg);
     switch(cmd)
     {
 
@@ -259,7 +243,6 @@ static int constant_flashlight_ioctl(MUINT32 cmd, MUINT32 arg)
 			PK_DBG("FLASH_IOC_SET_TIME_OUT_TIME_MS: %d\n",arg);
 			g_timeOutTimeMs=arg;
 		break;
-
 
     	case FLASH_IOC_SET_DUTY :
     		PK_DBG("FLASHLIGHT_DUTY: %d\n",arg);
@@ -302,9 +285,6 @@ static int constant_flashlight_ioctl(MUINT32 cmd, MUINT32 arg)
     return i4RetValue;
 }
 
-
-
-
 static int constant_flashlight_open(void *pArg)
 {
     int i4RetValue = 0;
@@ -319,10 +299,9 @@ static int constant_flashlight_open(void *pArg)
 	PK_DBG("constant_flashlight_open line=%d\n", __LINE__);
 	spin_lock_irq(&g_strobeSMPLock);
 
-
     if(strobe_Res)
     {
-        PK_ERR(" busy!\n");
+        PK_DBG(" busy!\n");
         i4RetValue = -EBUSY;
     }
     else
@@ -337,7 +316,6 @@ static int constant_flashlight_open(void *pArg)
     return i4RetValue;
 
 }
-
 
 static int constant_flashlight_release(void *pArg)
 {
@@ -364,14 +342,12 @@ static int constant_flashlight_release(void *pArg)
 
 }
 
-
 FLASHLIGHT_FUNCTION_STRUCT	constantFlashlightFunc=
 {
 	constant_flashlight_open,
 	constant_flashlight_release,
 	constant_flashlight_ioctl
 };
-
 
 MUINT32 constantFlashlightInit(PFLASHLIGHT_FUNCTION_STRUCT *pfFunc)
 {
@@ -381,8 +357,6 @@ MUINT32 constantFlashlightInit(PFLASHLIGHT_FUNCTION_STRUCT *pfFunc)
     }
     return 0;
 }
-
-
 
 /* LED flash control for high current capture mode*/
 ssize_t strobe_VDIrq(void)

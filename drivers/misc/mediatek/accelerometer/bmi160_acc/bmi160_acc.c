@@ -31,91 +31,31 @@
 #include <linux/platform_device.h>
 #include <asm/atomic.h>
 #include <linux/module.h>
-#include <linux/gpio.h>
-#include <linux/of_irq.h>
-#include <linux/of_gpio.h>
-
-#ifdef MT6516
-#include <mach/mt6516_devs.h>
-#include <mach/mt6516_typedefs.h>
-#include <mach/mt6516_gpio.h>
-#include <mach/mt6516_pll.h>
-#endif
-
-#ifdef MT6573
-#include <mach/mt6573_devs.h>
-#include <mach/mt6573_typedefs.h>
-#include <mach/mt6573_gpio.h>
-#include <mach/mt6573_pll.h>
-#endif
-
-#ifdef MT6575
-#include <mach/mt6575_devs.h>
-#include <mach/mt6575_typedefs.h>
-#include <mach/mt6575_gpio.h>
-#include <mach/mt6575_pm_ldo.h>
-#endif
-
-#ifdef MT6577
-#include <mach/mt6577_devs.h>
-#include <mach/mt6577_typedefs.h>
-#include <mach/mt6577_gpio.h>
-#include <mach/mt6577_pm_ldo.h>
-#endif
-
-
 
 #include <linux/hwmsensor.h>
 #include <linux/hwmsen_dev.h>
 #include <linux/sensors_io.h>
+#include <accel.h>
 
-#if 1
 #include <mach/mt_typedefs.h>
 #include <mach/mt_gpio.h>
 #include <mach/mt_pm_ldo.h>
+
 #define POWER_NONE_MACRO MT65XX_POWER_NONE
-#endif
-
-
-#ifdef MT6516
-#define POWER_NONE_MACRO MT6516_POWER_NONE
-#endif
-
-#ifdef MT6573
-#define POWER_NONE_MACRO MT65XX_POWER_NONE
-#endif
-
-#ifdef MT6575
-#define POWER_NONE_MACRO MT65XX_POWER_NONE
-#endif
-
-#ifdef MT6577
-#define POWER_NONE_MACRO MT65XX_POWER_NONE
-#endif
-
-#ifdef MT6589
-#define POWER_NONE_MACRO MT65XX_POWER_NONE
-#endif
-
-#ifdef MT6592
-#define POWER_NONE_MACRO MT65XX_POWER_NONE
-#endif
 
 #include <cust_acc.h>
 #include <linux/hwmsensor.h>
 #include <linux/hwmsen_dev.h>
 #include <linux/sensors_io.h>
-#include <linux/hwmsen_helper.h>
-
 #include "bmi160_acc.h"
-
-extern int bmi160_step_notify(STEP_NOTIFY_TYPE);
+#include <linux/hwmsen_helper.h>
 /*----------------------------------------------------------------------------*/
-#define DEBUG	0
+#define DEBUG 0
+#define MISC_FOR_DAEMON
 /*----------------------------------------------------------------------------*/
 //#define CONFIG_BMI160_ACC_LOWPASS   /*apply low pass filter on output*/
 #define SW_CALIBRATION
-#define CONFIG_I2C_BASIC_FUNCTION
+#define FIFO_READ_USE_DMA_MODE_I2C
 //tad3sgh add ++
 #define BMM050_DEFAULT_DELAY	100
 #define CALIBRATION_DATA_SIZE	12
@@ -178,10 +118,11 @@ extern int bmi160_step_notify(STEP_NOTIFY_TYPE);
 //add for non-block
 #define BMM_IOC_GET_NONBLOCK_EVENT_FLAG _IOR(MSENSOR, 0x38, int)
 
+#ifdef MISC_FOR_DAEMON
 // calibration msensor and orientation data
 static int sensor_data[CALIBRATION_DATA_SIZE];
 #if defined(BMC050_M4G) || defined(BMC050_VRV)
-static int m4g_data[CALIBRATION_DATA_SIZE];
+int m4g_data[CALIBRATION_DATA_SIZE];
 #endif //BMC050_M4G || BMC050_VRV
 #if defined(BMC050_VLA)
 static int vla_data[CALIBRATION_DATA_SIZE];
@@ -190,13 +131,15 @@ static int vla_data[CALIBRATION_DATA_SIZE];
 #if defined(BMC050_VG)
 static int vg_data[CALIBRATION_DATA_SIZE];
 #endif //BMC050_VG
+#endif
 
-static struct mutex sensor_data_mutex;
-static DECLARE_WAIT_QUEUE_HEAD(uplink_event_flag_wq);
+struct mutex sensor_data_mutex;
+DECLARE_WAIT_QUEUE_HEAD(uplink_event_flag_wq);
 
+#ifdef MISC_FOR_DAEMON
 static int bmm050d_delay = BMM050_DEFAULT_DELAY;
 #ifdef BMC050_M4G
-static int m4g_delay = BMM050_DEFAULT_DELAY;
+int m4g_delay = BMM050_DEFAULT_DELAY;
 #endif //BMC050_M4G
 #ifdef BMC050_VRV
 static int vrv_delay = BMM050_DEFAULT_DELAY;
@@ -209,10 +152,12 @@ static int vla_delay = BMM050_DEFAULT_DELAY;
 static int vg_delay = BMM050_DEFAULT_DELAY;
 #endif //BMC050_VG
 
+atomic_t bosch_chip= ATOMIC_INIT(0);    // add for bosch ship detect, 0 not exist , 1 exist
+
 static atomic_t m_flag = ATOMIC_INIT(0);
 static atomic_t o_flag = ATOMIC_INIT(0);
 #ifdef BMC050_M4G
-static atomic_t g_flag = ATOMIC_INIT(0);
+atomic_t g_flag = ATOMIC_INIT(0);
 #endif //BMC050_M4G
 #ifdef BMC050_VRV
 static atomic_t vrv_flag = ATOMIC_INIT(0);
@@ -223,14 +168,15 @@ static atomic_t vla_flag = ATOMIC_INIT(0);
 #ifdef BMC050_VG
 static atomic_t vg_flag = ATOMIC_INIT(0);
 #endif //BMC050_VG
+#endif
 
 #ifdef BMC050_BLOCK_DAEMON_ON_SUSPEND
 static atomic_t driver_suspend_flag = ATOMIC_INIT(0);
 #endif //BMC050_BLOCK_DAEMON_ON_SUSPEND
 
-static struct mutex uplink_event_flag_mutex;
+struct mutex uplink_event_flag_mutex;
 /* uplink event flag */
-static volatile u32 uplink_event_flag = 0;
+volatile u32 uplink_event_flag = 0;
 /* uplink event flag bitmap */
 enum {
 	/* active */
@@ -278,6 +224,8 @@ static struct i2c_board_info __initdata bmi160_acc_i2c_info ={ I2C_BOARD_INFO(BM
 /*----------------------------------------------------------------------------*/
 static int bmi160_acc_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id);
 static int bmi160_acc_i2c_remove(struct i2c_client *client);
+static int bmi160_acc_local_init(void);
+static int bmi160_acc_remove(void);
 
 /*----------------------------------------------------------------------------*/
 typedef enum {
@@ -326,6 +274,12 @@ struct bmi160_acc_i2c_data {
     s16                     data[BMI160_ACC_AXES_NUM+1];
     u8			    fifo_count;
 
+    u8  	fifo_data_sel;
+    u16 	fifo_bytecount;
+    struct 	odr_t odr;
+    u64 	fifo_time;
+    atomic_t 	layout;   
+
 #if defined(CONFIG_BMI160_ACC_LOWPASS)
     atomic_t                firlen;
     atomic_t                fir_en;
@@ -335,49 +289,43 @@ struct bmi160_acc_i2c_data {
 #if defined(CONFIG_HAS_EARLYSUSPEND)
     struct early_suspend    early_drv;
 #endif
-    struct input_dev *input;
-    struct bmi160_t device;
-    struct work_struct irq_work;
-	int IRQ;
-	uint16_t gpio_pin;
-	/* signification motion flag*/
-	u8 sig_flag;
-};
-/*----------------------------------------------------------------------------*/
-static struct i2c_driver bmi160_acc_i2c_driver = {
-    .driver = {
-        .name           = BMI160_DEV_NAME,
-    },
-	.probe      		= bmi160_acc_i2c_probe,
-	.remove    			= bmi160_acc_i2c_remove,
-#if !defined(CONFIG_HAS_EARLYSUSPEND)
-    .suspend            = bmi160_acc_suspend,
-    .resume             = bmi160_acc_resume,
-#endif
-	.id_table = bmi160_acc_i2c_id,
 };
 
 /*----------------------------------------------------------------------------*/
-struct bmi160_t *p_bmi160;
 struct i2c_client *bmi160_acc_i2c_client = NULL;
-static struct platform_driver bmi160_acc_gsensor_driver;
+static struct acc_init_info bmi160_acc_init_info;
 static struct bmi160_acc_i2c_data *obj_i2c_data = NULL;
 static bool sensor_power = true;
 static GSENSOR_VECTOR3D gsensor_gain;
 
+static int bmi160_acc_init_flag =-1; // 0<==>OK -1 <==> fail
+
 /*----------------------------------------------------------------------------*/
-#define GSE_DEBUG	1
 #define GSE_TAG                  "[Gsensor] "
-
-#if GSE_DEBUG
 #define GSE_FUN(f)               printk(GSE_TAG"%s\n", __FUNCTION__)
-#define GSE_LOG(fmt, args...)    printk(GSE_TAG fmt, ##args)
-#else
-#define GSE_FUN(f)
-#define GSE_LOG(fmt, args...)
-#endif
-
 #define GSE_ERR(fmt, args...)    printk(GSE_TAG"%s %d : "fmt, __FUNCTION__, __LINE__, ##args)
+#define GSE_LOG(fmt, args...)    printk(GSE_TAG fmt, ##args)
+
+/*!bmi160 sensor time depends on ODR */
+static const struct bmi_sensor_time_odr_tbl
+                sensortime_duration_tbl[TS_MAX_HZ] = {
+        {0x010000, 2560000, 0x00ffff},/*2560ms, 0.39hz, odr=resver*/
+        {0x008000, 1280000, 0x007fff},/*1280ms, 0.78hz, odr_acc=1*/
+        {0x004000, 640000, 0x003fff},/*640ms, 1.56hz, odr_acc=2*/
+        {0x002000, 320000, 0x001fff},/*320ms, 3.125hz, odr_acc=3*/
+        {0x001000, 160000, 0x000fff},/*160ms, 6.25hz, odr_acc=4*/
+        {0x000800, 80000,  0x0007ff},/*80ms, 12.5hz*/
+        {0x000400, 40000, 0x0003ff},/*40ms, 25hz, odr_acc = odr_gyro =6*/
+        {0x000200, 20000, 0x0001ff},/*20ms, 50hz, odr = 7*/
+        {0x000100, 10000, 0x0000ff},/*10ms, 100hz, odr=8*/
+        {0x000080, 5000, 0x00007f},/*5ms, 200hz, odr=9*/
+        {0x000040, 2500, 0x00003f},/*2.5ms, 400hz, odr=10*/
+        {0x000020, 1250, 0x00001f},/*1.25ms, 800hz, odr=11*/
+        {0x000010, 625, 0x00000f},/*0.625ms, 1600hz, odr=12*/
+
+};
+
+static unsigned char g_fifo_data_arr[2048];/*1024 + 12*4*/
 
 /*----------------------------------------------------------------------------*/
 static struct data_resolution bmi160_acc_data_resolution[1] = {
@@ -386,11 +334,50 @@ static struct data_resolution bmi160_acc_data_resolution[1] = {
 /*----------------------------------------------------------------------------*/
 static struct data_resolution bmi160_acc_offset_resolution = {{3, 9}, 256};
 
+#ifdef FIFO_READ_USE_DMA_MODE_I2C
+#include <linux/dma-mapping.h>
+
+#ifndef I2C_MASK_FLAG
+#define I2C_MASK_FLAG   (0x00ff)
+#define I2C_DMA_FLAG    (0x2000)
+#endif
+
+static void *I2CDMABuf_va = NULL;
+static dma_addr_t I2CDMABuf_pa;
+
+static int i2c_dma_read_fifo(struct i2c_client *client,
+		uint8_t regaddr, uint8_t *readbuf, int32_t readlen)
+{
+	int ret;
+	struct i2c_msg msg;
+
+	ret= i2c_master_send(client, &regaddr, 1);
+	if (ret < 0) {
+		GSE_ERR("send command error!!\n");
+		return -EFAULT;
+	}
+
+	msg.addr = (client->addr & I2C_MASK_FLAG) | I2C_DMA_FLAG;
+	msg.flags = client->flags & I2C_M_TEN;
+	msg.flags |= I2C_M_RD;
+	msg.len = readlen;
+	msg.buf = (char *)I2CDMABuf_pa;
+
+	ret = i2c_transfer(client->adapter, &msg, 1);
+	if (ret < 0) {
+		GSE_ERR("dma receive data error!!\n");
+		return -EFAULT;
+	}
+
+	memcpy(readbuf, I2CDMABuf_va, readlen);
+	return ret;
+}
+#endif
+
 /* I2C operation functions */
 static int bma_i2c_read_block(struct i2c_client *client,
 			u8 addr, u8 *data, u8 len)
 {
-#ifdef CONFIG_I2C_BASIC_FUNCTION
 	u8 beg = addr;
 	struct i2c_msg msgs[2] = {
 		{
@@ -421,19 +408,12 @@ static int bma_i2c_read_block(struct i2c_client *client,
 	}
 
 	return err;
-#else
-	int err = 0;
-	err = i2c_smbus_read_i2c_block_data(client, addr, len, data);
-	if (err < 0)
-		return -1;
-	return 0;
-#endif
 }
+
 #define I2C_BUFFER_SIZE 256
 static int bma_i2c_write_block(struct i2c_client *client, u8 addr,
 			u8 *data, u8 len)
 {
-#ifdef CONFIG_I2C_BASIC_FUNCTION
 	/*
 	*because address also occupies one byte,
 	*the maximum length for write is 7 bytes
@@ -460,38 +440,16 @@ static int bma_i2c_write_block(struct i2c_client *client, u8 addr,
 		err = 0;/*no error*/
 	}
 	return err;
-#else
-	int err = 0;
-	err = i2c_smbus_write_i2c_block_data(client, addr, len, data);
-	if (err < 0)
-		return -1;
+}
+
+bool __attribute__((weak)) hwPowerOn(MT65XX_POWER powerId, MT65XX_POWER_VOLTAGE powerVolt, char *mode_name)
+{
 	return 0;
-#endif
 }
 
-s8 bmi_i2c_read_wrapper(u8 dev_addr, u8 reg_addr, u8 *data, u8 len)
+bool __attribute__((weak)) hwPowerDown(MT65XX_POWER powerId, char *mode_name)
 {
-	int err = 0;
-	err = bma_i2c_read_block(bmi160_acc_i2c_client, reg_addr, data, len);
-	if (err < 0) {
-		GSE_ERR("read bmi160 i2c failed.\n");
-	}
-	return err;
-}
-
-s8 bmi_i2c_write_wrapper(u8 dev_addr, u8 reg_addr, u8 *data, u8 len)
-{
-	int err = 0;
-	err = bma_i2c_write_block(bmi160_acc_i2c_client, reg_addr, data, len);
-	if (err < 0) {
-		GSE_ERR("read bmi160 i2c failed.\n");
-	}
-	return err;
-}
-
-static void bmi_delay(u32 msec)
-{
-	mdelay(msec);
+	return 0;
 }
 
 /*--------------------BMI160_ACC power control function----------------------------------*/
@@ -559,10 +517,11 @@ static int BMI160_ACC_ReadData(struct i2c_client *client, s16 data[BMI160_ACC_AX
 
 	if(NULL == client)
 	{
-		err = -EINVAL;
+		return -EINVAL;
 	}
-	else if(err = bma_i2c_read_block(client, addr, buf, BMI160_ACC_DATA_LEN))
-	{
+
+	err = bma_i2c_read_block(client, addr, buf, BMI160_ACC_DATA_LEN);
+	if(err) {
 		GSE_ERR("error: %d\n", err);
 	}
 	else
@@ -638,8 +597,8 @@ static int BMI160_ACC_ReadOffset(struct i2c_client *client, s8 ofs[BMI160_ACC_AX
 #ifdef SW_CALIBRATION
 	ofs[0]=ofs[1]=ofs[2]=0x0;
 #else
-	if(err = bma_i2c_read_block(client, BMI160_ACC_REG_OFSX, ofs, BMI160_ACC_AXES_NUM))
-	{
+	err = bma_i2c_read_block(client, BMI160_ACC_REG_OFSX, ofs, BMI160_ACC_AXES_NUM);
+	if(err) {
 		GSE_ERR("error: %d\n", err);
 	}
 #endif
@@ -657,8 +616,8 @@ static int BMI160_ACC_ResetCalibration(struct i2c_client *client)
 
 	#else
 	u8 ofs[4]={0,0,0,0};
-	if(err = bma_i2c_write_block(client, BMI160_ACC_REG_OFSX, ofs, 4))
-	{
+	err = bma_i2c_write_block(client, BMI160_ACC_REG_OFSX, ofs, 4);
+	if(err) {
 		GSE_ERR("error: %d\n", err);
 	}
 	#endif
@@ -674,15 +633,16 @@ static int BMI160_ACC_ReadCalibration(struct i2c_client *client, int dat[BMI160_
     int err = 0;
     int mul;
 
-	#ifdef SW_CALIBRATION
-		mul = 0;//only SW Calibration, disable HW Calibration
-	#else
-	    if ((err = BMI160_ACC_ReadOffset(client, obj->offset))) {
-        GSE_ERR("read offset fail, %d\n", err);
-        return err;
-    	}
-    	mul = obj->reso->sensitivity/bmi160_acc_offset_resolution.sensitivity;
-	#endif
+#ifdef SW_CALIBRATION
+    mul = 0;//only SW Calibration, disable HW Calibration
+#else
+    err = BMI160_ACC_ReadOffset(client, obj->offset);
+    if(err) {
+	    GSE_ERR("read offset fail, %d\n", err);
+	    return err;
+    }
+    mul = obj->reso->sensitivity/bmi160_acc_offset_resolution.sensitivity;
+#endif
 
     dat[obj->cvt.map[BMI160_ACC_AXIS_X]] = obj->cvt.sign[BMI160_ACC_AXIS_X]*(obj->offset[BMI160_ACC_AXIS_X]*mul + obj->cali_sw[BMI160_ACC_AXIS_X]);
     dat[obj->cvt.map[BMI160_ACC_AXIS_Y]] = obj->cvt.sign[BMI160_ACC_AXIS_Y]*(obj->offset[BMI160_ACC_AXIS_Y]*mul + obj->cali_sw[BMI160_ACC_AXIS_Y]);
@@ -701,8 +661,8 @@ static int BMI160_ACC_ReadCalibrationEx(struct i2c_client *client, int act[BMI16
 	mul = 0;//only SW Calibration, disable HW Calibration
 #else
 	int err;
-	if(err = BMI160_ACC_ReadOffset(client, obj->offset))
-	{
+	err = BMI160_ACC_ReadOffset(client, obj->offset);
+	if(err) {
 		GSE_ERR("read offset fail, %d\n", err);
 		return err;
 	}
@@ -730,7 +690,8 @@ static int BMI160_ACC_WriteCalibration(struct i2c_client *client, int dat[BMI160
 	int divisor = obj->reso->sensitivity/lsb;
 #endif
 
-	if(err = BMI160_ACC_ReadCalibrationEx(client, cali, raw))	/*offset will be updated in obj->offset*/
+	err = BMI160_ACC_ReadCalibrationEx(client, cali, raw);
+	if(err)	/*offset will be updated in obj->offset*/
 	{
 		GSE_ERR("read offset fail, %d\n", err);
 		return err;
@@ -770,8 +731,8 @@ static int BMI160_ACC_WriteCalibration(struct i2c_client *client, int dat[BMI160
 		obj->offset[BMI160_ACC_AXIS_X], obj->offset[BMI160_ACC_AXIS_Y], obj->offset[BMI160_ACC_AXIS_Z],
 		obj->cali_sw[BMI160_ACC_AXIS_X], obj->cali_sw[BMI160_ACC_AXIS_Y], obj->cali_sw[BMI160_ACC_AXIS_Z]);
 
-	if(err = bma_i2c_write_block(obj->client, BMI160_ACC_REG_OFSX, obj->offset, BMI160_ACC_AXES_NUM))
-	{
+	err = bma_i2c_write_block(obj->client, BMI160_ACC_REG_OFSX, obj->offset, BMI160_ACC_AXES_NUM);
+	if(err) {
 		GSE_ERR("write offset fail: %d\n", err);
 		return err;
 	}
@@ -825,7 +786,7 @@ static int BMI160_ACC_SetPowerMode(struct i2c_client *client, bool enable)
 	}
 
 	mutex_lock(&obj->lock);
-	if(enable == true)
+	if(enable == TRUE)
 	{
 		databuf[0] = CMD_PMU_ACC_NORMAL;
 	}
@@ -902,6 +863,43 @@ static int BMI160_ACC_SetBWRate(struct i2c_client *client, u8 bwrate)
 
 	return BMI160_ACC_SUCCESS;
 }
+
+static int BMI160_ACC_SetOSR4(struct i2c_client *client)
+{
+	int res = 0;
+	uint8_t databuf[2] = {0};
+	struct bmi160_acc_i2c_data *obj = obj_i2c_data;
+	uint8_t bandwidth = BMI160_ACCEL_OSR4_AVG1;
+	/*      0       -       enable
+	 *      1       -       disable */
+	uint8_t accel_undersampling_parameter = 0;
+
+	GSE_LOG("[%s] acc_bmp %d, acc_us %d\n", __func__,
+			bandwidth, accel_undersampling_parameter);
+
+	mutex_lock(&obj->lock);
+	res = bma_i2c_read_block(client,
+		BMI160_USER_ACC_CONF_ODR__REG, &databuf[0], 1);
+	databuf[0] = BMI160_SET_BITSLICE(databuf[0],
+			BMI160_USER_ACC_CONF_ACC_BWP, bandwidth);
+	databuf[0] = BMI160_SET_BITSLICE(databuf[0],
+			BMI160_USER_ACC_CONF_ACC_UNDER_SAMPLING,
+			accel_undersampling_parameter);
+	res += bma_i2c_write_block(client,
+		BMI160_USER_ACC_CONF_ODR__REG, &databuf[0], 1);
+	mdelay(1);
+
+	if(res < 0)
+	{
+		GSE_ERR("set OSR failed, res = %d\n", res);
+		mutex_unlock(&obj->lock);
+		return BMI160_ACC_ERR_I2C;
+	}
+	mutex_unlock(&obj->lock);
+
+	return BMI160_ACC_SUCCESS;
+}
+
 /*----------------------------------------------------------------------------*/
 static int BMI160_ACC_SetIntEnable(struct i2c_client *client, u8 intenable)
 {
@@ -960,6 +958,13 @@ static int bmi160_acc_init_client(struct i2c_client *client, int reset_cali)
 		return res;
 	}
 	GSE_LOG("BMI160_ACC_SetBWRate OK!\n");
+
+	res = BMI160_ACC_SetOSR4(client);
+	if(res != BMI160_ACC_SUCCESS )
+	{
+		return res;
+	}
+	GSE_LOG("BMI160_ACC_SetOSR4 OK!\n");
 
 	res = BMI160_ACC_SetDataFormat(client, BMI160_ACCEL_RANGE_2G);
 	if(res != BMI160_ACC_SUCCESS)
@@ -1052,7 +1057,8 @@ static int BMI160_ACC_CompassReadData(struct i2c_client *client, char *buf, int 
 		}
 	}
 
-	if(res = BMI160_ACC_ReadData(client, databuf))
+	res = BMI160_ACC_ReadData(client, databuf);
+	if(res)
 	{
 		GSE_ERR("I2C error: ret value=%d", res);
 		return -3;
@@ -1101,7 +1107,7 @@ static int BMI160_ACC_ReadSensorData(struct i2c_client *client, char *buf, int b
 		return -2;
 	}
 
-	if(sensor_power == false)
+	if(sensor_power == FALSE)
 	{
 		res = BMI160_ACC_SetPowerMode(client, true);
 		if(res)
@@ -1110,7 +1116,8 @@ static int BMI160_ACC_ReadSensorData(struct i2c_client *client, char *buf, int b
 		}
 	}
 
-	if(res = BMI160_ACC_ReadData(client, databuf))
+	res = BMI160_ACC_ReadData(client, databuf);
+	if(res)
 	{
 		GSE_ERR("I2C error: ret value=%d", res);
 		return -3;
@@ -1147,6 +1154,7 @@ static int BMI160_ACC_ReadSensorData(struct i2c_client *client, char *buf, int b
 
 	return 0;
 }
+#ifdef MISC_FOR_DAEMON
 /*----------------------------------------------------------------------------*/
 static int BMI160_ACC_ReadRawData(struct i2c_client *client, char *buf)
 {
@@ -1158,7 +1166,8 @@ static int BMI160_ACC_ReadRawData(struct i2c_client *client, char *buf)
 		return EINVAL;
 	}
 
-	if(res = BMI160_ACC_ReadData(client, databuf))
+	res = BMI160_ACC_ReadData(client, databuf);
+	if(res)
 	{
 		GSE_ERR("I2C error: ret value=%d", res);
 		return EIO;
@@ -1171,6 +1180,7 @@ static int BMI160_ACC_ReadRawData(struct i2c_client *client, char *buf)
 
 	return 0;
 }
+#endif
 /*----------------------------------------------------------------------------*/
 static int bmi160_acc_set_mode(struct i2c_client *client, unsigned char mode)
 {
@@ -1324,77 +1334,7 @@ static int bmi160_acc_get_bandwidth(struct i2c_client *client, unsigned char *ba
 }
 
 /*----------------------------------------------------------------------------*/
-/* shaoyu: TODO, fix later */
-static int bmi160_acc_set_fifo_mode(struct i2c_client *client, unsigned char fifo_mode)
-{
-#if 0
-	int comres = 0;
-	unsigned char data[2] = {BMI160_ACC_FIFO_MODE__REG};
-	struct bmi160_acc_i2c_data *obj = obj_i2c_data;
-
-	if (client == NULL || fifo_mode >= 4)
-	{
-		return -1;
-	}
-
-	mutex_lock(&obj->lock);
-	comres = bma_i2c_read_block(client,
-			BMI160_ACC_FIFO_MODE__REG, data+1, 1);
-
-	data[1]  = BMI160_ACC_SET_BITSLICE(data[1],
-			BMI160_ACC_FIFO_MODE, fifo_mode);
-
-	comres = i2c_master_send(client, data, 2);
-	mutex_unlock(&obj->lock);
-	if(comres <= 0)
-	{
-		return BMI160_ACC_ERR_I2C;
-	}
-	else
-	{
-		return comres;
-	}
-#endif
-	return 0;
-}
-/*----------------------------------------------------------------------------*/
-/* shaoyu: TODO, fix later */
-static int bmi160_acc_get_fifo_mode(struct i2c_client *client, unsigned char *fifo_mode)
-{
-	int comres = 0;
-#if 0
-	unsigned char data;
-
-	if (client == NULL)
-	{
-		return -1;
-	}
-
-	comres = bma_i2c_read_block(client, BMI160_ACC_FIFO_MODE__REG, &data, 1);
-	*fifo_mode = BMI160_ACC_GET_BITSLICE(data, BMI160_ACC_FIFO_MODE);
-#endif
-
-	return comres;
-}
-
-/* shaoyu: TODO, fix later */
-static int bmi160_acc_get_fifo_framecount(struct i2c_client *client, unsigned char *framecount)
-{
-	int comres = 0;
-#if 0
-	unsigned char data;
-
-	if (client == NULL)
-	{
-		return -1;
-	}
-
-	comres = bma_i2c_read_block(client, BMI160_ACC_FIFO_FRAME_COUNTER_S__REG, &data, 1);
-	*framecount = BMI160_ACC_GET_BITSLICE(data, BMI160_ACC_FIFO_FRAME_COUNTER_S);
-#endif
-	return comres;
-}
-
+#ifdef MISC_FOR_DAEMON
 //tad3sgh add++
 // Daemon application save the data
 static int ECS_SaveData(int buf[CALIBRATION_DATA_SIZE])
@@ -1468,6 +1408,7 @@ static int ECS_SaveData(int buf[CALIBRATION_DATA_SIZE])
 
 	return 0;
 }
+#endif
 
 //tad3sgh add--
 /*----------------------------------------------------------------------------*/
@@ -1513,7 +1454,8 @@ static ssize_t store_cpsopmode_value(struct device_driver *ddri, const char *buf
 	unsigned long data;
 	int error;
 
-	if (error = strict_strtoul(buf, 10, &data))
+	error = strict_strtoul(buf, 10, &data);
+	if (error)
 	{
 		return error;
 	}
@@ -1527,7 +1469,7 @@ static ssize_t store_cpsopmode_value(struct device_driver *ddri, const char *buf
 	}
 	else if (bmi160_acc_set_mode(bmi160_acc_i2c_client, (unsigned char) data) < 0)
 	{
-		GSE_ERR("invalid content: '%s', length = %lu\n", buf, count);
+		GSE_ERR("invalid content: '%s', length = %ld\n", buf, count);
 	}
 
 	return count;
@@ -1560,13 +1502,14 @@ static ssize_t store_cpsrange_value(struct device_driver *ddri, const char *buf,
 	unsigned long data;
 	int error;
 
-	if (error = strict_strtoul(buf, 10, &data))
+	error = strict_strtoul(buf, 10, &data);
+	if (error)
 	{
 		return error;
 	}
 	if (bmi160_acc_set_range(bmi160_acc_i2c_client, (unsigned char) data) < 0)
 	{
-		GSE_ERR("invalid content: '%s', length = %lu\n", buf, count);
+		GSE_ERR("invalid content: '%s', length = %ld\n", buf, count);
 	}
 
 	return count;
@@ -1598,13 +1541,14 @@ static ssize_t store_cpsbandwidth_value(struct device_driver *ddri, const char *
 	unsigned long data;
 	int error;
 
-	if (error = strict_strtoul(buf, 10, &data))
+	error = strict_strtoul(buf, 10, &data);
+	if (error)
 	{
 		return error;
 	}
 	if (bmi160_acc_set_bandwidth(bmi160_acc_i2c_client, (unsigned char) data) < 0)
 	{
-		GSE_ERR("invalid content: '%s', length = %lu\n", buf, count);
+		GSE_ERR("invalid content: '%s', length = %ld\n", buf, count);
 	}
 
 	return count;
@@ -1660,12 +1604,14 @@ static ssize_t show_cali_value(struct device_driver *ddri, char *buf)
 
 	obj = obj_i2c_data;
 
-	if(err = BMI160_ACC_ReadOffset(client, obj->offset))
+	err = BMI160_ACC_ReadOffset(client, obj->offset);
+	if(err)
 	{
 		return -EINVAL;
 	}
-	else if(err = BMI160_ACC_ReadCalibration(client, tmp))
-	{
+
+	err = BMI160_ACC_ReadCalibration(client, tmp);
+	if(err) {
 		return -EINVAL;
 	}
 	else
@@ -1695,8 +1641,8 @@ static ssize_t store_cali_value(struct device_driver *ddri, const char *buf, siz
 
 	if(!strncmp(buf, "rst", 3))
 	{
-		if(err = BMI160_ACC_ResetCalibration(client))
-		{
+		err = BMI160_ACC_ResetCalibration(client);
+		if(err) {
 			GSE_ERR("reset offset err = %d\n", err);
 		}
 	}
@@ -1705,7 +1651,8 @@ static ssize_t store_cali_value(struct device_driver *ddri, const char *buf, siz
 		dat[BMI160_ACC_AXIS_X] = x;
 		dat[BMI160_ACC_AXIS_Y] = y;
 		dat[BMI160_ACC_AXIS_Z] = z;
-		if(err = BMI160_ACC_WriteCalibration(client, dat))
+		err = BMI160_ACC_WriteCalibration(client, dat);
+		if(err)
 		{
 			GSE_ERR("write calibration err = %d\n", err);
 		}
@@ -1806,7 +1753,7 @@ static ssize_t store_trace_value(struct device_driver *ddri, const char *buf, si
 	}
 	else
 	{
-		GSE_ERR("invalid content: '%s', length = %lu\n", buf, count);
+		GSE_ERR("invalid content: '%s', length = %ld\n", buf, count);
 	}
 
 	return count;
@@ -1845,117 +1792,586 @@ static ssize_t show_power_status_value(struct device_driver *ddri, char *buf)
 }
 
 /*----------------------------------------------------------------------------*/
-static ssize_t show_fifo_mode_value(struct device_driver *ddri, char *buf)
+static void bmi_fifo_frame_bytes_extend_calc(
+	struct bmi160_acc_i2c_data *client_data,
+	unsigned int *fifo_frmbytes_extend)
 {
-	unsigned char data=0;
-
-	if (bmi160_acc_get_fifo_mode(bmi160_acc_i2c_client, &data) < 0)
-	{
-		return sprintf(buf, "Read error\n");
-	}
-	else
-	{
-		return sprintf(buf, "%d\n", data);
-	}
+	switch (client_data->fifo_data_sel) {
+	case BMI_FIFO_A_SEL:
+	case BMI_FIFO_G_SEL:
+		*fifo_frmbytes_extend = 7;
+		break;
+	case BMI_FIFO_G_A_SEL:
+		*fifo_frmbytes_extend = 13;
+		break;
+	case BMI_FIFO_M_SEL:
+		*fifo_frmbytes_extend = 9;
+		break;
+	case BMI_FIFO_M_A_SEL:
+	case BMI_FIFO_M_G_SEL:
+		/*8(mag) + 6(gyro or acc) +1(head) = 15*/
+		*fifo_frmbytes_extend = 15;
+		break;
+	case BMI_FIFO_M_G_A_SEL:
+		/*8(mag) + 6(gyro or acc) + 6 + 1 = 21*/
+		*fifo_frmbytes_extend = 21;
+		break;
+	default:
+		*fifo_frmbytes_extend = 0;
+		break;
+	};
 }
 
-/*----------------------------------------------------------------------------*/
-static ssize_t store_fifo_mode_value(struct device_driver *ddri, const char *buf, size_t count)
+static int bmi_fifo_analysis_handle(struct bmi160_acc_i2c_data *client_data,
+				u8 *fifo_data, u16 fifo_length, char *buf)
 {
-	unsigned long data;
-	int error;
-
-	if (error = strict_strtoul(buf, 10, &data))
-	{
-		return error;
-	}
-	if (bmi160_acc_set_fifo_mode(bmi160_acc_i2c_client, (unsigned char) data) < 0)
-	{
-		GSE_ERR("invalid content: '%s', length = %lu\n", buf, count);
-	}
-
-	return count;
-}
-
-/*----------------------------------------------------------------------------*/
-static ssize_t show_fifo_framecount_value(struct device_driver *ddri, char *buf)
-{
-	unsigned char data=0;
-
-	if (bmi160_acc_get_fifo_framecount(bmi160_acc_i2c_client, &data) < 0)
-	{
-		return sprintf(buf, "Read error\n");
-	}
-	else
-	{
-		return sprintf(buf, "%d\n", data);
-	}
-}
-
-/*----------------------------------------------------------------------------*/
-static ssize_t store_fifo_framecount_value(struct device_driver *ddri, const char *buf, size_t count)
-{
-	unsigned long data;
-	int error;
+	u8 frame_head = 0;/* every frame head*/
+	int len = 0;
+	u8 acc_frm_cnt = 0;/*0~146*/
+	u8 gyro_frm_cnt = 0;
+	u64 fifo_time = 0;
+	static u32 current_frm_ts;
+	u16 fifo_index = 0;/* fifo data buff index*/
+	u16 i = 0;
+	s8 last_return_st = 0;
+	int err = 0;
+	unsigned int frame_bytes = 0;
+	struct bmi160acc_t acc_frame_arr[FIFO_FRAME_CNT], acc_tmp;
+	struct bmi160gyro_t gyro_frame_arr[FIFO_FRAME_CNT], gyro_tmp;
 	struct bmi160_acc_i2c_data *obj = obj_i2c_data;
 
-	if (error = strict_strtoul(buf, 10, &data))
-	{
-		return error;
+	struct odr_t odr;
+
+	memset(&odr, 0, sizeof(odr));
+	for (i = 0; i < FIFO_FRAME_CNT; i++) {
+		memset(&acc_frame_arr[i], 0, sizeof(struct bmi160acc_t));
+		memset(&gyro_frame_arr[i], 0, sizeof(struct bmi160gyro_t));
 	}
-	mutex_lock(&obj->lock);
-	obj->fifo_count = (unsigned char)data;
-	mutex_unlock(&obj->lock);
 
-	return count;
-}
-
-
-/*----------------------------------------------------------------------------*/
-/* shaoyu: TODO, fix later */
-static ssize_t show_fifo_data_out_frame_value(struct device_driver *ddri, char *buf)
-{
-#if 0
-	int err = 0, i, len = 0;
-	int addr = 0;
-	u8 fifo_data_out[MAX_FIFO_F_BYTES] = {0};
-	/* Select X Y Z axis data output for every fifo frame, not single axis data */
-	unsigned char f_len = 6;/* FIXME: ONLY USE 3-AXIS */
-	struct bmi160_acc_i2c_data *obj = obj_i2c_data;
-	s16 acc[BMI160_ACC_AXES_NUM];
-	s16 databuf[BMI160_ACC_AXES_NUM];
-
-	if (obj->fifo_count == 0) {
+	/* no fifo select for bmi sensor*/
+	if (!client_data->fifo_data_sel) {
+		GSE_ERR("No select any sensor FIFO for BMI16x\n");
 		return -EINVAL;
 	}
 
-	for (i = 0; i < obj->fifo_count; i++) {
-		if (bma_i2c_read_block(bmi160_acc_i2c_client,
-			BMI160_ACC_FIFO_DATA_OUTPUT_REG, fifo_data_out, f_len) < 0)
-		{
-			GSE_ERR("[a]fatal error\n");
-			return sprintf(buf, "Read byte block error\n");
-		}
-		/*data combination*/
-		databuf[BMI160_ACC_AXIS_X] = ((s16)(((u16)fifo_data_out[1] << 8) |
-						(u16)fifo_data_out[0])) >> 6;
-		databuf[BMI160_ACC_AXIS_Y] = ((s16)(((u16)fifo_data_out[3] << 8) |
-						(u16)fifo_data_out[2])) >> 6;
-		databuf[BMI160_ACC_AXIS_Z] = ((s16)(((u16)fifo_data_out[5] << 8) |
-						(u16)fifo_data_out[4])) >> 6;
-		/*axis remap*/
-		acc[obj->cvt.map[BMI160_ACC_AXIS_X]] = obj->cvt.sign[BMI160_ACC_AXIS_X]*databuf[BMI160_ACC_AXIS_X];
-		acc[obj->cvt.map[BMI160_ACC_AXIS_Y]] = obj->cvt.sign[BMI160_ACC_AXIS_Y]*databuf[BMI160_ACC_AXIS_Y];
-		acc[obj->cvt.map[BMI160_ACC_AXIS_Z]] = obj->cvt.sign[BMI160_ACC_AXIS_Z]*databuf[BMI160_ACC_AXIS_Z];
+	/*driver need read acc_odr/gyro_odr/mag_odr*/
+	if ((client_data->fifo_data_sel) & (1 << BMI_ACC_SENSOR))
+		odr.acc_odr = client_data->odr.acc_odr;
+	if ((client_data->fifo_data_sel) & (1 << BMI_GYRO_SENSOR))
+		odr.gyro_odr = client_data->odr.gyro_odr;
+	if ((client_data->fifo_data_sel) & (1 << BMI_MAG_SENSOR))
+		odr.mag_odr = client_data->odr.mag_odr;
+	bmi_fifo_frame_bytes_extend_calc(client_data, &frame_bytes);
+	/* search sensor time sub function firstly */
+	for (fifo_index = 0; fifo_index < fifo_length;) {
 
-		len = sprintf(buf, "%d %d %d ", acc[BMI160_ACC_AXIS_X], acc[BMI160_ACC_AXIS_Y], acc[BMI160_ACC_AXIS_Z]);
-		buf += len;
-		err += len;
+		frame_head = fifo_data[fifo_index];
+
+		switch (frame_head) {
+			/*skip frame 0x40 22 0x84*/
+			case FIFO_HEAD_SKIP_FRAME:
+				/*fifo data frame index + 1*/
+				fifo_index = fifo_index + 1;
+				if (fifo_index + 1 > fifo_length) {
+					last_return_st = FIFO_SKIP_OVER_LEN;
+					break;
+				}
+				/*skip_frame_cnt = fifo_data[fifo_index];*/
+				fifo_index = fifo_index + 1;
+				break;
+
+				/*M & G & A*/
+			case FIFO_HEAD_M_G_A:
+				{/*fifo data frame index + 1*/
+					fifo_index = fifo_index + 1;
+					if (fifo_index + MGA_BYTES_FRM > fifo_length) {
+						last_return_st = FIFO_M_G_A_OVER_LEN;
+						break;
+					}
+
+					fifo_index = fifo_index + MGA_BYTES_FRM;
+					break;
+				}
+
+			case FIFO_HEAD_M_A:
+				{/*fifo data frame index + 1*/
+					fifo_index = fifo_index + 1;
+					if (fifo_index + MA_BYTES_FRM > fifo_length) {
+						last_return_st = FIFO_M_A_OVER_LEN;
+						break;
+					}
+
+					fifo_index = fifo_index + MA_BYTES_FRM;
+					break;
+				}
+
+			case FIFO_HEAD_M_G:
+				{/*fifo data frame index + 1*/
+					fifo_index = fifo_index + 1;
+					if (fifo_index + MG_BYTES_FRM > fifo_length) {
+						last_return_st = FIFO_M_G_OVER_LEN;
+						break;
+					}
+
+					fifo_index = fifo_index + MG_BYTES_FRM;
+					break;
+				}
+
+			case FIFO_HEAD_G_A:
+				{	/*fifo data frame index + 1*/
+					fifo_index = fifo_index + 1;
+					if (fifo_index + GA_BYTES_FRM > fifo_length) {
+						last_return_st = FIFO_G_A_OVER_LEN;
+						break;
+					}
+
+					gyro_tmp.x = fifo_data[fifo_index + 1] << 8 | fifo_data[fifo_index + 0];
+					gyro_tmp.y = fifo_data[fifo_index + 3] << 8 | fifo_data[fifo_index + 2];
+					gyro_tmp.z = fifo_data[fifo_index + 5] << 8 | fifo_data[fifo_index + 4];
+
+					acc_tmp.x = fifo_data[fifo_index + 7] << 8 | fifo_data[fifo_index + 6];
+					acc_tmp.y = fifo_data[fifo_index + 9] << 8 | fifo_data[fifo_index + 8];
+					acc_tmp.z = fifo_data[fifo_index + 11] << 8 | fifo_data[fifo_index + 10];
+
+					gyro_frame_arr[gyro_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_X]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_X]*gyro_tmp.v[BMI160_ACC_AXIS_X];
+					gyro_frame_arr[gyro_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_Y]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_Y]*gyro_tmp.v[BMI160_ACC_AXIS_Y];
+					gyro_frame_arr[gyro_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_Z]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_Z]*gyro_tmp.v[BMI160_ACC_AXIS_Z];
+
+					acc_frame_arr[acc_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_X]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_X]*acc_tmp.v[BMI160_ACC_AXIS_X];
+					acc_frame_arr[acc_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_Y]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_Y]*acc_tmp.v[BMI160_ACC_AXIS_Y];
+					acc_frame_arr[acc_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_Z]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_Z]*acc_tmp.v[BMI160_ACC_AXIS_Z];
+
+					gyro_frm_cnt++;
+					acc_frm_cnt++;
+					fifo_index = fifo_index + GA_BYTES_FRM;
+
+					break;
+				}
+			case FIFO_HEAD_A:
+				{	/*fifo data frame index + 1*/
+					fifo_index = fifo_index + 1;
+					if (fifo_index + A_BYTES_FRM > fifo_length) {
+						last_return_st = FIFO_A_OVER_LEN;
+						break;
+					}
+
+					acc_tmp.x = fifo_data[fifo_index + 1] << 8 | fifo_data[fifo_index + 0];
+					acc_tmp.y = fifo_data[fifo_index + 3] << 8 | fifo_data[fifo_index + 2];
+					acc_tmp.z = fifo_data[fifo_index + 5] << 8 | fifo_data[fifo_index + 4];
+
+					acc_frame_arr[acc_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_X]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_X]*acc_tmp.v[BMI160_ACC_AXIS_X];
+					acc_frame_arr[acc_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_Y]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_Y]*acc_tmp.v[BMI160_ACC_AXIS_Y];
+					acc_frame_arr[acc_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_Z]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_Z]*acc_tmp.v[BMI160_ACC_AXIS_Z];
+
+					acc_frm_cnt++;/*acc_frm_cnt*/
+					fifo_index = fifo_index + A_BYTES_FRM;
+					break;
+				}
+			case FIFO_HEAD_G:
+				{	/*fifo data frame index + 1*/
+					fifo_index = fifo_index + 1;
+					if (fifo_index + G_BYTES_FRM > fifo_length) {
+						last_return_st = FIFO_G_OVER_LEN;
+						break;
+					}
+
+					gyro_tmp.x = fifo_data[fifo_index + 1] << 8 | fifo_data[fifo_index + 0];
+					gyro_tmp.y = fifo_data[fifo_index + 3] << 8 | fifo_data[fifo_index + 2];
+					gyro_tmp.z = fifo_data[fifo_index + 5] << 8 | fifo_data[fifo_index + 4];
+
+					gyro_frame_arr[gyro_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_X]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_X]*gyro_tmp.v[BMI160_ACC_AXIS_X];
+					gyro_frame_arr[gyro_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_Y]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_Y]*gyro_tmp.v[BMI160_ACC_AXIS_Y];
+					gyro_frame_arr[gyro_frm_cnt].v[obj->cvt.map[BMI160_ACC_AXIS_Z]] =
+						obj->cvt.sign[BMI160_ACC_AXIS_Z]*gyro_tmp.v[BMI160_ACC_AXIS_Z];
+
+					gyro_frm_cnt++;/*gyro_frm_cnt*/
+
+					fifo_index = fifo_index + G_BYTES_FRM;
+					break;
+				}
+			case FIFO_HEAD_M:
+				{	/*fifo data frame index + 1*/
+					fifo_index = fifo_index + 1;
+					if (fifo_index + A_BYTES_FRM > fifo_length) {
+						last_return_st = FIFO_M_OVER_LEN;
+						break;
+					}
+
+					fifo_index = fifo_index + M_BYTES_FRM;
+					break;
+				}
+
+				/* sensor time frame*/
+			case FIFO_HEAD_SENSOR_TIME:
+				{
+					/*fifo data frame index + 1*/
+					fifo_index = fifo_index + 1;
+
+					if (fifo_index + 3 > fifo_length) {
+						last_return_st = FIFO_SENSORTIME_RETURN;
+						break;
+					}
+					fifo_time =
+						fifo_data[fifo_index + 2] << 16 |
+						fifo_data[fifo_index + 1] << 8 |
+						fifo_data[fifo_index + 0];
+
+					client_data->fifo_time = fifo_time;
+					/*fifo sensor time frame index + 3*/
+					fifo_index = fifo_index + 3;
+					break;
+				}
+			case FIFO_HEAD_OVER_READ_LSB:
+				/*fifo data frame index + 1*/
+				fifo_index = fifo_index + 1;
+
+				if (fifo_index + 1 > fifo_length) {
+					last_return_st = FIFO_OVER_READ_RETURN;
+					break;
+				}
+				if (fifo_data[fifo_index] ==
+						FIFO_HEAD_OVER_READ_MSB) {
+					/*fifo over read frame index + 1*/
+					fifo_index = fifo_index + 1;
+					break;
+				} else {
+					last_return_st = FIFO_OVER_READ_RETURN;
+					break;
+				}
+
+			default:
+				last_return_st = 1;
+				break;
+
+		}
+		if (last_return_st)
+			break;
+	}
+	fifo_time = 0;
+
+	/*Acc Only*/
+	if (client_data->fifo_data_sel == BMI_FIFO_A_SEL) {
+		for (i = 0; i < acc_frm_cnt; i++) {
+			/*current_frm_ts += 256;*/
+			current_frm_ts +=
+				sensortime_duration_tbl[odr.acc_odr].ts_duration_us*LMADA;
+
+			len = sprintf(buf, "%s %d %d %d %d ",
+					ACC_FIFO_HEAD,
+					acc_frame_arr[i].x,
+					acc_frame_arr[i].y,
+					acc_frame_arr[i].z,
+					current_frm_ts);
+			buf += len;
+			err += len;
+		}
+	}
+
+
+	/*only for G*/
+	if (client_data->fifo_data_sel == BMI_FIFO_G_SEL) {
+		for (i = 0; i < gyro_frm_cnt; i++) {
+			/*current_frm_ts += 256;*/
+			current_frm_ts +=
+				sensortime_duration_tbl[odr.gyro_odr].ts_duration_us*LMADA;
+
+			len = sprintf(buf, "%s %d %d %d %d ",
+					GYRO_FIFO_HEAD,
+					gyro_frame_arr[i].x,
+					gyro_frame_arr[i].y,
+					gyro_frame_arr[i].z,
+					current_frm_ts
+				     );
+			buf += len;
+			err += len;
+		}
+	}
+
+	/*only for A G*/
+	if (client_data->fifo_data_sel == BMI_FIFO_G_A_SEL) {
+
+		for (i = 0; i < gyro_frm_cnt; i++) {
+			/*sensor timeLSB*/
+			/*dia(sensor_time) = fifo_time & (0xff), uint:LSB, 39.0625us*/
+			/*AP tinmestamp 390625/10000 = 625 /16 */
+			current_frm_ts +=
+				sensortime_duration_tbl[odr.gyro_odr].ts_duration_us*LMADA;
+
+			len = sprintf(buf,
+					"%s %d %d %d %d %s %d %d %d %d ",
+					GYRO_FIFO_HEAD,
+					gyro_frame_arr[i].x,
+					gyro_frame_arr[i].y,
+					gyro_frame_arr[i].z,
+					current_frm_ts,
+					ACC_FIFO_HEAD,
+					acc_frame_arr[i].x,
+					acc_frame_arr[i].y,
+					acc_frame_arr[i].z,
+					current_frm_ts
+				     );
+
+			buf += len;
+			err += len;
+		}
+
 	}
 
 	return err;
+}
+
+static int bmi160_fifo_length(uint32_t *fifo_length)
+{
+        int comres=0;
+	struct i2c_client *client = bmi160_acc_i2c_client;
+        uint8_t a_data_u8r[2] = {0, 0};
+
+	comres += bma_i2c_read_block(client, BMI160_USER_FIFO_BYTE_COUNTER_LSB__REG, a_data_u8r, 2);
+	a_data_u8r[1] = BMI160_GET_BITSLICE(a_data_u8r[1], BMI160_USER_FIFO_BYTE_COUNTER_MSB);
+	*fifo_length = (uint32_t)(((uint32_t)((uint8_t)(a_data_u8r[1])<<BMI160_SHIFT_8_POSITION)) | a_data_u8r[0]);
+
+        return comres;
+}
+
+int bmi160_set_command_register(u8 cmd_reg)
+{
+        int comres=0;
+	struct i2c_client *client = bmi160_acc_i2c_client;
+
+	comres += bma_i2c_write_block(client, BMI160_CMD_COMMANDS__REG, &cmd_reg, 1);
+
+        return comres;
+}
+
+static ssize_t bmi160_fifo_bytecount_show(struct device_driver *ddri, char *buf)
+{
+        int comres=0;
+        uint32_t fifo_bytecount = 0;
+        uint8_t a_data_u8r[2] = {0, 0};
+	struct i2c_client *client = bmi160_acc_i2c_client;
+
+	comres += bma_i2c_read_block(client, BMI160_USER_FIFO_BYTE_COUNTER_LSB__REG, a_data_u8r, 2);
+	a_data_u8r[1] = BMI160_GET_BITSLICE(a_data_u8r[1], BMI160_USER_FIFO_BYTE_COUNTER_MSB);
+	fifo_bytecount = (uint32_t)(((uint32_t)((uint8_t)(a_data_u8r[1])<<BMI160_SHIFT_8_POSITION)) | a_data_u8r[0]);
+
+        comres = sprintf(buf, "%u\n", fifo_bytecount);
+        return comres;
+}
+
+static ssize_t bmi160_fifo_bytecount_store(struct device_driver *ddri, const char *buf, size_t count)
+{
+        struct bmi160_acc_i2c_data *client_data = obj_i2c_data;
+        int err;
+        unsigned long data;
+        err = kstrtoul(buf, 10, &data);
+        if (err)
+                return err;
+        client_data->fifo_bytecount = (unsigned int) data;
+
+        return count;
+}
+
+static int bmi160_fifo_data_sel_get(struct bmi160_acc_i2c_data *client_data)
+{
+        int err = 0;
+	struct i2c_client *client = bmi160_acc_i2c_client;
+	unsigned char data;
+        unsigned char fifo_acc_en, fifo_gyro_en, fifo_mag_en;
+        unsigned char fifo_datasel;
+
+
+	err = bma_i2c_read_block(client, BMI160_USER_FIFO_ACC_EN__REG, &data, 1);
+	fifo_acc_en = BMI160_GET_BITSLICE(data, BMI160_USER_FIFO_ACC_EN);
+
+	err += bma_i2c_read_block(client, BMI160_USER_FIFO_GYRO_EN__REG, &data, 1);
+	fifo_gyro_en = BMI160_GET_BITSLICE(data, BMI160_USER_FIFO_GYRO_EN);
+
+	err += bma_i2c_read_block(client, BMI160_USER_FIFO_MAG_EN__REG, &data, 1);
+	fifo_mag_en = BMI160_GET_BITSLICE(data, BMI160_USER_FIFO_MAG_EN);
+
+        if (err)
+                return err;
+
+        fifo_datasel = (fifo_acc_en << BMI_ACC_SENSOR) |
+                        (fifo_gyro_en << BMI_GYRO_SENSOR) |
+                                (fifo_mag_en << BMI_MAG_SENSOR);
+
+	client_data->fifo_data_sel = fifo_datasel;
+
+        return err;
+}
+
+static ssize_t bmi160_fifo_data_sel_show(struct device_driver *ddri, char *buf)
+{
+        int err = 0;
+        struct bmi160_acc_i2c_data *client_data = obj_i2c_data;
+        err = bmi160_fifo_data_sel_get(client_data);
+        if (err)
+                return -EINVAL;
+        return sprintf(buf, "%d\n", client_data->fifo_data_sel);
+}
+
+static ssize_t bmi160_fifo_data_sel_store(struct device_driver *ddri, const char *buf, size_t count)
+{
+        struct bmi160_acc_i2c_data *client_data = obj_i2c_data;
+	struct i2c_client *client = bmi160_acc_i2c_client;
+        int err;
+        unsigned long data;
+        unsigned char fifo_datasel;
+        unsigned char fifo_acc_en, fifo_gyro_en, fifo_mag_en;
+
+        err = kstrtoul(buf, 10, &data);
+        if (err)
+                return err;
+        /* data format: aimed 0b0000 0x(m)x(g)x(a), x:1 enable, 0:disable*/
+        if (data > 7)
+                return -EINVAL;
+
+
+        fifo_datasel = (unsigned char)data;
+	fifo_acc_en = fifo_datasel & (1 << BMI_ACC_SENSOR) ? 1 : 0;
+	fifo_gyro_en = fifo_datasel & (1 << BMI_GYRO_SENSOR) ? 1 : 0;
+	fifo_mag_en = fifo_datasel & (1 << BMI_MAG_SENSOR) ? 1 : 0;
+
+	err += bma_i2c_read_block(client, BMI160_USER_FIFO_ACC_EN__REG, &fifo_datasel, 1);
+	fifo_datasel = BMI160_SET_BITSLICE(fifo_datasel, BMI160_USER_FIFO_ACC_EN, fifo_acc_en);
+	err += bma_i2c_write_block(client, BMI160_USER_FIFO_ACC_EN__REG, &fifo_datasel, 1);
+
+	err += bma_i2c_read_block(client, BMI160_USER_FIFO_GYRO_EN__REG, &fifo_datasel, 1);
+	fifo_datasel = BMI160_SET_BITSLICE(fifo_datasel, BMI160_USER_FIFO_GYRO_EN, fifo_gyro_en);
+	err += bma_i2c_write_block(client, BMI160_USER_FIFO_GYRO_EN__REG, &fifo_datasel, 1);
+
+	err += bma_i2c_read_block(client, BMI160_USER_FIFO_MAG_EN__REG, &fifo_datasel, 1);
+	fifo_datasel = BMI160_SET_BITSLICE(fifo_datasel, BMI160_USER_FIFO_MAG_EN, fifo_mag_en);
+	err += bma_i2c_write_block(client, BMI160_USER_FIFO_MAG_EN__REG, &fifo_datasel, 1);
+
+        if (err)
+                return -EIO;
+
+	client_data->fifo_data_sel = (unsigned char)data;
+	GSE_LOG("FIFO fifo_data_sel %d, A_en:%d, G_en:%d, M_en:%d\n",
+			client_data->fifo_data_sel, fifo_acc_en, fifo_gyro_en, fifo_mag_en);
+
+        return count;
+}
+
+static ssize_t bmi160_fifo_data_out_frame_show(struct device_driver *ddri, char *buf)
+{
+	struct i2c_client *client = bmi160_acc_i2c_client;
+	struct bmi160_acc_i2c_data *client_data = obj_i2c_data;
+	int err = 0;
+	unsigned int fifo_bytecount_tmp;
+	if (NULL == g_fifo_data_arr) {
+		GSE_ERR("no memory available in fifo_data_frame\n");
+		return -ENOMEM;
+	}
+
+	if (!client_data->fifo_data_sel)
+		return sprintf(buf, "no selsect sensor fifo, fifo_data_sel:%d\n",
+				client_data->fifo_data_sel);
+
+	if (client_data->fifo_bytecount == 0)
+		return -EINVAL;
+
+	//g_current_apts_us = get_current_timestamp();
+
+	bmi160_fifo_length(&fifo_bytecount_tmp);
+	if (fifo_bytecount_tmp > client_data->fifo_bytecount)
+		client_data->fifo_bytecount = fifo_bytecount_tmp;
+	if (client_data->fifo_bytecount > 210) {
+		err += bmi160_set_command_register(CMD_CLR_FIFO_DATA);
+		client_data->fifo_bytecount = 210;
+	}
+	if (!err) {
+		memset(g_fifo_data_arr, 0, 2048);
+#ifdef FIFO_READ_USE_DMA_MODE_I2C
+		err = i2c_dma_read_fifo(client, BMI160_USER_FIFO_DATA__REG, 
+				g_fifo_data_arr, client_data->fifo_bytecount);
+#else
+		err = bma_i2c_read_block(client, BMI160_USER_FIFO_DATA__REG, 
+				g_fifo_data_arr, client_data->fifo_bytecount);
 #endif
-	return 0;
+	} else
+		GSE_ERR("read fifo leght err");
+	if (err) {
+		GSE_ERR("brust read fifo err\n");
+		return err;
+	}
+
+#define isprint(a) ((a >=' ')&&(a <= '~'))
+	if (0) {
+		int len = client_data->fifo_bytecount;
+		const char *ptr = g_fifo_data_arr;
+		int i, j;
+
+		for (i = 0; i < len; i += 16) {
+			printk(KERN_INFO "%.8x:", i);
+			for (j = 0; j < 16; j++) {
+				if (!(j % 4))
+					printk(" ");
+				printk("%.2x", ptr[i + j]);
+			}
+			printk(" ");
+			for (j = 0; j < 16; j++)
+				printk("%c", isprint(ptr[i + j]) ? ptr[i + j] : '.');
+			printk("\n");
+		}
+	}
+
+	err = bmi_fifo_analysis_handle(client_data, g_fifo_data_arr,
+			client_data->fifo_bytecount, buf);
+
+	return err;
+}
+
+static ssize_t show_layout_value(struct device_driver *ddri, char *buf)
+{
+	struct bmi160_acc_i2c_data *data = obj_i2c_data;
+
+	return sprintf(buf, "(%d, %d)\n[%+2d %+2d %+2d]\n[%+2d %+2d %+2d]\n",
+		data->hw->direction,atomic_read(&data->layout),	data->cvt.sign[0], data->cvt.sign[1],
+		data->cvt.sign[2],data->cvt.map[0], data->cvt.map[1], data->cvt.map[2]);            
+}
+/*----------------------------------------------------------------------------*/
+static ssize_t store_layout_value(struct device_driver *ddri, const char *buf, size_t count)
+{
+	struct bmi160_acc_i2c_data *data = obj_i2c_data;
+	int layout = 0;
+
+	if(1 == sscanf(buf, "%d", &layout))
+	{
+		atomic_set(&data->layout, layout);
+		if(!hwmsen_get_convert(layout, &data->cvt))
+		{
+			GSE_ERR( "HWMSEN_GET_CONVERT function error!\r\n");
+		}
+		else if(!hwmsen_get_convert(data->hw->direction, &data->cvt))
+		{
+			GSE_ERR( "invalid layout: %d, restore to %d\n", layout, data->hw->direction);
+		}
+		else
+		{
+			GSE_ERR( "invalid layout: (%d, %d)\n", layout, data->hw->direction);
+			hwmsen_get_convert(0, &data->cvt);
+		}
+	}
+	else
+	{
+		GSE_ERR( "invalid format = '%s'\n", buf);
+	}
+	
+	return count;            
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1970,9 +2386,11 @@ static DRIVER_ATTR(firlen,     S_IWUSR | S_IRUGO, show_firlen_value,        stor
 static DRIVER_ATTR(trace,      S_IWUSR | S_IRUGO, show_trace_value,         store_trace_value);
 static DRIVER_ATTR(status,               S_IRUGO, show_status_value,        NULL);
 static DRIVER_ATTR(powerstatus,               S_IRUGO, show_power_status_value,        NULL);
-static DRIVER_ATTR(fifo_mode, S_IWUSR | S_IRUGO, show_fifo_mode_value,    store_fifo_mode_value);
-static DRIVER_ATTR(fifo_framecount, S_IWUSR | S_IRUGO, show_fifo_framecount_value,    store_fifo_framecount_value);
-static DRIVER_ATTR(fifo_data_frame, S_IRUGO, show_fifo_data_out_frame_value,    NULL);
+
+static DRIVER_ATTR(fifo_bytecount, S_IRUGO | S_IWUSR, bmi160_fifo_bytecount_show, bmi160_fifo_bytecount_store);
+static DRIVER_ATTR(fifo_data_sel, S_IRUGO | S_IWUSR, bmi160_fifo_data_sel_show, bmi160_fifo_data_sel_store);
+static DRIVER_ATTR(fifo_data_frame, S_IRUGO, bmi160_fifo_data_out_frame_show, NULL);
+static DRIVER_ATTR(layout,      S_IRUGO | S_IWUSR, show_layout_value, store_layout_value );
 /*----------------------------------------------------------------------------*/
 static struct driver_attribute *bmi160_acc_attr_list[] = {
 	&driver_attr_chipinfo,     /*chip information*/
@@ -1986,9 +2404,11 @@ static struct driver_attribute *bmi160_acc_attr_list[] = {
 	&driver_attr_cpsopmode,	/*g sensor opmode for compass tilt compensation*/
 	&driver_attr_cpsrange,	/*g sensor range for compass tilt compensation*/
 	&driver_attr_cpsbandwidth,	/*g sensor bandwidth for compass tilt compensation*/
-	&driver_attr_fifo_mode,
-	&driver_attr_fifo_framecount,
+
+	&driver_attr_fifo_bytecount,
+	&driver_attr_fifo_data_sel,
 	&driver_attr_fifo_data_frame,
+	&driver_attr_layout,
 };
 /*----------------------------------------------------------------------------*/
 static int bmi160_acc_create_attr(struct device_driver *driver)
@@ -2002,8 +2422,8 @@ static int bmi160_acc_create_attr(struct device_driver *driver)
 
 	for(idx = 0; idx < num; idx++)
 	{
-		if(err = driver_create_file(driver, bmi160_acc_attr_list[idx]))
-		{
+		err = driver_create_file(driver, bmi160_acc_attr_list[idx]);
+		if(err) {
 			GSE_ERR("driver_create_file (%s) = %d\n", bmi160_acc_attr_list[idx]->attr.name, err);
 			break;
 		}
@@ -2029,429 +2449,6 @@ static int bmi160_acc_delete_attr(struct device_driver *driver)
 	return err;
 }
 
-/*----------------------------------------------------------------------------*/
-int gsensor_operate(void* self, uint32_t command, void* buff_in, int size_in,
-		void* buff_out, int size_out, int* actualout)
-{
-	int err = 0;
-	int value, sample_delay;
-	struct bmi160_acc_i2c_data *priv = (struct bmi160_acc_i2c_data*)self;
-	hwm_sensor_data* gsensor_data;
-	char buff[BMI160_BUFSIZE];
-
-	//GSE_FUN(f);
-	switch (command)
-	{
-		case SENSOR_DELAY:
-			if((buff_in == NULL) || (size_in < sizeof(int)))
-			{
-				GSE_ERR("Set delay parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-				value = *(int *)buff_in;
-				if(value <= 5)
-				{
-					sample_delay = BMI160_ACCEL_ODR_400HZ;
-				}
-				else if(value <= 10)
-				{
-					sample_delay = BMI160_ACCEL_ODR_200HZ;
-				}
-				else
-				{
-					sample_delay = BMI160_ACCEL_ODR_100HZ;
-				}
-
-				//err = BMI160_ACC_SetBWRate(priv->client, sample_delay);
-				if(err != BMI160_ACC_SUCCESS ) //0x2C->BW=100Hz
-				{
-					GSE_ERR("Set delay parameter error!\n");
-				}
-
-				if(value >= 50)
-				{
-					atomic_set(&priv->filter, 0);
-				}
-				else
-				{
-				#if defined(CONFIG_BMI160_ACC_LOWPASS)
-					priv->fir.num = 0;
-					priv->fir.idx = 0;
-					priv->fir.sum[BMI160_ACC_AXIS_X] = 0;
-					priv->fir.sum[BMI160_ACC_AXIS_Y] = 0;
-					priv->fir.sum[BMI160_ACC_AXIS_Z] = 0;
-					atomic_set(&priv->filter, 1);
-				#endif
-				}
-			}
-			break;
-
-		case SENSOR_ENABLE:
-			if((buff_in == NULL) || (size_in < sizeof(int)))
-			{
-				GSE_ERR("Enable sensor parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-				value = *(int *)buff_in;
-				if(((value == 0) && (sensor_power == false)) ||((value == 1) && (sensor_power == true)))
-				{
-					GSE_LOG("Gsensor device have updated!\n");
-				}
-				else
-				{
-					err = BMI160_ACC_SetPowerMode( priv->client, !sensor_power);
-				}
-			}
-			break;
-
-		case SENSOR_GET_DATA:
-			if((buff_out == NULL) || (size_out< sizeof(hwm_sensor_data)))
-			{
-				GSE_ERR("get sensor data parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-				gsensor_data = (hwm_sensor_data *)buff_out;
-				BMI160_ACC_ReadSensorData(priv->client, buff, BMI160_BUFSIZE);
-				sscanf(buff, "%x %x %x", &gsensor_data->values[0],
-					&gsensor_data->values[1], &gsensor_data->values[2]);
-				gsensor_data->status = SENSOR_STATUS_ACCURACY_MEDIUM;
-				gsensor_data->value_divide = 1000;
-			}
-			break;
-		default:
-			GSE_ERR("gsensor operate function no this parameter %d!\n", command);
-			err = -1;
-			break;
-	}
-
-	return err;
-}
-//tad3sgh add ++
-/*----------------------------------------------------------------------------*/
-static int bmm050_operate(void* self, uint32_t command, void* buff_in, int size_in,
-		void* buff_out, int size_out, int* actualout)
-{
-	int err = 0;
-	int value;
-	hwm_sensor_data* msensor_data;
-
-#if DEBUG
-	struct i2c_client *client = bmi160_acc_i2c_client;
-	struct bmi160_acc_i2c_data *data = obj_i2c_data;
-#endif
-
-#if DEBUG
-	if(atomic_read(&data->trace) & BMA_TRC_INFO)
-	{
-		GSE_FUN();
-	}
-#endif
-	switch (command)
-	{
-		case SENSOR_DELAY:
-			if((buff_in == NULL) || (size_in < sizeof(int)))
-			{
-				GSE_ERR( "Set delay parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-				value = *(int *)buff_in;
-
-				bmm050d_delay = value;
-				/* set the flag */
-				mutex_lock(&uplink_event_flag_mutex);
-				uplink_event_flag |= BMMDRV_ULEVT_FLAG_M_DELAY;
-				mutex_unlock(&uplink_event_flag_mutex);
-				/* wake up the wait queue */
-				wake_up(&uplink_event_flag_wq);
-			}
-			break;
-
-		case SENSOR_ENABLE:
-			if((buff_in == NULL) || (size_in < sizeof(int)))
-			{
-				GSE_ERR( "Enable sensor parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-
-				value = *(int *)buff_in;
-
-				if(value == 1)
-				{
-					atomic_set(&m_flag, 1);
-				}
-				else
-				{
-					atomic_set(&m_flag, 0);
-				}
-
-				/* set the flag */
-				mutex_lock(&uplink_event_flag_mutex);
-				uplink_event_flag |= BMMDRV_ULEVT_FLAG_M_ACTIVE;
-				mutex_unlock(&uplink_event_flag_mutex);
-				/* wake up the wait queue */
-				wake_up(&uplink_event_flag_wq);
-			}
-			break;
-
-		case SENSOR_GET_DATA:
-			if((buff_out == NULL) || (size_out< sizeof(hwm_sensor_data)))
-			{
-				GSE_ERR( "get sensor data parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-				msensor_data = (hwm_sensor_data *)buff_out;
-				mutex_lock(&sensor_data_mutex);
-
-				msensor_data->values[0] = sensor_data[4];
-				msensor_data->values[1] = sensor_data[5];
-				msensor_data->values[2] = sensor_data[6];
-				msensor_data->status = sensor_data[7];
-				msensor_data->value_divide = CONVERT_M_DIV;
-
-				mutex_unlock(&sensor_data_mutex);
-#if DEBUG
-				if(atomic_read(&data->trace) & BMA_TRC_INFO)
-				{
-					GSE_LOG("Hwm get m-sensor data: %d, %d, %d. divide %d, status %d!\n",
-						msensor_data->values[0],msensor_data->values[1],msensor_data->values[2],
-						msensor_data->value_divide,msensor_data->status);
-				}
-#endif
-			}
-			break;
-		default:
-			GSE_ERR( "msensor operate function no this parameter %d!\n", command);
-			err = -1;
-			break;
-	}
-
-	return err;
-}
-
-/*----------------------------------------------------------------------------*/
-int bmm050_orientation_operate(void* self, uint32_t command, void* buff_in, int size_in,
-		void* buff_out, int size_out, int* actualout)
-{
-	int err = 0;
-	int value;
-	hwm_sensor_data* osensor_data;
-#if DEBUG
-	struct i2c_client *client = bmi160_acc_i2c_client;
-	struct bmi160_acc_i2c_data *data = obj_i2c_data;
-#endif
-
-#if DEBUG
-	if(atomic_read(&data->trace) & BMA_TRC_INFO)
-	{
-		GSE_FUN();
-	}
-#endif
-
-	switch (command)
-	{
-		case SENSOR_DELAY:
-			if((buff_in == NULL) || (size_in < sizeof(int)))
-			{
-				GSE_ERR( "Set delay parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-				value = *(int *)buff_in;
-				bmm050d_delay = value;
-				/* set the flag */
-				mutex_lock(&uplink_event_flag_mutex);
-				uplink_event_flag |= BMMDRV_ULEVT_FLAG_O_DELAY;
-				mutex_unlock(&uplink_event_flag_mutex);
-				/* wake up the wait queue */
-				wake_up(&uplink_event_flag_wq);
-			}
-			break;
-
-		case SENSOR_ENABLE:
-			if((buff_in == NULL) || (size_in < sizeof(int)))
-			{
-				GSE_ERR( "Enable sensor parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-
-				value = *(int *)buff_in;
-
-				if(value == 1)
-				{
-					atomic_set(&o_flag, 1);
-				}
-				else
-				{
-					atomic_set(&o_flag, 0);
-				}
-
-				/* set the flag */
-				mutex_lock(&uplink_event_flag_mutex);
-				uplink_event_flag |= BMMDRV_ULEVT_FLAG_O_ACTIVE;
-				mutex_unlock(&uplink_event_flag_mutex);
-				/* wake up the wait queue */
-				wake_up(&uplink_event_flag_wq);
-			}
-			break;
-
-		case SENSOR_GET_DATA:
-			if((buff_out == NULL) || (size_out< sizeof(hwm_sensor_data)))
-			{
-				GSE_ERR( "get sensor data parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-				osensor_data = (hwm_sensor_data *)buff_out;
-				mutex_lock(&sensor_data_mutex);
-
-				osensor_data->values[0] = sensor_data[8];
-				osensor_data->values[1] = sensor_data[9];
-				osensor_data->values[2] = sensor_data[10];
-				osensor_data->status = sensor_data[11];
-				osensor_data->value_divide = CONVERT_O_DIV;
-
-				mutex_unlock(&sensor_data_mutex);
-#if DEBUG
-				if(atomic_read(&data->trace) & BMA_TRC_INFO)
-				{
-					GSE_LOG("Hwm get o-sensor data: %d, %d, %d. divide %d, status %d!\n",
-						osensor_data->values[0],osensor_data->values[1],osensor_data->values[2],
-						osensor_data->value_divide,osensor_data->status);
-				}
-#endif
-			}
-			break;
-		default:
-			GSE_ERR( "osensor operate function no this parameter %d!\n", command);
-			err = -1;
-			break;
-	}
-
-	return err;
-}
-/*----------------------------------------------------------------------------*/
-#ifdef BMC050_M4G
-int bmm050_m4g_operate(void* self, uint32_t command, void* buff_in, int size_in,
-		void* buff_out, int size_out, int* actualout)
-{
-	int err = 0;
-	int value;
-	hwm_sensor_data* g_data;
-#if DEBUG
-	struct i2c_client *client = bmi160_acc_i2c_client;
-	struct bmi160_acc_i2c_data *data = obj_i2c_data;
-#endif
-
-#if DEBUG
-	if(atomic_read(&data->trace) & BMA_TRC_INFO)
-	{
-		GSE_FUN();
-	}
-#endif
-
-	switch (command)
-	{
-		case SENSOR_DELAY:
-			if((buff_in == NULL) || (size_in < sizeof(int)))
-			{
-				GSE_ERR( "Set delay parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-				value = *(int *)buff_in;
-				m4g_delay = value;
-				/* set the flag */
-				mutex_lock(&uplink_event_flag_mutex);
-				uplink_event_flag |= BMMDRV_ULEVT_FLAG_G_DELAY;
-				mutex_unlock(&uplink_event_flag_mutex);
-				/* wake up the wait queue */
-				wake_up(&uplink_event_flag_wq);
-			}
-			break;
-
-		case SENSOR_ENABLE:
-			if((buff_in == NULL) || (size_in < sizeof(int)))
-			{
-				GSE_ERR( "Enable sensor parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-
-				value = *(int *)buff_in;
-
-				if(value == 1)
-				{
-					atomic_set(&g_flag, 1);
-				}
-				else
-				{
-					atomic_set(&g_flag, 0);
-				}
-
-				/* set the flag */
-				mutex_lock(&uplink_event_flag_mutex);
-				uplink_event_flag |= BMMDRV_ULEVT_FLAG_G_ACTIVE;
-				mutex_unlock(&uplink_event_flag_mutex);
-				/* wake up the wait queue */
-				wake_up(&uplink_event_flag_wq);
-			}
-			break;
-
-		case SENSOR_GET_DATA:
-			if((buff_out == NULL) || (size_out< sizeof(hwm_sensor_data)))
-			{
-				GSE_ERR( "get sensor data parameter error!\n");
-				err = -EINVAL;
-			}
-			else
-			{
-				g_data = (hwm_sensor_data *)buff_out;
-				mutex_lock(&sensor_data_mutex);
-
-				g_data->values[0] = m4g_data[0];
-				g_data->values[1] = m4g_data[1];
-				g_data->values[2] = m4g_data[2];
-				g_data->status = m4g_data[3];
-				g_data->value_divide = CONVERT_G_DIV;
-
-				mutex_unlock(&sensor_data_mutex);
-#if DEBUG
-				if(atomic_read(&data->trace) & BMA_TRC_INFO)
-				{
-					GSE_LOG("Hwm get m4g data: %d, %d, %d. divide %d, status %d!\n",
-						g_data->values[0],g_data->values[1],g_data->values[2],
-						g_data->value_divide,g_data->status);
-				}
-#endif
-			}
-			break;
-		default:
-			GSE_ERR( "m4g operate function no this parameter %d!\n", command);
-			err = -1;
-			break;
-	}
-
-	return err;
-}
-#endif //BMC050_M4G
 /*----------------------------------------------------------------------------*/
 #ifdef BMC050_VRV
 int bmm050_vrv_operate(void* self, uint32_t command, void* buff_in, int size_in,
@@ -2774,6 +2771,8 @@ int bmm050_vg_operate(void* self, uint32_t command, void* buff_in, int size_in,
 }
 #endif //BMC050_VG
 //tad3sgh add --
+
+#ifdef MISC_FOR_DAEMON
 /******************************************************************************
  * Function Configuration
 ******************************************************************************/
@@ -2930,8 +2929,8 @@ static long bmi160_acc_unlocked_ioctl(struct file *file, unsigned int cmd, unsig
 				err = -EINVAL;
 				break;
 			}
-			if(err = BMI160_ACC_ReadCalibration(client, cali))
-			{
+			err = BMI160_ACC_ReadCalibration(client, cali);
+			if(err) {
 				break;
 			}
 
@@ -3255,6 +3254,80 @@ static long bmi160_acc_unlocked_ioctl(struct file *file, unsigned int cmd, unsig
 
 	return err;
 }
+static long bma222_compat_ioctl(struct file *file, unsigned int cmd,
+       unsigned long arg)
+{
+    long err = 0;
+
+	void __user *arg32 = compat_ptr(arg);
+	
+	if (!file->f_op || !file->f_op->unlocked_ioctl)
+		return -ENOTTY;
+	
+    switch (cmd)
+    {
+        case COMPAT_GSENSOR_IOCTL_READ_SENSORDATA:
+            if (arg32 == NULL)
+            {
+                err = -EINVAL;
+                break;    
+            }
+		
+		    err = file->f_op->unlocked_ioctl(file, GSENSOR_IOCTL_READ_SENSORDATA, (unsigned long)arg32);
+		    if (err){
+		        GSE_ERR("GSENSOR_IOCTL_READ_SENSORDATA unlocked_ioctl failed.");
+		        return err;
+		    }
+        break;
+        case COMPAT_GSENSOR_IOCTL_SET_CALI:
+            if (arg32 == NULL)
+            {
+                err = -EINVAL;
+                break;    
+            }
+		
+		    err = file->f_op->unlocked_ioctl(file, GSENSOR_IOCTL_SET_CALI, (unsigned long)arg32);
+		    if (err){
+		        GSE_ERR("GSENSOR_IOCTL_SET_CALI unlocked_ioctl failed.");
+		        return err;
+		    }
+        break;
+        case COMPAT_GSENSOR_IOCTL_GET_CALI:
+            if (arg32 == NULL)
+            {
+                err = -EINVAL;
+                break;    
+            }
+		
+		    err = file->f_op->unlocked_ioctl(file, GSENSOR_IOCTL_GET_CALI, (unsigned long)arg32);
+		    if (err){
+		        GSE_ERR("GSENSOR_IOCTL_GET_CALI unlocked_ioctl failed.");
+		        return err;
+		    }
+        break;
+        case COMPAT_GSENSOR_IOCTL_CLR_CALI:
+            if (arg32 == NULL)
+            {
+                err = -EINVAL;
+                break;    
+            }
+		
+		    err = file->f_op->unlocked_ioctl(file, GSENSOR_IOCTL_CLR_CALI, (unsigned long)arg32);
+		    if (err){
+		        GSE_ERR("GSENSOR_IOCTL_CLR_CALI unlocked_ioctl failed.");
+		        return err;
+		    }
+        break;
+
+        default:
+            GSE_ERR("unknown IOCTL: 0x%08x\n", cmd);
+            err = -ENOIOCTLCMD;
+        break;
+
+    }
+
+    return err;
+}
 
 
 /*----------------------------------------------------------------------------*/
@@ -3263,13 +3336,16 @@ static struct file_operations bmi160_acc_fops = {
 	.open = bmi160_acc_open,
 	.release = bmi160_acc_release,
 	.unlocked_ioctl = bmi160_acc_unlocked_ioctl,
+	.compat_ioctl = bma222_compat_ioctl,
 };
 /*----------------------------------------------------------------------------*/
 static struct miscdevice bmi160_acc_device = {
 	.minor = MISC_DYNAMIC_MINOR,
 	.name = "gsensor",
 	.fops = &bmi160_acc_fops,
+	
 };
+#endif
 /*----------------------------------------------------------------------------*/
 #ifndef CONFIG_HAS_EARLYSUSPEND
 /*----------------------------------------------------------------------------*/
@@ -3348,10 +3424,10 @@ static int bmi160_acc_suspend(struct i2c_client *client, pm_message_t msg)
 #endif //BMC050_BLOCK_DAEMON_ON_SUSPEND
 
 //tad3sgh add --
-		if(err = BMI160_ACC_SetPowerMode(obj->client, false))
-		{
+		err = BMI160_ACC_SetPowerMode(obj->client, false);
+		if(err) {
 			GSE_ERR("write power control fail!!\n");
-			return;
+			return err;
 		}
 		BMI160_ACC_power(obj->hw, 0);
 	}
@@ -3372,8 +3448,8 @@ static int bmi160_acc_resume(struct i2c_client *client)
 	}
 
 	BMI160_ACC_power(obj->hw, 1);
-	if(err = bmi160_acc_init_client(client, 0))
-	{
+	err = bmi160_acc_init_client(client, 0);
+	if(err) {
 		GSE_ERR("initialize client fail!!\n");
 		return err;
 	}
@@ -3432,917 +3508,6 @@ static int bmi160_acc_resume(struct i2c_client *client)
 
 	return 0;
 }
-
-BMI160_RETURN_FUNCTION_TYPE bmi160_write_reg(u8 v_addr_u8, u8 *v_data_u8, u8 v_len_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-		} else {
-			/* write data from register*/
-			com_rslt =
-			p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->dev_addr,
-			v_addr_u8, v_data_u8, v_len_u8);
-		}
-	return com_rslt;
-}
-
-/*!
- * @brief
- *	This API reads the data from
- *	the given register
- *
- *	@param v_addr_u8 -> Address of the register
- *	@param v_data_u8 -> The data from the register
- *	@param v_len_u8 -> no of bytes to read
- *
- *	@return results of bus communication function
- *	@retval 0 -> Success
- *	@retval -1 -> Error
- *
- */
-BMI160_RETURN_FUNCTION_TYPE bmi160_read_reg(u8 v_addr_u8,
-u8 *v_data_u8, u8 v_len_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-		} else {
-			/* Read data from register*/
-			com_rslt =
-			p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->dev_addr,
-			v_addr_u8, v_data_u8, v_len_u8);
-		}
-	return com_rslt;
-}
-
-/*!
-*	@brief This API is used to select
-*	the significant or any motion interrupt from the register 0x62 bit 1
-*
-*  @param  v_intr_significant_motion_select_u8 :
-*	the value of significant or any motion interrupt selection
-*	value    | Behaviour
-* ----------|-------------------
-*  0x00     |  ANY_MOTION
-*  0x01     |  SIGNIFICANT_MOTION
-*
-*	@return results of bus communication function
-*	@retval 0 -> Success
-*	@retval -1 -> Error
-*
-*/
-BMI160_RETURN_FUNCTION_TYPE bmi160_get_intr_sm_select(
-u8 *v_intr_significant_motion_select_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	u8 v_data_u8 = BMI160_INIT_VALUE;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-	} else {
-		/* read the significant or any motion interrupt*/
-		com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(
-		p_bmi160->dev_addr,
-		BMI160_USER_INTR_SIGNIFICATION_MOTION_SELECT__REG,
-		&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-		*v_intr_significant_motion_select_u8 =
-		BMI160_GET_BITSLICE(v_data_u8,
-		BMI160_USER_INTR_SIGNIFICATION_MOTION_SELECT);
-	}
-	return com_rslt;
-}
-
-BMI160_RETURN_FUNCTION_TYPE bmi160_init(struct bmi160_t *bmi160)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	u8 v_data_u8 = BMI160_INIT_VALUE;
-	u8 v_pmu_data_u8 = BMI160_INIT_VALUE;
-	/* assign bmi160 ptr */
-	p_bmi160 = bmi160;
-	com_rslt =
-	p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->dev_addr,
-	BMI160_USER_CHIP_ID__REG,
-	&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-	/* read Chip Id */
-	p_bmi160->chip_id = v_data_u8;
-	/* To avoid gyro wakeup it is required to write 0x00 to 0x6C*/
-	com_rslt += bmi160_write_reg(BMI160_USER_PMU_TRIGGER_ADDR,
-	&v_pmu_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-	return com_rslt;
-}
-
-/*!
- *	@brief  Configure trigger condition of interrupt1
- *	and interrupt2 pin from the register 0x53
- *	@brief interrupt1 - bit 0
- *	@brief interrupt2 - bit 4
- *
- *  @param v_channel_u8: The value of edge trigger selection
- *   v_channel_u8  |   Edge trigger
- *  ---------------|---------------
- *       0         | BMI160_INTR1_EDGE_CTRL
- *       1         | BMI160_INTR2_EDGE_CTRL
- *
- *	@param v_intr_edge_ctrl_u8 : The value of edge trigger enable
- *	value    | interrupt enable
- * ----------|-------------------
- *  0x01     |  BMI160_EDGE
- *  0x00     |  BMI160_LEVEL
- *
- *	@return results of bus communication function
- *	@retval 0 -> Success
- *	@retval -1 -> Error
- *
-*/
-BMI160_RETURN_FUNCTION_TYPE bmi160_set_intr_edge_ctrl(
-u8 v_channel_u8, u8 v_intr_edge_ctrl_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	u8 v_data_u8 = BMI160_INIT_VALUE;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-		} else {
-		switch (v_channel_u8) {
-		case BMI160_INTR1_EDGE_CTRL:
-			/* write the edge trigger interrupt1*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR1_EDGE_CTRL__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR1_EDGE_CTRL,
-				v_intr_edge_ctrl_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr, BMI160_USER_INTR1_EDGE_CTRL__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		case BMI160_INTR2_EDGE_CTRL:
-			/* write the edge trigger interrupt2*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR2_EDGE_CTRL__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR2_EDGE_CTRL,
-				v_intr_edge_ctrl_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr, BMI160_USER_INTR2_EDGE_CTRL__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		default:
-			com_rslt = E_BMI160_OUT_OF_RANGE;
-			break;
-		}
-	}
-	return com_rslt;
-}
-
-/*!
- *	@brief  API used for set the Configure level condition of interrupt1
- *	and interrupt2 pin form the register 0x53
- *	@brief interrupt1 - bit 1
- *	@brief interrupt2 - bit 5
- *
- *  @param v_channel_u8: The value of level condition selection
- *   v_channel_u8  |   level selection
- *  ---------------|---------------
- *       0         | BMI160_INTR1_LEVEL
- *       1         | BMI160_INTR2_LEVEL
- *
- *	@param v_intr_level_u8 : The value of level of interrupt enable
- *	value    | Behaviour
- * ----------|-------------------
- *  0x01     |  BMI160_LEVEL_HIGH
- *  0x00     |  BMI160_LEVEL_LOW
- *
- *	@return results of bus communication function
- *	@retval 0 -> Success
- *	@retval -1 -> Error
- *
- *
-*/
-BMI160_RETURN_FUNCTION_TYPE bmi160_set_intr_level(
-u8 v_channel_u8, u8 v_intr_level_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	u8 v_data_u8 = BMI160_INIT_VALUE;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-		} else {
-		switch (v_channel_u8) {
-		case BMI160_INTR1_LEVEL:
-			/* write the interrupt1 level*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR1_LEVEL__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR1_LEVEL, v_intr_level_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr, BMI160_USER_INTR1_LEVEL__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		case BMI160_INTR2_LEVEL:
-			/* write the interrupt2 level*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR2_LEVEL__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR2_LEVEL, v_intr_level_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr, BMI160_USER_INTR2_LEVEL__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		default:
-			com_rslt = E_BMI160_OUT_OF_RANGE;
-			break;
-		}
-	}
-	return com_rslt;
-}
-
-/*!
-*	@brief API used to set the Output enable for interrupt1
-*	and interrupt1 pin from the register 0x53
-*	@brief interrupt1 - bit 3
-*	@brief interrupt2 - bit 7
-*
-*  @param v_channel_u8: The value of output enable selection
-*   v_channel_u8  |   level selection
-*  ---------------|---------------
-*       0         | BMI160_INTR1_OUTPUT_TYPE
-*       1         | BMI160_INTR2_OUTPUT_TYPE
-*
-*	@param v_output_enable_u8 :
-*	The value of output enable of interrupt enable
-*	value    | Behaviour
-* ----------|-------------------
-*  0x01     |  BMI160_INPUT
-*  0x00     |  BMI160_OUTPUT
-*
-*	@return results of bus communication function
-*	@retval 0 -> Success
-*	@retval -1 -> Error
-*
-*/
-BMI160_RETURN_FUNCTION_TYPE bmi160_set_output_enable(
-u8 v_channel_u8, u8 v_output_enable_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	u8 v_data_u8 = BMI160_INIT_VALUE;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-		} else {
-		switch (v_channel_u8) {
-		case BMI160_INTR1_OUTPUT_ENABLE:
-			/* write the output enable of interrupt1*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR1_OUTPUT_ENABLE__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR1_OUTPUT_ENABLE,
-				v_output_enable_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr, BMI160_USER_INTR1_OUTPUT_ENABLE__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-		break;
-		case BMI160_INTR2_OUTPUT_ENABLE:
-			/* write the output enable of interrupt2*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR2_OUTPUT_EN__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR2_OUTPUT_EN,
-				v_output_enable_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr, BMI160_USER_INTR2_OUTPUT_EN__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-		break;
-		default:
-			com_rslt = E_BMI160_OUT_OF_RANGE;
-		break;
-		}
-	}
-	return com_rslt;
-}
-
-/*!
- *	@brief This API is used to write threshold
- *	definition for the any-motion interrupt
- *	from the register 0x60 bit 0 to 7
- *
- *  @param  v_any_motion_thres_u8 : The value of any motion threshold
- *
- *	@note any motion threshold changes according to accel g range
- *	accel g range can be set by the function ""
- *   accel_range    | any motion threshold
- *  ----------------|---------------------
- *      2g          |  v_any_motion_thres_u8*3.91 mg
- *      4g          |  v_any_motion_thres_u8*7.81 mg
- *      8g          |  v_any_motion_thres_u8*15.63 mg
- *      16g         |  v_any_motion_thres_u8*31.25 mg
- *	@note when v_any_motion_thres_u8 = 0
- *   accel_range    | any motion threshold
- *  ----------------|---------------------
- *      2g          |  1.95 mg
- *      4g          |  3.91 mg
- *      8g          |  7.81 mg
- *      16g         |  15.63 mg
- *
- *	@return results of bus communication function
- *	@retval 0 -> Success
- *	@retval -1 -> Error
- *
- *
-*/
-BMI160_RETURN_FUNCTION_TYPE bmi160_set_intr_any_motion_thres(
-u8 v_any_motion_thres_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-		} else {
-		/* write any motion threshold*/
-		com_rslt = p_bmi160->BMI160_BUS_WRITE_FUNC
-		(p_bmi160->dev_addr,
-		BMI160_USER_INTR_MOTION_1_INTR_ANY_MOTION_THRES__REG,
-		&v_any_motion_thres_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-	}
-	return com_rslt;
-}
-
-/*!
- *	@brief This API is used to write
- *	the significant skip time from the register 0x62 bit  2 and 3
- *
- *  @param  v_int_sig_mot_skip_u8 : the value of significant skip time
- *	value    | Behaviour
- * ----------|-------------------
- *  0x00     |  skip time 1.5 seconds
- *  0x01     |  skip time 3 seconds
- *  0x02     |  skip time 6 seconds
- *  0x03     |  skip time 12 seconds
- *
- *	@return results of bus communication function
- *	@retval 0 -> Success
- *	@retval -1 -> Error
- *
-*/
-static BMI160_RETURN_FUNCTION_TYPE bmi160_set_intr_sm_skip(
-u8 v_int_sig_mot_skip_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	u8 v_data_u8 = BMI160_INIT_VALUE;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-		} else {
-		if (v_int_sig_mot_skip_u8 <= BMI160_MAX_UNDER_SIG_MOTION) {
-			/* write significant skip time*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC
-			(p_bmi160->dev_addr,
-			BMI160_USER_INTR_SIGNIFICANT_MOTION_SKIP__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR_SIGNIFICANT_MOTION_SKIP,
-				v_int_sig_mot_skip_u8);
-				com_rslt += p_bmi160->BMI160_BUS_WRITE_FUNC
-				(p_bmi160->dev_addr,
-				BMI160_USER_INTR_SIGNIFICANT_MOTION_SKIP__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-		} else {
-		com_rslt = E_BMI160_OUT_OF_RANGE;
-		}
-	}
-	return com_rslt;
-}
-
-/*!
- *	@brief This API is used to write
- *	the significant proof time from the register 0x62 bit  4 and 5
- *
- *  @param  v_significant_motion_proof_u8 :
- *	the value of significant proof time
- *	value    | Behaviour
- * ----------|-------------------
- *  0x00     |  proof time 0.25 seconds
- *  0x01     |  proof time 0.5 seconds
- *  0x02     |  proof time 1 seconds
- *  0x03     |  proof time 2 seconds
- *
- *	@return results of bus communication function
- *	@retval 0 -> Success
- *	@retval -1 -> Error
- *
-*/
-static BMI160_RETURN_FUNCTION_TYPE bmi160_set_intr_sm_proof(
-u8 v_significant_motion_proof_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	u8 v_data_u8 = BMI160_INIT_VALUE;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-		} else {
-		if (v_significant_motion_proof_u8
-		<= BMI160_MAX_UNDER_SIG_MOTION) {
-			/* write significant proof time */
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC
-			(p_bmi160->dev_addr,
-			BMI160_USER_INTR_SIGNIFICANT_MOTION_PROOF__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR_SIGNIFICANT_MOTION_PROOF,
-				v_significant_motion_proof_u8);
-				com_rslt += p_bmi160->BMI160_BUS_WRITE_FUNC
-				(p_bmi160->dev_addr,
-				BMI160_USER_INTR_SIGNIFICANT_MOTION_PROOF__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-		} else {
-		com_rslt = E_BMI160_OUT_OF_RANGE;
-		}
-	}
-	return com_rslt;
-}
-
-/*!
-*	@brief This API is used to write, select
-*	the significant or any motion interrupt from the register 0x62 bit 1
-*
-*  @param  v_intr_significant_motion_select_u8 :
-*	the value of significant or any motion interrupt selection
-*	value    | Behaviour
-* ----------|-------------------
-*  0x00     |  ANY_MOTION
-*  0x01     |  SIGNIFICANT_MOTION
-*
-*	@return results of bus communication function
-*	@retval 0 -> Success
-*	@retval -1 -> Error
-*
-*/
-static BMI160_RETURN_FUNCTION_TYPE bmi160_set_intr_sm_select(
-u8 v_intr_significant_motion_select_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	u8 v_data_u8 = BMI160_INIT_VALUE;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-	} else {
-		if (v_intr_significant_motion_select_u8 <=
-				BMI160_MAX_VALUE_SIGNIFICANT_MOTION) {
-			/* write the significant or any motion interrupt*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC
-			(p_bmi160->dev_addr,
-			BMI160_USER_INTR_SIGNIFICATION_MOTION_SELECT__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR_SIGNIFICATION_MOTION_SELECT,
-				v_intr_significant_motion_select_u8);
-				com_rslt += p_bmi160->BMI160_BUS_WRITE_FUNC
-				(p_bmi160->dev_addr,
-				BMI160_USER_INTR_SIGNIFICATION_MOTION_SELECT__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-		} else {
-		com_rslt = E_BMI160_OUT_OF_RANGE;
-		}
-	}
-	return com_rslt;
-}
-
-/*!
- *	@brief This API used to trigger the  signification motion
- *	interrupt
- *
- *  @param  v_significant_u8 : The value of interrupt selection
- *  value    |  interrupt
- * ----------|-----------
- *   0       |  BMI160_MAP_INTR1
- *   1       |  BMI160_MAP_INTR2
- *
- *	@return results of bus communication function
- *	@retval 0 -> Success
- *	@retval -1 -> Error
- *
-*/
-static BMI160_RETURN_FUNCTION_TYPE bmi160_map_sm_intr(
-u8 v_significant_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	u8 v_sig_motion_u8 = BMI160_INIT_VALUE;
-	u8 v_data_u8 = BMI160_INIT_VALUE;
-	u8 v_any_motion_intr1_stat_u8 = BMI160_ENABLE_ANY_MOTION_INTR1;
-	u8 v_any_motion_intr2_stat_u8 = BMI160_ENABLE_ANY_MOTION_INTR2;
-	u8 v_any_motion_axis_stat_u8 = BMI160_ENABLE_ANY_MOTION_AXIS;
-	/* enable the significant motion interrupt */
-	com_rslt = bmi160_get_intr_sm_select(&v_sig_motion_u8);
-	if (v_sig_motion_u8 != BMI160_SIG_MOTION_STAT_HIGH)
-		com_rslt += bmi160_set_intr_sm_select(
-		BMI160_SIG_MOTION_INTR_ENABLE);
-	switch (v_significant_u8) {
-	case BMI160_MAP_INTR1:
-		/* interrupt */
-		com_rslt += bmi160_read_reg(
-		BMI160_USER_INTR_MAP_0_INTR1_ANY_MOTION__REG,
-		&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-		v_data_u8 |= v_any_motion_intr1_stat_u8;
-		/* map the signification interrupt to any-motion interrupt1*/
-		com_rslt += bmi160_write_reg(
-		BMI160_USER_INTR_MAP_0_INTR1_ANY_MOTION__REG,
-		&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-		p_bmi160->delay_msec(BMI160_GEN_READ_WRITE_DELAY);
-		/* axis*/
-		com_rslt = bmi160_read_reg(BMI160_USER_INTR_ENABLE_0_ADDR,
-		&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-		v_data_u8 |= v_any_motion_axis_stat_u8;
-		com_rslt += bmi160_write_reg(
-		BMI160_USER_INTR_ENABLE_0_ADDR,
-		&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-		p_bmi160->delay_msec(BMI160_GEN_READ_WRITE_DELAY);
-	break;
-
-	case BMI160_MAP_INTR2:
-		/* map the signification interrupt to any-motion interrupt2*/
-		com_rslt += bmi160_read_reg(
-		BMI160_USER_INTR_MAP_2_INTR2_ANY_MOTION__REG,
-		&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-		v_data_u8 |= v_any_motion_intr2_stat_u8;
-		com_rslt += bmi160_write_reg(
-		BMI160_USER_INTR_MAP_2_INTR2_ANY_MOTION__REG,
-		&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-		p_bmi160->delay_msec(BMI160_GEN_READ_WRITE_DELAY);
-		/* axis*/
-		com_rslt = bmi160_read_reg(BMI160_USER_INTR_ENABLE_0_ADDR,
-		&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-		v_data_u8 |= v_any_motion_axis_stat_u8;
-		com_rslt += bmi160_write_reg(
-		BMI160_USER_INTR_ENABLE_0_ADDR,
-		&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-		p_bmi160->delay_msec(BMI160_GEN_READ_WRITE_DELAY);
-	break;
-
-	default:
-		com_rslt = E_BMI160_OUT_OF_RANGE;
-	break;
-
-	}
-	return com_rslt;
-}
-
-/*!
- *	@brief  This API is used to set
- *	interrupt enable from the register 0x50 bit 0 to 7
- *
- *	@param v_enable_u8 : Value to decided to select interrupt
- *   v_enable_u8   |   interrupt
- *  ---------------|---------------
- *       0         | BMI160_ANY_MOTION_X_ENABLE
- *       1         | BMI160_ANY_MOTION_Y_ENABLE
- *       2         | BMI160_ANY_MOTION_Z_ENABLE
- *       3         | BMI160_DOUBLE_TAP_ENABLE
- *       4         | BMI160_SINGLE_TAP_ENABLE
- *       5         | BMI160_ORIENT_ENABLE
- *       6         | BMI160_FLAT_ENABLE
- *
- *	@param v_intr_enable_zero_u8 : The interrupt enable value
- *	value    | interrupt enable
- * ----------|-------------------
- *  0x01     |  BMI160_ENABLE
- *  0x00     |  BMI160_DISABLE
- *
- *	@return results of bus communication function
- *	@retval 0 -> Success
- *	@retval -1 -> Error
- *
- */
-static BMI160_RETURN_FUNCTION_TYPE bmi160_set_intr_enable_0(
-u8 v_enable_u8, u8 v_intr_enable_zero_u8)
-{
-	/* variable used for return the status of communication result*/
-	BMI160_RETURN_FUNCTION_TYPE com_rslt = E_BMI160_COMM_RES;
-	u8 v_data_u8 = BMI160_INIT_VALUE;
-	/* check the p_bmi160 structure as NULL*/
-	if (p_bmi160 == BMI160_NULL) {
-		return E_BMI160_NULL_PTR;
-	} else {
-		switch (v_enable_u8) {
-		case BMI160_ANY_MOTION_X_ENABLE:
-			/* write any motion x*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR_ENABLE_0_ANY_MOTION_X_ENABLE__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR_ENABLE_0_ANY_MOTION_X_ENABLE,
-				v_intr_enable_zero_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr,
-				BMI160_USER_INTR_ENABLE_0_ANY_MOTION_X_ENABLE__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		case BMI160_ANY_MOTION_Y_ENABLE:
-			/* write any motion y*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR_ENABLE_0_ANY_MOTION_Y_ENABLE__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR_ENABLE_0_ANY_MOTION_Y_ENABLE,
-				v_intr_enable_zero_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr,
-				BMI160_USER_INTR_ENABLE_0_ANY_MOTION_Y_ENABLE__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		case BMI160_ANY_MOTION_Z_ENABLE:
-			/* write any motion z*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR_ENABLE_0_ANY_MOTION_Z_ENABLE__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR_ENABLE_0_ANY_MOTION_Z_ENABLE,
-				v_intr_enable_zero_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr,
-				BMI160_USER_INTR_ENABLE_0_ANY_MOTION_Z_ENABLE__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		case BMI160_DOUBLE_TAP_ENABLE:
-			/* write double tap*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR_ENABLE_0_DOUBLE_TAP_ENABLE__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR_ENABLE_0_DOUBLE_TAP_ENABLE,
-				v_intr_enable_zero_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr,
-				BMI160_USER_INTR_ENABLE_0_DOUBLE_TAP_ENABLE__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		case BMI160_SINGLE_TAP_ENABLE:
-			/* write single tap */
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR_ENABLE_0_SINGLE_TAP_ENABLE__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR_ENABLE_0_SINGLE_TAP_ENABLE,
-				v_intr_enable_zero_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr,
-				BMI160_USER_INTR_ENABLE_0_SINGLE_TAP_ENABLE__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		case BMI160_ORIENT_ENABLE:
-			/* write orient interrupt*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR_ENABLE_0_ORIENT_ENABLE__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR_ENABLE_0_ORIENT_ENABLE,
-				v_intr_enable_zero_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr,
-				BMI160_USER_INTR_ENABLE_0_ORIENT_ENABLE__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		case BMI160_FLAT_ENABLE:
-			/* write flat interrupt*/
-			com_rslt = p_bmi160->BMI160_BUS_READ_FUNC(p_bmi160->
-			dev_addr, BMI160_USER_INTR_ENABLE_0_FLAT_ENABLE__REG,
-			&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			if (com_rslt == SUCCESS) {
-				v_data_u8 = BMI160_SET_BITSLICE(v_data_u8,
-				BMI160_USER_INTR_ENABLE_0_FLAT_ENABLE,
-				v_intr_enable_zero_u8);
-				com_rslt +=
-				p_bmi160->BMI160_BUS_WRITE_FUNC(p_bmi160->
-				dev_addr,
-				BMI160_USER_INTR_ENABLE_0_FLAT_ENABLE__REG,
-				&v_data_u8, BMI160_GEN_READ_WRITE_DATA_LENGTH);
-			}
-			break;
-		default:
-			com_rslt = E_BMI160_OUT_OF_RANGE;
-			break;
-		}
-	}
-	return com_rslt;
-}
-
-static int sm_init_interrupts(u8 sig_map_int_pin)
-{
-	int ret = 0;
-	/*0x60  */
-	ret += bmi160_set_intr_any_motion_thres(0x1e);
-	/* 0x62(bit 3~2)	0=1.5s */
-	ret += bmi160_set_intr_sm_skip(0);
-	/*0x62(bit 5~4)	1=0.5s*/
-	ret += bmi160_set_intr_sm_proof(1);
-	/*0x50 (bit 0, 1, 2)  INT_EN_0 anymo x y z*/
-	ret += bmi160_map_sm_intr(sig_map_int_pin);
-	/*0x62 (bit 1) INT_MOTION_3	int_sig_mot_sel
-	close the signification_motion*/
-	ret += bmi160_set_intr_sm_select(0);
-	/*close the anymotion interrupt*/
-	ret += bmi160_set_intr_enable_0
-					(BMI160_ANY_MOTION_X_ENABLE, 0);
-	ret += bmi160_set_intr_enable_0
-					(BMI160_ANY_MOTION_Y_ENABLE, 0);
-	ret += bmi160_set_intr_enable_0
-					(BMI160_ANY_MOTION_Z_ENABLE, 0);
-	if (ret) {
-		GSE_ERR("bmi160 sig motion setting failed.\n");
-	}
-	return ret;
-}
-
-/*!
- * @brief Input event initialization for device
- *
- * @param[in] client the pointer of bmi160_acc_i2c_data
- *
- * @return zero success, non-zero failed
- */
-static int bmi160_input_init(struct bmi160_acc_i2c_data *client_data)
-{
-	int ret = 0;
-	struct input_dev *dev;
-	dev = input_allocate_device();
-	if (!dev) {
-		input_free_device(dev);
-		return -ENOMEM;
-	}
-	dev->name = BMI160_DEV_NAME;
-	dev->id.bustype = BUS_I2C;
-	/* sig motion */
-	input_set_capability(dev, EV_MSC, INPUT_EVENT_SGM);
-	input_set_drvdata(dev, client_data);
-	/*register device*/
-	ret = input_register_device(dev);
-	if (ret < 0) {
-		input_free_device(dev);
-		GSE_ERR("bmi160 acc input register failed.\n");
-		return ret;
-	}
-	client_data->input = dev;
-	GSE_LOG("bmi160 acc input register ok.\n");
-	return ret;
-}
-
-static void bmi_sm_interrupt_handle(struct bmi160_acc_i2c_data *client_data)
-{
-	u8 sig_sel = 0;
-	int err = 0;
-	err = bmi160_get_intr_sm_select(&sig_sel);
-	if(err < 0) {
-		GSE_ERR("get significant motion failed.\n");
-		return;
-	}
-	if(ENABLE == sig_sel) {
-		client_data->sig_flag = 1;
-		err = bmi160_step_notify(TYPE_SIGNIFICANT);
-	}
-	if(err < 0) {
-		GSE_ERR("notify significant motion failed.\n");
-		return;
-	}
-	GSE_LOG("signification motion = %d.\n", (int)sig_sel);
-}
-
-static void bmi_irq_work_func(struct work_struct *work)
-{
-	struct bmi160_acc_i2c_data *client_data = obj_i2c_data;
-	u8 int_status[4] = {0, 0, 0, 0};
-	bma_i2c_read_block(client_data->client,
-			BMI160_USER_INTR_STAT_0_ADDR, int_status, 4);
-	if (BMI160_GET_BITSLICE(int_status[0],
-				BMI160_USER_INTR_STAT_0_SIGNIFICANT_INTR))
-		bmi_sm_interrupt_handle(client_data);
-
-}
-
-static irqreturn_t bmi_irq_handler(int irq, void *handle)
-{
-	struct bmi160_acc_i2c_data *client_data = obj_i2c_data;
-	if (client_data == NULL)
-		return IRQ_HANDLED;
-	schedule_work(&client_data->irq_work);
-	return IRQ_HANDLED;
-}
-
-#if 0	/* for MTK_NEW_ARCH_ACCEL */
-static int bmi160acc_setup_eint(void)
-{
-	int ret;
-	struct device_node *node = NULL;
-	struct pinctrl *pinctrl;
-	struct pinctrl_state *pins_default;
-	struct pinctrl_state *pins_eint;
-	/* u32 ints[2] = {0, 0}; */
-	struct bmi160_acc_i2c_data *obj = obj_i2c_data;
-	/* gpio setting */
-	pinctrl = devm_pinctrl_get(&(accel_Platform_Dev->dev));
-	if (IS_ERR(pinctrl)) {
-		ret = PTR_ERR(pinctrl);
-		GSE_ERR("Cannot find step pinctrl!\n");
-		return ret;
-	}
-	pins_default = pinctrl_lookup_state(pinctrl, "default");
-	if (IS_ERR(pins_default)) {
-		ret = PTR_ERR(pins_default);
-		GSE_ERR("Cannot find step pinctrl default!\n");
-		/* return ret; */
-	}
-	pins_eint = pinctrl_lookup_state(pinctrl, "state_eint_as_int");
-	if (IS_ERR(pins_eint)) {
-		ret = PTR_ERR(pins_eint);
-		GSE_ERR("Cannot find step pinctrl pins_eint!\n");
-		return ret;
-	}
-	pinctrl_select_state(pinctrl, pins_eint);
-	node = of_find_matching_node(NULL, gse_int_of_match);
-	/* eint request */
-	if (node) {
-		GSE_LOG("irq node is ok!");
-		/* of_property_read_u32_array(node, "debounce", ints, ARRAY_SIZE(ints)); */
-		/* gpio_set_debounce(ints[0], ints[1]); */
-		/* GSE_LOG("ints[0] = %d, ints[1] = %d!!\n", ints[0], ints[1]); */
-		obj->IRQ = irq_of_parse_and_map(node, 0);
-		GSE_LOG("obj->IRQ = %d\n", obj->IRQ);
-		if (!obj->IRQ) {
-			GSE_ERR("irq_of_parse_and_map fail!!\n");
-			return -EINVAL;
-		}
-		if (request_irq(obj->IRQ, bmi_irq_handler, IRQF_TRIGGER_RISING, "Gsensor-eint", NULL)) {
-			GSE_ERR("IRQ LINE NOT AVAILABLE!!\n");
-			return -EINVAL;
-		}
-		enable_irq(obj->IRQ);
-	} else {
-		GSE_ERR("null irq node!!\n");
-		return -EINVAL;
-	}
-	return 0;
-}
-#endif
 /*----------------------------------------------------------------------------*/
 #else /*CONFIG_HAS_EARLY_SUSPEND is defined*/
 /*----------------------------------------------------------------------------*/
@@ -4419,8 +3584,8 @@ static void bmi160_acc_early_suspend(struct early_suspend *h)
 #endif //BMC050_BLOCK_DAEMON_ON_SUSPEND
 
 //tad3sgh add --
-	if(err = BMI160_ACC_SetPowerMode(obj->client, false))
-	{
+	err = BMI160_ACC_SetPowerMode(obj->client, false);
+	if(err) {
 		GSE_ERR("write power control fail!!\n");
 		return;
 	}
@@ -4442,8 +3607,8 @@ static void bmi160_acc_late_resume(struct early_suspend *h)
 	}
 
 	BMI160_ACC_power(obj->hw, 1);
-	if(err = bmi160_acc_init_client(obj->client, 0))
-	{
+	err = bmi160_acc_init_client(obj->client, 0);
+	if(err) {
 		GSE_ERR("initialize client fail!!\n");
 		return;
 	}
@@ -4501,17 +3666,262 @@ static void bmi160_acc_late_resume(struct early_suspend *h)
 }
 /*----------------------------------------------------------------------------*/
 #endif /*CONFIG_HAS_EARLYSUSPEND*/
+
+/*----------------------------------------------------------------------------*/
+static struct i2c_driver bmi160_acc_i2c_driver = {
+    .driver = {
+        .name           = BMI160_DEV_NAME,
+    },
+	.probe      		= bmi160_acc_i2c_probe,
+	.remove    			= bmi160_acc_i2c_remove,
+#if !defined(CONFIG_HAS_EARLYSUSPEND)
+    .suspend            = bmi160_acc_suspend,
+    .resume             = bmi160_acc_resume,
+#endif
+	.id_table = bmi160_acc_i2c_id,
+};
+
+// if use  this typ of enable , Gsensor should report inputEvent(x, y, z ,stats, div) to HAL
+static int bmi160_acc_open_report_data(int open)
+{
+	//should queuq work to report event if  is_report_input_direct=true
+	return 0;
+}
+
+// if use  this typ of enable , Gsensor only enabled but not report inputEvent to HAL
+static int bmi160_acc_enable_nodata(int en)
+{
+#ifdef MISC_FOR_DAEMON
+	int err = 0;
+
+	if(((en == 0) && (sensor_power == false))
+			||((en == 1) && (sensor_power == true))) {
+		GSE_LOG("Gsensor device have updated!\n");
+	} else {
+		err = BMI160_ACC_SetPowerMode(obj_i2c_data->client, !sensor_power);
+	}
+
+	return err;
+#else
+	int res =0;
+	int retry = 0;
+	bool power=false;
+
+	if(1==en)
+	{
+		power=true;
+	}
+	if(0==en)
+	{
+		power =false;
+	}
+
+	for(retry = 0; retry < 3; retry++){
+		res = BMI160_ACC_SetPowerMode(obj_i2c_data->client, power);
+		if(res == 0)
+		{
+			GSE_LOG("BMI160_ACC_SetPowerMode done\n");
+			break;
+		}
+		GSE_LOG("BMI160_ACC_SetPowerMode fail\n");
+	}
+
+	if(res != BMI160_ACC_SUCCESS)
+	{
+		printk("BMI160_ACC_SetPowerMode fail!\n");
+		return -1;
+	}
+	printk("bmi160_acc_enable_nodata OK!\n");
+	return 0;
+#endif
+}
+
+static int bmi160_acc_set_delay(u64 ns)
+{
+#ifdef MISC_FOR_DAEMON
+	int err = 0;
+	int value, sample_delay;
+
+	value = (int)ns/1000/1000;
+	if(value <= 5) {
+		sample_delay = BMI160_ACCEL_ODR_400HZ;
+	} else if(value <= 10) {
+		sample_delay = BMI160_ACCEL_ODR_200HZ;
+	} else {
+		sample_delay = BMI160_ACCEL_ODR_100HZ;
+	}
+
+	//err = BMI160_ACC_SetBWRate(obj_i2c_data->client, sample_delay);
+	if(err != BMI160_ACC_SUCCESS ) {
+		GSE_ERR("Set delay parameter error!\n");
+	}
+
+	if(value >= 50) {
+		atomic_set(&obj_i2c_data->filter, 0);
+	} else {
+#if defined(CONFIG_BMI160_ACC_LOWPASS)
+		obj_i2c_data->fir.num = 0;
+		obj_i2c_data->fir.idx = 0;
+		obj_i2c_data->fir.sum[BMI160_ACC_AXIS_X] = 0;
+		obj_i2c_data->fir.sum[BMI160_ACC_AXIS_Y] = 0;
+		obj_i2c_data->fir.sum[BMI160_ACC_AXIS_Z] = 0;
+		atomic_set(&obj_i2c_data->filter, 1);
+#endif
+	}
+
+	return 0;
+#else
+	int value =0;
+	int sample_delay=0;
+	int err=0;
+	value = (int)ns/1000/1000;
+	if(value <= 5)
+	{
+		sample_delay = BMI160_ACCEL_ODR_400HZ;
+	}
+	else if(value <= 10)
+	{
+		sample_delay = BMI160_ACCEL_ODR_200HZ;
+	}
+	else
+	{
+		sample_delay = BMI160_ACCEL_ODR_100HZ;
+	}
+
+	err = BMI160_ACC_SetBWRate(obj_i2c_data->client, sample_delay);
+	if(err != BMI160_ACC_SUCCESS ) //0x2C->BW=100Hz
+	{
+		GSE_ERR("bmi160_acc_set_delay Set delay parameter error!\n");
+		return -1;
+	}
+	GSE_LOG("bmi160_acc_set_delay (%d)\n",value);
+	return 0;
+#endif
+}
+
+static int bmi160_acc_get_data(int* x ,int* y,int* z, int* status)
+{
+	char buff[BMI160_BUFSIZE];
+	/* use acc raw data for gsensor */
+	BMI160_ACC_ReadSensorData(obj_i2c_data->client, buff, BMI160_BUFSIZE);
+
+	sscanf(buff, "%x %x %x", x, y, z);
+	*status = SENSOR_STATUS_ACCURACY_MEDIUM;
+
+	return 0;
+}
+
+int bmi160_m_enable(int en)
+{
+	if(en == 1) {
+		atomic_set(&m_flag, 1);
+	} else {
+		atomic_set(&m_flag, 0);
+	}
+
+	/* set the flag */
+	mutex_lock(&uplink_event_flag_mutex);
+	uplink_event_flag |= BMMDRV_ULEVT_FLAG_M_ACTIVE;
+	mutex_unlock(&uplink_event_flag_mutex);
+	/* wake up the wait queue */
+	wake_up(&uplink_event_flag_wq);
+
+	return 0;
+}
+
+int bmi160_m_set_delay(u64 ns)
+{
+	int value = (int)ns/1000/1000;
+
+	bmm050d_delay = value;
+	/* set the flag */
+	mutex_lock(&uplink_event_flag_mutex);
+	uplink_event_flag |= BMMDRV_ULEVT_FLAG_M_DELAY;
+	mutex_unlock(&uplink_event_flag_mutex);
+	/* wake up the wait queue */
+	wake_up(&uplink_event_flag_wq);
+
+	return 0;
+}
+
+int bmi160_m_open_report_data(int open)
+{
+	return 0;
+}
+
+int bmi160_m_get_data(int* x ,int* y,int* z, int* status)
+{
+	mutex_lock(&sensor_data_mutex);
+
+	*x = sensor_data[4];
+	*y = sensor_data[5];
+	*z = sensor_data[6];
+	*status = sensor_data[7];
+
+	mutex_unlock(&sensor_data_mutex);
+
+	return 0;
+}
+
+int bmi160_o_enable(int en)
+{
+	if(en == 1) {
+		atomic_set(&o_flag, 1);
+	} else {
+		atomic_set(&o_flag, 0);
+	}
+
+	/* set the flag */
+	mutex_lock(&uplink_event_flag_mutex);
+	uplink_event_flag |= BMMDRV_ULEVT_FLAG_O_ACTIVE;
+	mutex_unlock(&uplink_event_flag_mutex);
+	/* wake up the wait queue */
+	wake_up(&uplink_event_flag_wq);
+
+	return 0;
+}
+
+int bmi160_o_set_delay(u64 ns)
+{
+	int value = (int)ns/1000/1000;
+
+	bmm050d_delay = value;
+	/* set the flag */
+	mutex_lock(&uplink_event_flag_mutex);
+	uplink_event_flag |= BMMDRV_ULEVT_FLAG_O_DELAY;
+	mutex_unlock(&uplink_event_flag_mutex);
+	/* wake up the wait queue */
+	wake_up(&uplink_event_flag_wq);
+
+	return 0;
+}
+
+int bmi160_o_open_report_data(int open)
+{
+	return 0;
+}
+
+int bmi160_o_get_data(int* x ,int* y,int* z, int* status)
+{
+	mutex_lock(&sensor_data_mutex);
+
+	*x = sensor_data[8];
+	*y = sensor_data[9];
+	*z = sensor_data[10];
+	*status = sensor_data[11];
+
+	mutex_unlock(&sensor_data_mutex);
+
+	return 0;
+}
+
 /*----------------------------------------------------------------------------*/
 static int bmi160_acc_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	struct i2c_client *new_client;
 	struct bmi160_acc_i2c_data *obj;
-	struct hwmsen_object sobj;
-	//tad3sgh add ++
-	struct hwmsen_object sobj_m, sobj_o;
-#ifdef BMC050_M4G
-		struct hwmsen_object sobj_g;
-#endif //BMC050_M4G
+	struct acc_control_path ctl={0};
+	struct acc_data_path data={0};
 #ifdef BMC050_VRV
 		struct hwmsen_object sobj_vrv;
 #endif //BMC050_VRV
@@ -4520,8 +3930,8 @@ static int bmi160_acc_i2c_probe(struct i2c_client *client, const struct i2c_devi
 #endif //BMC050_VLA
 #ifdef BMC050_VG
 		struct hwmsen_object sobj_vg;
-#endif //BMC050_VG
-//tad3sgh add --
+#endif //BMC050_VG //tad3sgh add --
+
 	int err = 0;
 
 	GSE_FUN();
@@ -4536,8 +3946,8 @@ static int bmi160_acc_i2c_probe(struct i2c_client *client, const struct i2c_devi
 
 	obj->hw = get_cust_acc_hw();
 
-	if(err = hwmsen_get_convert(obj->hw->direction, &obj->cvt))
-	{
+	err = hwmsen_get_convert(obj->hw->direction, &obj->cvt);
+	if(err) {
 		GSE_ERR("invalid direction: %d\n", obj->hw->direction);
 		goto exit;
 	}
@@ -4556,11 +3966,7 @@ static int bmi160_acc_i2c_probe(struct i2c_client *client, const struct i2c_devi
 
 	init_waitqueue_head(&uplink_event_flag_wq);
 	//tad3sgh add --
-	/* input event register */
-	err = bmi160_input_init(obj);
-	if(err) {
-		goto exit_init_failed;
-	}
+
 #ifdef CONFIG_BMI160_ACC_LOWPASS
 	if(obj->hw->firlen > C_MAX_FIR_LENGTH)
 	{
@@ -4578,89 +3984,56 @@ static int bmi160_acc_i2c_probe(struct i2c_client *client, const struct i2c_devi
 
 #endif
 
-#if 1 /* for non MTK_NEW_ARCH_ACCEL */
-	obj->gpio_pin = 94;
-	obj->IRQ = gpio_to_irq(obj->gpio_pin);
-	err = request_irq(obj->IRQ, bmi_irq_handler, IRQF_TRIGGER_RISING, "bmi160", obj);
-	if (err) {
-		GSE_ERR("could not request irq\n");
-	}
-#else
-	err = bmi160acc_setup_eint();
-	if (err) {
-		GSE_ERR("could not request irq\n");
-	}
-#endif
-	/* h/w init */
-	obj->device.bus_read = bmi_i2c_read_wrapper;
-	obj->device.bus_write = bmi_i2c_write_wrapper;
-	obj->device.delay_msec = bmi_delay;
-	bmi160_init(&obj->device);
-
-	bmi160_acc_i2c_client = new_client;
 	bmi160_acc_i2c_client = new_client;
 
-	if(err = bmi160_acc_init_client(new_client, 1))
-	{
+	err = bmi160_acc_init_client(new_client, 1);
+	if(err) {
+		atomic_set(&bosch_chip, 0);    // bosch chip not exist 
 		goto exit_init_failed;
 	}
 
-	if(err = misc_register(&bmi160_acc_device))
-	{
+	       atomic_set(&bosch_chip, 1);        // bosch chip exist 
+#ifdef MISC_FOR_DAEMON
+	err = misc_register(&bmi160_acc_device);
+	if(err) {
 		GSE_ERR("bmi160_acc_device register failed\n");
 		goto exit_misc_device_register_failed;
 	}
+#endif
 
-	if(err = bmi160_acc_create_attr(&bmi160_acc_gsensor_driver.driver))
-	{
+	err = bmi160_acc_create_attr(&(bmi160_acc_init_info.platform_diver_addr->driver));
+	if(err) {
 		GSE_ERR("create attribute err = %d\n", err);
 		goto exit_create_attr_failed;
 	}
 
-	sobj.self = obj;
-	sobj.polling = 1;
-	sobj.sensor_operate = gsensor_operate;
-	if(err = hwmsen_attach(ID_ACCELEROMETER, &sobj))
+	ctl.open_report_data= bmi160_acc_open_report_data;
+	ctl.enable_nodata = bmi160_acc_enable_nodata;
+	ctl.set_delay  = bmi160_acc_set_delay;
+	ctl.is_report_input_direct = false;
+
+	err = acc_register_control_path(&ctl);
+	if(err)
 	{
-		GSE_ERR("attach fail = %d\n", err);
-		goto exit_kfree;
-	}
-//tad3sgh add ++
-	sobj_m.self = obj;
-	sobj_m.polling = 1;
-	sobj_m.sensor_operate = bmm050_operate;
-	if(err = hwmsen_attach(ID_MAGNETIC, &sobj_m))
-	{
-		GSE_ERR( "attach fail = %d\n", err);
+		GSE_ERR("register acc control path err\n");
 		goto exit_kfree;
 	}
 
-	sobj_o.self = obj;
-	sobj_o.polling = 1;
-	sobj_o.sensor_operate = bmm050_orientation_operate;
-	if(err = hwmsen_attach(ID_ORIENTATION, &sobj_o))
+	data.get_data = bmi160_acc_get_data;
+	data.vender_div = 1000;
+	err = acc_register_data_path(&data);
+	if(err)
 	{
-		GSE_ERR( "attach fail = %d\n", err);
+		GSE_ERR("register acc data path err\n");
 		goto exit_kfree;
 	}
-
-#ifdef BMC050_M4G
-	sobj_g.self = obj;
-	sobj_g.polling = 1;
-	sobj_g.sensor_operate = bmm050_m4g_operate;
-	if(err = hwmsen_attach(ID_GYROSCOPE, &sobj_g))
-	{
-		GSE_ERR( "attach fail = %d\n", err);
-		goto exit_kfree;
-	}
-#endif //BMC050_M4G
 
 #ifdef BMC050_VRV
 	sobj_vrv.self = obj;
 	sobj_vrv.polling = 1;
 	sobj_vrv.sensor_operate = bmm050_vrv_operate;
-	if(err = hwmsen_attach(ID_ROTATION_VECTOR, &sobj_vrv))
-	{
+	err = hwmsen_attach(ID_ROTATION_VECTOR, &sobj_vrv);
+	if(err) {
 		GSE_ERR( "attach fail = %d\n", err);
 		goto exit_kfree;
 	}
@@ -4670,8 +4043,8 @@ static int bmi160_acc_i2c_probe(struct i2c_client *client, const struct i2c_devi
 	sobj_vla.self = obj;
 	sobj_vla.polling = 1;
 	sobj_vla.sensor_operate = bmm050_vla_operate;
-	if(err = hwmsen_attach(ID_LINEAR_ACCELERATION, &sobj_vla))
-	{
+	err = hwmsen_attach(ID_LINEAR_ACCELERATION, &sobj_vla);
+	if(err) {
 		GSE_ERR( "attach fail = %d\n", err);
 		goto exit_kfree;
 	}
@@ -4681,8 +4054,8 @@ static int bmi160_acc_i2c_probe(struct i2c_client *client, const struct i2c_devi
 	sobj_vg.self = obj;
 	sobj_vg.polling = 1;
 	sobj_vg.sensor_operate = bmm050_vg_operate;
-	if(err = hwmsen_attach(ID_GRAVITY, &sobj_vg))
-	{
+	err = hwmsen_attach(ID_GRAVITY, &sobj_vg);
+	if(err) {
 		GSE_ERR( "attach fail = %d\n", err);
 		goto exit_kfree;
 	}
@@ -4696,29 +4069,21 @@ static int bmi160_acc_i2c_probe(struct i2c_client *client, const struct i2c_devi
 	register_early_suspend(&obj->early_drv);
 #endif
 
-	/* maps interrupt to INT1 pin, set interrupt trigger level way */
-	bmi160_set_intr_edge_ctrl(BMI_INT0, BMI_INT_LEVEL);
-	mdelay(10);
-	bmi160_set_intr_level(BMI_INT0, ENABLE);
-	mdelay(10);
-	bmi160_set_output_enable(BMI160_INTR1_OUTPUT_ENABLE, ENABLE);
-	mdelay(10);
-	sm_init_interrupts(BMI160_MAP_INTR1);
-	mdelay(10);
-	INIT_WORK(&obj->irq_work, bmi_irq_work_func);
-
+	bmi160_acc_init_flag =0;
 	GSE_LOG("%s: OK\n", __func__);
 	return 0;
 
 	exit_create_attr_failed:
+#ifdef MISC_FOR_DAEMON
 	misc_deregister(&bmi160_acc_device);
 	exit_misc_device_register_failed:
+#endif
 	exit_init_failed:
-	//i2c_detach_client(new_client);
 	exit_kfree:
 	kfree(obj);
 	exit:
 	GSE_ERR("%s: err = %d\n", __func__, err);
+	bmi160_acc_init_flag =-1;
 	return err;
 }
 
@@ -4727,32 +4092,29 @@ static int bmi160_acc_i2c_remove(struct i2c_client *client)
 {
 	int err = 0;
 
-	if(err = bmi160_acc_delete_attr(&bmi160_acc_gsensor_driver.driver))
-	{
+	err = bmi160_acc_delete_attr(&(bmi160_acc_init_info.platform_diver_addr->driver));
+	if(err) {
 		GSE_ERR("bma150_delete_attr fail: %d\n", err);
 	}
 
-	if(err = misc_deregister(&bmi160_acc_device))
-	{
+#ifdef MISC_FOR_DAEMON
+	err = misc_deregister(&bmi160_acc_device);
+	if(err) {
 		GSE_ERR("misc_deregister fail: %d\n", err);
 	}
+#endif
 
-	if(err = hwmsen_detach(ID_ACCELEROMETER))
-	{
-		GSE_ERR("hwmsen_detach fail: %d\n", err);
-	}
 
 	bmi160_acc_i2c_client = NULL;
 	i2c_unregister_device(client);
 	kfree(obj_i2c_data);
 	return 0;
 }
-/*----------------------------------------------------------------------------*/
-static int bmi160_acc_probe(struct platform_device *pdev)
+
+static int  bmi160_acc_local_init(void)
 {
 	struct acc_hw *hw = get_cust_acc_hw();
-
-	GSE_FUN();
+	GSE_LOG("fwq loccal init+++\n");
 
 	BMI160_ACC_power(hw, 1);
 	if(i2c_add_driver(&bmi160_acc_i2c_driver))
@@ -4760,37 +4122,28 @@ static int bmi160_acc_probe(struct platform_device *pdev)
 		GSE_ERR("add driver error\n");
 		return -1;
 	}
+	if(-1 == bmi160_acc_init_flag)
+	{
+		return -1;
+	}
+	GSE_LOG("fwq loccal init---\n");
 	return 0;
 }
-/*----------------------------------------------------------------------------*/
-static int bmi160_acc_remove(struct platform_device *pdev)
-{
-    struct acc_hw *hw = get_cust_acc_hw();
 
-    GSE_FUN();
-    BMI160_ACC_power(hw, 0);
-    i2c_del_driver(&bmi160_acc_i2c_driver);
-    return 0;
+static int bmi160_acc_remove(void)
+{
+	struct acc_hw *hw = get_cust_acc_hw();
+
+	GSE_FUN();
+	BMI160_ACC_power(hw, 0);
+	i2c_del_driver(&bmi160_acc_i2c_driver);
+	return 0;
 }
-/*----------------------------------------------------------------------------*/
-#ifdef CONFIG_OF 
-static const struct of_device_id gsensor_of_match[] = { 
-{
-	.compatible = "mediatek,gsensor", }, 
-	{}, 
-}; 
-#endif
 
-static struct platform_driver bmi160_acc_gsensor_driver = {
-	.probe      = bmi160_acc_probe,
-	.remove     = bmi160_acc_remove,
-	.driver     = {
-		.name  = "gsensor",
-		.owner = THIS_MODULE, 
-#ifdef CONFIG_OF 
-		.of_match_table = gsensor_of_match, 
-#endif 
-	}
+static struct acc_init_info bmi160_acc_init_info = {
+	.name = "bmi160_acc",
+	.init = bmi160_acc_local_init,
+	.uninit = bmi160_acc_remove,
 };
 
 /*----------------------------------------------------------------------------*/
@@ -4800,18 +4153,14 @@ static int __init bmi160_acc_init(void)
 
 	GSE_FUN();
 	i2c_register_board_info(hw->i2c_num, &bmi160_acc_i2c_info, 1);
-	if(platform_driver_register(&bmi160_acc_gsensor_driver))
-	{
-		GSE_ERR("failed to register driver");
-		return -ENODEV;
-	}
+	acc_driver_add(&bmi160_acc_init_info);
+
 	return 0;
 }
 /*----------------------------------------------------------------------------*/
 static void __exit bmi160_acc_exit(void)
 {
 	GSE_FUN();
-	platform_driver_unregister(&bmi160_acc_gsensor_driver);
 }
 /*----------------------------------------------------------------------------*/
 module_init(bmi160_acc_init);

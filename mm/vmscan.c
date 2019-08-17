@@ -1827,7 +1827,7 @@ enum scan_balance {
 static int vmscan_swap_file_ratio = 1;
 module_param_named(swap_file_ratio, vmscan_swap_file_ratio, int, S_IRUGO | S_IWUSR);
 
-#if defined(CONFIG_ZRAM) && defined(CONFIG_MTK_LCA_RAM_OPTIMIZE)
+#if defined(CONFIG_ZRAM) && defined(CONFIG_MTK_GMO_RAM_OPTIMIZE)
 
 // vmscan debug
 static int vmscan_swap_sum = 200;
@@ -1848,8 +1848,12 @@ module_param_named(recent_rotated_anon, vmscan_recent_rotated_anon, int, S_IRUGO
 module_param_named(recent_rotated_file, vmscan_recent_rotated_file, int, S_IRUGO);
 #endif // CONFIG_ZRAM
 
+static int vmscan_duration_ms = 200;
+static int vmscan_threshold = 3000;
+module_param_named(duration_ms, vmscan_duration_ms, int, S_IRUGO | S_IWUSR);
+module_param_named(threshold, vmscan_threshold, int, S_IRUGO | S_IWUSR);
 
-#if defined(CONFIG_ZRAM) && defined(CONFIG_MTK_LCA_RAM_OPTIMIZE)
+#if defined(CONFIG_ZRAM) && defined(CONFIG_MTK_GMO_RAM_OPTIMIZE)
 //#define LOGTAG "VMSCAN"
 static unsigned long t=0;
 static unsigned long history[2] = {0};
@@ -1880,9 +1884,9 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 	bool force_scan = false;
 	unsigned long ap, fp;
 	enum lru_list lru;
-#if defined(CONFIG_ZRAM) && defined(CONFIG_MTK_LCA_RAM_OPTIMIZE)
+#if defined(CONFIG_ZRAM) && defined(CONFIG_MTK_GMO_RAM_OPTIMIZE)
 	int cpu;
-	unsigned long SwapinCount, SwapoutCount, cached;
+	unsigned long SwapinCount = 0, SwapoutCount = 0, cached = 0;
 	bool bThrashing = false;
 #endif
 
@@ -1976,13 +1980,13 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 	 * With swappiness at 100, anonymous and file have the same priority.
 	 * This scanning priority is essentially the inverse of IO cost.
 	 */
-#if defined(CONFIG_ZRAM) && defined(CONFIG_MTK_LCA_RAM_OPTIMIZE)
+#if defined(CONFIG_ZRAM) && defined(CONFIG_MTK_GMO_RAM_OPTIMIZE)
     if (vmscan_swap_file_ratio) {
 
 		if(t == 0)
 			t = jiffies;
 
-		if (time_after(jiffies, t + 1 * HZ)) {
+		if (time_after(jiffies, t + vmscan_duration_ms/1000 * HZ)) {
 		
 			for_each_online_cpu(cpu) {
 				struct vm_event_state *this = &per_cpu(vm_event_states, cpu);
@@ -1990,12 +1994,12 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 				SwapoutCount	+= this->event[PSWPOUT];
 			}
 
-			if( ((SwapinCount-history[0] + SwapoutCount - history[1]) / (jiffies-t) * HZ) > 3000){
+            if( ((SwapinCount-history[0] + SwapoutCount - history[1]) / (jiffies-t+1) * HZ) > vmscan_threshold){
 				bThrashing = true;
-				//xlog_printk(ANDROID_LOG_ERROR, LOGTAG, "!!! thrashing !!!\n");
+				//pr_debug(ANDROID_LOG_ERROR, LOGTAG, "!!! thrashing !!!\n");
 			}else{
 				bThrashing = false;
-				//xlog_printk(ANDROID_LOG_WARN, LOGTAG, "!!! NO thrashing !!!\n");
+				//pr_debug(ANDROID_LOG_WARN, LOGTAG, "!!! NO thrashing !!!\n");
 			}
 			history[0] = SwapinCount;
 			history[1] = SwapoutCount;
@@ -2008,18 +2012,18 @@ static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
 		if(!bThrashing){
 			anon_prio = (vmscan_swappiness(sc) * anon) / (anon + file + 1);
 			file_prio = (vmscan_swap_sum - vmscan_swappiness(sc)) * file / (anon + file + 1);
-			//xlog_printk(ANDROID_LOG_DEBUG, LOGTAG, "1 anon_prio: %d, file_prio: %d \n",  anon_prio, file_prio);
+			//pr_debug(ANDROID_LOG_DEBUG, LOGTAG, "1 anon_prio: %d, file_prio: %d \n",  anon_prio, file_prio);
 
 		} else {
 			cached = global_page_state(NR_FILE_PAGES) - global_page_state(NR_SHMEM) - total_swapcache_pages();
 			if(cached > lowmem_minfree[2]) {
 				anon_prio = vmscan_swappiness(sc);
 				file_prio = vmscan_swap_sum - vmscan_swappiness(sc);
-				//xlog_printk(ANDROID_LOG_ERROR, LOGTAG, "2 anon_prio: %d, file_prio: %d \n",  anon_prio, file_prio);
+				//pr_debug(ANDROID_LOG_ERROR, LOGTAG, "2 anon_prio: %d, file_prio: %d \n",  anon_prio, file_prio);
 			} else {
 				anon_prio = (vmscan_swappiness(sc) * anon) / (anon + file + 1);
 				file_prio = (vmscan_swap_sum - vmscan_swappiness(sc)) * file / (anon + file + 1);
-				//xlog_printk(ANDROID_LOG_ERROR, LOGTAG, "3 anon_prio: %d, file_prio: %d \n",  anon_prio, file_prio);
+				//pr_debug(ANDROID_LOG_ERROR, LOGTAG, "3 anon_prio: %d, file_prio: %d \n",  anon_prio, file_prio);
 			}
 		}
 
@@ -4120,7 +4124,7 @@ int mtkpasr_drop_page(struct page *page)
 		/* We don't handle dirty file pages! */
 		if (PageDirty(page)) {
 #ifdef CONFIG_MTKPASR_DEBUG 
-			/*printk(KERN_ALERT "\n\n\n\n\n\n [%s][%d]\n\n\n\n\n\n",__FUNCTION__,__LINE__);*/
+			printk(KERN_ALERT "\n\n\n\n\n\n [%s][%d]\n\n\n\n\n\n",__FUNCTION__,__LINE__);
 #endif
 			goto unlock;
 		}

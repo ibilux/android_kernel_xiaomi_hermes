@@ -1,5 +1,5 @@
 /*
-** $Id: include/tdls.h#1 $
+** Id: include/tdls.h#1
 */
 
 /*! \file   "tdls.h"
@@ -8,7 +8,7 @@
 */
 
 /*
-** $Log: tdls.h $
+** Log: tdls.h
  *
  * 11 18 2013 vend_samp.lin
  * NULL
@@ -28,9 +28,6 @@
 */
 #define TDLS_CFG_CMD_TEST
 
-
-
-
 /*******************************************************************************
 *                                 M A C R O S
 ********************************************************************************
@@ -38,26 +35,27 @@
 
 /* assign station record idx for the packet */
 #define TDLSEX_STA_REC_IDX_GET(__prAdapter__, __MsduInfo__)					\
-{																			\
-	STA_RECORD_T *__StaRec__;												\
+{												\
+	STA_RECORD_T *__StaRec__;								\
 	__MsduInfo__->ucStaRecIndex = STA_REC_INDEX_NOT_FOUND;					\
-	__StaRec__ = cnmGetStaRecByAddress(__prAdapter__,						\
-								(UINT_8) NETWORK_TYPE_AIS_INDEX,			\
-								__MsduInfo__->aucEthDestAddr);				\
+	__StaRec__ = cnmGetStaRecByAddress(__prAdapter__,					\
+								(UINT_8) NETWORK_TYPE_AIS_INDEX,\
+								__MsduInfo__->aucEthDestAddr);	\
 	if ((__StaRec__ != NULL) && (IS_DLS_STA(__StaRec__)))					\
-		__MsduInfo__->ucStaRecIndex = __StaRec__->ucIndex;					\
+		__MsduInfo__->ucStaRecIndex = __StaRec__->ucIndex;				\
 }
 
 /* fill wiphy flag */
-#define TDLSEX_WIPHY_FLAGS_INIT(__fgFlag__)									\
-{																			\
+#define TDLSEX_WIPHY_FLAGS_INIT(__fgFlag__)							\
+{												\
 	__fgFlag__ |= (WIPHY_FLAG_SUPPORTS_TDLS | WIPHY_FLAG_TDLS_EXTERNAL_SETUP);\
 }
 
-
-#define LR_TDLS_FME_FIELD_FILL(__Len) \
-	pPkt += __Len; \
-	u4PktLen += __Len;
+#define LR_TDLS_FME_FIELD_FILL(__Len)	\
+{					\
+	pPkt += __Len;			\
+	u4PktLen += __Len;		\
+}
 
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
@@ -134,7 +132,6 @@ typedef struct _IE_LINK_IDENTIFIER_T {
 
 #define TDLS_LINK_IDENTIFIER_IE(__ie__)	((IE_LINK_IDENTIFIER_T *)(__ie__))
 
-
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -160,7 +157,6 @@ typedef struct _STATION_PRARAMETERS {
 	u8 ext_capab_len;
 } STATION_PRARAMETERS, P_STATION_PRARAMETERS;
 
-
 /* test command use */
 typedef struct _PARAM_CUSTOM_TDLS_CMD_STRUC_T {
 
@@ -178,24 +174,17 @@ typedef struct _PARAM_CUSTOM_TDLS_CMD_STRUC_T {
 
 	UINT_32 u4Timeout;
 
-
 	UINT_8 arRspAddr[TDLS_FME_MAC_ADDR_LEN];
 	UINT_8 arBssid[TDLS_FME_MAC_ADDR_LEN];
 
-
 	/* Linux Kernel-3.10 */
 
-
 	struct ieee80211_ht_cap rHtCapa;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
 	struct ieee80211_vht_cap rVhtCapa;
-#endif
 	/* struct */
 	STATION_PRARAMETERS rPeerInfo;
 
 } PARAM_CUSTOM_TDLS_CMD_STRUC_T;
-
-
 
 typedef enum _ENUM_TDLS_LINK_OPER {
 	TDLS_DISCOVERY_REQ,
@@ -205,13 +194,11 @@ typedef enum _ENUM_TDLS_LINK_OPER {
 	TDLS_DISABLE_LINK
 } ENUM_TDLS_LINK_OPER;
 
-
 typedef struct _TDLS_CMD_LINK_OPER_T {
 
 	UINT_8 aucPeerMac[6];
 	ENUM_TDLS_LINK_OPER oper;
 } TDLS_CMD_LINK_OPER_T;
-
 
 typedef struct _TDLS_CMD_LINK_MGT_T {
 
@@ -223,8 +210,6 @@ typedef struct _TDLS_CMD_LINK_MGT_T {
 	UINT_8 aucSecBuf[1000];
 
 } TDLS_CMD_LINK_MGT_T;
-
-
 
 typedef struct _TDLS_CMD_PEER_ADD_T {
 
@@ -243,8 +228,6 @@ typedef struct _TDLS_CMD_PEER_UPDATE_VHT_CAP_MCS_INFO_T {
 	UINT_8 arRxMask[SUP_MCS_RX_BITMASK_OCTET_NUM];
 } TDLS_CMD_PEER_UPDATE_VHT_CAP_MCS_INFO_T;
 
-
-
 typedef struct _TDLS_CMD_PEER_UPDATE_HT_CAP_T {
 	UINT_16 u2CapInfo;
 	UINT_8 ucAmpduParamsInfo;
@@ -257,7 +240,6 @@ typedef struct _TDLS_CMD_PEER_UPDATE_HT_CAP_T {
 	UINT_8 ucAntennaSelInfo;
 } TDLS_CMD_PEER_UPDATE_HT_CAP_T;
 
-
 typedef struct _TDLS_CMD_PEER_UPDATE_VHT_CAP_T {
 	UINT_16 u2CapInfo;
 	/* 16 bytes MCS information */
@@ -265,16 +247,13 @@ typedef struct _TDLS_CMD_PEER_UPDATE_VHT_CAP_T {
 
 } TDLS_CMD_PEER_UPDATE_VHT_CAP_T;
 
-
 typedef struct _TDLS_CMD_PEER_UPDATE_T {
 
 	UINT_8 aucPeerMac[6];
 
-
 	UINT_8 aucSupChan[TDLS_CMD_PEER_UPDATE_SUP_CHAN_MAX];
 
 	UINT_16 u2StatusCode;
-
 
 	UINT_8 aucSupRate[TDLS_CMD_PEER_UPDATE_SUP_RATE_MAX];
 	UINT_16 u2SupRateLen;
@@ -323,7 +302,6 @@ typedef enum _TDLS_EVENT_HOST_ID {
 	TDLS_HOST_EVENT_TX_DONE
 } TDLS_EVENT_HOST_ID;
 
-
 typedef enum _TDLS_EVENT_HOST_SUBID_TEAR_DOWN {
 	TDLS_HOST_EVENT_TD_PTI_TIMEOUT = 0x00,
 	TDLS_HOST_EVENT_TD_AGE_TIMEOUT,
@@ -352,7 +330,6 @@ typedef enum _TDLS_REASON_CODE {
 	TDLS_REASON_CODE_MTK_DIS_BY_US_DUE_TO_LOST_TEAR_DOWN = 0x8b	/* 139 */
 } TDLS_REASON_CODE;
 
-
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -380,9 +357,7 @@ TdlsDataFrameSend_TearDown(ADAPTER_T *prAdapter,
 			   STA_RECORD_T *prStaRec,
 			   UINT_8 *pPeerMac,
 			   UINT_8 ucActionCode,
-			   UINT_8 ucDialogToken,
-			   UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
-
+			   UINT_8 ucDialogToken, UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
 
 WLAN_STATUS			/* TDLS_STATUS */
 
@@ -390,8 +365,7 @@ TdlsDataFrameSend_CONFIRM(ADAPTER_T *prAdapter,
 			  STA_RECORD_T *prStaRec,
 			  UINT_8 *pPeerMac,
 			  UINT_8 ucActionCode,
-			  UINT_8 ucDialogToken,
-			  UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
+			  UINT_8 ucDialogToken, UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
 
 WLAN_STATUS			/* TDLS_STATUS */
 
@@ -399,8 +373,7 @@ TdlsDataFrameSend_SETUP_REQ(ADAPTER_T *prAdapter,
 			    STA_RECORD_T *prStaRec,
 			    UINT_8 *pPeerMac,
 			    UINT_8 ucActionCode,
-			    UINT_8 ucDialogToken,
-			    UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
+			    UINT_8 ucDialogToken, UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
 
 WLAN_STATUS			/* TDLS_STATUS */
 
@@ -408,10 +381,7 @@ TdlsDataFrameSend_DISCOVERY_REQ(ADAPTER_T *prAdapter,
 				STA_RECORD_T *prStaRec,
 				UINT_8 *pPeerMac,
 				UINT_8 ucActionCode,
-				UINT_8 ucDialogToken,
-				UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
-
-
+				UINT_8 ucDialogToken, UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
 
 WLAN_STATUS			/* TDLS_STATUS */
 
@@ -419,9 +389,7 @@ TdlsDataFrameSend_SETUP_RSP(ADAPTER_T *prAdapter,
 			    STA_RECORD_T *prStaRec,
 			    UINT_8 *pPeerMac,
 			    UINT_8 ucActionCode,
-			    UINT_8 ucDialogToken,
-			    UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
-
+			    UINT_8 ucDialogToken, UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
 
 WLAN_STATUS			/* TDLS_STATUS */
 
@@ -429,38 +397,26 @@ TdlsDataFrameSend_DISCOVERY_RSP(ADAPTER_T *prAdapter,
 				STA_RECORD_T *prStaRec,
 				UINT_8 *pPeerMac,
 				UINT_8 ucActionCode,
-				UINT_8 ucDialogToken,
-				UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
+				UINT_8 ucDialogToken, UINT_16 u2StatusCode, UINT_8 *pAppendIe, UINT_32 AppendIeLen);
 
+UINT_32 TdlsexLinkOper(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen, PUINT_32 pu4SetInfoLen);
 
-UINT_32
-TdlsexLinkOper(P_ADAPTER_T prAdapter,
-	       PVOID pvSetBuffer, UINT_32 u4SetBufferLen, PUINT_32 pu4SetInfoLen);
-
-
-UINT_32
-TdlsexLinkMgt(P_ADAPTER_T prAdapter,
-	      PVOID pvSetBuffer, UINT_32 u4SetBufferLen, PUINT_32 pu4SetInfoLen);
-
-
+UINT_32 TdlsexLinkMgt(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen, PUINT_32 pu4SetInfoLen);
 
 VOID TdlsexEventHandle(P_GLUE_INFO_T prGlueInfo, UINT_8 *prInBuf, UINT_32 u4InBufLen);
-
 
 VOID TdlsEventTearDown(GLUE_INFO_T *prGlueInfo, UINT_8 *prInBuf, UINT_32 u4InBufLen);
 
 VOID TdlsBssExtCapParse(P_STA_RECORD_T prStaRec, P_UINT_8 pucIE);
 
-
 WLAN_STATUS
-TdlsSendChSwControlCmd(P_ADAPTER_T prAdapter,
-		       PVOID pvSetBuffer, UINT_32 u4SetBufferLen, PUINT_32 pu4SetInfoLen);
+TdlsSendChSwControlCmd(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen, PUINT_32 pu4SetInfoLen);
 
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
 */
 
-#endif				/* CFG_SUPPORT_TDLS */
+#endif /* CFG_SUPPORT_TDLS */
 
-#endif				/* _TDLS_H */
+#endif /* _TDLS_H */

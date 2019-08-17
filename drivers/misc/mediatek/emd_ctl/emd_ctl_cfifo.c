@@ -236,7 +236,7 @@ static ssize_t emd_cfifo_read(struct file *file, char *buf, size_t count, loff_t
         wake_up_interruptible_poll(&cfifo_instance->other_side->poll_waitq_w,POLLOUT);
     }
     
-    EMD_MSG_INF("cfifo","emd_cfifo%d_read: ret=%d\n",cfifo_instance->idx,ret);
+    EMD_MSG_DBG("cfifo","emd_cfifo%d_read: ret=%d\n",cfifo_instance->idx,ret);
 out:
 
     return ret;
@@ -359,7 +359,7 @@ out:
             request_wakeup_md_timeout(1, 1);
         }
     }
-    EMD_MSG_INF("cfifo","emd_cfifo%d_write: ret=%d\n",cfifo_instance->idx,ret);
+    EMD_MSG_DBG("cfifo","emd_cfifo%d_write: ret=%d\n",cfifo_instance->idx,ret);
     return ret;
 }
 

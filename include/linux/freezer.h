@@ -42,6 +42,7 @@ static inline bool freezing(struct task_struct *p)
 
 /* Takes and releases task alloc lock using task_lock() */
 extern void __thaw_task(struct task_struct *t);
+
 extern bool __refrigerator(bool check_kthr_stop);
 extern int freeze_processes(void);
 extern int freeze_kernel_threads(void);
@@ -76,13 +77,13 @@ extern bool cgroup_freezing(struct task_struct *task);
 extern void cgroup_thawed_by_pid(int pid_nr);
 extern void freezer_change_state_to_thawed(struct cgroup *cgroup);
 #else /* !CONFIG_CGROUP_FREEZER */
-static inline void cgroup_thawed_by_pid(int pid_nr)
-{
-	return;
-}
 static inline bool cgroup_freezing(struct task_struct *task)
 {
 	return false;
+}
+static inline void cgroup_thawed_by_pid(int pid_nr)
+{
+	return;
 }
 #endif /* !CONFIG_CGROUP_FREEZER */
 

@@ -35,14 +35,14 @@ extern u32 debug_level;
 #ifdef USE_SSUSB_QMU
 #define qmu_printk(level, fmt, args...) do { \
 		if ( debug_level & (level|K_QMU) ) { \
-			printk("[U3D][Q]" fmt, ## args); \
+			pr_debug("[U3D][Q]" fmt, ## args); \
 		} \
 	} while (0)
 #endif
 
 #define os_printk(level, fmt, args...) do { \
 		if ( debug_level & level ) { \
-			printk("[U3D]" fmt, ## args); \
+			pr_debug("[U3D]" fmt, ## args); \
 		} \
 	} while (0)
 

@@ -1,5 +1,5 @@
 /*
-** $Id:
+** Id:
 */
 
 /*! \file   "p2p_cmd_buf.h"
@@ -9,17 +9,16 @@
     of MGMT Memory Pool.
 */
 
-
-
 /*
-** $Log: p2p_cmd_buf.h $
+** Log: p2p_cmd_buf.h
  *
  * 07 17 2012 yuche.tsai
  * NULL
  * Compile no error before trial run.
  *
  * 12 22 2010 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface
+ * for supporting Wi-Fi Direct Service Discovery
  * 1. header file restructure for more clear module isolation
  * 2. add function interface definition for implementing Service Discovery callbacks
 */
@@ -71,23 +70,14 @@
 /* Firmware Command Packer                                      */
 /*--------------------------------------------------------------*/
 WLAN_STATUS
-wlanoidSendSetQueryP2PCmd (
-    IN P_ADAPTER_T  prAdapter,
-    UINT_8          ucCID,
-    BOOLEAN         fgSetQuery,
-    BOOLEAN         fgNeedResp,
-    BOOLEAN         fgIsOid,
-    PFN_CMD_DONE_HANDLER pfCmdDoneHandler,
-    PFN_CMD_TIMEOUT_HANDLER pfCmdTimeoutHandler,
-    UINT_32         u4SetQueryInfoLen,
-    PUINT_8         pucInfoBuffer,
-    OUT PVOID       pvSetQueryBuffer,
-    IN UINT_32      u4SetQueryBufferLen
-    );
-
-
-
+wlanoidSendSetQueryP2PCmd(IN P_ADAPTER_T prAdapter,
+			  UINT_8 ucCID,
+			  BOOLEAN fgSetQuery,
+			  BOOLEAN fgNeedResp,
+			  BOOLEAN fgIsOid,
+			  PFN_CMD_DONE_HANDLER pfCmdDoneHandler,
+			  PFN_CMD_TIMEOUT_HANDLER pfCmdTimeoutHandler,
+			  UINT_32 u4SetQueryInfoLen,
+			  PUINT_8 pucInfoBuffer, OUT PVOID pvSetQueryBuffer, IN UINT_32 u4SetQueryBufferLen);
 
 #endif /* _P2P_CMD_BUF_H */
-
-

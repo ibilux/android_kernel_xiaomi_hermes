@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/sdio/include/hif.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/sdio/include/hif.h#1
 */
 
 /*! \file   "hif.h"
@@ -8,10 +8,8 @@
     N/A
 */
 
-
-
 /*
-** $Log: hif.h $
+** Log: hif.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -86,14 +84,14 @@ extern "C" {
 #ifdef X86_CPU
 /* Please make sure the MCR you wrote will not take any effect.
  * MCR_MIBSDR (0x00C4) has confirm with DE.
- */* / TODO: yarco */
+ */ */TODO:yarco * /
 #define SDIO_X86_WORKAROUND_WRITE_MCR  0x0000
 #endif
 #if CFG_SDIO_PATHRU_MODE
 #define SDIO_PATHRU_SHC_NAME    TEXT("SHC1:")
 #define FILE_DEVICE_SDHC    (0x8CE7)	/* MTK custom file device for SDHC */
 #define _SDHC_CTL_CODE(_Function, _Method, _Access)  \
-    CTL_CODE(FILE_DEVICE_SDHC, _Function, _Method, _Access)
+	CTL_CODE(FILE_DEVICE_SDHC, _Function, _Method, _Access)
 #define IOCTL_SDHC_PATHRU _SDHC_CTL_CODE(0, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #endif
 /******************************************************************************
@@ -106,8 +104,8 @@ extern "C" {
  */ typedef struct _GL_PATHRU_INFO_IN_T {
 	DWORD dwEnable;		/* To enable or disable PATHRU mode */
 	DWORD dwSlotNumber;	/* Target slot number to be controlled */
-	 VOID(*pIndicateSlotStateChange) (PSDCARD_HC_CONTEXT pHCContext,	/* Status change event handler in PATHRU */
-					  DWORD SlotNumber, SD_SLOT_EVENT Event, PVOID pvClient);
+	VOID(*pIndicateSlotStateChange) (PSDCARD_HC_CONTEXT pHCContext,	/* Status change event handler in PATHRU */
+					DWORD SlotNumber, SD_SLOT_EVENT Event, PVOID pvClient);
 	PVOID pvClientContext;	/* Client's context used for status indication */
 } GL_PATHRU_INFO_IN_T, *P_GL_PATHRU_INFO_IN_T;
 
@@ -116,8 +114,8 @@ extern "C" {
  */
 typedef struct _GL_PATHRU_INFO_OUT_T {
 	PSDCARD_HC_CONTEXT pHcd;	/* Context of SDHC driver , which is returned by SDHC driver */
-	 VOID(*pIndicateSlotStateChange) (PSDCARD_HC_CONTEXT pHCContext,	/* Status change event handler in SDHC */
-					  DWORD SlotNumber, SD_SLOT_EVENT Event);
+	VOID(*pIndicateSlotStateChange) (PSDCARD_HC_CONTEXT pHCContext,	/* Status change event handler in SDHC */
+					DWORD SlotNumber, SD_SLOT_EVENT Event);
 } GL_PATHRU_INFO_OUT_T, *P_GL_PATHRU_INFO_OUT_T;
 
 /* SDIO PATHRU mode's data structure, which is attached to HIF info structure.
@@ -133,7 +131,7 @@ typedef struct _GL_PATHRU_INFO_T {
 	GL_PATHRU_INFO_OUT_T rInfoOut;	/* Info returned by SDHC driver */
 	CRITICAL_SECTION rLock;	/* CriticalSetction for pretecting PATHRU atomic operation and integrity */
 } GL_PATHRU_INFO_T, *P_GL_PATHRU_INFO_T;
-#endif				/* CFG_SDIO_PATHRU_MODE */
+#endif /* CFG_SDIO_PATHRU_MODE */
 
 /* host interface's private data structure, which is attached to os glue
 ** layer info structure.
@@ -156,7 +154,6 @@ typedef struct _GL_HIF_INFO_T {
 
 } GL_HIF_INFO_T, *P_GL_HIF_INFO_T;
 
-
 /******************************************************************************
 *                            P U B L I C   D A T A
 *******************************************************************************
@@ -173,9 +170,9 @@ typedef struct _GL_HIF_INFO_T {
 */
 #ifdef CFG_HAVE_PLATFORM_INIT
 #define sdioBusDeinit(prGlueInfo) \
-    platformBusDeinit(prGlueInfo)
+	platformBusDeinit(prGlueInfo)
 #define sdioSetPowerState(prGlueInfo, ePowerMode) \
-    platformSetPowerState(prGlueInfo, ePowerMode)
+	platformSetPowerState(prGlueInfo, ePowerMode)
 #else
 /* define platformBusInit() for platforms that have no such function. This is
 ** needed by sdio.c.
@@ -199,4 +196,4 @@ BOOLEAN sdioEnablePathruMode(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgEnable);
 
 #endif
 
-#endif				/* _HIF_H */
+#endif /* _HIF_H */

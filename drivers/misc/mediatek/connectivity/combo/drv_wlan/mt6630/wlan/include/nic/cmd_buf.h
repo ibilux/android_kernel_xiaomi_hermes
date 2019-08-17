@@ -1,5 +1,5 @@
 /*
-** $Id:
+** Id:
 */
 
 /*! \file   "cmd_buf.h"
@@ -9,10 +9,8 @@
     of MGMT Memory Pool.
 */
 
-
-
 /*
-** $Log: cmd_buf.h $
+** Log: cmd_buf.h
 **
 ** 01 21 2013 terry.wu
 ** [BORA00002207] [MT6630 Wi-Fi] TXM & MQM Implementation
@@ -28,7 +26,8 @@
 ** (Davinci label: MT6620_WIFI_Driver_V2_3_120913_1942_As_MT6630_Base)
  *
  * 10 04 2010 cp.wu
- * [WCXRP00000077] [MT6620 Wi-Fi][Driver][FW] Eliminate use of ENUM_NETWORK_TYPE_T and replaced by ENUM_NETWORK_TYPE_INDEX_T only
+ * [WCXRP00000077] [MT6620 Wi-Fi][Driver][FW] Eliminate use of ENUM_NETWORK_TYPE_T and replaced by
+ * ENUM_NETWORK_TYPE_INDEX_T only
  * remove ENUM_NETWORK_TYPE_T definitions
  *
  * 09 03 2010 kevin.huang
@@ -39,7 +38,8 @@
  *
  * 1) MMPDUs are now sent to MT6620 by CMD queue for keeping strict order of 1X/MMPDU/CMD packets
  * 2) integrate with qmGetFrameAction() for deciding which MMPDU/1X could pass checking for sending
- * 2) enhance CMD_INFO_T descriptor number from 10 to 32 to avoid descriptor underflow under concurrent network operation
+ * 2) enhance CMD_INFO_T descriptor number from 10 to 32 to avoid descriptor underflow
+ * under concurrent network operation
  *
  * 07 08 2010 cp.wu
  *
@@ -81,8 +81,7 @@ typedef enum _COMMAND_TYPE {
 	COMMAND_TYPE_NUM
 } COMMAND_TYPE, *P_COMMAND_TYPE;
 
-typedef VOID(*PFN_CMD_DONE_HANDLER) (IN P_ADAPTER_T prAdapter,
-				     IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
+typedef VOID(*PFN_CMD_DONE_HANDLER) (IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
 
 typedef VOID(*PFN_CMD_TIMEOUT_HANDLER) (IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo);
 
@@ -93,8 +92,8 @@ struct _CMD_INFO_T {
 
 	UINT_16 u2InfoBufLen;	/* This is actual CMD buffer length */
 	PUINT_8 pucInfoBuffer;	/* May pointer to structure in prAdapter */
-	P_MSDU_INFO_T prMsduInfo; /* only valid when it's a security/MGMT frame */
-	P_NATIVE_PACKET prPacket; /* only valid when it's a security frame */
+	P_MSDU_INFO_T prMsduInfo;	/* only valid when it's a security/MGMT frame */
+	P_NATIVE_PACKET prPacket;	/* only valid when it's a security frame */
 
 	UINT_8 ucBssIndex;
 	UINT_8 ucStaRecIndex;	/* only valid when it's a security frame */
@@ -117,15 +116,13 @@ struct _CMD_INFO_T {
 
 	/* private data */
 	UINT_32 u4PrivateData;
-
 #if CFG_DBG_MGT_BUF
-    /* Memory check */
-    BOOLEAN fgIsUsed;
-    OS_SYSTIME  rLastAllocTime;
-    OS_SYSTIME  rLastFreeTime;
+	/* Memory check */
+	BOOLEAN fgIsUsed;
+	OS_SYSTIME  rLastAllocTime;
+	OS_SYSTIME  rLastFreeTime;
 #endif
 };
-
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -152,8 +149,6 @@ P_CMD_INFO_T cmdBufAllocateCmdInfo(IN P_ADAPTER_T prAdapter, IN UINT_32 u4Length
 
 VOID cmdBufFreeCmdInfo(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo);
 
-VOID cmdBufDumpCmdInfo(IN P_ADAPTER_T prAdapter, IN BOOLEAN fgAll);
-
 /*----------------------------------------------------------------------------*/
 /* Routines for CMDs                                                          */
 /*----------------------------------------------------------------------------*/
@@ -166,12 +161,12 @@ wlanSendSetQueryCmd(IN P_ADAPTER_T prAdapter,
 		    PFN_CMD_DONE_HANDLER pfCmdDoneHandler,
 		    PFN_CMD_TIMEOUT_HANDLER pfCmdTimeoutHandler,
 		    UINT_32 u4SetQueryInfoLen,
-		    PUINT_8 pucInfoBuffer,
-		    OUT PVOID pvSetQueryBuffer, IN UINT_32 u4SetQueryBufferLen);
+		    PUINT_8 pucInfoBuffer, OUT PVOID pvSetQueryBuffer, IN UINT_32 u4SetQueryBufferLen);
 
+VOID cmdBufDumpCmdInfo(IN P_ADAPTER_T prAdapter, IN BOOLEAN fgAll);
 
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
 */
-#endif				/* _CMD_BUF_H */
+#endif /* _CMD_BUF_H */

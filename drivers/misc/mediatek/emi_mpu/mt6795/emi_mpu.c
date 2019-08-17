@@ -61,6 +61,7 @@ struct emi_mpu_notifier_block {
 
 static const struct mst_tbl_entry mst_tbl[] = {
 	/* apmcu */
+#if defined(CONFIG_ARCH_MT6595)	
 	{.master = MST_ID_APMCU_0,.port = 0x0,.id_mask = 0b0000000001110,.id_val =
 	 0b0000000001000,.name = "APMCU: CA7"},
 	{.master = MST_ID_APMCU_1,.port = 0x0,.id_mask = 0b0000000001110,.id_val =
@@ -107,7 +108,54 @@ static const struct mst_tbl_entry mst_tbl[] = {
 	 0b0011111010100,.name = "Perisys IOMMU"},
 	{.master = MST_ID_APMCU_22,.port = 0x0,.id_mask = 0b1111100001110,.id_val =
 	 0b0000000000010,.name = "GPU"},
-
+#elif defined(CONFIG_ARCH_MT6795)
+	{.master = MST_ID_APMCU_0,.port = 0x0,.id_mask = 0b0000000000111,.id_val =
+	 0b0000000000100,.name = "APMCU: C7L_MP0"},
+	{.master = MST_ID_APMCU_1,.port = 0x0,.id_mask = 0b0000000000111,.id_val =
+	 0b0000000000011,.name = "APMCU: C7L_MP1"},
+	{.master = MST_ID_APMCU_2,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000000000010,.name = "MSDC0"},
+	{.master = MST_ID_APMCU_3,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000001000010,.name = "NFI"},
+	{.master = MST_ID_APMCU_4,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000101000010,.name = "Audio"},
+	{.master = MST_ID_APMCU_5,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0001001000010,.name = "MSDC3"},
+	{.master = MST_ID_APMCU_6,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0001101000010,.name = "USB20"},
+	{.master = MST_ID_APMCU_7,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000010000010,.name = "MD"},
+	{.master = MST_ID_APMCU_8,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000110000010,.name = "SPM"},
+	{.master = MST_ID_APMCU_9,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0001010000010,.name = "MD32"},
+	{.master = MST_ID_APMCU_10,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0001110000010,.name = "THERM"},
+	{.master = MST_ID_APMCU_11,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000011000010,.name = "DMA"},
+	{.master = MST_ID_APMCU_12,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000000001010,.name = "PWM"},
+	{.master = MST_ID_APMCU_13,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000010001010,.name = "MSDC1"},
+	{.master = MST_ID_APMCU_14,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000100001010,.name = "MSCD2"},
+	{.master = MST_ID_APMCU_15,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000110001010,.name = "SPIO"},
+	{.master = MST_ID_APMCU_16,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000001001010,.name = "USB30"},
+	{.master = MST_ID_APMCU_17,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0000000010010,.name = "GCPU"},
+	{.master = MST_ID_APMCU_18,.port = 0x0,.id_mask = 0b1111110111111,.id_val =
+	 0b0000000011010,.name = "CQ_DMA"},
+	{.master = MST_ID_APMCU_19,.port = 0x0,.id_mask = 0b1111110111111,.id_val =
+	 0b0000000100010,.name = "DebugTop"},
+	{.master = MST_ID_APMCU_20,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0001111100010,.name = "Perisys IOMMU"},
+	{.master = MST_ID_APMCU_21,.port = 0x0,.id_mask = 0b1111111111111,.id_val =
+	 0b0001111101010,.name = "Perisys IOMMU"},
+	{.master = MST_ID_APMCU_22,.port = 0x0,.id_mask = 0b1111110000111,.id_val =
+	 0b0000000000001,.name = "GPU"},
+#endif
 	/* MM */
 	{.master = MST_ID_MM_0,.port = 0x2,.id_mask = 0b1111110000000,.id_val =
 	 0b0000000000000,.name = "Larb0"},
@@ -586,7 +634,7 @@ void acquire_dram_setting(struct basic_dram_setting *pasrdpd)
  * @access_permission: EMI MPU access permission
  * Return 0 for success, otherwise negative status code.
  */
-int emi_mpu_set_region_protection(unsigned int start, unsigned int end, int region,
+int emi_mpu_set_region_protection(phys_addr_t start, phys_addr_t end, int region,
 				  unsigned int access_permission)
 {
 	int ret = 0;
@@ -597,8 +645,8 @@ int emi_mpu_set_region_protection(unsigned int start, unsigned int end, int regi
 		/*Address 64KB alignment */
 		start -= emi_physical_offset;
 		end -= emi_physical_offset;
-		start = start >> 16;
-		end = end >> 16;
+		start = (start >> 16) & 0xFFFF;
+		end = (end >> 16) & 0xFFFF;
 
 		if (end < start) {
 			return -EINVAL;
@@ -1552,35 +1600,38 @@ static void __exit emi_mpu_mod_exit(void)
 {
 }
 
-
-static void __iomem *INFRA_BASE_ADDR = NULL;
-static void __iomem *PERISYS_BASE_ADDR = NULL;
+unsigned int enable_4gb = 0;
 
 static int __init dram_4GB_init(void)
 {
 	struct device_node *node;
+	void __iomem *INFRA_BASE_ADDR = NULL;
+	void __iomem *PERISYS_BASE_ADDR = NULL;
+	unsigned int infra_4g_sp, perisis_4g_sp;
+
 	node = of_find_compatible_node(NULL, NULL, "mediatek,INFRACFG_AO");
 	INFRA_BASE_ADDR = of_iomap(node, 0);
 	node = of_find_compatible_node(NULL, NULL, "mediatek,PERICFG");
 	PERISYS_BASE_ADDR = of_iomap(node, 0);
-	
+
+	if (INFRA_BASE_ADDR == NULL || PERISYS_BASE_ADDR == NULL) {
+		pr_err("%s: Got the NULL pointer\n", __func__);
+		return 0;
+	}
+
+	infra_4g_sp = readl(IOMEM(INFRA_BASE_ADDR + 0xf00)) & (1 << 13);
+	perisis_4g_sp = readl(IOMEM(PERISYS_BASE_ADDR + 0x208)) & (1 << 15);
+
+	if (infra_4g_sp && perisis_4g_sp)
+		enable_4gb = 1;
+	else
+		enable_4gb = 0;
 	return 0;
 }
 
 unsigned int enable_4G(void)
 {
-	unsigned int infra_4g_sp, perisis_4g_sp;
-
-	if(INFRA_BASE_ADDR == NULL || PERISYS_BASE_ADDR == NULL) {
-		pr_err("%s: Got the NULL pointer \n", __func__);
-		return 0;
-	}
-	infra_4g_sp = readl(IOMEM(INFRA_BASE_ADDR + 0xf00)) & (1 << 13);
-	perisis_4g_sp = readl(IOMEM(PERISYS_BASE_ADDR + 0x208)) & (1 << 15);
-
-	//pr_err("infra = 0x%x   perisis = 0x%x   resutle = %d\n", infra_4g_sp, perisis_4g_sp,
-	//       (infra_4g_sp && perisis_4g_sp));
-	return (infra_4g_sp && perisis_4g_sp);
+	return enable_4gb;
 }
 
 arch_initcall(dram_4GB_init);
@@ -1588,4 +1639,3 @@ module_init(emi_mpu_mod_init);
 module_exit(emi_mpu_mod_exit);
 
 EXPORT_SYMBOL(emi_mpu_set_region_protection);
-//EXPORT_SYMBOL(start_mm_mau_protect);

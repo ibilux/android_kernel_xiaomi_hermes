@@ -14,64 +14,60 @@ EXPORT_SYMBOL(g_mt_devapc_lock);
 
 int mt_devapc_check_emi_violation(void)
 {
-     if ((readl(IOMEM(DEVAPC0_D0_VIO_STA_4)) & ABORT_EMI) == 0) 
+    if ((readl(IOMEM(DEVAPC0_D0_VIO_STA_4)) & ABORT_EMI) == 0)
     {
-        printk(KERN_INFO "Not EMI MPU violation.\n");
-        return 1;
-    }
-    else{
-        return 0;
+		pr_err("Not EMI MPU violation.\n");
+		return 1;
     }
 
+    return 0;
 }
 
 int mt_devapc_emi_initial(void)
 {
-    /*IO remap*/
-    
-    struct device_node *node = NULL;
-        
-    if( DEVAPC0_AO_BASE == 0 || DEVAPC0_PD_BASE == 0 )
-    {
-        pr_info("[EMI] DPAC driver do not initial \n");
+	/*IO remap*/
 
-        node = of_find_compatible_node(NULL, NULL, "mediatek,DEVAPC_AO");
+	struct device_node *node = NULL;
 
-	if(node){
-	DEVAPC0_AO_BASE = of_iomap(node, 0);
-	pr_info("[EMI] AO_ADDRESS %p \n",DEVAPC0_AO_BASE );
-	} else{
-	 pr_info("[EMI] can't find DAPC_AO compatible node \n");
-	 return -1;
+	if( DEVAPC0_AO_BASE == 0 || DEVAPC0_PD_BASE == 0 )
+	{
+		pr_debug("[EMI] DPAC driver do not initial \n");
+
+		node = of_find_compatible_node(NULL, NULL, "mediatek,DEVAPC_AO");
+
+		if(node){
+			DEVAPC0_AO_BASE = of_iomap(node, 0);
+			pr_debug("[EMI] AO_ADDRESS %p \n",DEVAPC0_AO_BASE );
+		} else {
+			pr_err("[EMI] can't find DAPC_AO compatible node \n");
+			return -1;
+		}
+
+		node = of_find_compatible_node(NULL, NULL, "mediatek,DEVAPC");
+
+		if (node) {
+			DEVAPC0_PD_BASE = of_iomap(node, 0);
+			pr_debug("[EMI] PD_ADDRESS %p \n",DEVAPC0_PD_BASE );
+		} else {
+			pr_err("[EMI] can't find DAPC_PD compatible node \n");
+			return -1;
+		}
 	}
 
-	node = of_find_compatible_node(NULL, NULL, "mediatek,DEVAPC");
+	mt_reg_sync_writel(readl(IOMEM(DEVAPC0_APC_CON)) & (0xFFFFFFFF ^ (1<<2)), DEVAPC0_APC_CON);
+	mt_reg_sync_writel(readl(IOMEM(DEVAPC0_PD_APC_CON)) & (0xFFFFFFFF ^ (1<<2)), DEVAPC0_PD_APC_CON);
 
-	if(node){
-	DEVAPC0_PD_BASE = of_iomap(node, 0);
-	pr_info("[EMI] PD_ADDRESS %p \n",DEVAPC0_PD_BASE );
-	} else{
-	 pr_info("[EMI] can't find DAPC_PD compatible node \n");
-	 return -1;
-	}
-    }
+	mt_reg_sync_writel(ABORT_EMI, DEVAPC0_D0_VIO_STA_4);
+	mt_reg_sync_writel(readl(IOMEM(DEVAPC0_D0_VIO_MASK_4)) & (0xFFFFFFFF ^ (ABORT_EMI)), DEVAPC0_D0_VIO_MASK_4);
 
-    mt_reg_sync_writel(readl(IOMEM(DEVAPC0_APC_CON)) & (0xFFFFFFFF ^ (1<<2)), DEVAPC0_APC_CON);
-    mt_reg_sync_writel(readl(IOMEM(DEVAPC0_PD_APC_CON)) & (0xFFFFFFFF ^ (1<<2)), DEVAPC0_PD_APC_CON);
-
-    mt_reg_sync_writel(ABORT_EMI, DEVAPC0_D0_VIO_STA_4);
-    mt_reg_sync_writel(readl(IOMEM(DEVAPC0_D0_VIO_MASK_4)) & (0xFFFFFFFF ^ (ABORT_EMI)), DEVAPC0_D0_VIO_MASK_4);
-
-    return 0;
+	return 0;
 }
 
 
 void mt_devapc_clear_emi_violation(void)
 {
     if ((readl(IOMEM(DEVAPC0_D0_VIO_STA_4)) & ABORT_EMI) != 0)
-    {
         mt_reg_sync_writel(ABORT_EMI, DEVAPC0_D0_VIO_STA_4);
-    }
 }
  /*
  * mt_devapc_set_permission: set module permission on device apc.
@@ -89,7 +85,7 @@ void mt_devapc_set_permission(unsigned int module, E_MASK_DOM domain_num, APC_AT
 
     if( module >= DEVAPC_DEVICE_NUMBER )
     {
-        printk(KERN_WARNING "[DEVAPC] ERROR, device number %d exceeds the max number!\n", module);
+        pr_err("[DEVAPC] ERROR, device number %d exceeds the max number!\n", module);
         return;
     }
 
@@ -111,17 +107,17 @@ void mt_devapc_set_permission(unsigned int module, E_MASK_DOM domain_num, APC_AT
     }
     else
     {
-        printk(KERN_WARNING "[DEVAPC] ERROR, domain number %d exceeds the max number!\n", domain_num);
+        pr_err("[DEVAPC] ERROR, domain number %d exceeds the max number!\n", domain_num);
         return;
     }
-    
+
     spin_lock_irqsave(&g_mt_devapc_lock, irq_flag);
 
     mt_reg_sync_writel(readl(base) & ~clr_bit, base);
     mt_reg_sync_writel(readl(base) | set_bit, base);
 
     spin_unlock_irqrestore(&g_mt_devapc_lock, irq_flag);
-    
+
     return;
 }
 

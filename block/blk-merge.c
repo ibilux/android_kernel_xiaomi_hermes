@@ -1,6 +1,9 @@
 /*
  * Functions related to segment and merge handling
  */
+#if defined(CONFIG_MT_ENG_BUILD)
+#define DEBUG 1
+#endif
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/bio.h>
@@ -251,9 +254,9 @@ int blk_rq_map_sg(struct request_queue *q, struct request *rq,
 #if defined(CONFIG_MTK_MORE_PID_LOGGER_COUNT)						
 						if(index==PID_LOGGER_COUNT && g_pid_logger[mmcqd_index].reserved<10){
 							 	if (rq->cmd_flags & REQ_WRITE) {
-									printk(KERN_INFO"[BLOCK_TAG]exceed logger count,pid%d w length %d",tmp_logger->pid1,bvec->bv_len);
+									pr_debug("[BLOCK_TAG]exceed logger count, pid%d w length %d", tmp_logger->pid1, bvec->bv_len);
 								}else {
-									printk(KERN_INFO"[BLOCK_TAG]exceed logger count,pid%d r length %d",tmp_logger->pid1,bvec->bv_len);
+									pr_debug("[BLOCK_TAG]exceed logger count, pid%d r length %d", tmp_logger->pid1, bvec->bv_len);
 								}
 								g_pid_logger[mmcqd_index].reserved++;
 						}
@@ -284,9 +287,9 @@ int blk_rq_map_sg(struct request_queue *q, struct request *rq,
 #if defined(CONFIG_MTK_MORE_PID_LOGGER_COUNT)						
                          if(index==PID_LOGGER_COUNT && g_pid_logger[mmcqd_index].reserved<10){
 							 	if (rq->cmd_flags & REQ_WRITE) {
-									printk(KERN_INFO"[BLOCK_TAG]exceed logger count,pid%d w length %d",tmp_logger->pid2,bvec->bv_len);
+									pr_debug("[BLOCK_TAG]exceed logger count, pid%d w length %d", tmp_logger->pid2, bvec->bv_len);
 								}else {
-									printk(KERN_INFO"[BLOCK_TAG]exceed logger count,pid%d r length %d",tmp_logger->pid2,bvec->bv_len);
+									pr_debug("[BLOCK_TAG]exceed logger count, pid%d r length %d", tmp_logger->pid2, bvec->bv_len);
 								}
 								g_pid_logger[mmcqd_index].reserved++;
 							}

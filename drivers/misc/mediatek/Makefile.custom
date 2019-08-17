@@ -8,16 +8,19 @@ ifneq ($(CONFIG_ARM64), y)
 # For arm32, mach folder
 MTK_PLATFORM_PATH_ROOT := $(srctree)/arch/arm/mach-$(MTK_PLATFORM)
 MTK_PROJECT_PATH_ROOT := $(srctree)/arch/arm/mach-$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)
-	ifneq ($(filter y,$(CONFIG_ARCH_MT6752) $(CONFIG_ARCH_MT6732) $(CONFIG_ARCH_MT6595) $(CONFIG_ARCH_MT6795) $(CONFIG_ARCH_MT6735) $(CONFIG_ARCH_MT6735M) $(CONFIG_ARCH_MT6753)),)
-	# For armv8 32bit
-	MTK_PLATFORM_PATH_ROOT := $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)
-	MTK_PROJECT_PATH_ROOT := $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)
-	endif
+  ifneq ($(filter y,$(CONFIG_ARCH_MT6752) $(CONFIG_ARCH_MT6732) $(CONFIG_ARCH_MT6595) $(CONFIG_ARCH_MT6795) $(CONFIG_ARCH_MT6735) $(CONFIG_ARCH_MT6735M) $(CONFIG_ARCH_MT6753) $(CONFIG_ARCH_MT6580)),)
+    # For armv8 32bit
+    MTK_PLATFORM_PATH_ROOT := $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)
+    MTK_PROJECT_PATH_ROOT := $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)
+  endif
 else
 # For arm64, no mach-xxx folder
 MTK_PLATFORM_PATH_ROOT := $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)
 MTK_PROJECT_PATH_ROOT := $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)
 endif
+
+# to use arch/arm/mach-mt2601/flora01v1/lcm/inc/lcm_drv.h instead of drivers/misc/mediatek/lcm/inc/lcm_drv.h
+ccflags-$(CONFIG_ARCH_MT2601) += -I$(MTK_PROJECT_PATH_ROOT)/lcm/inc
 
 ccflags-y += -I$(MTK_PLATFORM_PATH_ROOT)/include \
              -I$(MTK_PLATFORM_PATH_ROOT)/include/mach \
@@ -35,8 +38,8 @@ ccflags-y += -I$(MTK_PLATFORM_PATH_ROOT)/include \
              -I$(MTK_PROJECT_PATH_ROOT)/sound/inc \
              -I$(MTK_PROJECT_PATH_ROOT)/touchpanel/ft5406_82 \
              -I$(MTK_PROJECT_PATH_ROOT)/vibrator \
-	     -I$(DRVGEN_OUT)/inc \
-             -I$(MTK_PROJECT_PATH_ROOT)/multibridge/mt8193/inc 
+             -I$(MTK_PROJECT_PATH_ROOT)/nand \
+             -I$(DRVGEN_OUT)/inc
 
 ccflags-y += -I$(MTK_CUSTOM_PATH)/accdet/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/accelerometer/inc \
@@ -46,9 +49,9 @@ ccflags-y += -I$(MTK_CUSTOM_PATH)/accdet/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/auxadc/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/cam_cal/inc \
              -I$(MTK_CUSTOM_PATH)/camera/$(MTK_PLATFORM) \
-             -I$(MTK_CUSTOM_PATH)/cmdq/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/m4u/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/cmdq/v2/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/devinfo/$(MTK_PLATFORM) \
-             -I$(MTK_CUSTOM_PATH)/dispsys/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/dual_ccci/$(MTK_PLATFORM)/include \
              -I$(MTK_CUSTOM_PATH)/dual_ccci/include \
              -I$(MTK_CUSTOM_PATH)/flashlight/inc \
@@ -61,9 +64,15 @@ ccflags-y += -I$(MTK_CUSTOM_PATH)/accdet/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/pick_up_sensor \
              -I$(MTK_CUSTOM_PATH)/shake_sensor \
              -I$(MTK_CUSTOM_PATH)/heart_rate_sensor \
+             -I$(MTK_CUSTOM_PATH)/gravity \
+             -I$(MTK_CUSTOM_PATH)/rotationvector \
+             -I$(MTK_CUSTOM_PATH)/linearacceleration \
+             -I$(MTK_CUSTOM_PATH)/gamerotationvector \
+             -I$(MTK_CUSTOM_PATH)/geomagneticrotationvector \
              -I$(MTK_CUSTOM_PATH)/tilt_detector_sensor \
              -I$(MTK_CUSTOM_PATH)/wake_gesture_sensor \
              -I$(MTK_CUSTOM_PATH)/glance_gesture_sensor \
+             -I$(MTK_CUSTOM_PATH)/bringtosee \
              -I$(MTK_CUSTOM_PATH)/i2c/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/imgsensor/inc \
              -I$(MTK_CUSTOM_PATH)/eeprom/inc \
@@ -78,29 +87,55 @@ ccflags-y += -I$(MTK_CUSTOM_PATH)/accdet/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/sync \
              -I$(MTK_CUSTOM_PATH)/uart/$(MTK_PLATFORM) \
              -I$(MTK_CUSTOM_PATH)/vibrator/$(MTK_PLATFORM) \
-             -I$(MTK_CUSTOM_PATH)/video/$(MTK_PLATFORM) \
-             -I$(MTK_CUSTOM_PATH)/video \
+             -I$(MTK_CUSTOM_PATH)/video/include \
+             -I$(MTK_CUSTOM_PATH)/video/common \
+             -I$(MTK_CUSTOM_PATH)/video/$(MTK_PLATFORM)/dispsys \
+             -I$(MTK_CUSTOM_PATH)/video/$(MTK_PLATFORM)/videox \
              -I$(MTK_CUSTOM_PATH)/wdk \
-             -I$(MTK_CUSTOM_PATH)/mjc/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/mjc/v1.0 \
              -I$(MTK_CUSTOM_PATH)/lcm \
-             -I$(MTK_CUSTOM_PATH)/lcm/inc
+             -I$(MTK_CUSTOM_PATH)/lcm/inc \
+             -I$(MTK_CUSTOM_PATH)/rrc/v1.0 \
+             -I$(MTK_CUSTOM_PATH)/multibridge/$(MTK_PLATFORM)/mt8193/inc \
+             -I$(MTK_CUSTOM_PATH)/dum-char/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/freqhopping \
+             -I$(MTK_CUSTOM_PATH)/freqhopping/$(MTK_PLATFORM) \
+             -I$(MTK_CUSTOM_PATH)/btcvsd/inc/$(MTK_PLATFORM)
 
-ifeq ($(CONFIG_ARCH_MT6592),y)
-  ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6592/inc
+ifneq (,$(filter $(CONFIG_MTK_PLATFORM), "mt6795" "mt6752" "mt6735" "mt6580" "mt6755" "mt6797"))
+  # v2 driver
+  ccflags-y += -I$(MTK_CUSTOM_PATH)/cmdq/v2 \
+               -I$(MTK_CUSTOM_PATH)/cmdq/v2/$(MTK_PLATFORM)
 else
-	ifeq ($(CONFIG_ARCH_MT6582),y)
-	    ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6582/inc
-	else 
-	    ifeq ($(CONFIG_ARCH_MT6752),y)
-	        ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6752/inc
-	        ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6752/lc898122af
-	    else 
-	        ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6795/inc
-	    endif   
-	endif
+  ccflags-y += -I$(MTK_CUSTOM_PATH)/cmdq/$(MTK_PLATFORM)
 endif
 
-ccflags-y += -I$(MTK_CUSTOM_PATH)/laser/stmvl6180/inc
+ifeq ($(CONFIG_ARCH_MT6592),y)
+    ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6592/inc
+else
+    ifeq ($(CONFIG_ARCH_MT6582),y)
+        ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6582/inc
+    else
+        ifeq ($(CONFIG_ARCH_MT6752),y)
+	          ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6752/inc
+	          ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6752/lc898122af
+        else
+            ifneq (,$(filter y,$(CONFIG_ARCH_MT6735) $(CONFIG_ARCH_MT6735M) $(CONFIG_ARCH_MT6753)))
+                ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6735/inc
+            else
+                ifeq ($(CONFIG_ARCH_MT6580),y)
+                    ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6580/inc
+                else
+                    ifeq ($(CONFIG_ARCH_MT6795),y)
+                        ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mt6795/inc
+                    else
+                        ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/common/inc
+                    endif
+                endif
+            endif
+        endif
+    endif
+endif
 
 CUSTOM_KERNEL_FLAGS := $(addprefix -D, $(shell echo \
              $(CONFIG_CUSTOM_KERNEL_FLASHLIGHT) \
@@ -117,6 +152,7 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/ptgen/$(MTK_PLATFORM)
 ifeq ($(CONFIG_CUSTOM_KERNEL_SENSORHUB),"SCP_shf SCP_sensorHub")
 ccflags-y += -DCUSTOM_KERNEL_SENSORHUB
 endif
+ccflags-$(CONFIG_MTK_SCP_SENSORHUB) += -DCUSTOM_KERNEL_SENSORHUB
 
 ifeq ($(CONFIG_ARCH_MT6735),y)
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/m4u/$(MTK_PLATFORM)/mt6735/
@@ -126,4 +162,20 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/m4u/$(MTK_PLATFORM)/mt6735m/
 endif
 ifeq ($(CONFIG_ARCH_MT6753),y)
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/m4u/$(MTK_PLATFORM)/mt6753/
+endif
+
+ifeq ($(CONFIG_ARCH_MT6735),y)
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/video/$(MTK_PLATFORM)/dispsys/mt6735/
+endif
+ifeq ($(CONFIG_ARCH_MT6735M),y)
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/video/$(MTK_PLATFORM)/dispsys/mt6735m/
+endif
+ifeq ($(CONFIG_ARCH_MT6753),y)
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/video/$(MTK_PLATFORM)/dispsys/mt6753/
+endif
+
+ifeq ($(CONFIG_ARCH_MT8127),y)
+ccflags-y += \
+						-I$(srctree)/drivers/misc/mediatek/video/$(subst ",,$(CONFIG_MTK_PLATFORM))/dispsys/ \
+            -I$(srctree)/drivers/misc/mediatek/video/$(subst ",,$(CONFIG_MTK_PLATFORM))/videox/$(subst ",,$(CONFIG_MTK_PLATFORM))
 endif

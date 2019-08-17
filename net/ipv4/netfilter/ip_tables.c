@@ -326,6 +326,11 @@ ipt_do_table(struct sk_buff *skb,
 	local_bh_disable();
 	addend = xt_write_recseq_begin();
 	private = table->private;
+	   /*
+	 * Ensure we load private-> members after we've fetched the base
+   * pointer.
+	 */
+	smp_read_barrier_depends();
 	cpu        = smp_processor_id();
 	table_base = private->entries[cpu];
 	jumpstack  = (struct ipt_entry **)private->jumpstack[cpu];
@@ -559,12 +564,14 @@ static void cleanup_match(struct xt_entry_match *m, struct net *net)
 }
 
 static int
-check_entry(const struct ipt_entry *e)
+check_entry(const struct ipt_entry *e, const char *name)
 {
 	const struct xt_entry_target *t;
 
-	if (!ip_checkentry(&e->ip))
+	if (!ip_checkentry(&e->ip)) {
+		duprintf("ip check failed %p %s.\n", e, name);
 		return -EINVAL;
+	}
 
 	if (e->target_offset + sizeof(struct xt_entry_target) >
 	    e->next_offset)
@@ -576,7 +583,6 @@ check_entry(const struct ipt_entry *e)
 
 	return 0;
 }
-
 
 static int
 check_match(struct xt_entry_match *m, struct xt_mtchk_param *par)
@@ -654,6 +660,10 @@ find_check_entry(struct ipt_entry *e, struct net *net, const char *name,
 	unsigned int j;
 	struct xt_mtchk_param mtpar;
 	struct xt_entry_match *ematch;
+
+	ret = check_entry(e, name);
+	if (ret)
+		return ret;
 
 	j = 0;
 	mtpar.net	= net;
@@ -734,7 +744,7 @@ check_entry_size_and_hooks(struct ipt_entry *e,
 		return -EINVAL;
 	}
 
-	err = check_entry(e);
+	err = check_entry(e, "");
 	if (err)
 		return err;
 
@@ -1499,7 +1509,7 @@ check_compat_entry_size_and_hooks(struct compat_ipt_entry *e,
 	}
 
 	/* For purposes of check_entry casting the compat entry is fine */
-	ret = check_entry((struct ipt_entry *)e);
+	ret = check_entry((struct ipt_entry *)e, name);
 	if (ret)
 		return ret;
 

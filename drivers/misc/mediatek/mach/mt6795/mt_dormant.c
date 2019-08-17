@@ -97,18 +97,15 @@ static int pmu_mode = PMU_STATE0;
 /*********************************
 * macro for log
 **********************************/
-#define CPU_DORMANT_LOG_NONE                                0
-#define CPU_DORMANT_LOG_WITH_XLOG                           1
-#define CPU_DORMANT_LOG_WITH_PRINTK                         2
+#define CPU_DORMANT_LOG_WITH_NONE                           0
+#define CPU_DORMANT_LOG_WITH_DEBUG                          1
 
-#define CPU_DORMANT_LOG_PRINT                               CPU_DORMANT_LOG_WITH_PRINTK
+#define CPU_DORMANT_LOG_PRINT CPU_DORMANT_LOG_WITH_NONE
 
-#if (CPU_DORMANT_LOG_PRINT == CPU_DORMANT_LOG_NONE)
-#define CPU_DORMANT_INFO(fmt, args...)                    
-#elif (CPU_DORMANT_LOG_PRINT == CPU_DORMANT_LOG_WITH_XLOG)
-#define CPU_DORMANT_INFO(fmt, args...)                      xlog_printk(ANDROID_LOG_INFO, "Power/cpu_dormant", fmt, ##args)
-#elif (CPU_DORMANT_LOG_PRINT == CPU_DORMANT_LOG_WITH_PRINTK)
-#define CPU_DORMANT_INFO(fmt, args...)                      printk("[Power/cpu_dormant] "fmt, ##args)
+#if (CPU_DORMANT_LOG_PRINT == CPU_DORMANT_LOG_WITH_NONE)
+#define CPU_DORMANT_INFO(fmt, args...)          do { } while(0)
+#elif (CPU_DORMANT_LOG_PRINT == CPU_DORMANT_LOG_WITH_DEBUG)
+#define CPU_DORMANT_INFO(fmt, args...)		do { pr_debug("[Power/cpu_dormant] "fmt, ##args); } while(0)
 #endif
 
 /*********************************
@@ -1359,8 +1356,6 @@ static void platform_save_context(void)
     gic_cpu_context *gic_pvt_context = &ns_cpu_ctx->gic_cpu_ctx;
     global_context *gbl_context = &switcher_context.cluster.ns_cluster_ctx;
 
-    //printk("[platform_save_context] cpu_id=%d", cpu_id);
-
     /*
      * Save the 32-bit Generic timer context & stop them
      */
@@ -1581,4 +1576,3 @@ void cpu_check_dormant_abort(void)
 
 MODULE_AUTHOR("Wan-Ching Huang <marc.huang@mediatek.com>");
 MODULE_DESCRIPTION("MT658x Dormant/Shutdown Mode Driver $Revision: #1 $");
-

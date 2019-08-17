@@ -26,6 +26,8 @@
 #include <asm/smp_plat.h>
 #include <asm/topology.h>
 
+#include <trace/events/sched.h>
+
 /*
  * cpu power scale management
  */
@@ -96,6 +98,11 @@ unsigned long arch_scale_freq_power(struct sched_domain *sd, int cpu)
 	return per_cpu(cpu_scale, cpu);
 }
 
+static void set_power_scale(unsigned int cpu, unsigned long power)
+{
+	per_cpu(cpu_scale, cpu) = power;
+}
+
 #ifdef CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY
 unsigned long arch_get_cpu_capacity(int cpu)
 {
@@ -105,12 +112,16 @@ unsigned long arch_get_max_cpu_capacity(int cpu)
 {
 	return per_cpu(base_cpu_capacity, cpu);
 }
-#endif /* CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY */
-
-static void set_power_scale(unsigned int cpu, unsigned long power)
+#else
+unsigned long arch_get_cpu_capacity(int cpu)
 {
-	per_cpu(cpu_scale, cpu) = power;
+	return per_cpu(cpu_scale, cpu);
 }
+unsigned long arch_get_max_cpu_capacity(int cpu)
+{
+	return per_cpu(cpu_scale, cpu);
+}
+#endif /* CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY */
 
 #ifdef CONFIG_OF
 struct cpu_efficiency {
@@ -142,6 +153,8 @@ struct cpu_capacity {
 struct cpu_capacity *cpu_capacity;
 
 unsigned long middle_capacity = 1;
+unsigned long min_capacity = (unsigned long)(-1);
+unsigned long max_capacity = 0;
 /*
  * Iterate all CPUs' descriptor in DT and compute the efficiency
  * (as per table_efficiency). Also calculate a middle efficiency
@@ -154,8 +167,6 @@ static void __init parse_dt_topology(void)
 {
 	struct cpu_efficiency *cpu_eff;
 	struct device_node *cn = NULL;
-	unsigned long min_capacity = (unsigned long)(-1);
-	unsigned long max_capacity = 0;
 	unsigned long capacity = 0;
 	int alloc_size, cpu = 0;
 
@@ -200,6 +211,10 @@ static void __init parse_dt_topology(void)
 			max_capacity = capacity;
 
 		cpu_capacity[cpu].capacity = capacity;
+		cpu_topology[cpu].core_id = be32_to_cpup(reg) & 0xFF;
+		cpu_topology[cpu].socket_id = be32_to_cpup(reg) >> 0x8 & 0xFF;
+		pr_debug("CPU%u: hwid(0x%0x) socket_id(%i) core_id(%i) cap(%lu)\n",
+			cpu, be32_to_cpup(reg), cpu_topology[cpu].socket_id, cpu_topology[cpu].core_id, capacity);
 		cpu_capacity[cpu++].hwid = be32_to_cpup(reg);
 	}
 
@@ -235,7 +250,7 @@ void update_cpu_power(unsigned int cpu, unsigned long hwid)
 
 	/* look for the cpu's hwid in the cpu capacity table */
 	for (idx = 0; idx < num_possible_cpus(); idx++) {
-		if (cpu_capacity[idx].hwid == hwid)
+		if (cpu_capacity[idx].hwid == (hwid&0xFFFF))
 			break;
 
 		if (cpu_capacity[idx].hwid == -1)
@@ -245,7 +260,7 @@ void update_cpu_power(unsigned int cpu, unsigned long hwid)
 	if (idx == num_possible_cpus())
 		return;
 
-	set_power_scale(cpu, cpu_capacity[idx].capacity / middle_capacity);
+	set_power_scale(cpu, (cpu_capacity[idx].capacity << SCHED_POWER_SHIFT) / max_capacity);
 
 	printk(KERN_INFO "CPU%u: update cpu_power %lu\n",
 		   cpu, arch_scale_freq_power(NULL, cpu));
@@ -825,11 +840,11 @@ void store_cpu_topology(unsigned int cpuid)
 	struct cputopo_arm *cpuid_topo = &cpu_topology[cpuid];
 	unsigned int mpidr;
 
-	/* If the cpu topology has been already set, just return */
-	if (cpuid_topo->core_id != -1)
-		return;
-
 	mpidr = read_cpuid_mpidr();
+
+	/* If the cpu topology has been already set, just return */
+	if (cpuid_topo->socket_id != -1)
+		goto topology_populated;
 
 	/* create cpu topology mapping */
 	if ((mpidr & MPIDR_SMP_BITMASK) == MPIDR_SMP_VALUE) {
@@ -864,6 +879,7 @@ void store_cpu_topology(unsigned int cpuid)
 	verify_cputopo(cpuid, (u32)mpidr);
 #endif
 
+topology_populated:
 	update_siblings_masks(cpuid);
 
 	update_cpu_power(cpuid, mpidr & MPIDR_HWID_BITMASK);
@@ -902,30 +918,14 @@ int cluster_to_logical_mask(unsigned int socket_id, cpumask_t *cluster_mask)
 }
 
 #ifdef CONFIG_SCHED_HMP
-static const char * const little_cores[] = {
-	"arm,cortex-a53",
-	NULL,
-};
-
-static bool is_little_cpu(struct device_node *cn)
-{
-	const char * const *lc;
-	for (lc = little_cores; *lc; lc++)
-		if (of_device_is_compatible(cn, *lc)) {
-			return true;
-		}
-	return false;
-}
-
 void __init arch_get_fast_and_slow_cpus(struct cpumask *fast,
 										struct cpumask *slow)
 {
-	struct device_node *cn = NULL;
-	int cpu;
+	unsigned int cpu;
 
 	cpumask_clear(fast);
 	cpumask_clear(slow);
-	
+
 	/*
 	 * Use the config options if they are given. This helps testing
 	 * HMP scheduling on systems without a big.LITTLE architecture.
@@ -938,31 +938,12 @@ void __init arch_get_fast_and_slow_cpus(struct cpumask *fast,
 		return;
 	}
 
-	/*
-	 * Else, parse device tree for little cores.
-	 */
-	while ((cn = of_find_node_by_type(cn, "cpu"))) {
-
-		const u32 *mpidr;
-		int len;
-
-		mpidr = of_get_property(cn, "reg", &len);
-		if (!mpidr || len != 4) {
-			pr_err("* %s missing reg property\n", cn->full_name);
-			continue;
-		}
-
-		cpu = get_logical_index(be32_to_cpup(mpidr));
-		if (cpu == -EINVAL) {
-			pr_err("couldn't get logical index for mpidr %x\n",
-				   be32_to_cpup(mpidr));
-			break;
-		}
-
-		if (is_little_cpu(cn))
-			cpumask_set_cpu(cpu, slow);
-		else
+	/* check by capacity */
+	for_each_possible_cpu(cpu) {
+		if (cpu_capacity[cpu].capacity > min_capacity)
 			cpumask_set_cpu(cpu, fast);
+		else
+			cpumask_set_cpu(cpu, slow);
 	}
 
 	if (!cpumask_empty(fast) && !cpumask_empty(slow))
@@ -973,8 +954,8 @@ void __init arch_get_fast_and_slow_cpus(struct cpumask *fast,
 	 * fast as this will keep the system running, with all cores being
 	 * treated equal.
 	 */
-	cpumask_setall(fast);
-	cpumask_clear(slow);
+	cpumask_setall(slow);
+	cpumask_clear(fast);
 }
 
 struct cpumask hmp_fast_cpu_mask;
@@ -1006,6 +987,7 @@ void __init arch_get_hmp_domains(struct list_head *hmp_domains_list)
 }
 #endif /* CONFIG_SCHED_HMP */
 
+static int cpu_topology_init;
 /*
  * init_cpu_topology is called at boot when only one cpu is running
  * which prevent simultaneous write access to cpu_topology array
@@ -1014,6 +996,8 @@ void __init init_cpu_topology(void)
 {
 	unsigned int cpu;
 
+	if (cpu_topology_init)
+		return;
 	/* init core mask and power*/
 	for_each_possible_cpu(cpu) {
 		struct cputopo_arm *cpu_topo = &(cpu_topology[cpu]);
@@ -1031,10 +1015,8 @@ void __init init_cpu_topology(void)
 	parse_dt_topology();
 }
 
-
 #ifdef CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY
 #include <linux/cpufreq.h>
-#define ARCH_SCALE_INVA_CPU_CAP_PERCLS 1
 
 struct cpufreq_extents {
 	u32 max;
@@ -1047,17 +1029,6 @@ struct cpufreq_extents {
  */
 #define CPUPOWER_FREQINVAR_SINGLEFREQ 0x01
 static struct cpufreq_extents freq_scale[CONFIG_NR_CPUS];
-
-static unsigned long get_max_cpu_power(void)
-{
-	unsigned long max_cpu_power = 0;
-	int cpu;
-	for_each_online_cpu(cpu){
-		if( per_cpu(cpu_scale, cpu) > max_cpu_power)
-			max_cpu_power = per_cpu(cpu_scale, cpu);
-	}
-	return max_cpu_power;
-}
 
 int arch_get_cpu_throttling(int cpu)
 {
@@ -1074,9 +1045,6 @@ static int cpufreq_callback(struct notifier_block *nb,
 	int cpu = freq->cpu;
 	struct cpufreq_extents *extents;
 	unsigned int curr_freq;
-#ifdef ARCH_SCALE_INVA_CPU_CAP_PERCLS
-	int i = 0;
-#endif
 
 	if (freq->flags & CPUFREQ_CONST_LOOPS)
 		return NOTIFY_OK;
@@ -1086,7 +1054,7 @@ static int cpufreq_callback(struct notifier_block *nb,
 
 	/* if dynamic load scale is disabled, set the load scale to 1.0 */
 	if (!frequency_invariant_power_enabled) {
-		per_cpu(invariant_cpu_capacity, cpu) = per_cpu(base_cpu_capacity, cpu);
+		per_cpu(invariant_cpu_capacity, cpu) = per_cpu(cpu_scale, cpu);
 		return NOTIFY_OK;
 	}
 
@@ -1100,19 +1068,18 @@ static int cpufreq_callback(struct notifier_block *nb,
 	 * use curr = max to be sure multiplier is 1.0
 	 */
 	if (extents->flags & CPUPOWER_FREQINVAR_SINGLEFREQ)
-		curr_freq = extents->max >> CPUPOWER_FREQSCALE_SHIFT;
+		curr_freq = extents->max;
 	else
 		curr_freq = freq->new >> CPUPOWER_FREQSCALE_SHIFT;
 
-#ifdef ARCH_SCALE_INVA_CPU_CAP_PERCLS
-	for_each_cpu(i, topology_core_cpumask(cpu)) {
-			per_cpu(invariant_cpu_capacity, i) = DIV_ROUND_UP(
-				(curr_freq * per_cpu(prescaled_cpu_capacity, i)), CPUPOWER_FREQSCALE_DEFAULT);
-	}
-#else
 	per_cpu(invariant_cpu_capacity, cpu) = DIV_ROUND_UP(
 		(curr_freq * per_cpu(prescaled_cpu_capacity, cpu)), CPUPOWER_FREQSCALE_DEFAULT);
-#endif
+
+	mt_sched_printf(sched_lb_info,
+		"[%s] CPU%d: pre/inv(%lu/%lu) flags:0x%x freq: cur/new/max/const_max(%u/%u/%u/%u)", __func__,
+		cpu, per_cpu(prescaled_cpu_capacity, cpu), per_cpu(invariant_cpu_capacity, cpu),
+		extents->flags, curr_freq, freq->new, extents->max, extents->const_max);
+
 	return NOTIFY_OK;
 }
 
@@ -1125,19 +1092,15 @@ static int cpufreq_policy_callback(struct notifier_block *nb,
 {
 	struct cpufreq_policy *policy = data;
 	struct cpufreq_extents *extents;
-	int cpu, singleFreq = 0, cpu_capacity;
+	int cpu, singleFreq = 0;
 	static const char performance_governor[] = "performance";
 	static const char powersave_governor[] = "powersave";
-	unsigned long max_cpu_power;
-#ifdef ARCH_SCALE_INVA_CPU_CAP_PERCLS
-	int i = 0;
-#endif
 
 	if (event == CPUFREQ_START)
-		return 0;
+		return NOTIFY_OK;
 
 	if (event != CPUFREQ_INCOMPATIBLE)
-		return 0;
+		return NOTIFY_OK;
 
 	/* CPUFreq governors do not accurately report the range of
 	 * CPU Frequencies they will choose from.
@@ -1150,52 +1113,33 @@ static int cpufreq_policy_callback(struct notifier_block *nb,
 				 strlen(powersave_governor)))
 		singleFreq = 1;
 
-	max_cpu_power = get_max_cpu_power();
 	/* Make sure that all CPUs impacted by this policy are
 	 * updated since we will only get a notification when the
 	 * user explicitly changes the policy on a CPU.
 	 */
 	for_each_cpu(cpu, policy->cpus) {
-		/* scale cpu_power to max(1024) */
-		cpu_capacity = (per_cpu(cpu_scale, cpu) << CPUPOWER_FREQSCALE_SHIFT)
-			/ max_cpu_power;
 		extents = &freq_scale[cpu];
 		extents->max = policy->max >> CPUPOWER_FREQSCALE_SHIFT;
 		extents->const_max = policy->cpuinfo.max_freq >> CPUPOWER_FREQSCALE_SHIFT;
 		if (!frequency_invariant_power_enabled) {
 			/* when disabled, invariant_cpu_scale = cpu_scale */
-			per_cpu(base_cpu_capacity, cpu) = CPUPOWER_FREQSCALE_DEFAULT;
-			per_cpu(invariant_cpu_capacity, cpu) = CPUPOWER_FREQSCALE_DEFAULT;
+			per_cpu(invariant_cpu_capacity, cpu) = per_cpu(cpu_scale, cpu);
 			/* unused when disabled */
-			per_cpu(prescaled_cpu_capacity, cpu) = CPUPOWER_FREQSCALE_DEFAULT;
+			per_cpu(prescaled_cpu_capacity, cpu) = per_cpu(cpu_scale, cpu);
 		} else {
 			if (singleFreq)
 				extents->flags |= CPUPOWER_FREQINVAR_SINGLEFREQ;
 			else
 				extents->flags &= ~CPUPOWER_FREQINVAR_SINGLEFREQ;
-			per_cpu(base_cpu_capacity, cpu) = cpu_capacity;
-#ifdef CONFIG_SCHED_HMP_ENHANCEMENT
 			per_cpu(prescaled_cpu_capacity, cpu) =
-				((cpu_capacity << CPUPOWER_FREQSCALE_SHIFT) / extents->const_max);
-#else
-			per_cpu(prescaled_cpu_capacity, cpu) =
-				((cpu_capacity << CPUPOWER_FREQSCALE_SHIFT) / extents->max);
-#endif
+				((per_cpu(cpu_scale, cpu) << CPUPOWER_FREQSCALE_SHIFT) / extents->max);
 
-#ifdef ARCH_SCALE_INVA_CPU_CAP_PERCLS
-			for_each_cpu(i, topology_core_cpumask(cpu)) {
-					per_cpu(invariant_cpu_capacity, i) = DIV_ROUND_UP(
-						((policy->cur>>CPUPOWER_FREQSCALE_SHIFT) *
-						 per_cpu(prescaled_cpu_capacity, i)), CPUPOWER_FREQSCALE_DEFAULT);
-			}
-#else
 			per_cpu(invariant_cpu_capacity, cpu) = DIV_ROUND_UP(
 				((policy->cur>>CPUPOWER_FREQSCALE_SHIFT) *
 				 per_cpu(prescaled_cpu_capacity, cpu)), CPUPOWER_FREQSCALE_DEFAULT);
-#endif
 		}
 	}
-	return 0;
+	return NOTIFY_OK;
 }
 
 static struct notifier_block cpufreq_notifier = {
@@ -1213,7 +1157,6 @@ static int __init register_topology_cpufreq_notifier(void)
 	for (ret = 0; ret < CONFIG_NR_CPUS; ret++) {
 		/* safe defaults */
 		freq_scale[ret].max = CPUPOWER_FREQSCALE_DEFAULT;
-		per_cpu(base_cpu_capacity, ret) = CPUPOWER_FREQSCALE_DEFAULT;
 		per_cpu(invariant_cpu_capacity, ret) = CPUPOWER_FREQSCALE_DEFAULT;
 		per_cpu(prescaled_cpu_capacity, ret) = CPUPOWER_FREQSCALE_DEFAULT;
 	}
@@ -1230,4 +1173,42 @@ static int __init register_topology_cpufreq_notifier(void)
 }
 
 core_initcall(register_topology_cpufreq_notifier);
+
+#else /* !CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY */
+
+int arch_get_cpu_throttling(int cpu)
+{
+	return 0;
+}
+
 #endif /* CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY */
+
+
+/*
+ * Extras of CPU & Cluster functions
+ */
+/* range: 1 ~  (1 << SCHED_POWER_SHIFT) */
+int arch_cpu_cap_ratio(unsigned int cpu)
+{
+	unsigned long ratio = (cpu_capacity[cpu].capacity << SCHED_POWER_SHIFT) / max_capacity;
+	BUG_ON(cpu >= num_possible_cpus());
+	return (int)ratio;
+}
+
+int arch_is_smp(void)
+{
+	static int __arch_smp = -1;
+
+	if (__arch_smp != -1)
+		return __arch_smp;
+
+	__arch_smp = (max_capacity != min_capacity) ? 0 : 1;
+
+	return __arch_smp;
+}
+
+int arch_better_capacity(unsigned int cpu)
+{
+	BUG_ON(cpu >= num_possible_cpus());
+	return cpu_capacity[cpu].capacity > min_capacity;
+}

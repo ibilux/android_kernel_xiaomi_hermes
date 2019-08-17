@@ -15,6 +15,10 @@ EXT_FLAG=_soc
 COMMON_SRC_PATH := $(src)
 COMMON_OBJ_PATH := $(src)
 
+ifeq ($(CONFIG_ARCH_MT6580), y)
+subdir-ccflags-y += -D CFG_WMT_READ_EFUSE_VCN33
+endif
+
 ifeq ($(CONFIG_MTK_COMBO), m)
 # WMT DRIVER
 obj-$(CONFIG_MTK_COMBO) += mtk_stp_wmt$(EXT_FLAG).o

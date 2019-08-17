@@ -1,24 +1,22 @@
 #ifndef _LIBMTK_CIPHER_EXPORT_H
 #define _LIBMTK_CIPHER_EXPORT_H
 
-#define HEVC_BLK_LEN                            (20480)     // bytes
+#define HEVC_BLK_LEN                            (20480)     /* bytes */
 #define HEVC_MOD                                "HEVC_MOD"
 #define HEVC_NANO                               1000000000ULL
-#define HEVC_CIPHER_LEN                         (102400)    // bytes
+#define HEVC_CIPHER_LEN                         (102400)    /* bytes */
 
 
-typedef struct
-{
-    unsigned char buf[HEVC_BLK_LEN];
-    unsigned int len;
+typedef struct {
+	unsigned char buf[HEVC_BLK_LEN];
+	unsigned int len;
 } HEVC_BLK;
 
-typedef enum
-{
-    VIDEO_ENCRYPT_CODEC_NONE      = 0x0,
-    VIDEO_ENCRYPT_CODEC_HEVC_ENC  = 0x1,
-    VIDEO_ENCRYPT_CODEC_HEVC_DEC  = 0x2,
-    VIDEO_ENCRYPT_CODEC_MAX       = 0xffffffff
+typedef enum {
+	VIDEO_ENCRYPT_CODEC_NONE      = 0x0,
+	VIDEO_ENCRYPT_CODEC_HEVC_ENC  = 0x1,
+	VIDEO_ENCRYPT_CODEC_HEVC_DEC  = 0x2,
+	VIDEO_ENCRYPT_CODEC_MAX       = 0xffffffff
 } VIDEO_ENCRYPT_CODEC_T;
 
 
@@ -55,23 +53,23 @@ typedef int (*hevc_api_initk_funp)(unsigned char *key, unsigned int klen);
 
 
 /* Define LOG LEVEL*/
-#define SEC_LOG_TRACE 0 //For source code trace
-#define SEC_LOG_DEBUG 0 //For debug purpose
-#define SEC_LOG_ERROR 1 //For critical error dump
-#define SEC_LOG_INFO  1 //For information to know when processing in normal 
+#define SEC_LOG_TRACE 0 /* For source code trace */
+#define SEC_LOG_DEBUG 0 /* For debug purpose */
+#define SEC_LOG_ERROR 1 /* For critical error dump */
+#define SEC_LOG_INFO  1 /* For information to know when processing in normal */
 
 /* DEBUG MACRO */
 #define SMSG_TRACE(...) \
-    do { if (SEC_LOG_TRACE)  printf(__VA_ARGS__); } while (0)
+	do { if (SEC_LOG_TRACE)  printf(__VA_ARGS__); } while (0)
 
 #define SMSG_DEBUG(...) \
-    do { if (SEC_LOG_DEBUG) printf(__VA_ARGS__); } while (0)
+	do { if (SEC_LOG_DEBUG) printf(__VA_ARGS__); } while (0)
 
 #define SMSG_ERROR(...) \
-    do { if (SEC_LOG_ERROR) printf(__VA_ARGS__); } while (0)
+	do { if (SEC_LOG_ERROR) printf(__VA_ARGS__); } while (0)
 
 #define SMSG_INFO(...) \
-    do { if (SEC_LOG_INFO) printf(__VA_ARGS__); } while (0)
+	do { if (SEC_LOG_INFO) printf(__VA_ARGS__); } while (0)
 
 
 #define HEVC_ENCRYTP_FILE_PATH            "/data/mediaserver"
@@ -83,4 +81,3 @@ typedef int (*hevc_api_initk_funp)(unsigned char *key, unsigned int klen);
 #define HEVC_DEC_HW_DECRYPT_FILE_PATH     "/data/mediaserver/dec_sa.ca7.android_hwdec.so"
 
 #endif   /*_LIBMTK_CIPHER_EXPORT_H*/
-

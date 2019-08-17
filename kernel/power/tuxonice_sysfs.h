@@ -120,7 +120,7 @@ enum {
 #define SYSFS_HIBERNATING (SYSFS_HIBERNATE | SYSFS_NEEDS_SM_FOR_WRITE)
 #define SYSFS_RESUMING (SYSFS_RESUME | SYSFS_NEEDS_SM_FOR_WRITE)
 #define SYSFS_NEEDS_SM_FOR_BOTH \
- (SYSFS_NEEDS_SM_FOR_READ | SYSFS_NEEDS_SM_FOR_WRITE)
+	(SYSFS_NEEDS_SM_FOR_READ | SYSFS_NEEDS_SM_FOR_WRITE)
 
 int toi_register_sysfs_file(struct kobject *kobj, struct toi_sysfs_data *toi_sysfs_data);
 void toi_unregister_sysfs_file(struct kobject *kobj, struct toi_sysfs_data *toi_sysfs_data);

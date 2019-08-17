@@ -31,9 +31,6 @@
 #include <linux/module.h>
 
 /* #define USE_SYSRAM */
-/* #define ALMK_MSG(...)   xlog_printk(ANDROID_LOG_DEBUG, "xlog/almk", __VA_ARGS__) */
-/* #define ALMK_WRN(...)   xlog_printk(ANDROID_LOG_WARN,  "xlog/almk", __VA_ARGS__) */
-/* #define ALMK_ERR(...)   xlog_printk(ANDROID_LOG_ERROR, "xlog/almk", __VA_ARGS__) */
 #define ALMK_MSG pr_debug
 #define ALMK_WRN pr_warning
 #define ALMK_ERR pr_err

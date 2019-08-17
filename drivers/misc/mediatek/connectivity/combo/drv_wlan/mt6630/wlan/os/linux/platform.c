@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/platform.c#3 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/platform.c#3
 */
 
 /*! \file   "platform.c"
@@ -11,10 +11,8 @@
 
 */
 
-
-
 /*
-** $Log: platform.c $
+** Log: platform.c
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -79,17 +77,20 @@
  * to support early suspend in android
  *
  * 02 01 2011 cp.wu
- * [WCXRP00000413] [MT6620 Wi-Fi][Driver] Merge 1103 changes on NVRAM file path change to DaVinci main trunk and V1.1 branch
+ * [WCXRP00000413] [MT6620 Wi-Fi][Driver] Merge 1103 changes on NVRAM file path change to DaVinci main trunk and V1.1
+ * branch
  * upon Jason Zhang(NVRAM owner)'s change, ALPS has modified its NVRAM storage from /nvram/... to /data/nvram/...
  *
  * 11 01 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver]
+ * Add implementation for querying current TX rate from firmware auto rate module
  * 1) Query link speed (TX rate) from firmware directly with buffering mechanism to reduce overhead
  * 2) Remove CNM CH-RECOVER event handling
  * 3) cfg read/write API renamed with kal prefix for unified naming rules.
  *
  * 10 18 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver]
+ * The mac address is all zero at android
  * complete implementation of Android NVRAM access
  *
  * 10 05 2010 cp.wu
@@ -115,9 +116,7 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 12)
 #include <linux/uaccess.h>
-#endif
 
 #include "gl_os.h"
 
@@ -131,7 +130,6 @@
 */
 #define WIFI_NVRAM_FILE_NAME   "/data/nvram/APCFG/APRDEB/WIFI"
 #define WIFI_NVRAM_CUSTOM_NAME "/data/nvram/APCFG/APRDEB/WIFI_CUSTOM"
-
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -183,16 +181,17 @@ static int netdev_event(struct notifier_block *nb, unsigned long notification, v
 		/* printk(KERN_INFO "[netdev_event] IPV4_DAD is unlock now!!\n"); */
 		prGlueInfo->fgIsDad = FALSE;
 	}
-#endif				/* CFG_SUPPORT_PASSPOINT */
+#endif /* CFG_SUPPORT_PASSPOINT */
 
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
 	if (prGlueInfo == NULL) {
-		DBGLOG(REQ, INFO, ("netdev_event: prGlueInfo is empty.\n"));
+		DBGLOG(REQ, INFO, "netdev_event: prGlueInfo is empty.\n");
 		return NOTIFY_DONE;
 	}
 
 	if (prGlueInfo->fgIsInSuspendMode == FALSE) {
-		/* DBGLOG(REQ, INFO, ("netdev_event: PARAM_MEDIA_STATE_DISCONNECTED. (%d)\n", prGlueInfo->eParamMediaStateIndicated)); */
+		/* DBGLOG(REQ, INFO,
+		("netdev_event: PARAM_MEDIA_STATE_DISCONNECTED. (%d)\n", prGlueInfo->eParamMediaStateIndicated)); */
 		return NOTIFY_DONE;
 	}
 
@@ -202,7 +201,6 @@ static int netdev_event(struct notifier_block *nb, unsigned long notification, v
 
 }
 
-
 #if 0				/* CFG_SUPPORT_PASSPOINT */
 static int net6dev_event(struct notifier_block *nb, unsigned long notification, void *ptr)
 {
@@ -211,12 +209,12 @@ static int net6dev_event(struct notifier_block *nb, unsigned long notification, 
 	P_GLUE_INFO_T prGlueInfo = NULL;
 
 	if (prDev == NULL) {
-		DBGLOG(REQ, INFO, ("net6dev_event: device is empty.\n"));
+		DBGLOG(REQ, INFO, "net6dev_event: device is empty.\n");
 		return NOTIFY_DONE;
 	}
 
 	if ((strncmp(prDev->name, "p2p", 3) != 0) && (strncmp(prDev->name, "wlan", 4) != 0)) {
-		DBGLOG(REQ, INFO, ("net6dev_event: xxx\n"));
+		DBGLOG(REQ, INFO, "net6dev_event: xxx\n");
 		return NOTIFY_DONE;
 	}
 
@@ -229,7 +227,7 @@ static int net6dev_event(struct notifier_block *nb, unsigned long notification, 
 	}
 
 	if (prGlueInfo == NULL) {
-		DBGLOG(REQ, INFO, ("netdev_event: prGlueInfo is empty.\n"));
+		DBGLOG(REQ, INFO, "netdev_event: prGlueInfo is empty.\n");
 		return NOTIFY_DONE;
 	}
 	/* printk(KERN_INFO "[net6dev_event] IPV6_DAD is unlock now!!\n"); */
@@ -237,8 +235,7 @@ static int net6dev_event(struct notifier_block *nb, unsigned long notification, 
 
 	return NOTIFY_DONE;
 }
-#endif				/* CFG_SUPPORT_PASSPOINT */
-
+#endif /* CFG_SUPPORT_PASSPOINT */
 
 static struct notifier_block inetaddr_notifier = {
 	.notifier_call = netdev_event,
@@ -248,15 +245,14 @@ static struct notifier_block inetaddr_notifier = {
 static struct notifier_block inet6addr_notifier = {
 	.notifier_call = net6dev_event,
 };
-#endif				/* CFG_SUPPORT_PASSPOINT */
-
+#endif /* CFG_SUPPORT_PASSPOINT */
 
 void wlanRegisterNotifier(void)
 {
 	register_inetaddr_notifier(&inetaddr_notifier);
 #if 0				/* CFG_SUPPORT_PASSPOINT */
 	register_inet6addr_notifier(&inet6addr_notifier);
-#endif				/* CFG_SUPPORT_PASSPOINT */
+#endif /* CFG_SUPPORT_PASSPOINT */
 }
 
 void wlanUnregisterNotifier(void)
@@ -264,7 +260,7 @@ void wlanUnregisterNotifier(void)
 	unregister_inetaddr_notifier(&inetaddr_notifier);
 #if 0				/* CFG_SUPPORT_PASSPOINT */
 	unregister_inetaddr_notifier(&inet6addr_notifier);
-#endif				/* CFG_SUPPORT_PASSPOINT */
+#endif /* CFG_SUPPORT_PASSPOINT */
 }
 
 #if CFG_ENABLE_EARLY_SUSPEND
@@ -287,14 +283,14 @@ int glRegisterEarlySuspend(struct early_suspend *prDesc,
 	if (NULL != wlanSuspend)
 		prDesc->suspend = wlanSuspend;
 	else {
-		DBGLOG(REQ, INFO, ("glRegisterEarlySuspend wlanSuspend ERROR.\n"));
+		DBGLOG(REQ, INFO, "glRegisterEarlySuspend wlanSuspend ERROR.\n");
 		ret = -1;
 	}
 
 	if (NULL != wlanResume)
 		prDesc->resume = wlanResume;
 	else {
-		DBGLOG(REQ, INFO, ("glRegisterEarlySuspend wlanResume ERROR.\n"));
+		DBGLOG(REQ, INFO, "glRegisterEarlySuspend wlanResume ERROR.\n");
 		ret = -1;
 	}
 
@@ -349,20 +345,20 @@ static int nvram_read(char *filename, char *buf, ssize_t len, int offset)
 	fd = filp_open(filename, O_RDONLY, 0644);
 
 	if (IS_ERR(fd)) {
-		DBGLOG(INIT, INFO, ("[nvram_read] : failed to open!!\n"));
+		DBGLOG(INIT, INFO, "[nvram_read] : failed to open!!\n");
 		return -1;
 	}
 
 	do {
 		if ((fd->f_op == NULL) || (fd->f_op->read == NULL)) {
-			DBGLOG(INIT, INFO, ("[nvram_read] : file can not be read!!\n"));
+			DBGLOG(INIT, INFO, "[nvram_read] : file can not be read!!\n");
 			break;
 		}
 
 		if (fd->f_pos != offset) {
 			if (fd->f_op->llseek) {
 				if (fd->f_op->llseek(fd, offset, 0) != offset) {
-					DBGLOG(INIT, INFO, ("[nvram_read] : failed to seek!!\n"));
+					DBGLOG(INIT, INFO, "[nvram_read] : failed to seek!!\n");
 					break;
 				}
 			} else {
@@ -380,13 +376,12 @@ static int nvram_read(char *filename, char *buf, ssize_t len, int offset)
 
 	return retLen;
 
-#else				/* !CFG_SUPPORT_NVRAM */
+#else /* !CFG_SUPPORT_NVRAM */
 
 	return -EIO;
 
 #endif
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -413,20 +408,20 @@ static int nvram_write(char *filename, char *buf, ssize_t len, int offset)
 	fd = filp_open(filename, O_WRONLY | O_CREAT, 0644);
 
 	if (IS_ERR(fd)) {
-		DBGLOG(INIT, INFO, ("[nvram_write] : failed to open!!\n"));
+		DBGLOG(INIT, INFO, "[nvram_write] : failed to open!!\n");
 		return -1;
 	}
 
 	do {
 		if ((fd->f_op == NULL) || (fd->f_op->write == NULL)) {
-			DBGLOG(INIT, INFO, ("[nvram_write] : file can not be write!!\n"));
+			DBGLOG(INIT, INFO, "[nvram_write] : file can not be write!!\n");
 			break;
 		}
 		/* End of if */
 		if (fd->f_pos != offset) {
 			if (fd->f_op->llseek) {
 				if (fd->f_op->llseek(fd, offset, 0) != offset) {
-					DBGLOG(INIT, INFO, ("[nvram_write] : failed to seek!!\n"));
+					DBGLOG(INIT, INFO, "[nvram_write] : failed to seek!!\n");
 					break;
 				}
 			} else {
@@ -444,13 +439,12 @@ static int nvram_write(char *filename, char *buf, ssize_t len, int offset)
 
 	return retLen;
 
-#else				/* !CFG_SUPPORT_NVRAMS */
+#else /* !CFG_SUPPORT_NVRAMS */
 
 	return -EIO;
 
 #endif
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -468,19 +462,16 @@ static int nvram_write(char *filename, char *buf, ssize_t len, int offset)
 /*----------------------------------------------------------------------------*/
 BOOLEAN kalCfgDataRead16(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Offset, OUT PUINT_16 pu2Data)
 {
-	if (pu2Data == NULL) {
+	if (pu2Data == NULL)
 		return FALSE;
-	}
 
 	if (nvram_read(WIFI_NVRAM_FILE_NAME,
-		       (char *)pu2Data,
-		       sizeof(unsigned short), u4Offset) != sizeof(unsigned short)) {
+		       (char *)pu2Data, sizeof(unsigned short), u4Offset) != sizeof(unsigned short)) {
 		return FALSE;
 	} else {
 		return TRUE;
 	}
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -498,8 +489,7 @@ BOOLEAN kalCfgDataRead16(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Offset, OUT P
 BOOLEAN kalCfgDataWrite16(IN P_GLUE_INFO_T prGlueInfo, UINT_32 u4Offset, UINT_16 u2Data)
 {
 	if (nvram_write(WIFI_NVRAM_FILE_NAME,
-			(char *)&u2Data,
-			sizeof(unsigned short), u4Offset) != sizeof(unsigned short)) {
+			(char *)&u2Data, sizeof(unsigned short), u4Offset) != sizeof(unsigned short)) {
 		return FALSE;
 	} else {
 		return TRUE;

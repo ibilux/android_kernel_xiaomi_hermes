@@ -69,5 +69,6 @@ typedef enum {
 } MTK_THERMAL_SENSOR_ID;
 
 extern int mtk_thermal_get_temp(MTK_THERMAL_SENSOR_ID id);
+extern struct proc_dir_entry *mtk_thermal_get_proc_drv_therm_dir_entry(void);
 
 #endif

@@ -1,5 +1,5 @@
 /*
-** $Id: @(#)
+** Id: @(#)
 */
 
 /*! \file   "cnm_scan.h"
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: cnm_scan.h $
+** Log: cnm_scan.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -98,7 +96,6 @@
 #define SCN_TOTAL_PROBEREQ_NUM_FOR_PARTIAL      2
 #define SCN_SPECIFIC_PROBEREQ_NUM_FOR_PARTIAL   1
 
-
 #define SCN_INTERLACED_CHANNEL_GROUPS_NUM       3	/* Used by partial scan */
 
 #define SCN_PARTIAL_SCAN_NUM                    3
@@ -108,8 +105,6 @@
 #define	MAXIMUM_OPERATION_CHANNEL_LIST	        32
 
 #define SCN_P2P_FULL_SCAN_PARAM                 0
-
-
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -177,6 +172,4 @@ VOID cnmScanPartialScanTimeout(UINT_32 u4Param);
 VOID cnmScanRunEventScnFsmComplete(IN P_MSG_HDR_T prMsgHdr);
 #endif
 
-
-
-#endif				/* _CNM_SCAN_H */
+#endif /* _CNM_SCAN_H */

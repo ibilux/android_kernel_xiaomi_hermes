@@ -1,5 +1,6 @@
 #ifndef __MTK_MEMCFG_H__
 #define __MTK_MEMCFG_H__
+#include <linux/fs.h>
 
 /* late warning flags */
 #define WARN_MEMBLOCK_CONFLICT	(1 << 0)	/* memblock overlap */
@@ -16,6 +17,24 @@
 
 extern void mtk_memcfg_write_memory_layout_buf(char *, ...);
 extern void mtk_memcfg_late_warning(unsigned long);
+
+#ifdef CONFIG_SLUB_DEBUG
+extern int slabtrace_open(struct inode *inode, struct file *file);
+#endif /* end of CONFIG_SLUB_DEBUG */
+
+#if defined(CONFIG_MTK_FB)
+extern unsigned int DISP_GetVRamSizeBoot(char *cmdline);
+#endif	/* end of CONFIG_MTK_FB */
+
+#ifdef CONFIG_OF
+extern phys_addr_t mtkfb_get_fb_base(void);
+#endif	/* end of CONFIG_OF */
+
+#ifdef CONFIG_HIGHMEM
+extern unsigned long totalhigh_pages;
+#endif /* end of CONFIG_HIGHMEM */
+
+extern void split_page(struct page *page, unsigned int order);
 
 #else
 

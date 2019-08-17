@@ -19,6 +19,8 @@ typedef enum {
 
 typedef enum {
 	AE_KE = 0,		/* Fatal Exception */
+	AE_HWT,
+	AE_HW_REBOOT,
 	AE_NE,
 	AE_JE,
 	AE_SWT,
@@ -27,6 +29,7 @@ typedef enum {
 	AE_ANR,			/* Error or Warning or Defect */
 	AE_RESMON,
 	AE_MODEM_WARNING,
+	AE_WTF,
 	AE_WRN_ERR_END,
 	AE_MANUAL,		/* Manual Raise */
 	AE_EXP_CLASS_END,
@@ -169,7 +172,7 @@ void aee_oops_free(struct aee_oops *oops);
 /* DB dump option bits, set relative bit to 1 to include related file in db */
 #define DB_OPT_DEFAULT                  (0)
 #define DB_OPT_FTRACE                   (1<<0)
-#define DB_OPT_STORAGE_LOG              (1<<1)
+#define DB_OPT_PRINTK_TOO_MUCH          (1<<1)
 #define DB_OPT_NE_JBT_TRACES            (1<<2)
 #define DB_OPT_SWT_JBT_TRACES           (1<<3)
 #define DB_OPT_VM_TRACES                (1<<4)

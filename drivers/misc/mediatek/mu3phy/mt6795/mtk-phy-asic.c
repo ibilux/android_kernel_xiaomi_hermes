@@ -95,21 +95,38 @@ void enable_ssusb26m_ck(bool enable)
 void usb20_pll_settings(bool host, bool forceOn)
 {
 	if (host) {
-		if (forceOn) {	
+		if (forceOn) {
 			os_printk(K_INFO, "%s-%d - Set USBPLL_FORCE_ON.\n", __func__, __LINE__);
-			U3PhyWriteField32(U3D_USBPHYACR0, E60802_RG_USB20_USBPLL_FORCE_ON_OFST, E60802_RG_USB20_USBPLL_FORCE_ON, 0x1);
+			/* Set RG_SUSPENDM to 1 */
+			U3PhyWriteField32(U3D_U2PHYDTM0, E60802_RG_SUSPENDM_OFST, E60802_RG_SUSPENDM, 1);
+			/* force suspendm = 1 */
+			U3PhyWriteField32(U3D_U2PHYDTM0, E60802_FORCE_SUSPENDM_OFST, E60802_FORCE_SUSPENDM, 1);
+#ifndef CONFIG_MTK_TYPEC_SWITCH
+			U3PhyWriteField32(U3D_PHYA_REG6, E60802_RG_SSUSB_RESERVE22_OFST,
+				E60802_RG_SSUSB_RESERVE22, 0x1);
+#endif
+
 		} else {
-			os_printk(K_INFO, "%s-%d - Clear USBPLL_FORCE_ON.\n", __func__, __LINE__);		
-			U3PhyWriteField32(U3D_USBPHYACR0, E60802_RG_USB20_USBPLL_FORCE_ON_OFST, E60802_RG_USB20_USBPLL_FORCE_ON, 0x0);
+			os_printk(K_INFO, "%s-%d - Clear USBPLL_FORCE_ON.\n", __func__, __LINE__);
+			/* Set RG_SUSPENDM to 1 */
+			U3PhyWriteField32(U3D_U2PHYDTM0, E60802_RG_SUSPENDM_OFST, E60802_RG_SUSPENDM, 0);
+			/* force suspendm = 1 */
+			U3PhyWriteField32(U3D_U2PHYDTM0, E60802_FORCE_SUSPENDM_OFST, E60802_FORCE_SUSPENDM, 0);
+#ifndef CONFIG_MTK_TYPEC_SWITCH
+				U3PhyWriteField32(U3D_PHYA_REG6, E60802_RG_SSUSB_RESERVE22_OFST,
+					E60802_RG_SSUSB_RESERVE22, 0x0);
+#endif
 			return;
 		}
 	}
 
-	os_printk(K_INFO, "%s-%d - Set PLL_FORCE_MODE and SIFSLV PLL_FORCE_ON.\n", __func__, __LINE__);
-	U3PhyWriteField32(U3D_USBPHYACR2_0, E60802_RG_SIFSLV_USB20_PLL_FORCE_MODE_OFST, E60802_RG_SIFSLV_USB20_PLL_FORCE_MODE, 0x1);
-	U3PhyWriteField32(U3D_U2PHYDCR0, E60802_RG_SIFSLV_USB20_PLL_FORCE_ON_OFST, E60802_RG_SIFSLV_USB20_PLL_FORCE_ON, 0x0);
+	os_printk(K_INFO, "%s-%d - Set PLL_FORCE_MODE and SIFSLV PLL_FORCE_ON.\n", __func__,
+		  __LINE__);
+	U3PhyWriteField32(U3D_USBPHYACR2_0, E60802_RG_SIFSLV_USB20_PLL_FORCE_MODE_OFST,
+			  E60802_RG_SIFSLV_USB20_PLL_FORCE_MODE, 0x1);
+	U3PhyWriteField32(U3D_U2PHYDCR0, E60802_RG_SIFSLV_USB20_PLL_FORCE_ON_OFST,
+			  E60802_RG_SIFSLV_USB20_PLL_FORCE_ON, 0x0);
 }
-
 #ifdef CONFIG_MTK_UART_USB_SWITCH
 bool in_uart_mode = false;
 void uart_usb_switch_dump_register(void)
@@ -593,7 +610,7 @@ void usb_phy_savecurrent(unsigned int clk_on)
 	if (clk_on) {
 		/*---CLOCK-----*/
 		/* Set RG_SSUSB_VUSB10_ON as 1 after VUSB10 ready */
-		U3PhyWriteField32(U3D_USB30_PHYA_REG0, RG_SSUSB_VUSB10_ON_OFST, RG_SSUSB_VUSB10_ON, 0);
+		/* U3PhyWriteField32(U3D_USB30_PHYA_REG0, RG_SSUSB_VUSB10_ON_OFST, RG_SSUSB_VUSB10_ON, 0); */
 
 		//Wait 10 usec.
 		udelay(10);
@@ -606,7 +623,7 @@ void usb_phy_savecurrent(unsigned int clk_on)
 
 		/*---POWER-----*/
 		/* Set RG_VUSB10_ON as 1 after VDD10 Ready */
-		hwPowerDown(MT6331_POWER_LDO_VUSB10, "VDD10_USB_P0");
+		/* hwPowerDown(MT6331_POWER_LDO_VUSB10, "VDD10_USB_P0"); */
 	}
 
 	os_printk(K_INFO, "%s-\n", __func__);
@@ -623,7 +640,7 @@ void usb_phy_recover(unsigned int clk_on)
 		hwPowerOn(MT6332_POWER_LDO_VUSB33, VOL_3300, "VDD33_USB_P0");
 
 		/* Set RG_VUSB10_ON as 1 after VDD10 Ready */
-		hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1000, "VDD10_USB_P0");
+		/* hwPowerOn(MT6331_POWER_LDO_VUSB10, VOL_1000, "VDD10_USB_P0"); */
 
 		/*---CLOCK-----*/
 		/* ADA_SSUSB_XTAL_CK:26MHz */
@@ -643,7 +660,7 @@ void usb_phy_recover(unsigned int clk_on)
 		udelay(50);
 
 		/* Set RG_SSUSB_VUSB10_ON as 1 after VUSB10 ready */
-		U3PhyWriteField32(U3D_USB30_PHYA_REG0, RG_SSUSB_VUSB10_ON_OFST, RG_SSUSB_VUSB10_ON, 1);
+		/* U3PhyWriteField32(U3D_USB30_PHYA_REG0, RG_SSUSB_VUSB10_ON_OFST, RG_SSUSB_VUSB10_ON, 1); */
 	}
 
 	/*[MT6593 only]power domain iso disable*/
@@ -748,8 +765,6 @@ void usb_phy_recover(unsigned int clk_on)
 #if defined(CONFIG_MTK_HDMI_SUPPORT) || defined(MTK_USB_MODE1)
     os_printk(K_INFO, "%s- USB PHY Driving Tuning Mode 1 Settings.\n", __func__);
 	U3PhyWriteField32(U3D_USBPHYACR5, E60802_RG_USB20_HS_100U_U3_EN_OFST, E60802_RG_USB20_HS_100U_U3_EN, 0);
-	U3PhyWriteField32(U3D_USBPHYACR1, E60802_RG_USB20_VRT_VREF_SEL_OFST, E60802_RG_USB20_VRT_VREF_SEL, 5);//liuchao for usb yantu
-	U3PhyWriteField32(U3D_USBPHYACR1, E60802_RG_USB20_TERM_VREF_SEL_OFST, E60802_RG_USB20_TERM_VREF_SEL, 5);
 #else
 	/*Change 100uA current switch to SSUSB*/
 	//RG_USB20_HS_100U_U3_EN	1'b1
@@ -813,7 +828,7 @@ void usb_fake_powerdown(unsigned int clk_on)
 
 		/*---POWER-----*/
 		/* Set RG_VUSB10_ON as 1 after VDD10 Ready */
-		hwPowerDown(MT6331_POWER_LDO_VUSB10, "VDD10_USB_P0");
+		/* hwPowerDown(MT6331_POWER_LDO_VUSB10, "VDD10_USB_P0"); */
 	}
 
 	os_printk(K_INFO, "%s-\n", __func__);

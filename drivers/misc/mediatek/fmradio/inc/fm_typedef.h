@@ -31,5 +31,4 @@ typedef enum fm_bool {
 	fm_true = 1
 } fm_bool;
 
-
-#endif				/* __FM_TYPEDEF_H__ */
+#endif /* __FM_TYPEDEF_H__ */

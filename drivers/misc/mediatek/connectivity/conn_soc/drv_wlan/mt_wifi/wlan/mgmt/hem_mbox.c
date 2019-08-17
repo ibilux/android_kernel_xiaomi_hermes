@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/hem_mbox.c#3 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/hem_mbox.c#3
 */
 
 /*! \file   "hem_mbox.c"
@@ -7,19 +7,18 @@
 
 */
 
-
-
 /*
-** $Log: hem_mbox.c $
-** 
+** Log: hem_mbox.c
+**
 ** 08 31 2012 yuche.tsai
-** [ALPS00349585] [6577JB][WiFi direct][KE]Establish p2p connection while both device have connected to AP previously,one device reboots automatically with KE
+** [ALPS00349585] [6577JB][WiFi direct][KE]Establish p2p connection while both device
+** have connected to AP previously,one device reboots automatically with KE
 ** Fix possible KE when concurrent & disconnect.
-** 
+**
 ** 07 26 2012 yuche.tsai
 ** [ALPS00324337] [ALPS.JB][Hot-Spot] Driver update for Hot-Spot
 ** Update driver code of ALPS.JB for hot-spot.
-** 
+**
 ** 07 19 2012 yuche.tsai
 ** NULL
 ** Code update for JB.
@@ -62,11 +61,14 @@
  * adding the code for XLOG.
  *
  * 07 18 2011 cp.wu
- * [WCXRP00000858] [MT5931][Driver][Firmware] Add support for scan to search for more than one SSID in a single scanning request
- * add framework in driver domain for supporting new SCAN_REQ_V2 for more than 1 SSID support as well as uProbeDelay in NDIS 6.x driver model
+ * [WCXRP00000858] [MT5931][Driver][Firmware] Add support for scan to search
+ * for more than one SSID in a single scanning request
+ * add framework in driver domain for supporting new SCAN_REQ_V2 for more than 1 SSID support
+ * as well as uProbeDelay in NDIS 6.x driver model
  *
  * 06 07 2011 yuche.tsai
- * [WCXRP00000696] [Volunteer Patch][MT6620][Driver] Infinite loop issue when RX invitation response.[WCXRP00000763] [Volunteer Patch][MT6620][Driver] RX Service Discovery Frame under AP mode Issue
+ * [WCXRP00000696] [Volunteer Patch][MT6620][Driver] Infinite loop issue when RX invitation response.
+ * [WCXRP00000763] [Volunteer Patch][MT6620][Driver] RX Service Discovery Frame under AP mode Issue
  * Add invitation support.
  *
  * 04 18 2011 terry.wu
@@ -78,7 +80,8 @@
  * As CR title
  *
  * 02 24 2011 cp.wu
- * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation because NdisMSleep() won't sleep long enough for specified interval such as 500ms
+ * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation
+ * because NdisMSleep() won't sleep long enough for specified interval such as 500ms
  * modify cnm_timer and hem_mbox APIs to be thread safe to ease invoking restrictions
  *
  * 02 15 2011 chinghwa.yu
@@ -112,7 +115,8 @@
  * Remove CNM channel reover message ID
  *
  * 11 01 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver]
+ * Add implementation for querying current TX rate from firmware auto rate module
  * 1) Query link speed (TX rate) from firmware directly with buffering mechanism to reduce overhead
  * 2) Remove CNM CH-RECOVER event handling
  * 3) cfg read/write API renamed with kal prefix for unified naming rules.
@@ -374,75 +378,76 @@
 #if DBG
 /*lint -save -e64 Type mismatch */
 static PUINT_8 apucDebugMsg[] = {
-    (PUINT_8)DISP_STRING("MID_MNY_CNM_CH_REQ"),
-    (PUINT_8)DISP_STRING("MID_MNY_CNM_CH_ABORT"),
-    (PUINT_8)DISP_STRING("MID_CNM_AIS_CH_GRANT"),
-    (PUINT_8)DISP_STRING("MID_CNM_P2P_CH_GRANT"),
-    (PUINT_8)DISP_STRING("MID_CNM_BOW_CH_GRANT"),
+	(PUINT_8) DISP_STRING("MID_MNY_CNM_CH_REQ"),
+	(PUINT_8) DISP_STRING("MID_MNY_CNM_CH_ABORT"),
+	(PUINT_8) DISP_STRING("MID_CNM_AIS_CH_GRANT"),
+	(PUINT_8) DISP_STRING("MID_CNM_P2P_CH_GRANT"),
+	(PUINT_8) DISP_STRING("MID_CNM_BOW_CH_GRANT"),
 
-    (PUINT_8)DISP_STRING("MID_AIS_SCN_SCAN_REQ"),
-    (PUINT_8)DISP_STRING("MID_AIS_SCN_SCAN_REQ_V2"),
-    (PUINT_8)DISP_STRING("MID_AIS_SCN_SCAN_CANCEL"),
-    (PUINT_8)DISP_STRING("MID_P2P_SCN_SCAN_REQ"),
-    (PUINT_8)DISP_STRING("MID_P2P_SCN_SCAN_REQ_V2"),
-    (PUINT_8)DISP_STRING("MID_P2P_SCN_SCAN_CANCEL"),
-    (PUINT_8)DISP_STRING("MID_BOW_SCN_SCAN_REQ"),
-    (PUINT_8)DISP_STRING("MID_BOW_SCN_SCAN_REQ_V2"),
-    (PUINT_8)DISP_STRING("MID_BOW_SCN_SCAN_CANCEL"),
-    (PUINT_8)DISP_STRING("MID_RLM_SCN_SCAN_REQ"),
-    (PUINT_8)DISP_STRING("MID_RLM_SCN_SCAN_REQ_V2"),
-    (PUINT_8)DISP_STRING("MID_RLM_SCN_SCAN_CANCEL"),
-    (PUINT_8)DISP_STRING("MID_SCN_AIS_SCAN_DONE"),
-    (PUINT_8)DISP_STRING("MID_SCN_P2P_SCAN_DONE"),
-    (PUINT_8)DISP_STRING("MID_SCN_BOW_SCAN_DONE"),
-    (PUINT_8)DISP_STRING("MID_SCN_RLM_SCAN_DONE"),
+	(PUINT_8) DISP_STRING("MID_AIS_SCN_SCAN_REQ"),
+	(PUINT_8) DISP_STRING("MID_AIS_SCN_SCAN_REQ_V2"),
+	(PUINT_8) DISP_STRING("MID_AIS_SCN_SCAN_CANCEL"),
+	(PUINT_8) DISP_STRING("MID_P2P_SCN_SCAN_REQ"),
+	(PUINT_8) DISP_STRING("MID_P2P_SCN_SCAN_REQ_V2"),
+	(PUINT_8) DISP_STRING("MID_P2P_SCN_SCAN_CANCEL"),
+	(PUINT_8) DISP_STRING("MID_BOW_SCN_SCAN_REQ"),
+	(PUINT_8) DISP_STRING("MID_BOW_SCN_SCAN_REQ_V2"),
+	(PUINT_8) DISP_STRING("MID_BOW_SCN_SCAN_CANCEL"),
+	(PUINT_8) DISP_STRING("MID_RLM_SCN_SCAN_REQ"),
+	(PUINT_8) DISP_STRING("MID_RLM_SCN_SCAN_REQ_V2"),
+	(PUINT_8) DISP_STRING("MID_RLM_SCN_SCAN_CANCEL"),
+	(PUINT_8) DISP_STRING("MID_SCN_AIS_SCAN_DONE"),
+	(PUINT_8) DISP_STRING("MID_SCN_P2P_SCAN_DONE"),
+	(PUINT_8) DISP_STRING("MID_SCN_BOW_SCAN_DONE"),
+	(PUINT_8) DISP_STRING("MID_SCN_RLM_SCAN_DONE"),
 
-    (PUINT_8)DISP_STRING("MID_OID_AIS_FSM_JOIN_REQ"),
-    (PUINT_8)DISP_STRING("MID_OID_AIS_FSM_ABORT"),
-    (PUINT_8)DISP_STRING("MID_AIS_SAA_FSM_START"),
-    (PUINT_8)DISP_STRING("MID_AIS_SAA_FSM_ABORT"),
-    (PUINT_8)DISP_STRING("MID_SAA_AIS_JOIN_COMPLETE"),
+	(PUINT_8) DISP_STRING("MID_OID_AIS_FSM_JOIN_REQ"),
+	(PUINT_8) DISP_STRING("MID_OID_AIS_FSM_ABORT"),
+	(PUINT_8) DISP_STRING("MID_AIS_SAA_FSM_START"),
+	(PUINT_8) DISP_STRING("MID_AIS_SAA_FSM_ABORT"),
+	(PUINT_8) DISP_STRING("MID_SAA_AIS_JOIN_COMPLETE"),
 
 #if CFG_ENABLE_BT_OVER_WIFI
-    (PUINT_8)DISP_STRING("MID_BOW_SAA_FSM_START"),
-    (PUINT_8)DISP_STRING("MID_BOW_SAA_FSM_ABORT"),
-    (PUINT_8)DISP_STRING("MID_SAA_BOW_JOIN_COMPLETE"),
+	(PUINT_8) DISP_STRING("MID_BOW_SAA_FSM_START"),
+	(PUINT_8) DISP_STRING("MID_BOW_SAA_FSM_ABORT"),
+	(PUINT_8) DISP_STRING("MID_SAA_BOW_JOIN_COMPLETE"),
 #endif
 
 #if CFG_ENABLE_WIFI_DIRECT
-    (PUINT_8)DISP_STRING("MID_P2P_SAA_FSM_START"),
-    (PUINT_8)DISP_STRING("MID_P2P_SAA_FSM_ABORT"),
-    (PUINT_8)DISP_STRING("MID_SAA_P2P_JOIN_COMPLETE"),
+	(PUINT_8) DISP_STRING("MID_P2P_SAA_FSM_START"),
+	(PUINT_8) DISP_STRING("MID_P2P_SAA_FSM_ABORT"),
+	(PUINT_8) DISP_STRING("MID_SAA_P2P_JOIN_COMPLETE"),
 
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_FUN_SWITCH"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_DEVICE_DISCOVERY"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_CONNECTION_REQ"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_CONNECTION_ABORT"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_BEACON_UPDATE"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_STOP_AP"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_CHNL_REQ"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_CHNL_ABORT"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_MGMT_TX"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_GROUP_DISSOLVE"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_MGMT_FRAME_REGISTER"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_NET_DEV_REGISTER"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_START_AP"),
-    (PUINT_8)DISP_STRING("MID_MNY_P2P_UPDATE_IE_BUF"),
- #endif
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_FUN_SWITCH"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_DEVICE_DISCOVERY"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_CONNECTION_REQ"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_CONNECTION_ABORT"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_BEACON_UPDATE"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_STOP_AP"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_CHNL_REQ"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_CHNL_ABORT"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_MGMT_TX"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_GROUP_DISSOLVE"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_MGMT_FRAME_REGISTER"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_NET_DEV_REGISTER"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_START_AP"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_UPDATE_IE_BUF"),
+#endif
 
 #if CFG_SUPPORT_ADHOC
-    //(PUINT_8)DISP_STRING("MID_AIS_CNM_CREATE_IBSS_REQ"),
-    //(PUINT_8)DISP_STRING("MID_CNM_AIS_CREATE_IBSS_GRANT"),
-    //(PUINT_8)DISP_STRING("MID_AIS_CNM_MERGE_IBSS_REQ"),
-    //(PUINT_8)DISP_STRING("MID_CNM_AIS_MERGE_IBSS_GRANT"),
-    (PUINT_8)DISP_STRING("MID_SCN_AIS_FOUND_IBSS"),
+	/* (PUINT_8)DISP_STRING("MID_AIS_CNM_CREATE_IBSS_REQ"), */
+	/* (PUINT_8)DISP_STRING("MID_CNM_AIS_CREATE_IBSS_GRANT"), */
+	/* (PUINT_8)DISP_STRING("MID_AIS_CNM_MERGE_IBSS_REQ"), */
+	/* (PUINT_8)DISP_STRING("MID_CNM_AIS_MERGE_IBSS_GRANT"), */
+	(PUINT_8) DISP_STRING("MID_SCN_AIS_FOUND_IBSS"),
 #endif /* CFG_SUPPORT_ADHOC */
 
-    (PUINT_8)DISP_STRING("MID_SAA_AIS_FSM_ABORT"),
-    (PUINT_8)DISP_STRING("MID_MNY_AIS_REMAIN_ON_CHANNEL"),
-    (PUINT_8)DISP_STRING("MID_MNY_AIS_CANCEL_REMAIN_ON_CHANNEL"),
-    (PUINT_8)DISP_STRING("MID_MNY_AIS_MGMT_TX")
+	(PUINT_8) DISP_STRING("MID_SAA_AIS_FSM_ABORT"),
+	(PUINT_8) DISP_STRING("MID_MNY_AIS_REMAIN_ON_CHANNEL"),
+	(PUINT_8) DISP_STRING("MID_MNY_AIS_CANCEL_REMAIN_ON_CHANNEL"),
+	(PUINT_8) DISP_STRING("MID_MNY_AIS_MGMT_TX")
 };
+
 /*lint -restore */
 #endif /* DBG */
 
@@ -450,101 +455,101 @@ static PUINT_8 apucDebugMsg[] = {
  * by invoking mboxInitMsgMap()
  */
 static MSG_HNDL_ENTRY_T arMsgMapTable[] = {
-    { MID_MNY_CNM_CH_REQ,           cnmChMngrRequestPrivilege               },
-    { MID_MNY_CNM_CH_ABORT,         cnmChMngrAbortPrivilege                 },
-    { MID_CNM_AIS_CH_GRANT,         aisFsmRunEventChGrant                   },
+	{MID_MNY_CNM_CH_REQ, cnmChMngrRequestPrivilege},
+	{MID_MNY_CNM_CH_ABORT, cnmChMngrAbortPrivilege},
+	{MID_CNM_AIS_CH_GRANT, aisFsmRunEventChGrant},
 #if CFG_ENABLE_WIFI_DIRECT
-    { MID_CNM_P2P_CH_GRANT,         p2pFsmRunEventChGrant                   }, /*set in gl_p2p_init.c*/
+	{MID_CNM_P2P_CH_GRANT, p2pFsmRunEventChGrant},	/*set in gl_p2p_init.c */
 #else
-    { MID_CNM_P2P_CH_GRANT,         mboxDummy                               },
+	{MID_CNM_P2P_CH_GRANT, mboxDummy},
 #endif
 
 #if CFG_ENABLE_BT_OVER_WIFI
-    { MID_CNM_BOW_CH_GRANT,         bowRunEventChGrant                             },
+	{MID_CNM_BOW_CH_GRANT, bowRunEventChGrant},
 #else
-    { MID_CNM_BOW_CH_GRANT,         mboxDummy                               },
+	{MID_CNM_BOW_CH_GRANT, mboxDummy},
 #endif
 
     /*--------------------------------------------------*/
-    /* SCN Module Mailbox Messages                      */
+	/* SCN Module Mailbox Messages                      */
     /*--------------------------------------------------*/
-    { MID_AIS_SCN_SCAN_REQ,         scnFsmMsgStart                          },
-    { MID_AIS_SCN_SCAN_REQ_V2,      scnFsmMsgStart                          },
-    { MID_AIS_SCN_SCAN_CANCEL,      scnFsmMsgAbort                          },
-    { MID_P2P_SCN_SCAN_REQ,         scnFsmMsgStart                          },
-    { MID_P2P_SCN_SCAN_REQ_V2,      scnFsmMsgStart                          },
-    { MID_P2P_SCN_SCAN_CANCEL,      scnFsmMsgAbort                          },
-    { MID_BOW_SCN_SCAN_REQ,         scnFsmMsgStart                          },
-    { MID_BOW_SCN_SCAN_REQ_V2,      scnFsmMsgStart                          },
-    { MID_BOW_SCN_SCAN_CANCEL,      scnFsmMsgAbort                          },
-    { MID_RLM_SCN_SCAN_REQ,         scnFsmMsgStart                          },
-    { MID_RLM_SCN_SCAN_REQ_V2,      scnFsmMsgStart                          },
-    { MID_RLM_SCN_SCAN_CANCEL,      scnFsmMsgAbort                          },
-    { MID_SCN_AIS_SCAN_DONE,        aisFsmRunEventScanDone                  },
+	{MID_AIS_SCN_SCAN_REQ, scnFsmMsgStart},
+	{MID_AIS_SCN_SCAN_REQ_V2, scnFsmMsgStart},
+	{MID_AIS_SCN_SCAN_CANCEL, scnFsmMsgAbort},
+	{MID_P2P_SCN_SCAN_REQ, scnFsmMsgStart},
+	{MID_P2P_SCN_SCAN_REQ_V2, scnFsmMsgStart},
+	{MID_P2P_SCN_SCAN_CANCEL, scnFsmMsgAbort},
+	{MID_BOW_SCN_SCAN_REQ, scnFsmMsgStart},
+	{MID_BOW_SCN_SCAN_REQ_V2, scnFsmMsgStart},
+	{MID_BOW_SCN_SCAN_CANCEL, scnFsmMsgAbort},
+	{MID_RLM_SCN_SCAN_REQ, scnFsmMsgStart},
+	{MID_RLM_SCN_SCAN_REQ_V2, scnFsmMsgStart},
+	{MID_RLM_SCN_SCAN_CANCEL, scnFsmMsgAbort},
+	{MID_SCN_AIS_SCAN_DONE, aisFsmRunEventScanDone},
 #if CFG_ENABLE_WIFI_DIRECT
-    { MID_SCN_P2P_SCAN_DONE,        p2pFsmRunEventScanDone                  }, /*set in gl_p2p_init.c*/
+	{MID_SCN_P2P_SCAN_DONE, p2pFsmRunEventScanDone},	/*set in gl_p2p_init.c */
 #else
-    { MID_SCN_P2P_SCAN_DONE,        mboxDummy                               },
+	{MID_SCN_P2P_SCAN_DONE, mboxDummy},
 #endif
 
 #if CFG_ENABLE_BT_OVER_WIFI
-    { MID_SCN_BOW_SCAN_DONE,        bowResponderScanDone                               },
+	{MID_SCN_BOW_SCAN_DONE, bowResponderScanDone},
 #else
-    { MID_SCN_BOW_SCAN_DONE,        mboxDummy                               },
+	{MID_SCN_BOW_SCAN_DONE, mboxDummy},
 #endif
-    { MID_SCN_RLM_SCAN_DONE,        rlmObssScanDone                         },
+	{MID_SCN_RLM_SCAN_DONE, rlmObssScanDone},
 
     /*--------------------------------------------------*/
-    /* AIS Module Mailbox Messages                      */
+	/* AIS Module Mailbox Messages                      */
     /*--------------------------------------------------*/
-    { MID_OID_AIS_FSM_JOIN_REQ,     aisFsmRunEventAbort                     },
-    { MID_OID_AIS_FSM_ABORT,        aisFsmRunEventAbort                     },
-    { MID_AIS_SAA_FSM_START,        saaFsmRunEventStart                     },
-    { MID_AIS_SAA_FSM_ABORT,        saaFsmRunEventAbort                     },
-    { MID_SAA_AIS_JOIN_COMPLETE,    aisFsmRunEventJoinComplete              },
+	{MID_OID_AIS_FSM_JOIN_REQ, aisFsmRunEventAbort},
+	{MID_OID_AIS_FSM_ABORT, aisFsmRunEventAbort},
+	{MID_AIS_SAA_FSM_START, saaFsmRunEventStart},
+	{MID_AIS_SAA_FSM_ABORT, saaFsmRunEventAbort},
+	{MID_SAA_AIS_JOIN_COMPLETE, aisFsmRunEventJoinComplete},
 
 #if CFG_ENABLE_BT_OVER_WIFI
     /*--------------------------------------------------*/
-    /* BOW Module Mailbox Messages                      */
+	/* BOW Module Mailbox Messages                      */
     /*--------------------------------------------------*/
-    { MID_BOW_SAA_FSM_START,        saaFsmRunEventStart                     },
-    { MID_BOW_SAA_FSM_ABORT,        saaFsmRunEventAbort                     },
-    { MID_SAA_BOW_JOIN_COMPLETE,    bowFsmRunEventJoinComplete              },
+	{MID_BOW_SAA_FSM_START, saaFsmRunEventStart},
+	{MID_BOW_SAA_FSM_ABORT, saaFsmRunEventAbort},
+	{MID_SAA_BOW_JOIN_COMPLETE, bowFsmRunEventJoinComplete},
 #endif
 
-#if CFG_ENABLE_WIFI_DIRECT  /*set in gl_p2p_init.c*/
-    { MID_P2P_SAA_FSM_START,        saaFsmRunEventStart                     },
-    { MID_P2P_SAA_FSM_ABORT,        saaFsmRunEventAbort                     },
-    { MID_SAA_P2P_JOIN_COMPLETE,    p2pFsmRunEventJoinComplete              },// TODO: p2pFsmRunEventJoinComplete
+#if CFG_ENABLE_WIFI_DIRECT	/*set in gl_p2p_init.c */
+	{MID_P2P_SAA_FSM_START, saaFsmRunEventStart},
+	{MID_P2P_SAA_FSM_ABORT, saaFsmRunEventAbort},
+	{MID_SAA_P2P_JOIN_COMPLETE, p2pFsmRunEventJoinComplete},	/* TODO: p2pFsmRunEventJoinComplete */
 
-    { MID_MNY_P2P_FUN_SWITCH,       p2pFsmRunEventSwitchOPMode              },
-    { MID_MNY_P2P_DEVICE_DISCOVERY, p2pFsmRunEventScanRequest               },
-    { MID_MNY_P2P_CONNECTION_REQ,   p2pFsmRunEventConnectionRequest         },
-    { MID_MNY_P2P_CONNECTION_ABORT, p2pFsmRunEventConnectionAbort           },
-    { MID_MNY_P2P_BEACON_UPDATE,    p2pFsmRunEventBeaconUpdate              },
-    { MID_MNY_P2P_STOP_AP,          p2pFsmRunEventStopAP                    },
-    { MID_MNY_P2P_CHNL_REQ,         p2pFsmRunEventChannelRequest            },
-    { MID_MNY_P2P_CHNL_ABORT,       p2pFsmRunEventChannelAbort              },
-    { MID_MNY_P2P_MGMT_TX,          p2pFsmRunEventMgmtFrameTx               },
-    { MID_MNY_P2P_GROUP_DISSOLVE,   p2pFsmRunEventDissolve                  },
-    { MID_MNY_P2P_MGMT_FRAME_REGISTER, p2pFsmRunEventMgmtFrameRegister      },
-    { MID_MNY_P2P_NET_DEV_REGISTER, p2pFsmRunEventNetDeviceRegister         },
-    { MID_MNY_P2P_START_AP,         p2pFsmRunEventStartAP                   },
-    { MID_MNY_P2P_MGMT_FRAME_UPDATE,    p2pFsmRunEventUpdateMgmtFrame       },
+	{MID_MNY_P2P_FUN_SWITCH, p2pFsmRunEventSwitchOPMode},
+	{MID_MNY_P2P_DEVICE_DISCOVERY, p2pFsmRunEventScanRequest},
+	{MID_MNY_P2P_CONNECTION_REQ, p2pFsmRunEventConnectionRequest},
+	{MID_MNY_P2P_CONNECTION_ABORT, p2pFsmRunEventConnectionAbort},
+	{MID_MNY_P2P_BEACON_UPDATE, p2pFsmRunEventBeaconUpdate},
+	{MID_MNY_P2P_STOP_AP, p2pFsmRunEventStopAP},
+	{MID_MNY_P2P_CHNL_REQ, p2pFsmRunEventChannelRequest},
+	{MID_MNY_P2P_CHNL_ABORT, p2pFsmRunEventChannelAbort},
+	{MID_MNY_P2P_MGMT_TX, p2pFsmRunEventMgmtFrameTx},
+	{MID_MNY_P2P_GROUP_DISSOLVE, p2pFsmRunEventDissolve},
+	{MID_MNY_P2P_MGMT_FRAME_REGISTER, p2pFsmRunEventMgmtFrameRegister},
+	{MID_MNY_P2P_NET_DEV_REGISTER, p2pFsmRunEventNetDeviceRegister},
+	{MID_MNY_P2P_START_AP, p2pFsmRunEventStartAP},
+	{MID_MNY_P2P_MGMT_FRAME_UPDATE, p2pFsmRunEventUpdateMgmtFrame},
 #if CFG_SUPPORT_WFD
-    { MID_MNY_P2P_WFD_CFG_UPDATE, p2pFsmRunEventWfdSettingUpdate           },
+	{MID_MNY_P2P_WFD_CFG_UPDATE, p2pFsmRunEventWfdSettingUpdate},
 #endif
 
 #endif
 
 #if CFG_SUPPORT_ADHOC
-    { MID_SCN_AIS_FOUND_IBSS,       aisFsmRunEventFoundIBSSPeer             },
+	{MID_SCN_AIS_FOUND_IBSS, aisFsmRunEventFoundIBSSPeer},
 #endif /* CFG_SUPPORT_ADHOC */
 
-    { MID_SAA_AIS_FSM_ABORT,        aisFsmRunEventAbort                     },
-    { MID_MNY_AIS_REMAIN_ON_CHANNEL,aisFsmRunEventRemainOnChannel           },
-    { MID_MNY_AIS_CANCEL_REMAIN_ON_CHANNEL, aisFsmRunEventCancelRemainOnChannel },
-    { MID_MNY_AIS_MGMT_TX,          aisFsmRunEventMgmtFrameTx               }
+	{MID_SAA_AIS_FSM_ABORT, aisFsmRunEventAbort},
+	{MID_MNY_AIS_REMAIN_ON_CHANNEL, aisFsmRunEventRemainOnChannel},
+	{MID_MNY_AIS_CANCEL_REMAIN_ON_CHANNEL, aisFsmRunEventCancelRemainOnChannel},
+	{MID_MNY_AIS_MGMT_TX, aisFsmRunEventMgmtFrameTx}
 };
 
 /*******************************************************************************
@@ -554,27 +559,27 @@ static MSG_HNDL_ENTRY_T arMsgMapTable[] = {
 
 #if DBG
 #define MBOX_HNDL_MSG(prAdapter, prMsg) do { \
-        ASSERT(arMsgMapTable[prMsg->eMsgId].pfMsgHndl); \
-        if (arMsgMapTable[prMsg->eMsgId].pfMsgHndl) { \
-            DBGLOG(CNM, LOUD, ("DO MSG [%d: %s]\n", prMsg->eMsgId, apucDebugMsg[prMsg->eMsgId])); \
-            arMsgMapTable[prMsg->eMsgId].pfMsgHndl(prAdapter, prMsg); \
-        } \
-        else { \
-            DBGLOG(CNM, ERROR, ("NULL fptr for MSG [%d]\n", prMsg->eMsgId)); \
-            cnmMemFree(prAdapter, prMsg); \
-        } \
+	ASSERT(arMsgMapTable[prMsg->eMsgId].pfMsgHndl); \
+	if (arMsgMapTable[prMsg->eMsgId].pfMsgHndl) { \
+		DBGLOG(CNM, LOUD, "DO MSG [%d: %s]\n", prMsg->eMsgId, apucDebugMsg[prMsg->eMsgId]); \
+		arMsgMapTable[prMsg->eMsgId].pfMsgHndl(prAdapter, prMsg); \
+	} \
+	else { \
+	    DBGLOG(CNM, ERROR, "NULL fptr for MSG [%d]\n", prMsg->eMsgId); \
+	    cnmMemFree(prAdapter, prMsg); \
+	} \
 } while (0)
 #else
 #define MBOX_HNDL_MSG(prAdapter, prMsg) do { \
-        ASSERT(arMsgMapTable[prMsg->eMsgId].pfMsgHndl); \
-        if (arMsgMapTable[prMsg->eMsgId].pfMsgHndl) { \
-            DBGLOG(CNM, LOUD, ("DO MSG [%d]\n", prMsg->eMsgId)); \
-            arMsgMapTable[prMsg->eMsgId].pfMsgHndl(prAdapter, prMsg); \
-        } \
-        else { \
-            DBGLOG(CNM, ERROR, ("NULL fptr for MSG [%d]\n", prMsg->eMsgId)); \
-            cnmMemFree(prAdapter, prMsg); \
-        } \
+	ASSERT(arMsgMapTable[prMsg->eMsgId].pfMsgHndl); \
+	if (arMsgMapTable[prMsg->eMsgId].pfMsgHndl) { \
+		DBGLOG(CNM, LOUD, "DO MSG [%d]\n", prMsg->eMsgId); \
+		arMsgMapTable[prMsg->eMsgId].pfMsgHndl(prAdapter, prMsg); \
+	} \
+	else { \
+	    DBGLOG(CNM, ERROR, "NULL fptr for MSG [%d]\n", prMsg->eMsgId); \
+	    cnmMemFree(prAdapter, prMsg); \
+	} \
 } while (0)
 #endif
 /*******************************************************************************
@@ -587,7 +592,6 @@ static MSG_HNDL_ENTRY_T arMsgMapTable[] = {
 ********************************************************************************
 */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief
@@ -597,46 +601,41 @@ static MSG_HNDL_ENTRY_T arMsgMapTable[] = {
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-mboxInitMsgMap (
-    VOID
-    )
+VOID mboxInitMsgMap(VOID)
 {
-    UINT_32             i, idx;
-    MSG_HNDL_ENTRY_T    rTempEntry;
+	UINT_32 i, idx;
+	MSG_HNDL_ENTRY_T rTempEntry;
 
-    ASSERT((sizeof(arMsgMapTable) / sizeof(MSG_HNDL_ENTRY_T)) == MID_TOTAL_NUM);
+	ASSERT((sizeof(arMsgMapTable) / sizeof(MSG_HNDL_ENTRY_T)) == MID_TOTAL_NUM);
 
-    for (i = 0; i < MID_TOTAL_NUM; i++) {
-        if (arMsgMapTable[i].eMsgId == (ENUM_MSG_ID_T) i) {
-            continue;
-        }
-        for (idx = i + 1; idx < MID_TOTAL_NUM; idx++) {
-            if (arMsgMapTable[idx].eMsgId == (ENUM_MSG_ID_T) i) {
-                break;
-            }
-        }
-        ASSERT(idx < MID_TOTAL_NUM);
-        if (idx >= MID_TOTAL_NUM) {
-            continue;
-        }
+	for (i = 0; i < MID_TOTAL_NUM; i++) {
+		if (arMsgMapTable[i].eMsgId == (ENUM_MSG_ID_T) i)
+			continue;
+		for (idx = i + 1; idx < MID_TOTAL_NUM; idx++) {
+			if (arMsgMapTable[idx].eMsgId == (ENUM_MSG_ID_T) i)
+				break;
+		}
+		ASSERT(idx < MID_TOTAL_NUM);
+		if (idx >= MID_TOTAL_NUM)
+			continue;
 
-        /* Swap target entry and current entry */
-        rTempEntry.eMsgId = arMsgMapTable[idx].eMsgId;
-        rTempEntry.pfMsgHndl= arMsgMapTable[idx].pfMsgHndl;
+		/* Swap target entry and current entry */
+		rTempEntry.eMsgId = arMsgMapTable[idx].eMsgId;
+		rTempEntry.pfMsgHndl = arMsgMapTable[idx].pfMsgHndl;
 
-        arMsgMapTable[idx].eMsgId = arMsgMapTable[i].eMsgId;
-        arMsgMapTable[idx].pfMsgHndl = arMsgMapTable[i].pfMsgHndl;
+		arMsgMapTable[idx].eMsgId = arMsgMapTable[i].eMsgId;
+		arMsgMapTable[idx].pfMsgHndl = arMsgMapTable[i].pfMsgHndl;
 
-        arMsgMapTable[i].eMsgId = rTempEntry.eMsgId;
-        arMsgMapTable[i].pfMsgHndl = rTempEntry.pfMsgHndl;
-    }
+		arMsgMapTable[i].eMsgId = rTempEntry.eMsgId;
+		arMsgMapTable[i].pfMsgHndl = rTempEntry.pfMsgHndl;
+	}
 
-    /* Verify the correctness of final message map */
-    for (i = 0; i < MID_TOTAL_NUM; i++) {
-        ASSERT(arMsgMapTable[i].eMsgId == (ENUM_MSG_ID_T) i);
-        while (arMsgMapTable[i].eMsgId != (ENUM_MSG_ID_T) i);
-    }
+	/* Verify the correctness of final message map */
+	for (i = 0; i < MID_TOTAL_NUM; i++) {
+		ASSERT(arMsgMapTable[i].eMsgId == (ENUM_MSG_ID_T) i);
+		while (arMsgMapTable[i].eMsgId != (ENUM_MSG_ID_T) i)
+			;
+	}
 
 }
 
@@ -649,23 +648,19 @@ mboxInitMsgMap (
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-mboxSetup (
-    IN P_ADAPTER_T prAdapter,
-    IN ENUM_MBOX_ID_T eMboxId
-    )
+VOID mboxSetup(IN P_ADAPTER_T prAdapter, IN ENUM_MBOX_ID_T eMboxId)
 {
-    P_MBOX_T prMbox;
-    KAL_SPIN_LOCK_DECLARATION();
+	P_MBOX_T prMbox;
+	KAL_SPIN_LOCK_DECLARATION();
 
-    ASSERT(eMboxId < MBOX_ID_TOTAL_NUM);
-    ASSERT(prAdapter);
+	ASSERT(eMboxId < MBOX_ID_TOTAL_NUM);
+	ASSERT(prAdapter);
 
-    prMbox = &(prAdapter->arMbox[eMboxId]);
+	prMbox = &(prAdapter->arMbox[eMboxId]);
 
-    KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
-    LINK_INITIALIZE(&prMbox->rLinkHead);
-    KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
+	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
+	LINK_INITIALIZE(&prMbox->rLinkHead);
+	KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -678,41 +673,37 @@ mboxSetup (
 */
 /*----------------------------------------------------------------------------*/
 VOID
-mboxSendMsg (
-    IN P_ADAPTER_T prAdapter,
-    IN ENUM_MBOX_ID_T eMboxId,
-    IN P_MSG_HDR_T prMsg,
-    IN EUNM_MSG_SEND_METHOD_T eMethod
-    )
+mboxSendMsg(IN P_ADAPTER_T prAdapter,
+	    IN ENUM_MBOX_ID_T eMboxId, IN P_MSG_HDR_T prMsg, IN EUNM_MSG_SEND_METHOD_T eMethod)
 {
-    P_MBOX_T    prMbox;
-    KAL_SPIN_LOCK_DECLARATION();
+	P_MBOX_T prMbox;
+	KAL_SPIN_LOCK_DECLARATION();
 
-    ASSERT(eMboxId < MBOX_ID_TOTAL_NUM);
-    ASSERT(prMsg);
-    ASSERT(prAdapter);
+	ASSERT(eMboxId < MBOX_ID_TOTAL_NUM);
+	ASSERT(prMsg);
+	ASSERT(prAdapter);
 
-    prMbox = &(prAdapter->arMbox[eMboxId]);
+	prMbox = &(prAdapter->arMbox[eMboxId]);
 
-    switch (eMethod) {
-    case MSG_SEND_METHOD_BUF:
-        KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
-        LINK_INSERT_TAIL(&prMbox->rLinkHead, &prMsg->rLinkEntry);
-        KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
+	switch (eMethod) {
+	case MSG_SEND_METHOD_BUF:
+		KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
+		LINK_INSERT_TAIL(&prMbox->rLinkHead, &prMsg->rLinkEntry);
+		KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
 
-        // to wake up main service thread
-        GLUE_SET_EVENT(prAdapter->prGlueInfo);
+		/* to wake up main service thread */
+		GLUE_SET_EVENT(prAdapter->prGlueInfo);
 
-        break;
+		break;
 
-    case MSG_SEND_METHOD_UNBUF:
-        MBOX_HNDL_MSG(prAdapter, prMsg);
-        break;
+	case MSG_SEND_METHOD_UNBUF:
+		MBOX_HNDL_MSG(prAdapter, prMsg);
+		break;
 
-    default:
-        ASSERT(0);
-        break;
-    }
+	default:
+		ASSERT(0);
+		break;
+	}
 }
 
 /*----------------------------------------------------------------------------*/
@@ -724,57 +715,25 @@ mboxSendMsg (
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-mboxRcvAllMsg (
-    IN P_ADAPTER_T prAdapter,
-    ENUM_MBOX_ID_T eMboxId
-    )
+VOID mboxRcvAllMsg(IN P_ADAPTER_T prAdapter, ENUM_MBOX_ID_T eMboxId)
 {
-    P_MBOX_T        prMbox;
-    P_MSG_HDR_T     prMsg;
-    KAL_SPIN_LOCK_DECLARATION();
+	P_MBOX_T prMbox;
+	P_MSG_HDR_T prMsg;
+	KAL_SPIN_LOCK_DECLARATION();
 
-    ASSERT(eMboxId < MBOX_ID_TOTAL_NUM);
-    ASSERT(prAdapter);
+	ASSERT(eMboxId < MBOX_ID_TOTAL_NUM);
+	ASSERT(prAdapter);
 
-    prMbox = &(prAdapter->arMbox[eMboxId]);
+	prMbox = &(prAdapter->arMbox[eMboxId]);
 
-    while (!LINK_IS_EMPTY(&prMbox->rLinkHead) ) {
-        KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
-        LINK_REMOVE_HEAD(&prMbox->rLinkHead, prMsg, P_MSG_HDR_T);
-        KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
+	while (!LINK_IS_EMPTY(&prMbox->rLinkHead)) {
+		KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
+		LINK_REMOVE_HEAD(&prMbox->rLinkHead, prMsg, P_MSG_HDR_T);
+		KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
 
-        ASSERT(prMsg);
-        MBOX_HNDL_MSG(prAdapter, prMsg);
-    }
-
-}
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief
-*
-* \param[in]
-*
-* \return none
-*/
-/*----------------------------------------------------------------------------*/
-VOID
-mboxInitialize (
-    IN P_ADAPTER_T prAdapter
-    )
-{
-    UINT_32     i;
-
-    ASSERT(prAdapter);
-
-    /* Initialize Mailbox */
-    mboxInitMsgMap();
-
-    /* Setup/initialize each mailbox */
-    for (i = 0; i < MBOX_ID_TOTAL_NUM; i++) {
-        mboxSetup(prAdapter, i);
-    }
+		ASSERT(prMsg);
+		MBOX_HNDL_MSG(prAdapter, prMsg);
+	}
 
 }
 
@@ -787,30 +746,51 @@ mboxInitialize (
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-mboxDestroy (
-    IN P_ADAPTER_T prAdapter
-    )
+VOID mboxInitialize(IN P_ADAPTER_T prAdapter)
 {
-    P_MBOX_T        prMbox;
-    P_MSG_HDR_T     prMsg;
-    UINT_8          i;
-    KAL_SPIN_LOCK_DECLARATION();
+	UINT_32 i;
 
-    ASSERT(prAdapter);
+	ASSERT(prAdapter);
 
-    for (i = 0; i < MBOX_ID_TOTAL_NUM; i++) {
-        prMbox = &(prAdapter->arMbox[i]);
+	/* Initialize Mailbox */
+	mboxInitMsgMap();
 
-        while (!LINK_IS_EMPTY(&prMbox->rLinkHead) ) {
-            KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
-            LINK_REMOVE_HEAD(&prMbox->rLinkHead, prMsg, P_MSG_HDR_T);
-            KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
+	/* Setup/initialize each mailbox */
+	for (i = 0; i < MBOX_ID_TOTAL_NUM; i++)
+		mboxSetup(prAdapter, i);
 
-            ASSERT(prMsg);
-            cnmMemFree(prAdapter, prMsg);
-        }
-    }
+}
+
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief
+*
+* \param[in]
+*
+* \return none
+*/
+/*----------------------------------------------------------------------------*/
+VOID mboxDestroy(IN P_ADAPTER_T prAdapter)
+{
+	P_MBOX_T prMbox;
+	P_MSG_HDR_T prMsg;
+	UINT_8 i;
+	KAL_SPIN_LOCK_DECLARATION();
+
+	ASSERT(prAdapter);
+
+	for (i = 0; i < MBOX_ID_TOTAL_NUM; i++) {
+		prMbox = &(prAdapter->arMbox[i]);
+
+		while (!LINK_IS_EMPTY(&prMbox->rLinkHead)) {
+			KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
+			LINK_REMOVE_HEAD(&prMbox->rLinkHead, prMsg, P_MSG_HDR_T);
+			KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MAILBOX);
+
+			ASSERT(prMsg);
+			cnmMemFree(prAdapter, prMsg);
+		}
+	}
 }
 
 /*----------------------------------------------------------------------------*/
@@ -822,16 +802,11 @@ mboxDestroy (
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-mboxDummy (
-    IN P_ADAPTER_T prAdapter,
-    IN P_MSG_HDR_T prMsgHdr
-    )
+VOID mboxDummy(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr)
 {
-    ASSERT(prAdapter);
+	ASSERT(prAdapter);
 
-    cnmMemFree(prAdapter, prMsgHdr);
+	cnmMemFree(prAdapter, prMsgHdr);
 
-    return;
+	return;
 }
-

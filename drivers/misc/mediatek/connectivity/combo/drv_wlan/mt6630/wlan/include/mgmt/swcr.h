@@ -1,12 +1,10 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/swcr.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/swcr.h#1
 */
 
 /*! \file   "swcr.h"
     \brief
 */
-
-
 
 /*
  *
@@ -50,22 +48,20 @@
 #define SWCR_CR_NUM 7
 
 #define SWCR_GET_RW_INDEX(action, rw, index) \
-    index = action & 0x7F; \
-    rw = action >> 7;
-
+do { \
+	index = action & 0x7F; \
+	rw = action >> 7; \
+} while (0)
 
 extern UINT_32 g_au4SwCr[];	/*: 0: command other: data */
 
-typedef VOID(*PFN_SWCR_RW_T) (P_ADAPTER_T prAdapter, UINT_8 ucRead, UINT_16 u2Addr,
-			      UINT_32 *pu4Data);
-typedef VOID(*PFN_CMD_RW_T) (P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0,
-			     UINT_8 ucOpt1);
+typedef VOID(*PFN_SWCR_RW_T) (P_ADAPTER_T prAdapter, UINT_8 ucRead, UINT_16 u2Addr, UINT_32 *pu4Data);
+typedef VOID(*PFN_CMD_RW_T) (P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0, UINT_8 ucOpt1);
 
 typedef struct _SWCR_MAP_ENTRY_T {
 	UINT_16 u2Type;
 	PVOID u4Addr;
 } SWCR_MAP_ENTRY_T, *P_SWCR_MAP_ENTRY_T;
-
 
 typedef struct _SWCR_MOD_MAP_ENTRY_T {
 	UINT_8 ucMapNum;
@@ -163,7 +159,6 @@ typedef enum _ENUM_SWCR_DBG_ALL_T {
 ********************************************************************************
 */
 
-
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
@@ -174,26 +169,19 @@ VOID swCrReadWriteCmd(P_ADAPTER_T prAdapter, UINT_8 ucRead, UINT_16 u2Addr, UINT
 /* Debug Support */
 VOID swCrFrameCheckEnable(P_ADAPTER_T prAdapter, UINT_32 u4DumpType);
 VOID swCrDebugInit(P_ADAPTER_T prAdapter);
-VOID swCrDebugCheckEnable(P_ADAPTER_T prAdapter, BOOLEAN fgIsEnable, UINT_8 ucType,
-			  UINT_32 u4Timeout);
+VOID swCrDebugCheckEnable(P_ADAPTER_T prAdapter, BOOLEAN fgIsEnable, UINT_8 ucType, UINT_32 u4Timeout);
 VOID swCrDebugUninit(P_ADAPTER_T prAdapter);
 
-
 #if CFG_SUPPORT_SWCR
-VOID swCtrlCmdCategory0(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0,
-			UINT_8 ucOpt1);
-VOID swCtrlCmdCategory1(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0,
-			UINT_8 ucOpt1);
+VOID swCtrlCmdCategory0(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0, UINT_8 ucOpt1);
+VOID swCtrlCmdCategory1(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0, UINT_8 ucOpt1);
 #if TEST_PS
-VOID testPsCmdCategory0(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0,
-			UINT_8 ucOpt1);
-VOID testPsCmdCategory1(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0,
-			UINT_8 ucOpt1);
+VOID testPsCmdCategory0(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0, UINT_8 ucOpt1);
+VOID testPsCmdCategory1(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0, UINT_8 ucOpt1);
 #endif
 #if CFG_SUPPORT_802_11V
 #if (CFG_SUPPORT_802_11V_TIMING_MEASUREMENT == 1) && (WNM_UNIT_TEST == 1)
-void testWNMCmdCategory0(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0,
-			 UINT_8 ucOpt1);
+void testWNMCmdCategory0(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, UINT_8 ucOpt0, UINT_8 ucOpt1);
 #endif
 #endif
 VOID swCtrlSwCr(P_ADAPTER_T prAdapter, UINT_8 ucRead, UINT_16 u2Addr, UINT_32 *pu4Data);

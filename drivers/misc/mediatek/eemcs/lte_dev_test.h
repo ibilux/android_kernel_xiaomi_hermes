@@ -109,7 +109,7 @@ int sdio_open_device(struct sdio_func *sdiofunc) ;
 
 int sdio_close_device(struct sdio_func *sdiofunc) ;
 
-#ifdef USER_BUILD_KERNEL
+#ifndef CONFIG_MT_ENG_BUILD
 typedef int (*MTLTE_HAL_TO_HIF_CALLBACK)(int data);
 int mtlte_hal_register_MSDC_ERR_callback(MTLTE_HAL_TO_HIF_CALLBACK func_ptr); 
 #endif

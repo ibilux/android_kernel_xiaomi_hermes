@@ -21,13 +21,13 @@
 #define SLTAG "[StorageLogger]"
 #define SLog_MSG(fmt, args...) \
 do {    \
-		printk(KERN_INFO SLTAG""fmt" <- %s(): L<%d>  PID<%s><%d>\n", \
+		pr_debug(SLTAG""fmt" <- %s(): L<%d>  PID<%s><%d>\n", \
 		##args , __func__, __LINE__, current->comm, current->pid); \
 } while (0);
 
 #define STrace_MSG(fmt, args...) \
 do {    \
-		printk(KERN_INFO SLTAG""fmt" in PID<%s><%d>\n", \
+		pr_debug(SLTAG""fmt" in PID<%s><%d>\n", \
 		##args, current->comm, current->pid); \
 } while (0);
 
@@ -189,7 +189,7 @@ enum logger_type {
 	LOGGER_TYPE_END
 };
 
-#ifndef USER_BUILD_KERNEL	/* engineering mode */
+#if defined(CONFIG_MT_ENG_BUILD)	/* engineering mode */
 
 #define CREATE_PROC_ENTRY(proc, x, y, z, o) proc = proc_create(x, y, z, o)
 

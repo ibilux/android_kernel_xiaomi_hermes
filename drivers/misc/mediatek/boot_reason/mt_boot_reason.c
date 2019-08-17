@@ -20,12 +20,12 @@
 #include <linux/of_fdt.h>
 #endif
 #include <asm/setup.h>
-#include <asm/atomic.h>
+#include <linux/atomic.h>
 #include <mach/mt_typedefs.h>
 #include <mach/mt_boot_reason.h>
 
 
-typedef enum {
+enum {
 	BOOT_REASON_UNINIT = 0,
 	BOOT_REASON_INITIALIZING = 1,
 	BOOT_REASON_INITIALIZED = 2,
@@ -33,7 +33,7 @@ typedef enum {
 
 boot_reason_t g_boot_reason __nosavedata = BR_UNKNOWN;
 
-static atomic_t g_br_state  = ATOMIC_INIT(BOOT_REASON_UNINIT);
+static atomic_t g_br_state = ATOMIC_INIT(BOOT_REASON_UNINIT);
 static atomic_t g_br_errcnt = ATOMIC_INIT(0);
 static atomic_t g_br_status = ATOMIC_INIT(0);
 
@@ -47,12 +47,13 @@ static int __init dt_get_boot_reason(unsigned long node, const char *uname, int 
 
 	ptr = (char *)of_get_flat_dt_prop(node, "bootargs", NULL);
 	if (ptr) {
-		if ((br_ptr = strstr(ptr, "boot_reason=")) != 0) {
+		br_ptr = strstr(ptr, "boot_reason=");
+		if (br_ptr != 0) {
 			g_boot_reason = br_ptr[12] - '0';	/* get boot reason */
-            atomic_set(&g_br_status, 1);
-        }
-		else
+			atomic_set(&g_br_status, 1);
+		} else {
 			pr_warn("'boot_reason=' is not found\n");
+		}
 		pr_debug("%s\n", ptr);
 	} else
 		pr_warn("'bootargs' is not found\n");
@@ -68,9 +69,9 @@ void init_boot_reason(unsigned int line)
 #ifdef CONFIG_OF
 	int rc;
 
-	if (BOOT_REASON_INITIALIZING == atomic_read(&g_br_state)) {    
+	if (BOOT_REASON_INITIALIZING == atomic_read(&g_br_state)) {
 		pr_warn("%s (%d) state(%d)\n", __func__, line, atomic_read(&g_br_state));
-        atomic_inc(&g_br_errcnt);
+		atomic_inc(&g_br_errcnt);
 		return;
 	}
 
@@ -79,21 +80,19 @@ void init_boot_reason(unsigned int line)
 	else
 		return;
 
-	if ((BR_UNKNOWN != g_boot_reason)) {
+	if (BR_UNKNOWN != g_boot_reason) {
 		atomic_set(&g_br_state, BOOT_REASON_INITIALIZED);
-        pr_alert("boot_reason = %d\n", g_boot_reason);
+		pr_warn("boot_reason = %d\n", g_boot_reason);
 		return;
-    }
+	}
 
-	pr_info("%s %d %d %d\n", __func__, line, g_boot_reason,
-		atomic_read(&g_br_state));
+	pr_debug("%s %d %d %d\n", __func__, line, g_boot_reason, atomic_read(&g_br_state));
 	rc = of_scan_flat_dt(dt_get_boot_reason, NULL);
 	if (0 != rc)
 		atomic_set(&g_br_state, BOOT_REASON_INITIALIZED);
-	else 
+	else
 		atomic_set(&g_br_state, BOOT_REASON_UNINIT);
-	pr_info("%s %d %d %d\n", __func__, line, g_boot_reason,
-		atomic_read(&g_br_state));
+	pr_debug("%s %d %d %d\n", __func__, line, g_boot_reason, atomic_read(&g_br_state));
 #endif
 }
 
@@ -112,9 +111,8 @@ static int __init boot_reason_core(void)
 
 static int __init boot_reason_init(void)
 {
-    pr_alert("boot_reason = %d, state(%d,%d,%d)", g_boot_reason, 
-             atomic_read(&g_br_state), atomic_read(&g_br_errcnt),
-             atomic_read(&g_br_status));
+	pr_debug("boot_reason = %d, state(%d,%d,%d)", g_boot_reason,
+		 atomic_read(&g_br_state), atomic_read(&g_br_errcnt), atomic_read(&g_br_status));
 	return 0;
 }
 

@@ -56,10 +56,6 @@ MODULE_PARM_DESC(lks, "A device lks parameter under sysfs (0=NL, 1=L, 2=NA)");
 
 void sec_update_lks(unsigned char tr, unsigned char dn, unsigned char fb_ulk)
 {
-//SMSG(true,"[%s] zhaoyang sec_update_lks fb_ulk=%d sec_schip_enabled()=%d sec_boot_enabled()=%d\n",MOD,fb_ulk,sec_schip_enabled(),sec_boot_enabled());
-printk( "[%s] zhaoyang sec_update_lks fb_ulk=%d sec_schip_enabled()=%d sec_boot_enabled()=%d\n",MOD,fb_ulk,sec_schip_enabled(),sec_boot_enabled());
-//SMSG(true,"[%s] zhaoyang sec_update_lks tr=%d dn=%d\n",MOD,tr,dn);
-printk( "[%s] zhaoyang sec_update_lks tr=%d dn=%d\n",MOD,tr,dn);
     if(fb_ulk)//FB
     {
         lks = 0;
@@ -175,13 +171,7 @@ long sec_core_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
                 }
                 
                 cipher_len = get_seccfg_cipher_len();
-//zhaoyang
-//SMSG(true,"[%s] zhaoyang start SEC_SECCFG_ENCRYPT\n",MOD,);
-printk( "[%s] zhaoyang start SEC_SECCFG_ENCRYPT\n",MOD);
                 sec_update_lks(seccfg.v3.sw_sec_lock_try, seccfg.v3.sw_sec_lock_done, seccfg.v3.seccfg_attr == ATTR_DISABLE_IMG_CHECK);
-//zhaoyang
-//SMSG(true,"[%s] zhaoyang end SEC_SECCFG_ENCRYPT\n",MOD,);
-printk( "[%s] zhaoyang end SEC_SECCFG_ENCRYPT\n",MOD);
                 masp_hal_sp_hacc_enc((unsigned char*)&seccfg.v3.image_info,cipher_len,rom_info.m_SEC_CTRL.m_seccfg_ac_en,HACC_USER1,FALSE);
             }
             else
@@ -218,15 +208,7 @@ printk( "[%s] zhaoyang end SEC_SECCFG_ENCRYPT\n",MOD);
                 set_seccfg_ver(SECCFG_V3);
                 cipher_len = get_seccfg_cipher_len();
                 masp_hal_sp_hacc_dec((unsigned char*)&seccfg.v3.image_info,cipher_len,rom_info.m_SEC_CTRL.m_seccfg_ac_en,HACC_USER1,FALSE);
-//zhaoyang
-//SMSG(true,"[%s] zhaoyang start SEC_SECCFG_DECRYPT\n",MOD,);
-printk( "[%s] zhaoyang start SEC_SECCFG_DECRYPT\n",MOD);
-
-
                 sec_update_lks(seccfg.v3.sw_sec_lock_try, seccfg.v3.sw_sec_lock_done, seccfg.v3.seccfg_attr == ATTR_DISABLE_IMG_CHECK);
-//zhaoyang
-//SMSG(true,"[%s] zhaoyang end SEC_SECCFG_DECRYPT\n",MOD,);
-printk( "[%s] zhaoyang end SEC_SECCFG_DECRYPT\n",MOD);
             }
             else
             {

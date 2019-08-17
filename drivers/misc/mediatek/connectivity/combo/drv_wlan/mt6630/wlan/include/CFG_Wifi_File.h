@@ -9,7 +9,6 @@
     enable/disable such switch or adjust numeric parameters.
 */
 
-
 #ifndef _CFG_WIFI_FILE_H
 #define _CFG_WIFI_FILE_H
 
@@ -153,10 +152,8 @@ typedef struct _MT6620_CFG_PARAM_STRUCT {
 	UINT_8 ucEnable5GBand;
 	UINT_8 aucPreTailReserved;
 	UINT_8 aucTailReserved[256 - 8];
-} MT6620_CFG_PARAM_STRUCT, *P_MT6620_CFG_PARAM_STRUCT,
-	WIFI_CFG_PARAM_STRUCT, *P_WIFI_CFG_PARAM_STRUCT;
+} MT6620_CFG_PARAM_STRUCT, *P_MT6620_CFG_PARAM_STRUCT, WIFI_CFG_PARAM_STRUCT, *P_WIFI_CFG_PARAM_STRUCT;
 #else
-
 
 typedef struct _AC_PWR_SETTING_STRUCT {
 	UINT_8 c11AcTxPwr_BPSK;
@@ -210,7 +207,6 @@ typedef struct _NEW_EFUSE_MAPPING2NVRAM_T {
 	UINT_8 ucReverse5[40];
 } NEW_EFUSE_MAPPING2NVRAM_T, *P_NEW_EFUSE_MAPPING2NVRAM_T;
 
-
 typedef struct _MT6620_CFG_PARAM_STRUCT {
 	/* 256 bytes of MP data */
 	UINT_16 u2Part1OwnVersion;
@@ -252,8 +248,7 @@ typedef struct _MT6620_CFG_PARAM_STRUCT {
 	UINT_16 u2FeatureReserved;
 	UINT_8 aucPreTailReserved;
 	UINT_8 aucTailReserved[256 - 15];
-} MT6620_CFG_PARAM_STRUCT, *P_MT6620_CFG_PARAM_STRUCT,
-	WIFI_CFG_PARAM_STRUCT, *P_WIFI_CFG_PARAM_STRUCT;
+} MT6620_CFG_PARAM_STRUCT, *P_MT6620_CFG_PARAM_STRUCT, WIFI_CFG_PARAM_STRUCT, *P_WIFI_CFG_PARAM_STRUCT;
 
 #endif
 /*******************************************************************************
@@ -271,7 +266,6 @@ typedef struct _MT6620_CFG_PARAM_STRUCT {
 #endif
 
 #define CFG_FILE_WIFI_REC_SIZE    sizeof(WIFI_CFG_PARAM_STRUCT)
-
 
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
@@ -294,8 +288,7 @@ static __KAL_INLINE__ VOID nvramOffsetCheck(VOID)
 
 	DATA_STRUC_INSPECTING_ASSERT(sizeof(WIFI_CFG_PARAM_STRUCT) == 512);
 #if CFG_SUPPORT_NVRAM_5G
-	DATA_STRUC_INSPECTING_ASSERT((OFFSET_OF(WIFI_CFG_PARAM_STRUCT, EfuseMapping) & 0x0001) ==
-				     0);
+	DATA_STRUC_INSPECTING_ASSERT((OFFSET_OF(WIFI_CFG_PARAM_STRUCT, EfuseMapping) & 0x0001) == 0);
 #else
 	DATA_STRUC_INSPECTING_ASSERT((OFFSET_OF(WIFI_CFG_PARAM_STRUCT, aucEFUSE) & 0x0001) == 0);
 #endif
@@ -304,4 +297,4 @@ static __KAL_INLINE__ VOID nvramOffsetCheck(VOID)
 }
 #endif
 
-#endif				/* _CFG_WIFI_FILE_H */
+#endif /* _CFG_WIFI_FILE_H */

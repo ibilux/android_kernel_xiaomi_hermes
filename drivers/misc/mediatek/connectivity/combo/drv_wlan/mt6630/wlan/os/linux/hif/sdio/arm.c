@@ -9,10 +9,8 @@
 *    Copyright (C) 2010 MediaTek Incorporation. All Rights Reserved.
 ******************************************************************************/
 
-
-
 /*
-** $Log: mt6516-evb.c $
+** Log: mt6516-evb.c
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development

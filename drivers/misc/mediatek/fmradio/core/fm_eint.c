@@ -20,7 +20,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6630_FM))
+#if (defined(MT6620_FM) || defined(MT6628_FM) || defined(MT6627_FM) || defined(MT6580_FM) || defined(MT6630_FM))
 #include "osal_typedef.h"
 #include "stp_exp.h"
 #include "wmt_exp.h"
@@ -42,7 +42,7 @@ fm_s32 fm_disable_eint(void)
 
 fm_s32 fm_request_eint(void (*parser) (void))
 {
-	WCN_DBG(FM_NTC | EINT, "%s\n", __func__);
+	WCN_DBG(FM_DBG | EINT, "%s\n", __func__);
 
 	mtk_wcn_stp_register_event_cb(FM_TASK_INDX, parser);
 

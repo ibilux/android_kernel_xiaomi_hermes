@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/mt6630_reg.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/mt6630_reg.h#1
 */
 
 /*! \file   "mt6630_reg.h"
@@ -8,9 +8,8 @@
     N/A
 */
 
-
 /*
-** $Log: mt6630_reg.h $
+** Log: mt6630_reg.h
 **
 ** 07 23 2013 cp.wu
 ** [BORA00002227] [MT6630 Wi-Fi][Driver] Update for Makefile and HIFSYS modifications
@@ -50,7 +49,6 @@
 *                             D A T A   T Y P E S
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -207,7 +205,6 @@
 /* 4 WLAN TXQ Count Register 7 */
 #define MCR_WTQCR7                          0x014C
 
-
 /* #if CFG_SDIO_INTR_ENHANCE */
 typedef struct _ENHANCE_MODE_DATA_STRUCT_T {
 	UINT_32 u4WHISR;
@@ -244,8 +241,7 @@ typedef struct _ENHANCE_MODE_DATA_STRUCT_T {
 	UINT_32 u4RcvMailbox0;
 	UINT_32 u4RcvMailbox1;
 } ENHANCE_MODE_DATA_STRUCT_T, *P_ENHANCE_MODE_DATA_STRUCT_T;
-/* #endif */ /* ENHANCE_MODE_DATA_STRUCT_T */
-
+			 /* #endif *//* ENHANCE_MODE_DATA_STRUCT_T */
 
 /* 2 Definition in each register */
 /* 3 WCIR 0x0000 */
@@ -289,7 +285,6 @@ typedef struct _ENHANCE_MODE_DATA_STRUCT_T {
 #define WHISR_RX0_DONE_INT              BIT(1)
 #define WHISR_TX_DONE_INT               BIT(0)
 
-
 /* 3 WHIER 0x0014 */
 #define WHIER_D2H_SW_INT                BITS(8, 31)
 #define WHIER_FW_OWN_BACK_INT_EN        BIT(7)
@@ -304,22 +299,18 @@ typedef struct _ENHANCE_MODE_DATA_STRUCT_T {
 					 WHIER_D2H_SW_INT           \
 					 )
 
-
 /* 3 WASR 0x0020 */
 #define WASR_FW_OWN_INVALID_ACCESS      BIT(16)
 #define WASR_RX1_UNDER_FLOW             BIT(9)
 #define WASR_RX0_UNDER_FLOW             BIT(8)
 #define WASR_TX1_OVER_FLOW              BIT(1)
 
-
 /* 3 WSICR 0x0024 */
 #define WSICR_H2D_SW_INT_SET            BITS(16, 31)
-
 
 /* 3 WRPLR 0x0090 */
 #define WRPLR_RX1_PACKET_LENGTH         BITS(16, 31)
 #define WRPLR_RX0_PACKET_LENGTH         BITS(0, 15)
-
 
 /* 3 WTMCR 0x00b4 */
 #define WMTCR_TEST_MODE_FW_OWN          BIT(24)
@@ -327,5 +318,4 @@ typedef struct _ENHANCE_MODE_DATA_STRUCT_T {
 #define WMTCR_TEST_MODE_STATUS          BIT(8)
 #define WMTCR_TEST_MODE_SELECT          BITS(0, 1)
 
-
-#endif				/* _MT6628_REG_H */
+#endif /* _MT6628_REG_H */

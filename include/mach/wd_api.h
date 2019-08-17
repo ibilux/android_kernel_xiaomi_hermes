@@ -57,4 +57,9 @@ struct wd_api {
 
 int wd_api_init(void);
 int get_wd_api(struct wd_api **obj);
+
+extern void wk_cpu_update_bit_flag(int cpu, int plug_status);
+extern unsigned int get_check_bit(void);
+extern unsigned int get_kick_bit(void);
+
 #endif				/* _MT_WD_API_H_ */

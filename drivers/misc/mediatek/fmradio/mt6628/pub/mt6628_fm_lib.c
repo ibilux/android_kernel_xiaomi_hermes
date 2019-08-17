@@ -94,7 +94,6 @@ static fm_s32 mt6628_pwron(fm_s32 data)
 	}
 }
 
-
 static fm_s32 mt6628_pwroff(fm_s32 data)
 {
 	if (MTK_WCN_BOOL_FALSE == mtk_wcn_wmt_func_off(WMTDRV_TYPE_FM)) {
@@ -136,9 +135,7 @@ static fm_s32 mt6628_read(fm_u8 addr, fm_u16 *val)
 	if (FM_LOCK(cmd_buf_lock))
 		return (-FM_ELOCK);
 	pkt_size = mt6628_get_reg(cmd_buf, TX_BUF_SIZE, addr);
-	ret =
-	    fm_cmd_tx(cmd_buf, pkt_size, FLAG_FSPI_RD, SW_RETRY_CNT, FSPI_RD_TIMEOUT,
-		      mt6628_get_read_result);
+	ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_FSPI_RD, SW_RETRY_CNT, FSPI_RD_TIMEOUT, mt6628_get_read_result);
 
 	if (!ret && res) {
 		*val = res->fspi_rd;
@@ -218,7 +215,6 @@ static fm_s32 mt6628_GetAntennaType(void)
 		return FM_ANA_LONG;	/* long antenna */
 }
 
-
 static fm_s32 mt6628_Mute(fm_bool mute)
 {
 	fm_s32 ret = 0;
@@ -235,7 +231,6 @@ static fm_s32 mt6628_Mute(fm_bool mute)
 
 	return ret;
 }
-
 
 /*static fm_s32 mt6628_set_RSSITh(fm_u16 TH_long, fm_u16 TH_short)
 {
@@ -345,7 +340,6 @@ static fm_s32 mt6628_get_patch_path(fm_s32 ver, const fm_s8 **ppath)
 		}
 	}
 
-
 	/* the ROM version isn't defined, find a latest patch instead */
 	for (i = max; i > 0; i--) {
 		if (fm_file_exist(mt6628_patch_tbl[i - 1].patch) == 0) {
@@ -359,7 +353,6 @@ static fm_s32 mt6628_get_patch_path(fm_s32 ver, const fm_s8 **ppath)
 	WCN_DBG(FM_ERR | CHIP, "No valid patch file\n");
 	return -FM_EPATCH;
 }
-
 
 static fm_s32 mt6628_get_coeff_path(fm_s32 ver, const fm_s8 **ppath)
 {
@@ -376,7 +369,6 @@ static fm_s32 mt6628_get_coeff_path(fm_s32 ver, const fm_s8 **ppath)
 		}
 	}
 
-
 	/* the ROM version isn't defined, find a latest patch instead */
 	for (i = max; i > 0; i--) {
 		if (fm_file_exist(mt6628_patch_tbl[i - 1].coeff) == 0) {
@@ -390,7 +382,6 @@ static fm_s32 mt6628_get_coeff_path(fm_s32 ver, const fm_s8 **ppath)
 	WCN_DBG(FM_ERR | CHIP, "No valid coeff file\n");
 	return -FM_EPATCH;
 }
-
 
 /*
 *  mt6628_DspPatch - DSP download procedure
@@ -427,8 +418,7 @@ static fm_s32 mt6628_DspPatch(const fm_u8 *img, fm_s32 len, enum IMG_TYPE type)
 			    mt6628_rom_download(cmd_buf, TX_BUF_SIZE, seg_num, seg_id,
 						&img[seg_id * PATCH_SEG_LEN], seg_len);
 			WCN_DBG(FM_NTC | CHIP, "pkt_size:%d\n", (fm_s32) pkt_size);
-			ret =
-			    fm_cmd_tx(cmd_buf, pkt_size, FLAG_ROM, SW_RETRY_CNT, ROM_TIMEOUT, NULL);
+			ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_ROM, SW_RETRY_CNT, ROM_TIMEOUT, NULL);
 			FM_UNLOCK(cmd_buf_lock);
 
 			if (ret) {
@@ -442,17 +432,14 @@ static fm_s32 mt6628_DspPatch(const fm_u8 *img, fm_s32 len, enum IMG_TYPE type)
 
 		for (seg_id = 0; seg_id < seg_num; seg_id++) {
 			seg_len = ((seg_id + 1) < seg_num) ? PATCH_SEG_LEN : (len % PATCH_SEG_LEN);
-			WCN_DBG(FM_NTC | CHIP, "patch,[seg_id:%d],  [seg_len:%d]\n", seg_id,
-				seg_len);
+			WCN_DBG(FM_NTC | CHIP, "patch,[seg_id:%d],  [seg_len:%d]\n", seg_id, seg_len);
 			if (FM_LOCK(cmd_buf_lock))
 				return (-FM_ELOCK);
 			pkt_size =
 			    mt6628_patch_download(cmd_buf, TX_BUF_SIZE, seg_num, seg_id,
 						  &img[seg_id * PATCH_SEG_LEN], seg_len);
 			WCN_DBG(FM_NTC | CHIP, "pkt_size:%d\n", (fm_s32) pkt_size);
-			ret =
-			    fm_cmd_tx(cmd_buf, pkt_size, FLAG_PATCH, SW_RETRY_CNT, PATCH_TIMEOUT,
-				      NULL);
+			ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_PATCH, SW_RETRY_CNT, PATCH_TIMEOUT, NULL);
 			FM_UNLOCK(cmd_buf_lock);
 
 			if (ret) {
@@ -466,17 +453,14 @@ static fm_s32 mt6628_DspPatch(const fm_u8 *img, fm_s32 len, enum IMG_TYPE type)
 
 		for (seg_id = 0; seg_id < seg_num; seg_id++) {
 			seg_len = ((seg_id + 1) < seg_num) ? PATCH_SEG_LEN : (len % PATCH_SEG_LEN);
-			WCN_DBG(FM_NTC | CHIP, "hwcoeff,[seg_id:%d],  [seg_len:%d]\n", seg_id,
-				seg_len);
+			WCN_DBG(FM_NTC | CHIP, "hwcoeff,[seg_id:%d],  [seg_len:%d]\n", seg_id, seg_len);
 			if (FM_LOCK(cmd_buf_lock))
 				return (-FM_ELOCK);
 			pkt_size =
 			    mt6628_hwcoeff_download(cmd_buf, TX_BUF_SIZE, seg_num, seg_id,
 						    &img[seg_id * PATCH_SEG_LEN], seg_len);
 			WCN_DBG(FM_NTC | CHIP, "pkt_size:%d\n", (fm_s32) pkt_size);
-			ret =
-			    fm_cmd_tx(cmd_buf, pkt_size, FLAG_HWCOEFF, SW_RETRY_CNT,
-				      HWCOEFF_TIMEOUT, NULL);
+			ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_HWCOEFF, SW_RETRY_CNT, HWCOEFF_TIMEOUT, NULL);
 			FM_UNLOCK(cmd_buf_lock);
 
 			if (ret) {
@@ -490,17 +474,14 @@ static fm_s32 mt6628_DspPatch(const fm_u8 *img, fm_s32 len, enum IMG_TYPE type)
 
 		for (seg_id = 0; seg_id < seg_num; seg_id++) {
 			seg_len = ((seg_id + 1) < seg_num) ? PATCH_SEG_LEN : (len % PATCH_SEG_LEN);
-			WCN_DBG(FM_NTC | CHIP, "coeff,[seg_id:%d],  [seg_len:%d]\n", seg_id,
-				seg_len);
+			WCN_DBG(FM_NTC | CHIP, "coeff,[seg_id:%d],  [seg_len:%d]\n", seg_id, seg_len);
 			if (FM_LOCK(cmd_buf_lock))
 				return (-FM_ELOCK);
 			pkt_size =
 			    mt6628_coeff_download(cmd_buf, TX_BUF_SIZE, seg_num, seg_id,
 						  &img[seg_id * PATCH_SEG_LEN], seg_len);
 			WCN_DBG(FM_NTC | CHIP, "pkt_size:%d\n", (fm_s32) pkt_size);
-			ret =
-			    fm_cmd_tx(cmd_buf, pkt_size, FLAG_COEFF, SW_RETRY_CNT, COEFF_TIMEOUT,
-				      NULL);
+			ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_COEFF, SW_RETRY_CNT, COEFF_TIMEOUT, NULL);
 			FM_UNLOCK(cmd_buf_lock);
 
 			if (ret) {
@@ -516,7 +497,6 @@ static fm_s32 mt6628_DspPatch(const fm_u8 *img, fm_s32 len, enum IMG_TYPE type)
 
 	return 0;
 }
-
 
 static fm_s32 mt6628_PowerUp(fm_u16 *chip_id, fm_u16 *device_id)
 {
@@ -580,7 +560,6 @@ static fm_s32 mt6628_PowerUp(fm_u16 *chip_id, fm_u16 *device_id)
 	} else {
 		WCN_DBG(FM_ERR | CHIP, "get ROM version failed\n");
 	}
-
 
 	/* Wholechip FM Power Up: step 3, download patch */
 	if (!(dsp_buf = fm_vmalloc(PATCH_BUF_SIZE))) {
@@ -682,7 +661,6 @@ static fm_bool mt6628_SetFreq(fm_u16 freq)
 
 	fm_cb_op->cur_freq_set(freq);
 
-
 	/* MCU clock adjust if need */
 	if ((ret = mt6628_mcu_dese(freq, NULL)) < 0) {
 		WCN_DBG(FM_ERR | MAIN, "mt6628_mcu_dese FAIL:%d\n", ret);
@@ -706,9 +684,7 @@ static fm_bool mt6628_SetFreq(fm_u16 freq)
 /* } */
 
 	pkt_size = mt6628_tune(cmd_buf, TX_BUF_SIZE, freq, chan_para);
-	ret =
-	    fm_cmd_tx(cmd_buf, pkt_size, FLAG_TUNE | FLAG_TUNE_DONE, SW_RETRY_CNT, TUNE_TIMEOUT,
-		      NULL);
+	ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_TUNE | FLAG_TUNE_DONE, SW_RETRY_CNT, TUNE_TIMEOUT, NULL);
 	FM_UNLOCK(cmd_buf_lock);
 
 	if (ret) {
@@ -727,7 +703,6 @@ static fm_bool mt6628_SetFreq(fm_u16 freq)
 	return fm_true;
 }
 
-
 /*
 * mt6628_Seek
 * @pFreq - IN/OUT parm, IN start freq/OUT seek valid freq
@@ -735,8 +710,7 @@ static fm_bool mt6628_SetFreq(fm_u16 freq)
 * @space - 1:50KHz, 2:100KHz, 4:200KHz
 * return fm_true:seek success; fm_false:seek failed
 */
-static fm_bool mt6628_Seek(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u16 seekdir,
-			   fm_u16 space)
+static fm_bool mt6628_Seek(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u16 seekdir, fm_u16 space)
 {
 	fm_s32 ret = 0;
 	fm_u16 pkt_size, temp;
@@ -781,8 +755,7 @@ static fm_s32 mt6628_full_cqi_get(fm_s32 min_freq, fm_s32 max_freq, fm_s32 space
 	fm_s32 i, j, k;
 	fm_s32 space_val, max, min, num;
 	struct mt6628_full_cqi *p_cqi;
-	fm_u8 *cqi_log_title =
-	    "Freq, RSSI, PAMD, PR, FPAMD, MR, ATDC, PRX, ATDEV, SMGain, DltaRSSI\n";
+	fm_u8 *cqi_log_title = "Freq, RSSI, PAMD, PR, FPAMD, MR, ATDC, PRX, ATDEV, SMGain, DltaRSSI\n";
 	fm_u8 cqi_log_buf[100] = { 0 };
 	fm_s32 pos;
 	fm_u8 cqi_log_path[100] = { 0 };
@@ -850,8 +823,7 @@ static fm_s32 mt6628_full_cqi_get(fm_s32 min_freq, fm_s32 max_freq, fm_s32 space
 						p_cqi[i].atdc, p_cqi[i].prx, p_cqi[i].atdev,
 						p_cqi[i].smg, p_cqi[i].drssi);
 					/* write back to log file */
-					fm_file_write(cqi_log_path, cqi_log_buf,
-						      strlen(cqi_log_buf), &pos);
+					fm_file_write(cqi_log_path, cqi_log_buf, strlen(cqi_log_buf), &pos);
 				}
 			} else {
 				WCN_DBG(FM_ALT | CHIP, "smt get CQI failed\n");
@@ -865,7 +837,6 @@ static fm_s32 mt6628_full_cqi_get(fm_s32 min_freq, fm_s32 max_freq, fm_s32 space
 
 	return ret;
 }
-
 
 static fm_bool mt6628_Scan(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq, fm_u16 *pScanTBL,
 			   fm_u16 *ScanTBLsize, fm_u16 scandir, fm_u16 space)
@@ -981,8 +952,7 @@ static fm_bool scan_abort = fm_false;
 static fm_s8 raw_buf[16 * sizeof(struct adapt_fm_cqi)] = { 0 };
 
 static fm_bool mt6628_Scan_50KHz(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq,
-				 fm_u16 *pScanTBL, fm_u16 *ScanTBLsize, fm_u16 scandir,
-				 fm_u16 space)
+				 fm_u16 *pScanTBL, fm_u16 *ScanTBLsize, fm_u16 scandir, fm_u16 space)
 {
 	fm_s32 ret = 0;
 	fm_s32 num;
@@ -1023,9 +993,7 @@ static fm_bool mt6628_Scan_50KHz(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq
 			return fm_false;
 		}
 
-		if (fm_false ==
-		    mt6628_Scan(start_freq, end_freq, pFreq, scan_tbl, ScanTBLsize, scandir,
-				space)) {
+		if (fm_false == mt6628_Scan(start_freq, end_freq, pFreq, scan_tbl, ScanTBLsize, scandir, space)) {
 			return fm_false;
 		}
 		/* get channel count */
@@ -1035,8 +1003,7 @@ static fm_bool mt6628_Scan_50KHz(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq
 			for (step = 0; step < 16; step++) {
 				if (scan_tbl[ch_offset] & (1 << step)) {
 					tmp_val = start_freq + (ch_offset * 16 + step) * space_val;
-					WCN_DBG(FM_NTC | CHIP, "freq %d, end freq %d\n", tmp_val,
-						end_freq);
+					WCN_DBG(FM_NTC | CHIP, "freq %d, end freq %d\n", tmp_val, end_freq);
 					if (tmp_val <= end_freq) {
 						chl_cnt++;
 						/* set reult bitmap */
@@ -1062,8 +1029,7 @@ static fm_bool mt6628_Scan_50KHz(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq
 			for (j = 0; j < sizeof(raw_buf) / sizeof(struct adapt_fm_cqi); j++) {
 				if ((pCQI[j].ch >= start_freq) && (pCQI[j].ch <= end_freq)) {
 					FM_FIFO_INPUT(cqi_fifo, pCQI + j);
-					WCN_DBG(FM_NTC | CHIP, "%d %d(dbm) add to fifo\n",
-						pCQI[j].ch, pCQI[j].rssi);
+					WCN_DBG(FM_NTC | CHIP, "%d %d(dbm) add to fifo\n", pCQI[j].ch, pCQI[j].rssi);
 				}
 			}
 
@@ -1073,7 +1039,6 @@ static fm_bool mt6628_Scan_50KHz(fm_u16 min_freq, fm_u16 max_freq, fm_u16 *pFreq
 
 	return fm_true;
 }
-
 
 static fm_s32 mt6628_CQI_Get_50KHz(fm_s8 *buf, fm_s32 buf_len)
 {
@@ -1085,13 +1050,11 @@ static fm_s32 mt6628_CQI_Get_50KHz(fm_s8 *buf, fm_s32 buf_len)
 	};
 	struct adapt_fm_cqi *pcqi = (struct adapt_fm_cqi *)buf;
 
-
 	if (!buf || buf_len < FM_CQI_BUF_SIZE) {
 		return -FM_EBUF;
 	}
 
-	for (i = 0; ((i < (buf_len / sizeof(struct adapt_fm_cqi))) &&
-		     (fm_false == FM_FIFO_IS_EMPTY(cqi_fifo))); i++) {
+	for (i = 0; ((i < (buf_len / sizeof(struct adapt_fm_cqi))) && (fm_false == FM_FIFO_IS_EMPTY(cqi_fifo))); i++) {
 		FM_FIFO_OUTPUT(cqi_fifo, &tmp);
 		pcqi[i].ch = tmp.ch;
 		pcqi[i].rssi = tmp.rssi;
@@ -1101,8 +1064,7 @@ static fm_s32 mt6628_CQI_Get_50KHz(fm_s8 *buf, fm_s32 buf_len)
 	return ret;
 }
 
-#endif				/* CONFIG_MTK_FM_50KHZ_SUPPORT */
-
+#endif /* CONFIG_MTK_FM_50KHZ_SUPPORT */
 
 /*
  * mt6628_GetCurRSSI - get current freq's RSSI value
@@ -1291,7 +1253,6 @@ static fm_s32 mt6628_SeekStop(void)
 	return fm_force_active_event(FLAG_SEEK_DONE);
 }
 
-
 /*
  * mt6628_I2s_Setting - set the I2S state on MT6628
  * @onoff - I2S on/off
@@ -1355,9 +1316,8 @@ static fm_s32 mt6628_I2s_Setting(fm_s32 onoff, fm_s32 mode, fm_s32 sample)
 		goto out;
 
 	WCN_DBG(FM_NTC | CHIP, "[onoff=%s][mode=%s][sample=%d](0)33KHz,(1)44.1KHz,(2)48KHz\n",
-		(onoff == FM_I2S_ON) ? "On" : "Off",
-		(mode == FM_I2S_MASTER) ? "Master" : "Slave", sample);
- out:
+		(onoff == FM_I2S_ON) ? "On" : "Off", (mode == FM_I2S_MASTER) ? "Master" : "Slave", sample);
+out:
 	return ret;
 }
 
@@ -1379,7 +1339,6 @@ static fm_s32 mt6628_i2s_info_get(fm_s32 *ponoff, fm_s32 *pmode, fm_s32 *psample
 
 	return 0;
 }
-
 
 static fm_s32 mt6628_hw_info_get(struct fm_hw_info *req)
 {
@@ -1424,9 +1383,7 @@ static fm_s32 mt6628_soft_mute_tune(fm_u16 freq, fm_s32 *rssi, fm_bool *valid)
 	if (FM_LOCK(cmd_buf_lock))
 		return (-FM_ELOCK);
 	pkt_size = mt6628_full_cqi_req(cmd_buf, TX_BUF_SIZE, &freq, 1, 1);
-	ret =
-	    fm_cmd_tx(cmd_buf, pkt_size, FLAG_SM_TUNE, SW_RETRY_CNT, SM_TUNE_TIMEOUT,
-		      mt6628_get_read_result);
+	ret = fm_cmd_tx(cmd_buf, pkt_size, FLAG_SM_TUNE, SW_RETRY_CNT, SM_TUNE_TIMEOUT, mt6628_get_read_result);
 	FM_UNLOCK(cmd_buf_lock);
 
 	if (!ret && res) {
@@ -1437,14 +1394,9 @@ static fm_s32 mt6628_soft_mute_tune(fm_u16 freq, fm_s32 *rssi, fm_bool *valid)
 			"freq %d, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x, 0x%04x\n",
 			p_cqi->ch, p_cqi->rssi, p_cqi->pamd, p_cqi->pr, p_cqi->fpamd, p_cqi->mr,
 			p_cqi->atdc, p_cqi->prx, p_cqi->atdev, p_cqi->smg, p_cqi->drssi);
-		RSSI =
-		    ((p_cqi->rssi & 0x03FF) >=
-		     512) ? ((p_cqi->rssi & 0x03FF) - 1024) : (p_cqi->rssi & 0x03FF);
-		PAMD =
-		    ((p_cqi->pamd & 0x1FF) >=
-		     256) ? ((p_cqi->pamd & 0x01FF) - 512) : (p_cqi->pamd & 0x01FF);
-		MR = ((p_cqi->mr & 0x01FF) >=
-		      256) ? ((p_cqi->mr & 0x01FF) - 512) : (p_cqi->mr & 0x01FF);
+		RSSI = ((p_cqi->rssi & 0x03FF) >= 512) ? ((p_cqi->rssi & 0x03FF) - 1024) : (p_cqi->rssi & 0x03FF);
+		PAMD = ((p_cqi->pamd & 0x1FF) >= 256) ? ((p_cqi->pamd & 0x01FF) - 512) : (p_cqi->pamd & 0x01FF);
+		MR = ((p_cqi->mr & 0x01FF) >= 256) ? ((p_cqi->mr & 0x01FF) - 512) : (p_cqi->mr & 0x01FF);
 		ATDC = (p_cqi->atdc >= 32768) ? (65536 - p_cqi->atdc) : (p_cqi->atdc);
 		if (ATDC < 0) {
 			ATDC = (~(ATDC)) - 1;	/* Get abs value of ATDC */
@@ -1673,7 +1625,6 @@ static const fm_s8 mt6628_chan_para_map[] = {
 	0			/* 10800 */
 };
 
-
 static const fm_u16 mt6628_scan_dese_list[] = {
 	7680, 8210, 8450, 9210, 9220, 9600, 9840, 10400, 10750, 10760
 };
@@ -1708,12 +1659,10 @@ static fm_s32 mt6628_desense_check(fm_u16 freq, fm_s32 rssi)
 		if (rssi < mt6628_fm_config.rx_cfg.desene_rssi_th) {
 			return 1;
 		}
-		WCN_DBG(FM_DBG | CHIP, "desen_rssi %d th:%d\n", rssi,
-			mt6628_fm_config.rx_cfg.desene_rssi_th);
+		WCN_DBG(FM_DBG | CHIP, "desen_rssi %d th:%d\n", rssi, mt6628_fm_config.rx_cfg.desene_rssi_th);
 	}
 	return 0;
 }
-
 
 /* return value: 0, mcu dese disable; 1, enable; else error no */
 static fm_s32 mt6628_mcu_dese(fm_u16 freq, void *arg)
@@ -1753,8 +1702,6 @@ static fm_s32 mt6628_mcu_dese(fm_u16 freq, void *arg)
 	}
 }
 
-
-
 /* return value: 0,mcu dese disable; 1, enable; else error no */
 static fm_s32 mt6628_gps_dese(fm_u16 freq, void *arg)
 {
@@ -1792,7 +1739,6 @@ static fm_s32 mt6628_gps_dese(fm_u16 freq, void *arg)
 		return 1;
 	}
 }
-
 
 /* get channel parameter, HL side/ FA / ATJ */
 static fm_u16 mt6628_chan_para_get(fm_u16 freq)

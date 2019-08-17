@@ -28,22 +28,11 @@
 #include <board-custom.h>
 #include <linux/seq_file.h>
 
-#include "mach/mt_fhreg.h"
+#include "mt_fhreg.h"
 
 #include <linux/xlog.h> //ccyeh: for 6572
 
-#if 0 //ccyeh: we don't need these header files here.
-#include "mach/mt_clkmgr.h"
-#include "mach/mt_typedefs.h"
-#include "mach/mt_gpio.h"
-#include "mach/mt_gpufreq.h"
-#include "mach/mt_cpufreq.h"
-#include "mach/emi_bwl.h"
-#include "mach/sync_write.h"
-#include "mach/mt_sleep.h"
-#endif
-
-#include <mach/mt_freqhopping_drv.h>
+#include "mt_freqhopping_drv.h"
 
 
 #define FREQ_HOPPING_DEVICE "mt-freqhopping"
@@ -582,39 +571,45 @@ static int freqhopping_userdefine_proc_open(struct inode *inode, struct file *fi
 }
 
 static const struct file_operations freqhopping_debug_fops = {
-	.owner		= THIS_MODULE,
+	.owner      = THIS_MODULE,
 	.open       = freqhopping_debug_proc_open,
 	.read       = seq_read,
 	.write      = freqhopping_debug_proc_write,
+	.release    = single_release,
 };
 static const struct file_operations dramc_fops = {
-	.owner		= THIS_MODULE,
+	.owner      = THIS_MODULE,
 	.open       = freqhopping_dramc_proc_open,
 	.read       = seq_read,
 	.write      = freqhopping_dramc_proc_write,
+	.release    = single_release,
 };
 static const struct file_operations dvfs_fops = {
-	.owner		= THIS_MODULE,
+	.owner      = THIS_MODULE,
 	.open       = freqhopping_dvfs_proc_open,
 	.read       = seq_read,
 	.write      = freqhopping_dvfs_proc_write,
+	.release    = single_release,
 };
 static const struct file_operations dumpregs_fops = {
-	.owner		= THIS_MODULE,
+	.owner      = THIS_MODULE,
 	.open       = freqhopping_dumpregs_proc_open,
 	.read       = seq_read,
+	.release    = single_release,
 };
 static const struct file_operations status_fops = {
-	.owner			= THIS_MODULE,
-	.open				=	freqhopping_status_proc_open,
+	.owner      = THIS_MODULE,
+	.open       = freqhopping_status_proc_open,
 	.read       = seq_read,
 	.write      = freqhopping_status_proc_write,
+	.release    = single_release,
 };
 static const struct file_operations userdef_fops = {
-	.owner		= THIS_MODULE,
+	.owner      = THIS_MODULE,
 	.open       = freqhopping_userdefine_proc_open,
 	.read       = seq_read,
 	.write      = freqhopping_userdefine_proc_write,
+	.release    = single_release,
 };
 
 static int freqhopping_debug_proc_init(void)
@@ -654,16 +649,16 @@ static int freqhopping_debug_proc_init(void)
 
 		/* /proc/freqhopping/dramc */
 		//prDramcEntry = create_proc_entry("dramc",  S_IRUGO | S_IWUSR | S_IWGRP, fh_proc_dir);
-		prDramcEntry = proc_create("dramc",  S_IRUGO | S_IWUSR | S_IWGRP, fh_proc_dir, &dramc_fops);
-		if(prDramcEntry)
-		{
+		//prDramcEntry = proc_create("dramc",  S_IRUGO | S_IWUSR | S_IWGRP, fh_proc_dir, &dramc_fops);
+		//if(prDramcEntry)
+		//{
 			//prDramcEntry->read_proc  = g_p_fh_hal_drv->proc.dramc_read;
 			//prDramcEntry->write_proc = g_p_fh_hal_drv->proc.dramc_write;
-			FH_MSG("[%s]: successfully create /proc/freqhopping/prDramcEntry", __func__);
-		}else{
-			FH_MSG("[%s]: failed to create /proc/freqhopping/prDramcEntry", __func__);
-			return 1;
-		}
+		//	FH_MSG("[%s]: successfully create /proc/freqhopping/prDramcEntry", __func__);
+		//}else{
+		//	FH_MSG("[%s]: failed to create /proc/freqhopping/prDramcEntry", __func__);
+		//	return 1;
+		//}
 		/* /proc/freqhopping/dvfs */
 		//prDramcEntry = create_proc_entry("dvfs",  S_IRUGO | S_IWUSR | S_IWGRP, fh_proc_dir);
 		prDramcEntry = proc_create("dvfs",  S_IRUGO | S_IWUSR | S_IWGRP, fh_proc_dir, &dvfs_fops);
@@ -737,6 +732,59 @@ static int freqhopping_debug_proc_init(void)
 	return 0 ;
 }
 
+#if defined(DISABLE_FREQ_HOPPING)
+		void mt_fh_popod_save(void){}
+		EXPORT_SYMBOL(mt_fh_popod_save);
+		
+		void mt_fh_popod_restore(void){}
+		EXPORT_SYMBOL(mt_fh_popod_restore);
+		
+		int freqhopping_config(unsigned int pll_id, unsigned long vco_freq, unsigned int enable){return 0;}
+		EXPORT_SYMBOL(freqhopping_config);
+		
+		int mt_l2h_mempll(void){return 0;}
+		EXPORT_SYMBOL(mt_l2h_mempll);
+		
+		int mt_h2l_mempll(void){return 0;}
+		EXPORT_SYMBOL(mt_h2l_mempll);
+		
+		int mt_dfs_armpll(unsigned int current_freq, unsigned int target_dds){return 0;}
+		EXPORT_SYMBOL(mt_dfs_armpll);
+		
+		int mt_dfs_mmpll(unsigned int target_dds){	return 0;}
+		EXPORT_SYMBOL(mt_dfs_mmpll);
+		
+		int mt_dfs_vencpll(unsigned int target_dds){return 0;}
+		EXPORT_SYMBOL(mt_dfs_vencpll);
+		
+		int mt_dfs_mpll(unsigned int target_dds){return 0;}
+		EXPORT_SYMBOL(mt_dfs_mpll);
+		
+		int mt_is_support_DFS_mode(void){return 0;}
+		EXPORT_SYMBOL(mt_is_support_DFS_mode);
+		
+		int mt_l2h_dvfs_mempll(void){return 0;}
+		EXPORT_SYMBOL(mt_l2h_dvfs_mempll);
+		
+		int mt_h2l_dvfs_mempll(void){return 0;}
+		EXPORT_SYMBOL(mt_h2l_dvfs_mempll);
+		
+		int mt_fh_dram_overclock(int clk){return 0;}
+		EXPORT_SYMBOL(mt_fh_dram_overclock);
+		
+		int mt_fh_get_dramc(void){return 0;}
+		EXPORT_SYMBOL(mt_fh_get_dramc);
+		
+		void mt_freqhopping_init(void){}
+		EXPORT_SYMBOL(mt_freqhopping_init);
+		
+		void mt_freqhopping_pll_init(void){}
+		EXPORT_SYMBOL(mt_freqhopping_pll_init);
+		
+		int mt_freqhopping_devctl(unsigned int cmd, void* args){return 0;}   
+		EXPORT_SYMBOL(mt_freqhopping_devctl);
+		
+#else
 
 void mt_fh_popod_save(void)
 {
@@ -772,7 +820,7 @@ int freqhopping_config(unsigned int pll_id, unsigned long vco_freq, unsigned int
 	unsigned long 			flags=0;
 	unsigned int			skip_flag=0;
 
-	FH_MSG_DEBUG("conf() id: %d f: %d, e: %d",(int)pll_id, (int)vco_freq, (int)enable);
+	//FH_MSG("conf() id: %d f: %d, e: %d",(int)pll_id, (int)vco_freq, (int)enable);
 
 	if( (g_p_fh_hal_drv->mt_fh_get_init()) == 0){
 		FH_MSG("Not init yet, init first.");
@@ -806,11 +854,12 @@ int freqhopping_config(unsigned int pll_id, unsigned long vco_freq, unsigned int
 
 	g_p_fh_hal_drv->mt_fh_unlock(&flags);
 
-	if(skip_flag)
-		FH_MSG_DEBUG("-fh,skip");
+	//if(skip_flag)
+		//FH_MSG("-fh,skip");
 
 	return 0;
 }
+
 EXPORT_SYMBOL(freqhopping_config);
 
 
@@ -961,3 +1010,4 @@ int mt_freqhopping_devctl(unsigned int cmd, void* args)
 }
 EXPORT_SYMBOL(mt_freqhopping_devctl);
 
+#endif

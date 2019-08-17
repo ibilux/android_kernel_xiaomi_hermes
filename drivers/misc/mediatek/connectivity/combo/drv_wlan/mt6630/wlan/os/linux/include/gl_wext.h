@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_wext.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_wext.h#1
 */
 
 /*! \file   gl_wext.h
     \brief  This file is for Portable Driver linux wireless extension support.
 */
 
-
-
 /*
-** $Log: gl_wext.h $
+** Log: gl_wext.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -30,7 +28,8 @@
  *
  * 01 11 2011 chinglan.wang
  * NULL
- * Modify to reslove the CR :[ALPS00028994] Use WEP security to connect Marvell 11N AP.  Connection establish successfully.
+ * Modify to reslove the CR :[ALPS00028994] Use WEP security to connect Marvell 11N AP.
+ * Connection establish successfully.
  * Use the WPS function to connect AP, the privacy bit always is set to 1. .
  *
  * 09 27 2010 wh.su
@@ -53,7 +52,8 @@
  * [WPD00003826]Initial import for Linux port
  * initial import for Linux port
 **  \main\maintrunk.MT5921\12 2009-10-20 17:38:33 GMT mtk01090
-**  Refine driver unloading and clean up procedure. Block requests, stop main thread and clean up queued requests, and then stop hw.
+**  Refine driver unloading and clean up procedure.
+**  Block requests, stop main thread and clean up queued requests, and then stop hw.
 **  \main\maintrunk.MT5921\11 2009-09-28 20:19:28 GMT mtk01090
 **  Add private ioctl to carry OID structures. Restructure public/private ioctl interfaces to Linux kernel.
 **  \main\maintrunk.MT5921\10 2009-09-03 12:12:35 GMT mtk01088
@@ -89,23 +89,23 @@
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
+extern VOID wlanUpdateChannelTable(P_GLUE_INFO_T prGlueInfo);
+
 #if CFG_SUPPORT_WAPI
-extern UINT_8 keyStructBuf[1024];       /* add/remove key shared buffer */
+extern UINT_8 keyStructBuf[1024];	/* add/remove key shared buffer */
 #else
-extern UINT_8 keyStructBuf[100];        /* add/remove key shared buffer */
+extern UINT_8 keyStructBuf[100];	/* add/remove key shared buffer */
 #endif
 
 /* for IE Searching */
 extern BOOLEAN
 wextSrchDesiredWPAIE(IN PUINT_8 pucIEStart,
-		     IN INT_32 i4TotalIeLen,
-		     IN UINT_8 ucDesiredElemId, OUT PUINT_8 * ppucDesiredIE);
+		     IN INT_32 i4TotalIeLen, IN UINT_8 ucDesiredElemId, OUT PUINT_8 * ppucDesiredIE);
 
 #if CFG_SUPPORT_WPS
 extern BOOLEAN
 wextSrchDesiredWPSIE(IN PUINT_8 pucIEStart,
-		     IN INT_32 i4TotalIeLen,
-		     IN UINT_8 ucDesiredElemId, OUT PUINT_8 * ppucDesiredIE);
+		     IN INT_32 i4TotalIeLen, IN UINT_8 ucDesiredElemId, OUT PUINT_8 * ppucDesiredIE);
 #endif
 
 /*******************************************************************************
@@ -130,7 +130,6 @@ typedef struct _PARAM_VARIABLE_IE_T {
 	UINT_8 ucLength;
 	UINT_8 aucData[1];
 } PARAM_VARIABLE_IE_T, *P_PARAM_VARIABLE_IE_T;
-
 
 #if WIRELESS_EXT < 18
 
@@ -274,7 +273,7 @@ struct iw_pmksa {
 				 * pre-authentication
 				 * (struct iw_pmkid_cand) */
 
-#endif				/* WIRELESS_EXT < 18 */
+#endif /* WIRELESS_EXT < 18 */
 
 #if WIRELESS_EXT < 17
 /* Statistics flags (bitmask in updated) */
@@ -314,7 +313,6 @@ enum {
 #define IW_AUTH_KEY_MGMT_PSK_SHA256 8
 #endif
 
-
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -344,8 +342,7 @@ wext_set_rate(IN struct net_device *prNetDev,
 
 void
 wext_indicate_wext_event(IN P_GLUE_INFO_T prGlueInfo,
-			 IN unsigned int u4Cmd,
-			 IN unsigned char *pucData, IN unsigned int u4DataLen);
+			 IN unsigned int u4Cmd, IN unsigned char *pucData, IN unsigned int u4DataLen);
 
 struct iw_statistics *wext_get_wireless_stats(struct net_device *prDev);
 
@@ -353,42 +350,31 @@ int wext_get_priv(IN struct net_device *prNetDev, IN struct ifreq *prIfReq);
 
 BOOLEAN
 wextSrchDesiredWPAIE(IN PUINT_8 pucIEStart,
-		     IN INT_32 i4TotalIeLen,
-		     IN UINT_8 ucDesiredElemId, OUT PUINT_8 * ppucDesiredIE);
+		     IN INT_32 i4TotalIeLen, IN UINT_8 ucDesiredElemId, OUT PUINT_8 * ppucDesiredIE);
 
 #if CFG_SUPPORT_WPS
 BOOLEAN
 wextSrchDesiredWPSIE(IN PUINT_8 pucIEStart,
-		     IN INT_32 i4TotalIeLen,
-		     IN UINT_8 ucDesiredElemId, OUT PUINT_8 * ppucDesiredIE);
+		     IN INT_32 i4TotalIeLen, IN UINT_8 ucDesiredElemId, OUT PUINT_8 * ppucDesiredIE);
 #endif
 
 #if CFG_SUPPORT_PASSPOINT
-BOOLEAN
-wextSrchDesiredHS20IE(IN PUINT_8 pucIEStart, IN INT_32 i4TotalIeLen, OUT PUINT_8 * ppucDesiredIE);
+BOOLEAN wextSrchDesiredHS20IE(IN PUINT_8 pucIEStart, IN INT_32 i4TotalIeLen, OUT PUINT_8 * ppucDesiredIE);
 
-BOOLEAN
-wextSrchDesiredInterworkingIE(IN PUINT_8 pucIEStart,
-			      IN INT_32 i4TotalIeLen, OUT PUINT_8 * ppucDesiredIE);
+BOOLEAN wextSrchDesiredInterworkingIE(IN PUINT_8 pucIEStart, IN INT_32 i4TotalIeLen, OUT PUINT_8 * ppucDesiredIE);
 
-BOOLEAN
-wextSrchDesiredAdvProtocolIE(IN PUINT_8 pucIEStart,
-			     IN INT_32 i4TotalIeLen, OUT PUINT_8 * ppucDesiredIE);
+BOOLEAN wextSrchDesiredAdvProtocolIE(IN PUINT_8 pucIEStart, IN INT_32 i4TotalIeLen, OUT PUINT_8 * ppucDesiredIE);
 
-BOOLEAN
-wextSrchDesiredRoamingConsortiumIE(IN PUINT_8 pucIEStart,
-				   IN INT_32 i4TotalIeLen, OUT PUINT_8 * ppucDesiredIE);
-#endif				/* CFG_SUPPORT_PASSPOINT */
+BOOLEAN wextSrchDesiredRoamingConsortiumIE(IN PUINT_8 pucIEStart, IN INT_32 i4TotalIeLen, OUT PUINT_8 * ppucDesiredIE);
+#endif /* CFG_SUPPORT_PASSPOINT */
 
-
-BOOLEAN
-wextSrchDesiredWAPIIE(IN PUINT_8 pucIEStart, IN INT_32 i4TotalIeLen, OUT PUINT_8 * ppucDesiredIE);
+BOOLEAN wextSrchDesiredWAPIIE(IN PUINT_8 pucIEStart, IN INT_32 i4TotalIeLen, OUT PUINT_8 * ppucDesiredIE);
 
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
 */
 
-#endif				/* WIRELESS_EXT */
+#endif /* WIRELESS_EXT */
 
-#endif				/* _GL_WEXT_H */
+#endif /* _GL_WEXT_H */

@@ -163,6 +163,9 @@ static void addrconf_dad_run(struct inet6_dev *idev);
 static void addrconf_rs_timer(unsigned long data);
 static void __ipv6_ifa_notify(int event, struct inet6_ifaddr *ifa);
 static void ipv6_ifa_notify(int event, struct inet6_ifaddr *ifa);
+static void inet6_no_ra_notify(int event, struct inet6_dev *idev);
+static int inet6_fill_nora(struct sk_buff *skb, struct inet6_dev *idev,
+			      u32 portid, u32 seq,int event, unsigned int flags);
 
 static void inet6_prefix_notify(int event, struct inet6_dev *idev,
 				struct prefix_info *pinfo);
@@ -1541,7 +1544,9 @@ int ipv6_chk_addr(struct net *net, const struct in6_addr *addr,
 		if (!net_eq(dev_net(ifp->idev->dev), net))
 			continue;
 		if (ipv6_addr_equal(&ifp->addr, addr) &&
-		    !(ifp->flags&IFA_F_TENTATIVE) &&
+		    (!(ifp->flags&IFA_F_TENTATIVE) ||
+		     (ipv6_use_optimistic_addr(ifp->idev) &&
+		      ifp->flags&IFA_F_OPTIMISTIC)) &&
 		    (dev == NULL || ifp->idev->dev == dev ||
 		     !(ifp->scope&(IFA_LINK|IFA_HOST) || strict))) {
 			rcu_read_unlock_bh();
@@ -3210,11 +3215,13 @@ static int addrconf_ifdown(struct net_device *dev, int how)
 
 	write_unlock_bh(&idev->lock);
 
-	/* Step 5: Discard multicast list */
-	if (how)
+	/* Step 5: Discard anycast and multicast list */
+	if (how) {
+		ipv6_ac_destroy_dev(idev);
 		ipv6_mc_destroy_dev(idev);
-	else
+	} else {
 		ipv6_mc_down(idev);
+	}
 
 	idev->tstamp = jiffies;
 
@@ -3255,12 +3262,13 @@ static void addrconf_rs_timer(unsigned long data)
 
 		ndisc_send_rs(idev->dev, &ifp->addr, &in6addr_linklocal_allrouters);
 	} else {
+		inet6_no_ra_notify(RTM_NORA,idev);
 		spin_unlock(&ifp->lock);
 		/*
 		 * Note: we do not support deprecated "all on-link"
 		 * assumption any longer.
 		 */
-		pr_debug("%s: no IPv6 routers present\n", idev->dev->name);
+		printk("%s: no IPv6 routers present\n", idev->dev->name);
 	}
 
 out:
@@ -4713,6 +4721,64 @@ static void ipv6_ifa_notify(int event, struct inet6_ifaddr *ifp)
 	rcu_read_unlock_bh();
 }
 
+
+//mtk07384: send no ra netlink msg
+static void inet6_no_ra_notify(int event, struct inet6_dev *idev)
+			
+{  
+    struct sk_buff *skb;
+	struct net *net = dev_net(idev->dev);
+	int err = -ENOBUFS;
+	size_t length = NLMSG_ALIGN(sizeof(struct ifinfomsg));
+
+	skb = nlmsg_new(length, GFP_ATOMIC);
+	if (skb == NULL)
+		goto errout;
+
+	err = inet6_fill_nora(skb, idev,0, 0, event, 0);
+	if (err < 0) {
+		/* -EMSGSIZE implies BUG in inet6_prefix_nlmsg_size() */
+		WARN_ON(err == -EMSGSIZE);
+		kfree_skb(skb);
+		goto errout;
+	}
+
+	rtnl_notify(skb, net, 0, RTNLGRP_IPV6_PREFIX, NULL, GFP_ATOMIC);
+	return;
+errout:
+	if (err < 0)
+		rtnl_set_sk_err(net, RTNLGRP_IPV6_PREFIX, err);
+   
+}
+//mtk07384: fill skb for  no ra  msg
+static int inet6_fill_nora(struct sk_buff *skb, struct inet6_dev *idev,
+			      u32 portid, u32 seq,int event, unsigned int flags)
+{
+    struct net_device *dev = idev->dev;
+	struct nlmsghdr *nlh;
+	struct ifinfomsg *hdr;
+	void *protoinfo;
+	char *name;
+	
+	nlh = nlmsg_put(skb, portid, seq, event, sizeof(*hdr), flags);
+	if (nlh == NULL)
+		return -EMSGSIZE;
+
+    hdr = nlmsg_data(nlh);
+	hdr->ifi_family = AF_INET6;
+	hdr->__ifi_pad = 0;
+	hdr->ifi_type = dev->type;
+	hdr->ifi_index = dev->ifindex;
+	hdr->ifi_flags = dev_get_flags(dev);
+	hdr->ifi_change = 0;
+
+	return nlmsg_end(skb, nlh);
+
+
+nla_put_failure:
+	nlmsg_cancel(skb, nlh);
+	return -EMSGSIZE;
+}
 #ifdef CONFIG_SYSCTL
 
 static

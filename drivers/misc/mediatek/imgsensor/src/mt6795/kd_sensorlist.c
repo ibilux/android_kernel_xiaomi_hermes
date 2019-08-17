@@ -37,9 +37,13 @@
 #include <linux/compat.h>
 #endif
 
-
 #define PDAF_DATA_SIZE 4096
 
+/* Camera information */
+#define PROC_CAMERA_INFO "driver/camera_info"
+#define camera_info_size 128
+char mtk_ccm_name[camera_info_size] = {0};
+static unsigned int gDrvIndex = 0;
 static DEFINE_SPINLOCK(kdsensor_drv_lock);
 
 /* Move these defines to kd_camera_hw.h, so they can be project-dependent
@@ -68,25 +72,26 @@ static struct i2c_board_info i2c_devs2 __initdata = {I2C_BOARD_INFO(CAMERA_HW_DR
 ******************************************************************************/
 #define PFX "[kd_sensorlist]"
 #define PK_DBG_NONE(fmt, arg...)    do {} while (0)
-#define PK_DBG_FUNC(fmt, arg...)    xlog_printk(ANDROID_LOG_DEBUG , PFX, fmt, ##arg)
+#define PK_DBG_FUNC(fmt, arg...)    pr_debug(fmt, ##arg)
+#define PK_INF(fmt, args...)     pr_debug(PFX "[%s] " fmt, __FUNCTION__, ##args)
 
 
-#define DEBUG_CAMERA_HW_K
+//#define DEBUG_CAMERA_HW_K
 #ifdef DEBUG_CAMERA_HW_K
 #define PK_DBG PK_DBG_FUNC
-#define PK_ERR(fmt, arg...)         xlog_printk(ANDROID_LOG_ERROR , PFX , fmt, ##arg)
+#define PK_ERR(fmt, arg...)         pr_err(fmt, ##arg)
 #define PK_XLOG_INFO(fmt, args...) \
 		do {    \
-		    xlog_printk(ANDROID_LOG_DEBUG, PFX, fmt, ##args); \
+		    pr_debug(fmt, ##args); \
 		} while (0)
 #else
 #define PK_DBG(a, ...)
-#define PK_ERR(a, ...)
+#define PK_ERR(fmt, arg...)             pr_err(fmt, ##arg)
 #define PK_XLOG_INFO(a...)
 
 #endif
 //Get ISP Clk
-extern int get_isp_clk(void);
+//extern int get_isp_clk(void);
 /*******************************************************************************
 * Proifling
 ********************************************************************************/
@@ -474,7 +479,7 @@ int kdReleaseI2CTriggerLock(void)
     /* ret = mt_wait4_i2c_complete(); */
 
     /* if (ret < 0 ) { */
-    /* printk("[error]wait i2c fail\n"); */
+    /* PK_DBG("[error]wait i2c fail\n"); */
     /* } */
 
     return ret;
@@ -1009,6 +1014,9 @@ int kdSetDriver(unsigned int *pDrvIndex)
     PK_XLOG_INFO("pDrvIndex:0x%08x/0x%08x\n", pDrvIndex[KDIMGSENSOR_INVOKE_DRIVER_0], pDrvIndex[KDIMGSENSOR_INVOKE_DRIVER_1]);
     /* set driver for MAIN or SUB sensor */
 
+    /* Camera information */
+    gDrvIndex = pDrvIndex[KDIMGSENSOR_INVOKE_DRIVER_0];
+
     if (0 != kdGetSensorInitFuncList(&pSensorList))
     {
 	PK_ERR("ERROR:kdGetSensorInitFuncList()\n");
@@ -1066,7 +1074,7 @@ int kdSetDriver(unsigned int *pDrvIndex)
 	    memcpy((char *)g_invokeSensorNameStr[i], (char *)pSensorList[drvIdx[i]].drvname, sizeof(pSensorList[drvIdx[i]].drvname));
 	    /* return sensor ID */
 	    /* pDrvIndex[0] = (unsigned int)pSensorList[drvIdx].SensorId; */
-	    PK_XLOG_INFO("[kdSetDriver] :[%d][%d][%d][%s][%d]\n", i, g_bEnableDriver[i], g_invokeSocketIdx[i], g_invokeSensorNameStr[i], sizeof(pSensorList[drvIdx[i]].drvname));
+        PK_INF("[%d][%d][%d][%s]\n", i, g_bEnableDriver[i], g_invokeSocketIdx[i], g_invokeSensorNameStr[i]);
 	}
     }
     return 0;
@@ -1322,6 +1330,11 @@ inline static int adopt_CAMERA_HW_CheckIsAlive(void)
     KD_IMGSENSOR_PROFILE("kdModulePowerOn");
 
     g_IsSearchSensor = 1;
+    /* Camera information */
+    if(gDrvIndex == 0x10000)
+    {
+        memset(mtk_ccm_name,0,camera_info_size);
+    }
 
     if (g_pSensorFunc) {
 	for (i = KDIMGSENSOR_INVOKE_DRIVER_0; i < KDIMGSENSOR_MAX_INVOKE_DRIVERS; i++) {
@@ -1338,6 +1351,7 @@ inline static int adopt_CAMERA_HW_CheckIsAlive(void)
 		else {
 
 		    PK_DBG(" Sensor found ID = 0x%x\n", sensorID);
+            snprintf(mtk_ccm_name,sizeof(mtk_ccm_name),"%s CAM[%d]:%s;",mtk_ccm_name,g_invokeSocketIdx[i],g_invokeSensorNameStr[i]);
 		    err = ERROR_NONE;
 		}
 		if (ERROR_NONE != err)
@@ -1496,7 +1510,7 @@ inline static int adopt_CAMERA_HW_GetInfo2(void *pBuf)
 	return -EFAULT;
     }
 
-    PK_DBG("[CAMERA_HW][Resolution] %x\n", pSensorGetInfo->pSensorResolution);
+    /*PK_DBG("[CAMERA_HW][Resolution] %x\n", pSensorGetInfo->pSensorResolution);*/
 
     /* TO get preview value */
     ScenarioId[0] = ScenarioId[1] = MSDK_SCENARIO_ID_CAMERA_PREVIEW;
@@ -1807,10 +1821,10 @@ inline static int  adopt_CAMERA_HW_FeatureControl(void *pBuf)
 	case SENSOR_FEATURE_SET_AWB_GAIN:
 	case SENSOR_FEATURE_SET_MIN_MAX_FPS:
 	case SENSOR_FEATURE_GET_PDAF_INFO:
-    case SENSOR_FEATURE_GET_SENSOR_PDAF_EEPROM_DATASIZE: /* add by yfx */
+	case SENSOR_FEATURE_GET_SENSOR_PDAF_EEPROM_DATASIZE:
 	case SENSOR_FEATURE_GET_PDAF_DATA:
 	case SENSOR_FEATURE_GET_SENSOR_PDAF_CAPACITY:
-	//case SENSOR_FEATURE_SET_ISO:
+    case SENSOR_FEATURE_SET_PDAF:
 	    /*  */
 	    if (copy_from_user((void *)pFeaturePara , (void *) pFeatureCtrl->pFeaturePara, FeatureParaLen)) {
 		kfree(pFeaturePara);
@@ -2435,9 +2449,9 @@ inline static int  adopt_CAMERA_HW_FeatureControl(void *pBuf)
 	case SENSOR_FEATURE_GET_VC_INFO:
 	case SENSOR_FEATURE_SET_MIN_MAX_FPS:
 	case SENSOR_FEATURE_GET_PDAF_INFO:
-    case SENSOR_FEATURE_GET_SENSOR_PDAF_EEPROM_DATASIZE:   /* add by yfx  */
+	case SENSOR_FEATURE_GET_SENSOR_PDAF_EEPROM_DATASIZE:
 	case SENSOR_FEATURE_GET_SENSOR_PDAF_CAPACITY:
-	//case SENSOR_FEATURE_SET_ISO:
+    case SENSOR_FEATURE_SET_PDAF:
 	    /*  */
 	    if (copy_to_user((void __user *) pFeatureCtrl->pFeaturePara, (void *)pFeaturePara , FeatureParaLen)) {
 		kfree(pFeaturePara);
@@ -3020,7 +3034,7 @@ static long CAMERA_HW_Ioctl(
 
         case KDIMGSENSORIOC_X_GET_ISP_CLK:
             //PK_DBG("get_isp_clk=%d\n",get_isp_clk());
-            *(unsigned int*)pBuff = get_isp_clk();
+            *(unsigned int*)pBuff = 0;//get_isp_clk();
             break;
 
 	default:
@@ -3844,6 +3858,25 @@ static  struct file_operations fcamera_proc_fops3 = {
     .write = CAMERA_HW_Reg_Debug3
 };
 
+/* Camera information */
+static int subsys_camera_info_read(struct seq_file *m, void *v)
+{
+   PK_ERR("subsys_camera_info_read %s\n",mtk_ccm_name);
+   seq_printf(m, "%s\n",mtk_ccm_name);
+   return 0;
+};
+
+static int proc_camera_info_open(struct inode *inode, struct file *file)
+{
+    return single_open(file, subsys_camera_info_read, NULL);
+};
+
+static  struct file_operations fcamera_proc_fops1 = {
+    .owner = THIS_MODULE,
+    .open  = proc_camera_info_open,
+    .read  = seq_read,
+};
+
 /*=======================================================================
   * CAMERA_HW_i2C_init()
   *=======================================================================*/
@@ -3889,6 +3922,9 @@ static int __init CAMERA_HW_i2C_init(void)
     proc_create("driver/camsensor2", 0, NULL, &fcamera_proc_fops2);
     proc_create("driver/camsensor3", 0, NULL, &fcamera_proc_fops3);
 
+    /* Camera information */
+    memset(mtk_ccm_name,0,camera_info_size);
+    proc_create(PROC_CAMERA_INFO, 0, NULL, &fcamera_proc_fops1);
 
 #else
     /* Register proc file for main sensor register debug */

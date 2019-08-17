@@ -49,11 +49,12 @@
 #include <asm/tlbflush.h>
 #include <asm/ptrace.h>
 #include <mach/wd_api.h>
-#include <linux/mt_sched_mon.h>
+#include "mt_sched_mon.h"
+#include <linux/mtk_ram_console.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/ipi.h>
-//#include <mach/mt_spm_cpu.h>
+
 /*
  * as from 2.5, kernels no longer have an init_tasks structure
  * so we need some other way of telling a new secondary core
@@ -66,7 +67,12 @@ enum ipi_msg_type {
 	IPI_CALL_FUNC,
 	IPI_CALL_FUNC_SINGLE,
 	IPI_CPU_STOP,
+#ifdef CONFIG_TRUSTY
+   IPI_CUSTOM_FIRST,
+   IPI_CUSTOM_LAST = 15,
+#endif
 };
+
 
 /*
  * Boot a secondary CPU, and assign it the specified idle task.
@@ -100,8 +106,7 @@ extern void pmic_full_reset(void);
 int __cpuinit __cpu_up(unsigned int cpu, struct task_struct *idle)
 {
 	int ret,res;
-	int i;
-  struct wd_api * wd_api = NULL;
+    struct wd_api * wd_api = NULL;
 	/*
 	 * We need to tell the secondary core where to find its stack and the
 	 * page tables.
@@ -122,65 +127,17 @@ int __cpuinit __cpu_up(unsigned int cpu, struct task_struct *idle)
 					    msecs_to_jiffies(1000));
 
 		if (!cpu_online(cpu)) {
-#if 0
-			for(i=0x0;i<=4;i++)
-			{
-			   REG_WRITE(0x10200404 ,((REG_READ(0x10200404 )&0xffffff00)|i));
-			   pr_crit("Cluster0: Set 8'h%x : 0x%x\n",i,REG_READ(0x10200408));
-			}
-			for(i=0x05;i<=0x15;i++)
-			{
-			   REG_WRITE(0x10200404 ,((REG_READ(0x10200404 )&0xffffff00)|i));
-			   pr_crit("Cluster0: Set 8'h%x : 0x%x\n",i,REG_READ(0x10200408));
-			}
-			for(i=0x20;i<=0x45;i++)
-			{
-			   REG_WRITE(0x10200404 ,((REG_READ(0x10200404 )&0xffffff00)|i));
-			   pr_crit("Cluster0: Set 8'h%x : 0x%x\n",i,REG_READ(0x10200408));
-			}
-			
-			for(i=0x0;i<=4;i++)
-			{
-			   REG_WRITE(0x10200504  ,((REG_READ(0x10200504 )&0xffffff00)|i));
-			   pr_crit("Cluster0: Set 8'h%x : 0x%x\n",i,REG_READ(0x10200508 ));
-			}
-			for(i=0x05;i<=0x15;i++)
-			{
-			   REG_WRITE(0x10200504  ,((REG_READ(0x10200504 )&0xffffff00)|i));
-			   pr_crit("Cluster0: Set 8'h%x : 0x%x\n",i,REG_READ(0x10200508 ));
-			}
-			for(i=0x20;i<=0x45;i++)
-			{
-			   REG_WRITE(0x10200504  ,((REG_READ(0x10200504 )&0xffffff00)|i));
-			   pr_crit("Cluster0: Set 8'h%x : 0x%x\n",i,REG_READ(0x10200508 ));
-			}
-			
-			pr_crit("MPx_AXI_CONFIG: REG 0x1020002c : 0x%x\n", REG_READ(0x1020002c));
-			pr_crit("MPx_AXI_CONFIG: REG 0x1020022c : 0x%x\n", REG_READ(0x1020022c));
-			pr_crit("ACLKEN_DIV: REG 0x10200640 : 0x%x\n", REG_READ(0x10200640));
-			pr_crit("CCI: REG 0x10394000  : 0x%x\n", REG_READ(0x10394000));
-			pr_crit("CCI: REG 0x10395000  : 0x%x\n", REG_READ(0x10395000));
-#endif
-			pr_crit("CPU%u: failed to come online\n", cpu);
-                        #if 1
-		        pr_crit("Trigger WDT RESET\n");
+		    pr_crit("CPU%u: failed to come online\n", cpu);
+                    #if 1
+	                pr_crit("Trigger WDT RESET\n");
                         res = get_wd_api(&wd_api);
-                        if(res) 
-                        {
-                          pr_crit("get wd api error !!\n");
+                        if(res){
+                           pr_crit("get wd api error !!\n");
                         }else {
-                          wd_api -> wd_sw_reset(3);  //=> this action will ask system to reboot
+                           wd_api -> wd_sw_reset(3);  //=> this action will ask system to reboot
                         }
-                        #endif
-                        #if 0
-			pr_crit("Trigger PMIC full reset.\n");
-                        if(check_pmic_wrap_init())
-                        {
-                          mt_pwrap_hal_init();
-                        }
-                        pmic_full_reset();
-                        #endif
-                   ret = -EIO;
+                    #endif
+            ret = -EIO;
 	        }
 	} else {
 		pr_err("CPU%u: failed to boot: %d\n", cpu, ret);
@@ -204,6 +161,7 @@ asmlinkage void __cpuinit secondary_start_kernel(void)
 {
 	struct mm_struct *mm = &init_mm;
 	unsigned int cpu = smp_processor_id();
+    aee_rr_rec_hoplug(cpu, 1, 0);
 
 	printk("CPU%u: Booted secondary processor\n", cpu);
 
@@ -214,21 +172,33 @@ asmlinkage void __cpuinit secondary_start_kernel(void)
 	atomic_inc(&mm->mm_count);
 	current->active_mm = mm;
 	cpumask_set_cpu(cpu, mm_cpumask(mm));
+    aee_rr_rec_hoplug(cpu, 2, 0);
 
 	set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
+    aee_rr_rec_hoplug(cpu, 3, 0);
 
 	/*
 	 * TTBR0 is only used for the identity mapping at this stage. Make it
 	 * point to zero page to avoid speculatively fetching new entries.
 	 */
 	cpu_set_reserved_ttbr0();
+    aee_rr_rec_hoplug(cpu, 4, 0);
 	flush_tlb_all();
+    aee_rr_rec_hoplug(cpu, 5, 0);
 
 	preempt_disable();
+    aee_rr_rec_hoplug(cpu, 6, 0);
 	trace_hardirqs_off();
+    aee_rr_rec_hoplug(cpu, 7, 0);
 
 	if (cpu_ops[cpu]->cpu_postboot)
 		cpu_ops[cpu]->cpu_postboot();
+    aee_rr_rec_hoplug(cpu, 8, 0);
+
+	/*
+	 * Log the CPU info before it is marked online and might get read.
+	 */
+	cpuinfo_store_cpu();
 
 	/*
 	 * OK, now it's safe to let the boot CPU continue.  Wait for
@@ -236,23 +206,31 @@ asmlinkage void __cpuinit secondary_start_kernel(void)
 	 * before we continue.
 	 */
 	set_cpu_online(cpu, true);
+    aee_rr_rec_hoplug(cpu, 9, 0);
 	complete(&cpu_running);
+    aee_rr_rec_hoplug(cpu, 10, 0);
 
 	smp_store_cpu_info(cpu);
+    aee_rr_rec_hoplug(cpu, 11, 0);
 
 	/*
 	 * Enable GIC and timers.
 	 */
 	notify_cpu_starting(cpu);
+    aee_rr_rec_hoplug(cpu, 12, 0);
 
 	local_dbg_enable();
+    aee_rr_rec_hoplug(cpu, 13, 0);
 	local_irq_enable();
+    aee_rr_rec_hoplug(cpu, 14, 0);
 	local_fiq_enable();
+    aee_rr_rec_hoplug(cpu, 15, 0);
 
 	/*
 	 * OK, it's off to the idle thread for us
 	 */
 	cpu_startup_entry(CPUHP_ONLINE);
+    aee_rr_rec_hoplug(cpu, 16, 0);
 }
 
 #ifdef CONFIG_HOTPLUG_CPU
@@ -354,13 +332,17 @@ void __cpu_die(unsigned int cpu)
 void cpu_die(void)
 {
 	unsigned int cpu = smp_processor_id();
+	aee_rr_rec_hoplug(cpu, 51, 0);
 
 	idle_task_exit();
+	aee_rr_rec_hoplug(cpu, 52, 0);
 
 	local_irq_disable();
+	aee_rr_rec_hoplug(cpu, 53, 0);
 
 	/* Tell __cpu_die() that this CPU is now safe to dispose of */
 	complete(&cpu_died);
+	aee_rr_rec_hoplug(cpu, 54, 0);
 
 	/*
 	 * Actually shutdown the CPU. This must never fail. The specific hotplug
@@ -368,6 +350,7 @@ void cpu_die(void)
 	 * no dirty lines are lost in the process of shutting down the CPU.
 	 */
 	cpu_ops[cpu]->cpu_die(cpu);
+	aee_rr_rec_hoplug(cpu, 55, 0);
 
 	BUG();
 }
@@ -665,6 +648,11 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 		break;
 
 	default:
+#ifdef CONFIG_TRUSTY
+		if (ipinr >= IPI_CUSTOM_FIRST && ipinr <= IPI_CUSTOM_LAST)
+			handle_IRQ(ipinr, regs);
+		else
+#endif
 		pr_crit("CPU%u: Unknown IPI message 0x%x\n", cpu, ipinr);
 		break;
 	}
@@ -673,6 +661,60 @@ void handle_IPI(int ipinr, struct pt_regs *regs)
 		trace_ipi_exit(ipi_types[ipinr]);
 	set_irq_regs(old_regs);
 }
+
+#ifdef CONFIG_TRUSTY
+static void custom_ipi_enable(struct irq_data *data)
+{
+	/*
+	 * Always trigger a new ipi on enable. This only works for clients
+	 * that then clear the ipi before unmasking interrupts.
+	 */
+	smp_cross_call(cpumask_of(smp_processor_id()), data->irq);
+}
+
+static void custom_ipi_disable(struct irq_data *data)
+{
+}
+
+static struct irq_chip custom_ipi_chip = {
+	.name			= "CustomIPI",
+	.irq_enable		= custom_ipi_enable,
+	.irq_disable		= custom_ipi_disable,
+};
+
+static void handle_custom_ipi_irq(unsigned int irq, struct irq_desc *desc)
+{
+	if (!desc->action) {
+		pr_crit("CPU%u: Unknown IPI message 0x%x, no custom handler\n",
+			smp_processor_id(), irq);
+		return;
+	}
+
+	if (!cpumask_test_cpu(smp_processor_id(), desc->percpu_enabled))
+		return; /* IPIs may not be maskable in hardware */
+
+	handle_percpu_devid_irq(irq, desc);
+}
+
+static int __init smp_custom_ipi_init(void)
+{
+	int ipinr;
+
+	/* alloc descs for these custom ipis/irqs before using them */
+	irq_alloc_descs(IPI_CUSTOM_FIRST, 0,
+		IPI_CUSTOM_LAST - IPI_CUSTOM_FIRST + 1, 0);
+
+	for (ipinr = IPI_CUSTOM_FIRST; ipinr <= IPI_CUSTOM_LAST; ipinr++) {
+		irq_set_percpu_devid(ipinr);
+		irq_set_chip_and_handler(ipinr, &custom_ipi_chip,
+					 handle_custom_ipi_irq);
+		set_irq_flags(ipinr, IRQF_VALID | IRQF_NOAUTOEN);
+	}
+
+	return 0;
+}
+core_initcall(smp_custom_ipi_init);
+#endif
 
 void smp_send_reschedule(int cpu)
 {

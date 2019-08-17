@@ -49,7 +49,6 @@ typedef enum rds_rt_state_machine_t {
 	RDS_RT_MAX
 } rds_rt_state_machine_t;
 
-
 enum {
 	RDS_GRP_VER_A = 0,	/* group version A */
 	RDS_GRP_VER_B
@@ -140,20 +139,18 @@ typedef struct rds_t {
 	fm_u16 PI;
 	fm_u8 Switch_TP;
 	fm_u8 PTY;
-	struct rds_af_t AF_Data;	
+	struct rds_af_t AF_Data;
+	struct rds_af_t AFON_Data;
 	fm_u8 Radio_Page_Code;
 	fm_u16 Program_Item_Number_Code;
-	struct rds_af_t AFON_Data;
 	fm_u8 Extend_Country_Code;
 	fm_u16 Language_Code;
 	struct rds_ps_t PS_Data;
-	fm_u8 PS_ON[8];	
+	fm_u8 PS_ON[8];
+	struct rds_rt_t RT_Data;
 	fm_u16 event_status;	/* will use RDSFlag_Struct RDSFlag->flag_status to check which event, is that ok? */
-	struct rds_rt_t RT_Data;	
-	fm_u8 PAD1;	 //padding for data aligh
 	struct rds_group_cnt_t gc;
 } rds_t;
-
 
 /* Need care the following definition. */
 /* valid Rds Flag for notify */
@@ -165,7 +162,7 @@ typedef enum rds_flag_status_t {
 	RDS_FLAG_IS_ARTIFICIAL_HEAD = 0x0010,	/* Program is an artificial head recording */
 	RDS_FLAG_IS_COMPRESSED = 0x0020,	/* Program content is compressed */
 	RDS_FLAG_IS_DYNAMIC_PTY = 0x0040,	/* Program type can change */
-	RDS_FLAG_TEXT_AB = 0x0080	/* If this flag changes state, a new radio text                                        string begins */
+	RDS_FLAG_TEXT_AB = 0x0080	/* If this flag changes state, a new radio text string begins */
 } rds_flag_status_t;
 
 typedef enum rds_event_status_t {
@@ -186,7 +183,6 @@ typedef enum rds_event_status_t {
 	RDS_EVENT_RDS_TIMER = 0x8000	/* Timer for RDS Bler Check. ---- BLER  block error rate */
 } rds_event_status_t;
 
-
 #define RDS_LOG_SIZE 2
 struct rds_log_t {
 	struct rds_rx_t rds_log[RDS_LOG_SIZE];
@@ -199,23 +195,20 @@ struct rds_log_t {
 	 fm_s32(*log_out) (struct rds_log_t *thiz, struct rds_rx_t *dst, fm_s32 *dst_len);
 };
 
-extern fm_s32 rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size,
-			 fm_u16(*getfreq) (void));
+extern fm_s32 rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size, fm_u16(*getfreq) (void));
 extern fm_s32 rds_grp_counter_get(struct rds_group_cnt_t *dst, struct rds_group_cnt_t *src);
 extern fm_s32 rds_grp_counter_reset(struct rds_group_cnt_t *gc);
 extern fm_s32 rds_log_in(struct rds_log_t *thiz, struct rds_rx_t *new_log, fm_s32 new_len);
 extern fm_s32 rds_log_out(struct rds_log_t *thiz, struct rds_rx_t *dst, fm_s32 *dst_len);
 
-
 #define DEFINE_RDSLOG(name) \
-    struct rds_log_t name = { \
-	.size = RDS_LOG_SIZE, \
-	.in = 0, \
-	.out = 0, \
-	.len = 0, \
-	.log_in = rds_log_in, \
-	.log_out = rds_log_out, \
-    }
+	struct rds_log_t name = { \
+		.size = RDS_LOG_SIZE, \
+		.in = 0, \
+		.out = 0, \
+		.len = 0, \
+		.log_in = rds_log_in, \
+		.log_out = rds_log_out, \
+	}
 
-
-#endif				/* __FM_RDS_H__ */
+#endif /* __FM_RDS_H__ */

@@ -1,7 +1,6 @@
 #include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/kobject.h>
 #include <linux/proc_fs.h>
@@ -24,12 +23,12 @@
 #define cl_type_lower               "cl-amddulthro-l"
 
 #define mtk_cooler_amddulthro_dprintk_always(fmt, args...) \
-  do { xlog_printk(ANDROID_LOG_INFO, "thermal/cooler/amddulthro", fmt, ##args); } while(0)
+  do { pr_notice("thermal/cooler/amddulthro" fmt, ##args); } while(0)
 
 #define mtk_cooler_amddulthro_dprintk(fmt, args...) \
   do { \
     if (1 == cl_amddulthro_klog_on) { \
-      xlog_printk(ANDROID_LOG_INFO, "thermal/cooler/amddulthro", fmt, ##args); \
+      pr_notice("thermal/cooler/amddulthro" fmt, ##args); \
     } \
   } while(0)
 
@@ -556,7 +555,6 @@ ssize_t amddulthro_pid_write(struct file *file, const char __user *buf, size_t l
 {
 	int ret = 0;
 	char tmp[MAX_LEN] = {0};
-
 	len = (len < (MAX_LEN-1)) ? len : (MAX_LEN-1);
 	/* write data to the buffer */
 	if ( copy_from_user(tmp, buf, len) ) {

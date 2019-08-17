@@ -38,7 +38,7 @@
 #define CCCI_IOC_STORE_SIM_MODE            _IOW(CCCI_IOC_MAGIC, 23, unsigned int) // RILD
 #define CCCI_IOC_GET_SIM_MODE            _IOR(CCCI_IOC_MAGIC, 24, unsigned int) // RILD
 #define CCCI_IOC_GET_MD_PROTOCOL_TYPE	   _IOR(CCCI_IOC_MAGIC, 42, char[16]) /*metal tool to get modem protocol type: AP_TST or DHL*/
-#define CCCI_IOC_IGNORE_MD_EXCP            _IO(CCCI_IOC_MAGIC, 42) // RILD
+#define CCCI_IOC_IGNORE_MD_EXCP            _IO(CCCI_IOC_MAGIC, 44) // RILD
 
 #define CCCI_IOC_GET_MD_ASSERTLOG       _IOW(CCCI_IOC_MAGIC, 200, unsigned int)    /*Block to get extern md assert flag for mdlogger */
 #define CCCI_IOC_GET_MD_ASSERTLOG_STATUS  _IOW(CCCI_IOC_MAGIC, 201, unsigned int)    /*get extern md assert log status*/
@@ -101,7 +101,7 @@ static struct emd_reset_sta emd_reset_sta[NR_EMD_RESET_USER];
 /******************************************************************************************
  *   External customization functions region
  ******************************************************************************************/
-#if defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_EVDO_DT_SUPPORT)
+#if defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_MTK_C2K_SUPPORT)
 bool usb_h_acm_all_clear(void);
 #else
 static char usb_h_acm_all_clear(void)
@@ -268,7 +268,7 @@ int request_ext_md_reset()
     }
     return ret;
 }
-#if defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_EVDO_DT_SUPPORT)
+#if defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_MTK_C2K_SUPPORT)
 #ifdef CONFIG_PM_RUNTIME
 void usb11_auto_resume(void);
 #endif
@@ -276,7 +276,7 @@ void usb11_auto_resume(void);
 static void emd_power_off(void)
 {
     EMD_MSG_INF("chr","emd_power_off\n");
-#if defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_EVDO_DT_SUPPORT)
+#if defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_MTK_C2K_SUPPORT)
 #ifdef CONFIG_PM_RUNTIME
 	/* make sure usb device tree is waked up so that usb is ready */
 	usb11_auto_resume();
@@ -290,7 +290,7 @@ static int emd_power_on(int bootmode)
 {
 	static int irq_registered = 0;
     EMD_MSG_INF("chr","emd_power_on, bootmode=%d\n",bootmode);
-#if defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_EVDO_DT_SUPPORT)
+#if defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_MTK_C2K_SUPPORT)
 #ifdef CONFIG_PM_RUNTIME
 	/* make sure usb device tree is waked up so that usb is ready */
 	usb11_auto_resume();
@@ -407,6 +407,8 @@ static int client_deinit(emd_dev_client_t *client)
     return 0;
 }
 
+extern void mtk_uart_dump_history(void);
+
 static void emd_aseert_log_work_func(struct work_struct *data)
 {
 #if defined (CONFIG_MTK_AEE_FEATURE)
@@ -421,6 +423,7 @@ static void emd_aseert_log_work_func(struct work_struct *data)
     wake_up_interruptible(&emd_aseert_log_wait);
     emd_request_reset();    
 #endif    
+	mtk_uart_dump_history();  
 }
 
 
@@ -752,7 +755,7 @@ int emd_request_reset(void)
     request_ext_md_reset();
 }
 
-#if defined(MTK_DT_SUPPORT) && !defined(EVDO_DT_SUPPORT)
+#if defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_MTK_C2K_SUPPORT)
 #ifdef	CONFIG_PM_RUNTIME
 void issue_usb11_keep_resume_work(void);
 #endif
@@ -761,7 +764,7 @@ int emd_md_exception(void)
 {
 	/* keep usb is awaken becoz ext MD will lose remote wakeup ability (becomes single-thread mode)when EE happens */
 
-#if defined(MTK_DT_SUPPORT) && !defined(EVDO_DT_SUPPORT)
+#if defined(CONFIG_MTK_DT_SUPPORT) && !defined(CONFIG_MTK_C2K_SUPPORT)
 #ifdef	CONFIG_PM_RUNTIME
 	issue_usb11_keep_resume_work();
 #endif

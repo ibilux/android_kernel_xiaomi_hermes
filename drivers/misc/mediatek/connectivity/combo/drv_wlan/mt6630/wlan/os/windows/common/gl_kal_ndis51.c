@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/gl_kal_ndis51.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/gl_kal_ndis51.c#1
 */
 
 /*! \file   gl_kal_ndis51.c
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: gl_kal_ndis51.c $
+** Log: gl_kal_ndis51.c
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -18,7 +16,8 @@
 ** (Davinci label: MT6620_WIFI_Driver_V2_3_120913_1942_As_MT6630_Base)
  *
  * 01 04 2011 cp.wu
- * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and vmalloc implementations to ease physically continous memory demands
+ * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and
+ * vmalloc implementations to ease physically continous memory demands
  * separate kalMemAlloc() into virtually-continous and physically-continous type to ease slab system pressure
  *
  * 10 06 2010 cp.wu
@@ -141,8 +140,6 @@
 ********************************************************************************
 */
 
-
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief Cache-able memory allocation
@@ -157,13 +154,11 @@ PVOID kalMemAlloc(IN UINT_32 u4Size, IN ENUM_KAL_MEM_ALLOCATION_TYPE eMemType)
 {
 	PVOID pvAddr;
 
-	if (NdisAllocateMemoryWithTag(&pvAddr, u4Size, NIC_MEM_TAG) == NDIS_STATUS_SUCCESS) {
+	if (NdisAllocateMemoryWithTag(&pvAddr, u4Size, NIC_MEM_TAG) == NDIS_STATUS_SUCCESS)
 		return pvAddr;
-	}
 
 	return NULL;
 }				/* kalMemAlloc */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -184,7 +179,6 @@ OS_SYSTIME kalGetTimeTick(VOID)
 	return (OS_SYSTIME) u4SystemUpTime;
 }				/* kalGetTimeTick */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function returns current timestamp in unit of 100ns, that have
@@ -203,7 +197,6 @@ UINT_64 kalGetNanoTick(VOID)
 
 	return rSystemTime.QuadPart;
 }				/* kalGetNanoTick */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -241,7 +234,7 @@ VOID kalCopyFrame(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket, OUT PUINT_8 pu
 		NdisQueryBufferSafe(prNdisBuffer, &pvMbuf, &u4MbufLength, HighPagePriority);
 #else
 		NdisQueryBuffer(prNdisBuffer, &pvMbuf, &u4MbufLength);
-#endif				/* NDIS51_MINIPORT */
+#endif /* NDIS51_MINIPORT */
 
 		if (pvMbuf == (PVOID) NULL) {
 			ASSERT(pvMbuf);
@@ -284,8 +277,7 @@ PVOID kalPacketAlloc(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Size, OUT PPUINT_
 	 * in function kalPacketPut().
 	 */
 	if (packet_p != NULL) {
-		*ppucData =
-		    *(PUCHAR *) &packet_p->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pvBuf)];
+		*ppucData = *(PUCHAR *) &packet_p->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pvBuf)];
 		NDIS_SET_PACKET_HEADER_SIZE(packet_p, 14);	/* Ether header size */
 	}
 
@@ -307,7 +299,6 @@ VOID kalPacketFree(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket)
 	PNDIS_PACKET prNdisPacket;
 	PNDIS_BUFFER prNdisBuf;
 
-
 	ASSERT(prGlueInfo);
 	ASSERT(pvPacket);
 
@@ -316,11 +307,10 @@ VOID kalPacketFree(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket)
 	do {
 		NdisUnchainBufferAtBack(prNdisPacket, &prNdisBuf);
 
-		if (prNdisBuf) {
+		if (prNdisBuf)
 			NdisFreeBuffer(prNdisBuf);
-		} else {
+		else
 			break;
-		}
 
 	} while (TRUE);
 
@@ -338,7 +328,6 @@ VOID kalPacketFree(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket)
 	putPoolPacket(prGlueInfo, prNdisPacket, NULL);
 
 }				/* kalPacketFree */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -360,13 +349,11 @@ WLAN_STATUS
 kalProcessRxPacket(IN P_GLUE_INFO_T prGlueInfo,
 		   IN PVOID pvPacket,
 		   IN PUINT_8 pucPacketStart,
-		   IN UINT_32 u4PacketLen, IN BOOL fgIsRetain, IN ENUM_CSUM_RESULT_T aerCSUM[]
-    )
+		   IN UINT_32 u4PacketLen, IN BOOL fgIsRetain, IN ENUM_CSUM_RESULT_T aerCSUM[])
 {
 	PNDIS_PACKET prNdisPacket;
 	PNDIS_BUFFER prNdisBuf;
 	NDIS_STATUS rStatus;
-
 
 	ASSERT(prGlueInfo);
 	ASSERT(pvPacket);
@@ -374,9 +361,7 @@ kalProcessRxPacket(IN P_GLUE_INFO_T prGlueInfo,
 
 	prNdisPacket = (PNDIS_PACKET) pvPacket;
 
-	NdisAllocateBuffer(&rStatus,
-			   &prNdisBuf,
-			   prGlueInfo->hBufPool, (PVOID) pucPacketStart, (UINT_32) u4PacketLen);
+	NdisAllocateBuffer(&rStatus, &prNdisBuf, prGlueInfo->hBufPool, (PVOID) pucPacketStart, (UINT_32) u4PacketLen);
 
 	if (rStatus != NDIS_STATUS_SUCCESS) {
 		ASSERT(0);
@@ -406,7 +391,6 @@ kalProcessRxPacket(IN P_GLUE_INFO_T prGlueInfo,
 	return WLAN_STATUS_SUCCESS;
 }
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief To indicate an array of received packets is available for higher
@@ -433,8 +417,7 @@ WLAN_STATUS kalRxIndicatePkts(IN P_GLUE_INFO_T prGlueInfo, IN PVOID apvPkts[], I
 		if (NDIS_GET_PACKET_STATUS((PNDIS_PACKET) apvPkts[u4Idx]) == NDIS_STATUS_RESOURCES) {
 			pivot = u4Idx;
 			for (i = u4Idx + 1; i < ucPktNum; i++) {
-				if (NDIS_GET_PACKET_STATUS((PNDIS_PACKET) apvPkts[i]) !=
-				    NDIS_STATUS_RESOURCES) {
+				if (NDIS_GET_PACKET_STATUS((PNDIS_PACKET) apvPkts[i]) != NDIS_STATUS_RESOURCES) {
 					pvTmp = apvPkts[pivot];
 					apvPkts[pivot] = apvPkts[i];
 					apvPkts[i] = pvTmp;
@@ -453,8 +436,7 @@ WLAN_STATUS kalRxIndicatePkts(IN P_GLUE_INFO_T prGlueInfo, IN PVOID apvPkts[], I
 		}
 	}
 
-	NdisMIndicateReceivePacket(prGlueInfo->rMiniportAdapterHandle,
-				   (PPNDIS_PACKET) apvPkts, (UINT) ucPktNum);
+	NdisMIndicateReceivePacket(prGlueInfo->rMiniportAdapterHandle, (PPNDIS_PACKET) apvPkts, (UINT) ucPktNum);
 
 	for (u4Idx = 0; u4Idx < ucPktNum; u4Idx++) {
 
@@ -467,14 +449,12 @@ WLAN_STATUS kalRxIndicatePkts(IN P_GLUE_INFO_T prGlueInfo, IN PVOID apvPkts[], I
 
 			NdisUnchainBufferAtBack(prNdisPacket, &prNdisBuf);
 
-			if (prNdisBuf) {
+			if (prNdisBuf)
 				NdisFreeBuffer(prNdisBuf);
-			}
 #if DBG
-			else {
+			else
 				ASSERT(0);
-			}
-#endif				/* DBG */
+#endif /* DBG */
 
 			/* Reinitialize the packet descriptor for reuse. */
 			NdisReinitializePacket(prNdisPacket);
@@ -485,14 +465,13 @@ WLAN_STATUS kalRxIndicatePkts(IN P_GLUE_INFO_T prGlueInfo, IN PVOID apvPkts[], I
 				pu4Dummy = (PUINT_32) prNdisPacket->ProtocolReserved;
 				*pu4Dummy = 0;
 			}
-#endif				/* CETK_NDIS_PERFORMANCE_WORKAROUND */
+#endif /* CETK_NDIS_PERFORMANCE_WORKAROUND */
 
 		}
 	}
 
 	return WLAN_STATUS_SUCCESS;
 }				/* kalIndicatePackets */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -510,25 +489,22 @@ WLAN_STATUS kalRxIndicatePkts(IN P_GLUE_INFO_T prGlueInfo, IN PVOID apvPkts[], I
 */
 /*----------------------------------------------------------------------------*/
 VOID
-kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo,
-			     IN WLAN_STATUS eStatus, IN PVOID pvBuf, IN UINT_32 u4BufLen)
+kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus, IN PVOID pvBuf, IN UINT_32 u4BufLen)
 {
 	ASSERT(prGlueInfo);
 
 	/* Indicate the protocol that the media state was changed. */
-	NdisMIndicateStatus(prGlueInfo->rMiniportAdapterHandle,
-			    (NDIS_STATUS) eStatus, (PVOID) pvBuf, u4BufLen);
+	NdisMIndicateStatus(prGlueInfo->rMiniportAdapterHandle, (NDIS_STATUS) eStatus, (PVOID) pvBuf, u4BufLen);
 
 	/* NOTE: have to indicate status complete every time you indicate status */
 	NdisMIndicateStatusComplete(prGlueInfo->rMiniportAdapterHandle);
 
 	if (eStatus == WLAN_STATUS_MEDIA_CONNECT || eStatus == WLAN_STATUS_MEDIA_DISCONNECT) {
 
-		if (eStatus == WLAN_STATUS_MEDIA_CONNECT) {
+		if (eStatus == WLAN_STATUS_MEDIA_CONNECT)
 			prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_CONNECTED;
-		} else if (eStatus == WLAN_STATUS_MEDIA_DISCONNECT) {
+		else if (eStatus == WLAN_STATUS_MEDIA_DISCONNECT)
 			prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_DISCONNECTED;
-		}
 
 		if (wlanResetMediaStreamMode(prGlueInfo->prAdapter) == TRUE) {
 			MEDIA_STREAMING_INDICATIONS_T rMediaStreamIndication;
@@ -539,12 +515,10 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo,
 
 			NdisMIndicateStatus(prGlueInfo->rMiniportAdapterHandle,
 					    (NDIS_STATUS) WLAN_STATUS_MEDIA_SPECIFIC_INDICATION,
-					    (PVOID) &rMediaStreamIndication,
-					    sizeof(MEDIA_STREAMING_INDICATIONS_T));
+					    (PVOID) &rMediaStreamIndication, sizeof(MEDIA_STREAMING_INDICATIONS_T));
 		}
 	}
 }				/* kalIndicateStatusAndComplete */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -564,8 +538,7 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo,
 /*----------------------------------------------------------------------------*/
 VOID
 kalUpdateReAssocReqInfo(IN P_GLUE_INFO_T prGlueInfo,
-			IN PUINT_8 pucFrameBody,
-			IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest)
+			IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest)
 {
 	PUINT_8 cp;
 	PNDIS_802_11_ASSOCIATION_INFORMATION prNdisAssocInfo;
@@ -573,15 +546,13 @@ kalUpdateReAssocReqInfo(IN P_GLUE_INFO_T prGlueInfo,
 	if (fgReassocRequest) {
 		ASSERT(u4FrameBodyLen >= MIN_REASSOC_REQ_BODY_LEN);
 
-		if (u4FrameBodyLen < MIN_REASSOC_REQ_BODY_LEN) {
+		if (u4FrameBodyLen < MIN_REASSOC_REQ_BODY_LEN)
 			return;
-		}
 	} else {
 		ASSERT(u4FrameBodyLen >= MIN_ASSOC_REQ_BODY_LEN);
 
-		if (u4FrameBodyLen < MIN_ASSOC_REQ_BODY_LEN) {
+		if (u4FrameBodyLen < MIN_ASSOC_REQ_BODY_LEN)
 			return;
-		}
 	}
 
 	prNdisAssocInfo = &prGlueInfo->rNdisAssocInfo;
@@ -627,11 +598,9 @@ kalUpdateReAssocReqInfo(IN P_GLUE_INFO_T prGlueInfo,
 	prNdisAssocInfo->ResponseFixedIEs.StatusCode = 0;
 	prNdisAssocInfo->ResponseFixedIEs.AssociationId = 0;
 	prNdisAssocInfo->ResponseIELength = 0;
-	prNdisAssocInfo->OffsetResponseIEs =
-	    sizeof(NDIS_802_11_ASSOCIATION_INFORMATION) + u4FrameBodyLen;
+	prNdisAssocInfo->OffsetResponseIEs = sizeof(NDIS_802_11_ASSOCIATION_INFORMATION) + u4FrameBodyLen;
 
 }				/* kalUpdateReAssocReqInfo */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -648,9 +617,7 @@ kalUpdateReAssocReqInfo(IN P_GLUE_INFO_T prGlueInfo,
 * @return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo,
-			IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen)
+VOID kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen)
 {
 	PUINT_8 cp;
 	PNDIS_802_11_ASSOCIATION_INFORMATION prNdisAssocInfo;
@@ -658,9 +625,8 @@ kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo,
 
 	ASSERT(u4FrameBodyLen >= MIN_REASSOC_RESP_BODY_LEN);
 
-	if (u4FrameBodyLen < MIN_REASSOC_RESP_BODY_LEN) {
+	if (u4FrameBodyLen < MIN_REASSOC_RESP_BODY_LEN)
 		return;
-	}
 
 	prNdisAssocInfo = &prGlueInfo->rNdisAssocInfo;
 
@@ -668,8 +634,7 @@ kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo,
 
 	/* Update the fixed information elements. */
 	prNdisAssocInfo->AvailableResponseFixedIEs =
-	    NDIS_802_11_AI_RESFI_CAPABILITIES |
-	    NDIS_802_11_AI_RESFI_STATUSCODE | NDIS_802_11_AI_RESFI_ASSOCIATIONID;
+	    NDIS_802_11_AI_RESFI_CAPABILITIES | NDIS_802_11_AI_RESFI_STATUSCODE | NDIS_802_11_AI_RESFI_ASSOCIATIONID;
 
 	kalMemCopy(&prNdisAssocInfo->ResponseFixedIEs.Capabilities, cp, 2);
 	cp += 2;
@@ -703,8 +668,7 @@ kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo,
 		UINT_8 wifiOuiWMM[] = { 0x00, 0x50, 0xF2, 0x02 };
 #endif
 
-		kalMemCopy(&prGlueInfo->aucNdisAssocInfoIEs[prNdisAssocInfo->RequestIELength],
-			   cp, u4FrameBodyLen);
+		kalMemCopy(&prGlueInfo->aucNdisAssocInfoIEs[prNdisAssocInfo->RequestIELength], cp, u4FrameBodyLen);
 
 #if BUILD_WMM
 		prGlueInfo->supportWMM = FALSE;
@@ -728,7 +692,6 @@ kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo,
 #endif
 	}
 }				/* kalUpdateReAssocRspInfo */
-
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
 /*----------------------------------------------------------------------------*/
@@ -754,13 +717,11 @@ VOID kalQueryTxChksumOffloadParam(IN PVOID pvPacket, OUT PUINT_8 pucFlag)
 		    NDIS_PER_PACKET_INFO_FROM_PACKET(prPacket, TcpIpChecksumPacketInfo);
 
 		/* TODO: need to check NIC_CHECKSUM_OFFLOAD from glue_info ?? */
-		if (rChecksumPktInfo.Transmit.NdisPacketChecksumV4 ||
-		    rChecksumPktInfo.Transmit.NdisPacketChecksumV6) {
+		if (rChecksumPktInfo.Transmit.NdisPacketChecksumV4 || rChecksumPktInfo.Transmit.NdisPacketChecksumV6) {
 
 			/* only apply checksum offload for IPv4 packets */
-			if (rChecksumPktInfo.Transmit.NdisPacketIpChecksum) {
+			if (rChecksumPktInfo.Transmit.NdisPacketIpChecksum)
 				ucFlag |= TX_CS_IP_GEN;
-			}
 
 			if (rChecksumPktInfo.Transmit.NdisPacketTcpChecksum ||
 			    rChecksumPktInfo.Transmit.NdisPacketUdpChecksum) {
@@ -771,7 +732,6 @@ VOID kalQueryTxChksumOffloadParam(IN PVOID pvPacket, OUT PUINT_8 pucFlag)
 	*pucFlag = ucFlag;
 
 }				/* kalQueryChksumOffloadParam */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -784,8 +744,7 @@ VOID kalQueryTxChksumOffloadParam(IN PVOID pvPacket, OUT PUINT_8 pucFlag)
 *
 */
 /*----------------------------------------------------------------------------*/
-VOID kalUpdateRxCSUMOffloadParam(IN PVOID pvPacket, IN ENUM_CSUM_RESULT_T aeCSUM[]
-    )
+VOID kalUpdateRxCSUMOffloadParam(IN PVOID pvPacket, IN ENUM_CSUM_RESULT_T aeCSUM[])
 {
 	PNDIS_PACKET prPacket = (PNDIS_PACKET) pvPacket;
 	NDIS_TCP_IP_CHECKSUM_PACKET_INFO rChecksumPktInfo;
@@ -797,38 +756,33 @@ VOID kalUpdateRxCSUMOffloadParam(IN PVOID pvPacket, IN ENUM_CSUM_RESULT_T aeCSUM
 	rChecksumPktInfo.Value = 0;
 
 	if (aeCSUM[CSUM_TYPE_IPV4] != CSUM_RES_NONE) {
-		if (aeCSUM[CSUM_TYPE_IPV4] != CSUM_RES_SUCCESS) {
+		if (aeCSUM[CSUM_TYPE_IPV4] != CSUM_RES_SUCCESS)
 			rChecksumPktInfo.Receive.NdisPacketIpChecksumFailed = TRUE;
-		} else {
+		else
 			rChecksumPktInfo.Receive.NdisPacketIpChecksumSucceeded = TRUE;
-		}
 	} else if (aeCSUM[CSUM_TYPE_IPV6] != CSUM_RES_NONE) {
-		if (aeCSUM[CSUM_TYPE_IPV6] != CSUM_RES_SUCCESS) {
+		if (aeCSUM[CSUM_TYPE_IPV6] != CSUM_RES_SUCCESS)
 			rChecksumPktInfo.Receive.NdisPacketIpChecksumFailed = TRUE;
-		} else {
+		else
 			rChecksumPktInfo.Receive.NdisPacketIpChecksumSucceeded = TRUE;
-		}
 	}
 
 	if (aeCSUM[CSUM_TYPE_TCP] != CSUM_RES_NONE) {
-		if (aeCSUM[CSUM_TYPE_TCP] != CSUM_RES_SUCCESS) {
+		if (aeCSUM[CSUM_TYPE_TCP] != CSUM_RES_SUCCESS)
 			rChecksumPktInfo.Receive.NdisPacketTcpChecksumFailed = TRUE;
-		} else {
+		else
 			rChecksumPktInfo.Receive.NdisPacketTcpChecksumSucceeded = TRUE;
-		}
 	} else if (aeCSUM[CSUM_TYPE_UDP] != CSUM_RES_NONE) {
-		if (aeCSUM[CSUM_TYPE_UDP] != CSUM_RES_SUCCESS) {
+		if (aeCSUM[CSUM_TYPE_UDP] != CSUM_RES_SUCCESS)
 			rChecksumPktInfo.Receive.NdisPacketUdpChecksumFailed = TRUE;
-		} else {
+		else
 			rChecksumPktInfo.Receive.NdisPacketUdpChecksumSucceeded = TRUE;
-		}
 	}
 
 	prPktExt->NdisPacketInfo[TcpIpChecksumPacketInfo] = (PVOID) rChecksumPktInfo.Value;
 
 }
-#endif				/* CFG_TCP_IP_CHKSUM_OFFLOAD */
-
+#endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -849,15 +803,13 @@ VOID kalSendComplete(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket, IN WLAN_STA
 	/* For WHQL test, indicate send packet successfully even
 	 * Tx status is not OK
 	 */
-	NdisMSendComplete(prGlueInfo->rMiniportAdapterHandle,
-			  (PNDIS_PACKET) pvPacket, NDIS_STATUS_SUCCESS);
+	NdisMSendComplete(prGlueInfo->rMiniportAdapterHandle, (PNDIS_PACKET) pvPacket, NDIS_STATUS_SUCCESS);
 	/* (NDIS_STATUS) rStatus); */
 
 	GLUE_DEC_REF_CNT(prGlueInfo->i4TxPendingFrameNum);
 
 	return;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -871,23 +823,20 @@ VOID kalSendComplete(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket, IN WLAN_STA
 * @return none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-kalSecurityFrameSendComplete(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket, IN WLAN_STATUS rStatus)
+VOID kalSecurityFrameSendComplete(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket, IN WLAN_STATUS rStatus)
 {
 	ASSERT(pvPacket);
 
 	/* For WHQL test, indicate send packet successfully even
 	 * Tx status is not OK
 	 */
-	NdisMSendComplete(prGlueInfo->rMiniportAdapterHandle,
-			  (PNDIS_PACKET) pvPacket, NDIS_STATUS_SUCCESS);
+	NdisMSendComplete(prGlueInfo->rMiniportAdapterHandle, (PNDIS_PACKET) pvPacket, NDIS_STATUS_SUCCESS);
 	/* (NDIS_STATUS) rStatus); */
 
 	GLUE_DEC_REF_CNT(prGlueInfo->i4TxPendingSecurityFrameNum);
 
 	return;
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -916,15 +865,13 @@ VOID kalHandleAssocInfo(IN P_GLUE_INFO_T prGlueInfo, IN P_EVENT_ASSOC_INFO prAss
 		if (prAssocInfo->ucReassoc) {
 			ASSERT(u2FrameBodyLen >= MIN_REASSOC_REQ_BODY_LEN);
 
-			if (u2FrameBodyLen < MIN_REASSOC_REQ_BODY_LEN) {
+			if (u2FrameBodyLen < MIN_REASSOC_REQ_BODY_LEN)
 				return;
-			}
 		} else {
 			ASSERT(u2FrameBodyLen >= MIN_ASSOC_REQ_BODY_LEN);
 
-			if (u2FrameBodyLen < MIN_ASSOC_REQ_BODY_LEN) {
+			if (u2FrameBodyLen < MIN_ASSOC_REQ_BODY_LEN)
 				return;
-			}
 		}
 #endif
 		prNdisAssocInfo = &prGlueInfo->rNdisAssocInfo;
@@ -935,8 +882,7 @@ VOID kalHandleAssocInfo(IN P_GLUE_INFO_T prGlueInfo, IN P_EVENT_ASSOC_INFO prAss
 		if (prAssocInfo->ucReassoc) {
 			prNdisAssocInfo->AvailableRequestFixedIEs =
 			    NDIS_802_11_AI_REQFI_CAPABILITIES |
-			    NDIS_802_11_AI_REQFI_LISTENINTERVAL |
-			    NDIS_802_11_AI_REQFI_CURRENTAPADDRESS;
+			    NDIS_802_11_AI_REQFI_LISTENINTERVAL | NDIS_802_11_AI_REQFI_CURRENTAPADDRESS;
 		} else {
 			prNdisAssocInfo->AvailableRequestFixedIEs =
 			    NDIS_802_11_AI_REQFI_CAPABILITIES | NDIS_802_11_AI_REQFI_LISTENINTERVAL;
@@ -969,8 +915,7 @@ VOID kalHandleAssocInfo(IN P_GLUE_INFO_T prGlueInfo, IN P_EVENT_ASSOC_INFO prAss
 		prNdisAssocInfo->ResponseFixedIEs.StatusCode = 0;
 		prNdisAssocInfo->ResponseFixedIEs.AssociationId = 0;
 		prNdisAssocInfo->ResponseIELength = 0;
-		prNdisAssocInfo->OffsetResponseIEs =
-		    sizeof(NDIS_802_11_ASSOCIATION_INFORMATION) + u2FrameBodyLen;
+		prNdisAssocInfo->OffsetResponseIEs = sizeof(NDIS_802_11_ASSOCIATION_INFORMATION) + u2FrameBodyLen;
 
 	} else {
 
@@ -981,9 +926,8 @@ VOID kalHandleAssocInfo(IN P_GLUE_INFO_T prGlueInfo, IN P_EVENT_ASSOC_INFO prAss
 #if 0
 		ASSERT(u2FrameBodyLen >= MIN_REASSOC_RESP_BODY_LEN);
 
-		if (u2FrameBodyLen < MIN_REASSOC_RESP_BODY_LEN) {
+		if (u2FrameBodyLen < MIN_REASSOC_RESP_BODY_LEN)
 			return;
-		}
 #endif
 		prNdisAssocInfo = &prGlueInfo->rNdisAssocInfo;
 
@@ -1008,8 +952,7 @@ VOID kalHandleAssocInfo(IN P_GLUE_INFO_T prGlueInfo, IN P_EVENT_ASSOC_INFO prAss
 		/* Update the variable length information elements. */
 		u2AvailableAssocRespIEBufLen = (sizeof(prGlueInfo->aucNdisAssocInfoIEs) >
 						prNdisAssocInfo->RequestIELength) ?
-		    (UINT_16) (sizeof(prGlueInfo->aucNdisAssocInfoIEs) -
-			       prNdisAssocInfo->RequestIELength) : 0;
+		    (UINT_16) (sizeof(prGlueInfo->aucNdisAssocInfoIEs) - prNdisAssocInfo->RequestIELength) : 0;
 
 		if (u2FrameBodyLen > u2AvailableAssocRespIEBufLen) {
 			ASSERT(u2FrameBodyLen <= u2AvailableAssocRespIEBufLen);
@@ -1021,8 +964,7 @@ VOID kalHandleAssocInfo(IN P_GLUE_INFO_T prGlueInfo, IN P_EVENT_ASSOC_INFO prAss
 		    sizeof(NDIS_802_11_ASSOCIATION_INFORMATION) + prNdisAssocInfo->RequestIELength;
 
 		if (u2FrameBodyLen) {
-			kalMemCopy(&prGlueInfo->
-				   aucNdisAssocInfoIEs[prNdisAssocInfo->RequestIELength], cp,
+			kalMemCopy(&prGlueInfo->aucNdisAssocInfoIEs[prNdisAssocInfo->RequestIELength], cp,
 				   u2FrameBodyLen);
 		}
 	}

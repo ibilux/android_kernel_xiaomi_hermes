@@ -28,7 +28,4 @@ extern void spm_suspend_init(void);
  * LAST PC  API
  **************************************/
 extern void read_pcm_data(int *sram_data, int length);
-#ifdef CONFIG_ARM64
-extern bool spm_read_eint_status (unsigned int eint_num);
-#endif
 #endif

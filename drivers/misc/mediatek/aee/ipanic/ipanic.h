@@ -9,6 +9,11 @@
 #include "ipanic_version.h"
 
 #define AEE_IPANIC_PLABEL "expdb"
+#ifdef CONFIG_MTK_GPT_SCHEME_SUPPORT
+#define AEE_EXPDB_PATH "/dev/block/platform/mtk-msdc.0/by-name/expdb"
+#else
+#define AEE_EXPDB_PATH "/dev/expdb"
+#endif
 
 #define IPANIC_MODULE_TAG "KERNEL-PANIC"
 
@@ -45,8 +50,9 @@ struct ipanic_data_header {
 	u32 used;		/* valid data size */
 	u32 total;		/* allocated partition size */
 	u32 encrypt;		/* data encrypted */
-	u32 raw;		/* raw data or plain text */
-	u32 compact;		/* data and header in same block, to save space */
+	u64 id;
+	/* u32 raw;		raw data or plain text */
+	/* u32 compact;		data and header in same block, to save space */
 	u8 name[32];
 };
 
@@ -58,7 +64,7 @@ struct ipanic_header {
 	u32 datas;		/* bitmap of data sections dumped */
 	u32 dhblk;		/* data header blk size, 0 if no dup data headers */
 	u32 blksize;
-	u32 partsize;		/* expdb partition totoal size */
+	u32 partsize;		/* expdb partition total size */
 	u32 bufsize;
 	u64 buf;
 	struct ipanic_data_header data_hdr[IPANIC_NR_SECTIONS];
@@ -205,5 +211,9 @@ void ipanic_log_temp_init(void);
 void ipanic_klog_region(struct kmsg_dumper *dumper);
 int ipanic_klog_buffer(void *data, unsigned char *buffer, size_t sz_buf);
 extern int ipanic_atflog_buffer(void *data, unsigned char *buffer, size_t sz_buf);
+
+int ipanic_mem_write(void *buf, int off, int len, int encrypt);
+void *ipanic_data_from_sd(struct ipanic_data_header *dheader, int encrypt);
+struct ipanic_header *ipanic_header_from_sd(unsigned int offset, unsigned int magic);
 #endif
 #endif

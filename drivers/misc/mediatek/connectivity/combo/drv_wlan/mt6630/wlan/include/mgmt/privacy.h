@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/privacy.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/privacy.h#1
 */
 
 /*! \file   privacy.h
  *  \brief This file contains the function declaration for privacy.c.
  */
 
-
-
 /*
-** $Log: privacy.h $
+** Log: privacy.h
 **
 ** 07 25 2014 eason.tsai
 ** AOSP
@@ -151,11 +149,11 @@
 #define WTBL_BC_IDX_0                   19
 #define WTBL_BC_IDX_MAX                 27
 
-#define WTBL_AIS_DLS_MAX_IDX            WTBL_STA_IDX_MAX - 7	/* Reserved for DLS:end entry, Todo:: Max DLS entry
+#define WTBL_AIS_DLS_MAX_IDX            (WTBL_STA_IDX_MAX - 7)	/* Reserved for DLS:end entry, Todo:: Max DLS entry
 								 *define */
 
-#define WTBL_AIS_IBSS_NO_SEC_BC_IDX     28			/* Reserved for Ad-hoc No sec index */
-#define WTBL_AP_NO_SEC_BC_IDX           28			/* Reserved for AP mode No Sec index */
+#define WTBL_AIS_IBSS_NO_SEC_BC_IDX     28	/* Reserved for Ad-hoc No sec index */
+#define WTBL_AP_NO_SEC_BC_IDX           28	/* Reserved for AP mode No Sec index */
 
 /*******************************************************************************
  *                         D A T A   T Y P E S
@@ -163,38 +161,38 @@
  */
 
 typedef struct _IEEE_802_1X_HDR {
-	UINT_8	ucVersion;
-	UINT_8	ucType;
+	UINT_8 ucVersion;
+	UINT_8 ucType;
 	UINT_16 u2Length;
 	/* followed by length octets of data */
 } IEEE_802_1X_HDR, *P_IEEE_802_1X_HDR;
 
 typedef struct _EAPOL_KEY {
-	UINT_8	ucType;
+	UINT_8 ucType;
 	/* Note: key_info, key_length, and key_data_length are unaligned */
-	UINT_8	aucKeyInfo[2];		/* big endian */
-	UINT_8	aucKeyLength[2];	/* big endian */
-	UINT_8	aucReplayCounter[8];
-	UINT_8	aucKeyNonce[16];
-	UINT_8	aucKeyIv[16];
-	UINT_8	aucKeyRsc[8];
-	UINT_8	aucKeyId[8];		/* Reserved in IEEE 802.11i/RSN */
-	UINT_8	aucKeyMic[16];
-	UINT_8	aucKeyDataLength[2];	/* big endian */
+	UINT_8 aucKeyInfo[2];	/* big endian */
+	UINT_8 aucKeyLength[2];	/* big endian */
+	UINT_8 aucReplayCounter[8];
+	UINT_8 aucKeyNonce[16];
+	UINT_8 aucKeyIv[16];
+	UINT_8 aucKeyRsc[8];
+	UINT_8 aucKeyId[8];	/* Reserved in IEEE 802.11i/RSN */
+	UINT_8 aucKeyMic[16];
+	UINT_8 aucKeyDataLength[2];	/* big endian */
 	/* followed by key_data_length bytes of key_data */
 } EAPOL_KEY, *P_EAPOL_KEY;
 
 /* WPA2 PMKID candicate structure */
 typedef struct _PMKID_CANDICATE_T {
-	UINT_8	aucBssid[MAC_ADDR_LEN];
+	UINT_8 aucBssid[MAC_ADDR_LEN];
 	UINT_32 u4PreAuthFlags;
 } PMKID_CANDICATE_T, *P_PMKID_CANDICATE_T;
 
 #if 0
 /* WPA2 PMKID cache structure */
 typedef struct _PMKID_ENTRY_T {
-	PARAM_BSSID_INFO_T	rBssidInfo;
-	BOOLEAN			fgPmkidExist;
+	PARAM_BSSID_INFO_T rBssidInfo;
+	BOOLEAN fgPmkidExist;
 } PMKID_ENTRY_T, *P_PMKID_ENTRY_T;
 #endif
 
@@ -222,27 +220,21 @@ VOID secInit(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex);
 
 VOID secSetPortBlocked(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta, IN BOOLEAN fgPort);
 
-BOOL
-secCheckClassError(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, IN P_STA_RECORD_T prStaRec);
+BOOL secCheckClassError(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, IN P_STA_RECORD_T prStaRec);
 
-BOOL
-secTxPortControlCheck(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN P_STA_RECORD_T prStaRec);
+BOOL secTxPortControlCheck(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN P_STA_RECORD_T prStaRec);
 
 BOOLEAN secRxPortControlCheck(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSWRfb);
 
 VOID secSetCipherSuite(IN P_ADAPTER_T prAdapter, IN UINT_32 u4CipherSuitesFlags);
 
-BOOLEAN
-secIsProtectedFrame(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsdu, IN P_STA_RECORD_T prStaRec);
+BOOLEAN secIsProtectedFrame(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsdu, IN P_STA_RECORD_T prStaRec);
 
 VOID secClearPmkid(IN P_ADAPTER_T prAdapter);
 
-BOOLEAN secIs24Of4Packet(IN P_NATIVE_PACKET prPacket);
-
 BOOLEAN secRsnKeyHandshakeEnabled(IN P_ADAPTER_T prAdapter);
 
-UINT_8
-secGetBmcWlanIndex(IN P_ADAPTER_T prAdapter, IN ENUM_NETWORK_TYPE_T eNetType, IN P_STA_RECORD_T prStaRec);
+UINT_8 secGetBmcWlanIndex(IN P_ADAPTER_T prAdapter, IN ENUM_NETWORK_TYPE_T eNetType, IN P_STA_RECORD_T prStaRec);
 
 BOOLEAN secTransmitKeyExist(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta);
 
@@ -253,6 +245,8 @@ BOOL secPrivacySeekForEntry(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prSta);
 VOID secPrivacyFreeForEntry(IN P_ADAPTER_T prAdapter, IN UINT_8 ucEntry);
 
 VOID secPrivacyFreeSta(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec);
+
+BOOLEAN secIs24Of4Packet(IN P_NATIVE_PACKET prPacket);
 
 UINT_8
 secPrivacySeekForBcEntry(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex, IN PUINT_8 pucAddr, IN UINT_8 ucStaIdx, IN
@@ -270,7 +264,6 @@ BOOLEAN secCheckWTBLAssign(IN P_ADAPTER_T prAdapter);
 
 void secPrivacyDumpWTBL3(IN P_ADAPTER_T prAdapter, IN UINT_8 ucIndex);
 
-
 BOOLEAN secIsProtected1xFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec);
 
 BOOLEAN secIsProtectedBss(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo);
@@ -282,4 +275,4 @@ BOOLEAN tkipMicDecapsulate(IN P_SW_RFB_T prSwRfb, IN PUINT_8 pucMicKey);
  ********************************************************************************
  */
 
-#endif				/* _PRIVACY_H */
+#endif /* _PRIVACY_H */

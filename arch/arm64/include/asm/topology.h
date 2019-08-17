@@ -14,22 +14,23 @@ struct cputopo_arm {
 };
 
 extern struct cputopo_arm cpu_topology[NR_CPUS];
+extern unsigned long arch_get_max_cpu_capacity(int);
+extern unsigned long arch_get_cpu_capacity(int);
+extern int arch_cpu_cap_ratio(unsigned int cpu);
+extern int arch_get_cpu_throttling(int);
 
 #define topology_physical_package_id(cpu)	(cpu_topology[cpu].socket_id)
 #define topology_core_id(cpu)		(cpu_topology[cpu].core_id)
 #define topology_core_cpumask(cpu)	(&cpu_topology[cpu].core_sibling)
 #define topology_thread_cpumask(cpu)	(&cpu_topology[cpu].thread_sibling)
+#define topology_max_cpu_capacity(cpu)	(arch_get_max_cpu_capacity(cpu))
+#define topology_cpu_capacity(cpu)	(arch_get_cpu_capacity(cpu))
+#define topology_cpu_throttling(cpu)	(arch_get_cpu_throttling(cpu))
 #ifdef CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY
 #define CPUPOWER_FREQSCALE_SHIFT 10
 #define CPUPOWER_FREQSCALE_DEFAULT (1L << CPUPOWER_FREQSCALE_SHIFT)
-extern unsigned long arch_get_max_cpu_capacity(int);
-extern unsigned long arch_get_cpu_capacity(int);
 extern int arch_get_invariant_power_enabled(void);
-extern int arch_get_cpu_throttling(int);
 
-#define topology_max_cpu_capacity(cpu)	(arch_get_max_cpu_capacity(cpu))
-#define topology_cpu_capacity(cpu)	(arch_get_cpu_capacity(cpu))
-#define topology_cpu_throttling(cpu)	(arch_get_cpu_capacity(cpu))
 #define topology_cpu_inv_power_en(void) (arch_get_invariant_power_enabled())
 #endif /* CONFIG_ARCH_SCALE_INVARIANT_CPU_CAPACITY */
 
@@ -83,10 +84,12 @@ extern int arch_cpu_is_big(unsigned int cpu);
 extern int arch_cpu_is_little(unsigned int cpu);
 extern int arch_is_multi_cluster(void);
 extern int arch_is_big_little(void);
+extern int arch_is_smp(void);
 extern int arch_get_nr_clusters(void);
 extern int arch_get_cluster_id(unsigned int cpu);
 extern void arch_get_cluster_cpus(struct cpumask *cpus, int cluster_id);
 extern void arch_get_big_little_cpus(struct cpumask *big, struct cpumask *little);
+extern int arch_better_capacity(unsigned int cpu);
 
 #else /* !CONFIG_ARM_CPU_TOPOLOGY */
 
@@ -100,6 +103,7 @@ static inline int arch_cpu_is_big(unsigned int cpu) { return 0; }
 static inline int arch_cpu_is_little(unsigned int cpu) { return 1; }
 static inline int arch_is_multi_cluster(void) { return 0; }
 static inline int arch_is_big_little(void) { return 0; }
+static inline int arch_is_smp(void) { return 1; }
 static inline int arch_get_nr_clusters(void) { return 1; }
 static inline int arch_get_cluster_id(unsigned int cpu) { return 0; }
 static inline void arch_get_cluster_cpus(struct cpumask *cpus, int cluster_id)
@@ -119,6 +123,7 @@ static inline void arch_get_big_little_cpus(struct cpumask *big,struct cpumask *
     for_each_possible_cpu(cpu)
         cpumask_set_cpu(cpu, little);
 }
+static inline int arch_better_capacity(unsigned int cpu) { return 0; }
 
 #endif /* CONFIG_ARM_CPU_TOPOLOGY */
 

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_kal.h#2 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_kal.h#2
 */
 
 /*! \file   gl_kal.h
@@ -8,18 +8,16 @@
     Any definitions in this file will be shared among GLUE Layer and internal Driver Stack.
 */
 
-
-
 /*
-** $Log: gl_kal.h $
+** Log: gl_kal.h
 **
 ** 01 15 2014 eason.tsai
 ** [ALPS01070904] [Need Patch] [Volunteer Patch][MT6630][Driver]MT6630 Wi-Fi Patch
 ** Merging
-**  	
-** 	//ALPS_SW/DEV/ALPS.JB2.MT6630.DEV/alps/mediatek/kernel/drivers/combo/drv_wlan/mt6630/wlan/...
-**  	
-** 	to //ALPS_SW/TRUNK/KK/alps/mediatek/kernel/drivers/combo/drv_wlan/mt6630/wlan/...
+**
+**	//ALPS_SW/DEV/ALPS.JB2.MT6630.DEV/alps/mediatek/kernel/drivers/combo/drv_wlan/mt6630/wlan/...
+**
+**	to //ALPS_SW/TRUNK/KK/alps/mediatek/kernel/drivers/combo/drv_wlan/mt6630/wlan/...
 **
 ** 12 27 2013 eason.tsai
 ** [ALPS01070904] [Need Patch] [Volunteer Patch][MT6630][Driver]MT6630 Wi-Fi Patch
@@ -107,19 +105,16 @@
  * adjust the code for Non-DBG and no XLOG.
  *
  * 11 22 2011 cp.wu
- * [WCXRP00001120] [MT6620 Wi-Fi][Driver] Modify roaming to AIS state transition from synchronous to asynchronous approach to avoid incomplete state termination
+ * [WCXRP00001120] [MT6620 Wi-Fi][Driver] Modify roaming to AIS state transition from synchronous
+ * to asynchronous approach to avoid incomplete state termination
  * 1. change RDD related compile option brace position.
- * 2. when roaming is triggered, ask AIS to transit immediately only when AIS is in Normal TR state without join timeout timer ticking
+ * 2. when roaming is triggered, ask AIS to transit immediately only when AIS is in Normal TR state
+ * without join timeout timer ticking
  * 3. otherwise, insert AIS_REQUEST into pending request queue
  *
  * 11 11 2011 wh.su
  * [WCXRP00001078] [MT6620 Wi-Fi][Driver] Adding the mediatek log improment support : XLOG
  * modify the xlog related code.
- *
- * 11 10 2011 cp.wu
- * [WCXRP00001098] [MT6620 Wi-Fi][Driver] Replace printk by DBG LOG macros in linux porting layer
- * 1. eliminaite direct calls to printk in porting layer.
- * 2. replaced by DBGLOG, which would be XLOG on ALPS platforms.
  *
  * 11 10 2011 eddie.chen
  * [WCXRP00001096] [MT6620 Wi-Fi][Driver/FW] Enhance the log function (xlog)
@@ -162,11 +157,13 @@
  * Remove flag CFG_WIFI_DIRECT_MOVED.
  *
  * 04 12 2011 cp.wu
- * [WCXRP00000635] [MT6620 Wi-Fi][Driver] Clear pending security frames when QM clear pending data frames for dedicated network type
+ * [WCXRP00000635] [MT6620 Wi-Fi][Driver] Clear pending security frames when QM clear pending data frames
+ * for dedicated network type
  * include link.h for linux's port.
  *
  * 04 12 2011 cp.wu
- * [WCXRP00000635] [MT6620 Wi-Fi][Driver] Clear pending security frames when QM clear pending data frames for dedicated network type
+ * [WCXRP00000635] [MT6620 Wi-Fi][Driver] Clear pending security frames when QM clear pending data frames
+ * for dedicated network type
  * clear pending security frames for dedicated network type when BSS is being deactivated/disconnected
  *
  * 04 01 2011 cp.wu
@@ -176,7 +173,8 @@
  * 3. request_irq() API has some changes between linux kernel 2.6.12 and 2.6.26
  *
  * 03 16 2011 cp.wu
- * [WCXRP00000562] [MT6620 Wi-Fi][Driver] I/O buffer pre-allocation to avoid physically continuous memory shortage after system running for a long period
+ * [WCXRP00000562] [MT6620 Wi-Fi][Driver] I/O buffer pre-allocation to avoid physically continuous memory shortage
+ * after system running for a long period
  * 1. pre-allocate physical continuous buffer while module is being loaded
  * 2. use pre-allocated physical continuous buffer for TX/RX DMA transfer
  *
@@ -195,11 +193,13 @@
  * Sync BOW Driver to latest person development branch version..
  *
  * 03 02 2011 cp.wu
- * [WCXRP00000503] [MT6620 Wi-Fi][Driver] Take RCPI brought by association response as initial RSSI right after connection is built.
+ * [WCXRP00000503] [MT6620 Wi-Fi][Driver] Take RCPI brought by association response as
+ * initial RSSI right after connection is built.
  * use RCPI brought by ASSOC-RESP after connection is built as initial RCPI to avoid using a uninitialized MAC-RX RCPI.
  *
  * 02 24 2011 cp.wu
- * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation because NdisMSleep() won't sleep long enough for specified interval such as 500ms
+ * [WCXRP00000490] [MT6620 Wi-Fi][Driver][Win32] modify kalMsleep() implementation
+ * because NdisMSleep() won't sleep long enough for specified interval such as 500ms
  * modify cnm_timer and hem_mbox APIs to be thread safe to ease invoking restrictions
  *
  * 01 12 2011 cp.wu
@@ -207,19 +207,23 @@
  * implementation of separate BT_OVER_WIFI data path.
  *
  * 01 04 2011 cp.wu
- * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and vmalloc implementations to ease physically continous memory demands
+ * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and vmalloc
+ * implementations to ease physically continous memory demands
  * separate kalMemAlloc() into virtually-continous and physically-continous type to ease slab system pressure
  *
  * 12 31 2010 cp.wu
- * [WCXRP00000335] [MT6620 Wi-Fi][Driver] change to use milliseconds sleep instead of delay to avoid blocking to system scheduling
- * change to use msleep() and shorten waiting interval to reduce blocking to other task while Wi-Fi driver is being loaded
+ * [WCXRP00000335] [MT6620 Wi-Fi][Driver] change to use milliseconds sleep instead of delay
+ * to avoid blocking to system scheduling
+ * change to use msleep() and shorten waiting interval to reduce blocking to other task
+ * while Wi-Fi driver is being loaded
  *
  * 12 31 2010 jeffrey.chang
  * [WCXRP00000332] [MT6620 Wi-Fi][Driver] add kal sleep function for delay which use blocking call
  * modify the implementation of kalDelay to msleep
  *
  * 12 22 2010 cp.wu
- * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface for supporting Wi-Fi Direct Service Discovery
+ * [WCXRP00000283] [MT6620 Wi-Fi][Driver][Wi-Fi Direct] Implementation of interface
+ * for supporting Wi-Fi Direct Service Discovery
  * 1. header file restructure for more clear module isolation
  * 2. add function interface definition for implementing Service Discovery callbacks
  *
@@ -228,8 +232,10 @@
  * Invitation & Provision Discovery Indication.
  *
  * 11 26 2010 cp.wu
- * [WCXRP00000209] [MT6620 Wi-Fi][Driver] Modify NVRAM checking mechanism to warning only with necessary data field checking
- * 1. NVRAM error is now treated as warning only, thus normal operation is still available but extra scan result used to indicate user is attached
+ * [WCXRP00000209] [MT6620 Wi-Fi][Driver] Modify NVRAM checking mechanism to warning only
+ * with necessary data field checking
+ * 1. NVRAM error is now treated as warning only, thus normal operation is still available
+ * but extra scan result used to indicate user is attached
  * 2. DPD and TX-PWR are needed fields from now on, if these 2 fields are not availble then warning message is shown
  *
  * 11 08 2010 cp.wu
@@ -237,7 +243,8 @@
  * change to use CMD52 for enabling/disabling interrupt to reduce SDIO transaction time
  *
  * 11 01 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150]
+ * [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
  * 1) Query link speed (TX rate) from firmware directly with buffering mechanism to reduce overhead
  * 2) Remove CNM CH-RECOVER event handling
  * 3) cfg read/write API renamed with kal prefix for unified naming rules.
@@ -261,7 +268,8 @@
  * [WCXRP00000069][MT6620 Wi-Fi][Driver] Fix some code for phase 1 P2P Demo.
  *
  * 09 21 2010 cp.wu
- * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and might leads to BSOD when entering RF test with AIS associated
+ * [WCXRP00000053] [MT6620 Wi-Fi][Driver] Reset incomplete and might leads to BSOD
+ * when entering RF test with AIS associated
  * Do a complete reset with STA-REC null checking for RF test re-entry
  *
  * 09 21 2010 kevin.huang
@@ -429,9 +437,9 @@
  * 04 13 2010 cp.wu
  * [WPD00003823][MT6620 Wi-Fi] Add Bluetooth-over-Wi-Fi support
  * add framework for BT-over-Wi-Fi support.
- *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 1) prPendingCmdInfo is replaced by queue for multiple handler capability
- *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 2) command sequence number is now increased atomically
- *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  * 3) private data could be hold and taken use for other purpose
+ * 1) prPendingCmdInfo is replaced by queue for multiple handler capability
+ * 2) command sequence number is now increased atomically
+ * 3) private data could be hold and taken use for other purpose
  *
  * 04 09 2010 jeffrey.chang
  * [WPD00003826]Initial import for Linux port
@@ -576,10 +584,8 @@
 **
 */
 
-
 #ifndef _GL_KAL_H
 #define _GL_KAL_H
-
 
 /*******************************************************************************
 *                         C O M P I L E R   F L A G S
@@ -604,15 +610,8 @@
 #include "nic/bow.h"
 #endif
 
-#if CFG_SUPPORT_XLOG
-#include "linux/xlog.h"
-#endif
-
-
 #include "linux/kallsyms.h"
 #include <linux/ftrace_event.h>
-
-
 
 #if DBG
 extern int allocatedMemSize;
@@ -620,6 +619,8 @@ extern int allocatedMemSize;
 
 extern struct semaphore g_halt_sem;
 extern int g_u4HaltFlag;
+
+extern struct delayed_work sched_workq;
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -631,15 +632,16 @@ extern int g_u4HaltFlag;
 
 #if CFG_SUPPORT_MULTITHREAD
 #define GLUE_FLAG_TX_PROCESS (GLUE_FLAG_HALT |                \
-                              GLUE_FLAG_SUB_MOD_MULTICAST |   \
-                              GLUE_FLAG_TX_CMD_DONE |         \
-                              GLUE_FLAG_TXREQ |               \
-                              GLUE_FLAG_TIMEOUT |             \
-                              GLUE_FLAG_FRAME_FILTER |        \
-                              GLUE_FLAG_OID |                 \
+			      GLUE_FLAG_SUB_MOD_MULTICAST |   \
+			      GLUE_FLAG_TX_CMD_DONE |         \
+			      GLUE_FLAG_TXREQ |               \
+			      GLUE_FLAG_TIMEOUT |             \
+			      GLUE_FLAG_FRAME_FILTER |        \
+			      GLUE_FLAG_OID |                 \
 			      GLUE_FLAG_RX)
 
-#define GLUE_FLAG_HIF_PROCESS (GLUE_FLAG_HALT | GLUE_FLAG_INT | GLUE_FLAG_HIF_TX | GLUE_FLAG_HIF_TX_CMD | GLUE_FLAG_HIF_FW_OWN)
+#define GLUE_FLAG_HIF_PROCESS  \
+	(GLUE_FLAG_HALT | GLUE_FLAG_INT | GLUE_FLAG_HIF_TX | GLUE_FLAG_HIF_TX_CMD | GLUE_FLAG_HIF_FW_OWN)
 #define GLUE_FLAG_RX_PROCESS (GLUE_FLAG_HALT | GLUE_FLAG_RX_TO_OS)
 #else
 /* All flags for single thread driver */
@@ -661,37 +663,37 @@ extern int g_u4HaltFlag;
 
 #define RADIOTAP_LEN_VHT			48
 #define RADIOTAP_FIELDS_VHT (RADIOTAP_FIELD_TSFT | \
-                                    RADIOTAP_FIELD_FLAGS | \
-                                    RADIOTAP_FIELD_RATE | \
-                                    RADIOTAP_FIELD_CHANNEL | \
-                                    RADIOTAP_FIELD_ANT_SIGNAL | \
-                                    RADIOTAP_FIELD_ANT_NOISE | \
-                                    RADIOTAP_FIELD_ANT | \
-                                    RADIOTAP_FIELD_AMPDU | \
-                                    RADIOTAP_FIELD_VHT | \
-                                    RADIOTAP_FIELD_VENDOR)
-                                    
+				    RADIOTAP_FIELD_FLAGS | \
+				    RADIOTAP_FIELD_RATE | \
+				    RADIOTAP_FIELD_CHANNEL | \
+				    RADIOTAP_FIELD_ANT_SIGNAL | \
+				    RADIOTAP_FIELD_ANT_NOISE | \
+				    RADIOTAP_FIELD_ANT | \
+				    RADIOTAP_FIELD_AMPDU | \
+				    RADIOTAP_FIELD_VHT | \
+				    RADIOTAP_FIELD_VENDOR)
+
 #define RADIOTAP_LEN_HT				36
 #define RADIOTAP_FIELDS_HT (RADIOTAP_FIELD_TSFT | \
-                                    RADIOTAP_FIELD_FLAGS | \
-                                    RADIOTAP_FIELD_RATE | \
-                                    RADIOTAP_FIELD_CHANNEL | \
-                                    RADIOTAP_FIELD_ANT_SIGNAL | \
-                                    RADIOTAP_FIELD_ANT_NOISE | \
-                                    RADIOTAP_FIELD_ANT | \
-                                    RADIOTAP_FIELD_MCS | \
-                                    RADIOTAP_FIELD_AMPDU | \
-                                    RADIOTAP_FIELD_VENDOR)
+				    RADIOTAP_FIELD_FLAGS | \
+				    RADIOTAP_FIELD_RATE | \
+				    RADIOTAP_FIELD_CHANNEL | \
+				    RADIOTAP_FIELD_ANT_SIGNAL | \
+				    RADIOTAP_FIELD_ANT_NOISE | \
+				    RADIOTAP_FIELD_ANT | \
+				    RADIOTAP_FIELD_MCS | \
+				    RADIOTAP_FIELD_AMPDU | \
+				    RADIOTAP_FIELD_VENDOR)
 
 #define RADIOTAP_LEN_LEGACY			26
 #define RADIOTAP_FIELDS_LEGACY (RADIOTAP_FIELD_TSFT | \
-                                    RADIOTAP_FIELD_FLAGS | \
-                                    RADIOTAP_FIELD_RATE | \
-                                    RADIOTAP_FIELD_CHANNEL | \
-                                    RADIOTAP_FIELD_ANT_SIGNAL | \
-                                    RADIOTAP_FIELD_ANT_NOISE | \
-                                    RADIOTAP_FIELD_ANT | \
-                                    RADIOTAP_FIELD_VENDOR)
+				    RADIOTAP_FIELD_FLAGS | \
+				    RADIOTAP_FIELD_RATE | \
+				    RADIOTAP_FIELD_CHANNEL | \
+				    RADIOTAP_FIELD_ANT_SIGNAL | \
+				    RADIOTAP_FIELD_ANT_NOISE | \
+				    RADIOTAP_FIELD_ANT | \
+				    RADIOTAP_FIELD_VENDOR)
 #endif
 
 /*******************************************************************************
@@ -699,84 +701,84 @@ extern int g_u4HaltFlag;
 ********************************************************************************
 */
 typedef enum _ENUM_SPIN_LOCK_CATEGORY_E {
-    SPIN_LOCK_FSM = 0,
+	SPIN_LOCK_FSM = 0,
 
 #if CFG_SUPPORT_MULTITHREAD
-    SPIN_LOCK_TX_PORT_QUE,
-    SPIN_LOCK_TX_CMD_QUE,
-    SPIN_LOCK_TX_CMD_DONE_QUE,
-    SPIN_LOCK_TC_RESOURCE,
-    SPIN_LOCK_RX_TO_OS_QUE,
+	SPIN_LOCK_TX_PORT_QUE,
+	SPIN_LOCK_TX_CMD_QUE,
+	SPIN_LOCK_TX_CMD_DONE_QUE,
+	SPIN_LOCK_TC_RESOURCE,
+	SPIN_LOCK_RX_TO_OS_QUE,
 #endif
 
-  /* FIX ME */
-    SPIN_LOCK_RX_QUE,
-    SPIN_LOCK_RX_FREE_QUE,
-    SPIN_LOCK_TX_QUE,
-    SPIN_LOCK_CMD_QUE,
-    SPIN_LOCK_TX_RESOURCE,
-    SPIN_LOCK_CMD_RESOURCE,
-    SPIN_LOCK_QM_TX_QUEUE,
-    SPIN_LOCK_CMD_PENDING,
-    SPIN_LOCK_CMD_SEQ_NUM,
-    SPIN_LOCK_TX_MSDU_INFO_LIST,
-    SPIN_LOCK_TXING_MGMT_LIST,
-    SPIN_LOCK_TX_SEQ_NUM,
-    SPIN_LOCK_TX_COUNT,
-    SPIN_LOCK_TXS_COUNT,
-  /* end    */
-    SPIN_LOCK_TX,
-    SPIN_LOCK_IO_REQ,
-    SPIN_LOCK_INT,
+	/* FIX ME */
+	SPIN_LOCK_RX_QUE,
+	SPIN_LOCK_RX_FREE_QUE,
+	SPIN_LOCK_TX_QUE,
+	SPIN_LOCK_CMD_QUE,
+	SPIN_LOCK_TX_RESOURCE,
+	SPIN_LOCK_CMD_RESOURCE,
+	SPIN_LOCK_QM_TX_QUEUE,
+	SPIN_LOCK_CMD_PENDING,
+	SPIN_LOCK_CMD_SEQ_NUM,
+	SPIN_LOCK_TX_MSDU_INFO_LIST,
+	SPIN_LOCK_TXING_MGMT_LIST,
+	SPIN_LOCK_TX_SEQ_NUM,
+	SPIN_LOCK_TX_COUNT,
+	SPIN_LOCK_TXS_COUNT,
+	/* end    */
+	SPIN_LOCK_TX,
+	SPIN_LOCK_IO_REQ,
+	SPIN_LOCK_INT,
 
-    SPIN_LOCK_MGT_BUF,
-    SPIN_LOCK_MSG_BUF,
-    SPIN_LOCK_STA_REC,
+	SPIN_LOCK_MGT_BUF,
+	SPIN_LOCK_MSG_BUF,
+	SPIN_LOCK_STA_REC,
 
-    SPIN_LOCK_MAILBOX,
-    SPIN_LOCK_TIMER,
+	SPIN_LOCK_MAILBOX,
+	SPIN_LOCK_TIMER,
 
-    SPIN_LOCK_BOW_TABLE,
+	SPIN_LOCK_BOW_TABLE,
 
-    SPIN_LOCK_EHPI_BUS, /* only for EHPI */
-    SPIN_LOCK_NET_DEV,
-    SPIN_LOCK_NUM
+	SPIN_LOCK_EHPI_BUS,	/* only for EHPI */
+	SPIN_LOCK_NET_DEV,
+	SPIN_LOCK_NUM
 } ENUM_SPIN_LOCK_CATEGORY_E;
 
 typedef enum _ENUM_MUTEX_CATEGORY_E {
-    MUTEX_TX_CMD_CLEAR,    
-    MUTEX_NUM
+	MUTEX_TX_CMD_CLEAR,
+	MUTEX_NUM
 } ENUM_MUTEX_CATEGORY_E;
 
 /* event for assoc infomation update */
 typedef struct _EVENT_ASSOC_INFO {
-    UINT_8      ucAssocReq; /* 1 for assoc req, 0 for assoc rsp */
-    UINT_8      ucReassoc;  /* 0 for assoc, 1 for reassoc */
-    UINT_16     u2Length;
-    PUINT_8     pucIe;
+	UINT_8 ucAssocReq;	/* 1 for assoc req, 0 for assoc rsp */
+	UINT_8 ucReassoc;	/* 0 for assoc, 1 for reassoc */
+	UINT_16 u2Length;
+	PUINT_8 pucIe;
 } EVENT_ASSOC_INFO, *P_EVENT_ASSOC_INFO;
 
 typedef enum _ENUM_KAL_NETWORK_TYPE_INDEX_T {
-    KAL_NETWORK_TYPE_AIS_INDEX = 0,
+	KAL_NETWORK_TYPE_AIS_INDEX = 0,
 #if CFG_ENABLE_WIFI_DIRECT
-    KAL_NETWORK_TYPE_P2P_INDEX,
+	KAL_NETWORK_TYPE_P2P_INDEX,
 #endif
 #if CFG_ENABLE_BT_OVER_WIFI
-    KAL_NETWORK_TYPE_BOW_INDEX,
+	KAL_NETWORK_TYPE_BOW_INDEX,
 #endif
-    KAL_NETWORK_TYPE_INDEX_NUM
+	KAL_NETWORK_TYPE_INDEX_NUM
 } ENUM_KAL_NETWORK_TYPE_INDEX_T;
 
 typedef enum _ENUM_KAL_MEM_ALLOCATION_TYPE_E {
-    PHY_MEM_TYPE,   /* physically continuous */
-    VIR_MEM_TYPE,   /* virtually continous */
-    MEM_TYPE_NUM
+	PHY_MEM_TYPE,		/* physically continuous */
+	VIR_MEM_TYPE,		/* virtually continous */
+	MEM_TYPE_NUM
 } ENUM_KAL_MEM_ALLOCATION_TYPE;
 
-#if CONFIG_ANDROID /* Defined in Android kernel source */
-typedef struct wake_lock    KAL_WAKE_LOCK_T, *P_KAL_WAKE_LOCK_T;
+#if CONFIG_ANDROID		/* Defined in Android kernel source */
+typedef struct wake_lock KAL_WAKE_LOCK_T, *P_KAL_WAKE_LOCK_T;
 #else
-typedef UINT_32             KAL_WAKE_LOCK_T, *P_KAL_WAKE_LOCK_T;
+typedef UINT_32 KAL_WAKE_LOCK_T, *P_KAL_WAKE_LOCK_T;
 #endif
 
 #if CFG_SUPPORT_AGPS_ASSIST
@@ -794,8 +796,7 @@ typedef enum _ENUM_AGPS_EVENT {
 	AGPS_EVENT_WLAN_OFF,
 	AGPS_EVENT_WLAN_AP_LIST,
 } ENUM_CCX_EVENT;
-BOOLEAN kalIndicateAgpsNotify(P_ADAPTER_T prAdapter, UINT_8 cmd, PUINT_8 data
-, UINT_16 dataLen);
+BOOLEAN kalIndicateAgpsNotify(P_ADAPTER_T prAdapter, UINT_8 cmd, PUINT_8 data, UINT_16 dataLen);
 #endif /* CFG_SUPPORT_AGPS_ASSIST */
 
 #if CFG_SUPPORT_SNIFFER
@@ -804,107 +805,95 @@ BOOLEAN kalIndicateAgpsNotify(P_ADAPTER_T prAdapter, UINT_8 cmd, PUINT_8 data
  * Required Alignment 2 bytes
  */
 typedef struct _RADIOTAP_FIELD_VENDOR_T {
-    UINT_8      aucOUI[3]; 
-    UINT_8      ucSubNamespace;
-    UINT_16     u2DataLen;
-    UINT_8      ucData;
-} __attribute__ ((packed)) RADIOTAP_FIELD_VENDOR_T, *P_RADIOTAP_FIELD_VENDOR_T;
+	UINT_8 aucOUI[3];
+	UINT_8 ucSubNamespace;
+	UINT_16 u2DataLen;
+	UINT_8 ucData;
+} __packed RADIOTAP_FIELD_VENDOR_T, *P_RADIOTAP_FIELD_VENDOR_T;
 
 typedef struct _MONITOR_RADIOTAP_T {
 	/* radiotap header */
-	UINT_8		ucItVersion;		/* set to 0 */
-    UINT_8		ucItPad;
-    UINT_16		u2ItLen;			/* entire length */
-    UINT_32		u4ItPresent;		/* fields present */
+	UINT_8 ucItVersion;	/* set to 0 */
+	UINT_8 ucItPad;
+	UINT_16 u2ItLen;	/* entire length */
+	UINT_32 u4ItPresent;	/* fields present */
 
 	/* TSFT
 	 * Bit Number 0
 	 * Required Alignment 8 bytes
 	 * Unit microseconds
 	 */
-	UINT_64		u8MacTime;
-	
+	UINT_64 u8MacTime;
+
 	/* Flags
 	 * Bit Number 1
 	 */
-	UINT_8		ucFlags;
-	
+	UINT_8 ucFlags;
+
 	/* Rate
 	 * Bit Number 2
 	 * Unit 500 Kbps
 	 */
-	UINT_8		ucRate;
-	
+	UINT_8 ucRate;
+
 	/* Channel
 	 * Bit Number 3
 	 * Required Alignment 2 bytes
 	 */
-	UINT_16		u2ChFrequency;
-	UINT_16		u2ChFlags;	
-	
+	UINT_16 u2ChFrequency;
+	UINT_16 u2ChFlags;
+
 	/* Antenna signal
 	 * Bit Number 5
 	 * Unit dBm
 	 */
-	UINT_8		ucAntennaSignal;	
-	
+	UINT_8 ucAntennaSignal;
+
 	/* Antenna noise
 	 * Bit Number 6
 	 * Unit dBm
 	 */
-	UINT_8		ucAntennaNoise;	
-	
+	UINT_8 ucAntennaNoise;
+
 	/* Antenna
 	 * Bit Number 11
 	 * Unit antenna index
 	 */
-	UINT_8		ucAntenna;	
+	UINT_8 ucAntenna;
 
 	/* MCS
 	 * Bit Number 19
 	 * Required Alignment 1 byte
 	 */
-	UINT_8		ucMcsKnown;
-	UINT_8		ucMcsFlags;
-	UINT_8		ucMcsMcs;	
-	
+	UINT_8 ucMcsKnown;
+	UINT_8 ucMcsFlags;
+	UINT_8 ucMcsMcs;
+
 	/* A-MPDU status
 	 * Bit Number 20
 	 * Required Alignment 4 bytes
 	 */
-	UINT_32		u4AmpduRefNum; 
-	UINT_16		u2AmpduFlags; 
-	UINT_8		ucAmpduDelimiterCRC; 
-	UINT_8		ucAmpduReserved;
-	
+	UINT_32 u4AmpduRefNum;
+	UINT_16 u2AmpduFlags;
+	UINT_8 ucAmpduDelimiterCRC;
+	UINT_8 ucAmpduReserved;
+
 	/* VHT
 	 * Bit Number 21
 	 * Required Alignment 2 bytes
 	 */
-	UINT_16		u2VhtKnown; 
-	UINT_8		ucVhtFlags; 
-	UINT_8		ucVhtBandwidth; 
-	UINT_8		aucVhtMcsNss[4]; 
-	UINT_8		ucVhtCoding; 
-	UINT_8		ucVhtGroupId; 
-	UINT_16		u2VhtPartialAid;
+	UINT_16 u2VhtKnown;
+	UINT_8 ucVhtFlags;
+	UINT_8 ucVhtBandwidth;
+	UINT_8 aucVhtMcsNss[4];
+	UINT_8 ucVhtCoding;
+	UINT_8 ucVhtGroupId;
+	UINT_16 u2VhtPartialAid;
 
-    /* extension space */
-    UINT_8      aucReserve[12];
-} __attribute__ ((packed)) MONITOR_RADIOTAP_T, *P_MONITOR_RADIOTAP_T;
-#endif 
-
-typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
-	SDIO_READL_CRC_ERR = 8,
-	SDIO_READL_TIMEOUT,
-	SDIO_WRITEL_CRC_ERR,
-	SDIO_WRITEL_TIMEOUT,
-	SDIO_READ_SB_CRC_ERR,
-	SDIO_READ_SB_TIMEOUT,
-	SDIO_WRITE_SB_CRC_ERR,
-	SDIO_WRITE_SB_TIMEOUT,
-	SDIO_ERR_NUM
-} ENUM_GET_SDIO_ERR_INFO_T, *P_ENUM_GET_SDIO_ERR_INFO_T;
+	/* extension space */
+	UINT_8 aucReserve[12];
+} __packed MONITOR_RADIOTAP_T, *P_MONITOR_RADIOTAP_T;
+#endif
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -929,7 +918,7 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 /*----------------------------------------------------------------------------*/
 /* Macros of SPIN LOCK operations for using in Driver Layer                   */
 /*----------------------------------------------------------------------------*/
-#define KAL_SPIN_LOCK_DECLARATION()             ULONG __ulFlags
+#define KAL_SPIN_LOCK_DECLARATION()             unsigned long __ulFlags
 
 #define KAL_ACQUIRE_SPIN_LOCK(_prAdapter, _rLockCategory)   \
 	    kalAcquireSpinLock(((P_ADAPTER_T)_prAdapter)->prGlueInfo, _rLockCategory, &__ulFlags)
@@ -941,10 +930,10 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 /* Macros of MUTEX operations for using in Driver Layer                   */
 /*----------------------------------------------------------------------------*/
 #define KAL_ACQUIRE_MUTEX(_prAdapter, _rLockCategory)   \
-            kalAcquireMutex(((P_ADAPTER_T)_prAdapter)->prGlueInfo, _rLockCategory)
+	    kalAcquireMutex(((P_ADAPTER_T)_prAdapter)->prGlueInfo, _rLockCategory)
 
 #define KAL_RELEASE_MUTEX(_prAdapter, _rLockCategory)   \
-            kalReleaseMutex(((P_ADAPTER_T)_prAdapter)->prGlueInfo, _rLockCategory)
+	    kalReleaseMutex(((P_ADAPTER_T)_prAdapter)->prGlueInfo, _rLockCategory)
 
 /*----------------------------------------------------------------------------*/
 /* Macros for accessing Reserved Fields of native packet                      */
@@ -960,24 +949,24 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 /*----------------------------------------------------------------------------*/
 /* Macros of wake_lock operations for using in Driver Layer                   */
 /*----------------------------------------------------------------------------*/
-#if CONFIG_ANDROID /* Defined in Android kernel source */
+#if CONFIG_ANDROID		/* Defined in Android kernel source */
 #define KAL_WAKE_LOCK_INIT(_prAdapter, _prWakeLock, _pcName) \
-        wake_lock_init(_prWakeLock, WAKE_LOCK_SUSPEND, _pcName)
+	wake_lock_init(_prWakeLock, WAKE_LOCK_SUSPEND, _pcName)
 
 #define KAL_WAKE_LOCK_DESTROY(_prAdapter, _prWakeLock) \
-        wake_lock_destroy(_prWakeLock)
+	wake_lock_destroy(_prWakeLock)
 
 #define KAL_WAKE_LOCK(_prAdapter, _prWakeLock) \
-        wake_lock(_prWakeLock)
+	wake_lock(_prWakeLock)
 
 #define KAL_WAKE_LOCK_TIMEOUT(_prAdapter, _prWakeLock, _u4Timeout) \
-        wake_lock_timeout(_prWakeLock, _u4Timeout)
+	wake_lock_timeout(_prWakeLock, _u4Timeout)
 
 #define KAL_WAKE_UNLOCK(_prAdapter, _prWakeLock) \
-        wake_unlock(_prWakeLock)
+	wake_unlock(_prWakeLock)
 
 #define KAL_WAKE_LOCK_ACTIVE(_prAdapter, _prWakeLock) \
-        wake_lock_active(_prWakeLock)
+	wake_lock_active(_prWakeLock)
 
 #else
 #define KAL_WAKE_LOCK_INIT(_prAdapter, _prWakeLock, _pcName)
@@ -1001,31 +990,31 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 /*----------------------------------------------------------------------------*/
 #if DBG
 #define kalMemAlloc(u4Size, eMemType) ({    \
-    void *pvAddr; \
-    if (eMemType == PHY_MEM_TYPE) { \
-        pvAddr = kmalloc(u4Size, GFP_KERNEL);   \
-    } \
-    else { \
-        pvAddr = vmalloc(u4Size);   \
-    } \
-    if (pvAddr) {   \
-        allocatedMemSize += u4Size;   \
-        printk(KERN_INFO DRV_NAME "0x%p(%ld) allocated (%s:%s)\n", \
-	    pvAddr, (UINT_32)u4Size, __FILE__, __func__);  \
-    }   \
-    pvAddr; \
-    })
+	void *pvAddr; \
+	if (eMemType == PHY_MEM_TYPE) { \
+		pvAddr = kmalloc(u4Size, GFP_KERNEL);   \
+	} \
+	else { \
+		pvAddr = vmalloc(u4Size);   \
+	} \
+	if (pvAddr) {   \
+		allocatedMemSize += u4Size;   \
+		DBGLOG(INIT, INFO, "0x%p(%ld) allocated (%s:%s)\n", \
+		    pvAddr, (UINT_32)u4Size, __FILE__, __func__;  \
+	}   \
+	pvAddr; \
+})
 #else
 #define kalMemAlloc(u4Size, eMemType) ({    \
-    void *pvAddr; \
-    if (eMemType == PHY_MEM_TYPE) { \
-        pvAddr = kmalloc(u4Size, GFP_KERNEL);   \
-    } \
-    else { \
-        pvAddr = vmalloc(u4Size);   \
-    } \
-    pvAddr; \
-    })
+	void *pvAddr; \
+	if (eMemType == PHY_MEM_TYPE) { \
+		pvAddr = kmalloc(u4Size, GFP_KERNEL);   \
+	} \
+	else { \
+		pvAddr = vmalloc(u4Size);   \
+	} \
+	pvAddr; \
+})
 #endif
 
 /*----------------------------------------------------------------------------*/
@@ -1041,29 +1030,29 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 /*----------------------------------------------------------------------------*/
 #if DBG
 #define kalMemFree(pvAddr, eMemType, u4Size)  \
-    {   \
-        if (pvAddr) {   \
-            allocatedMemSize -= u4Size; \
-            printk(KERN_INFO DRV_NAME "0x%p(%ld) freed (%s:%s)\n", \
-		pvAddr, (UINT_32)u4Size, __FILE__, __func__);  \
-        }   \
+{   \
+	if (pvAddr) {   \
+		allocatedMemSize -= u4Size; \
+		DBGLOG(INIT, INFO, "0x%p(%ld) freed (%s:%s)\n", \
+			pvAddr, (UINT_32)u4Size, __FILE__, __func__;  \
+	}   \
 	if (eMemType == PHY_MEM_TYPE) { \
-            kfree(pvAddr); \
-        } \
-        else { \
-            vfree(pvAddr); \
-        } \
-    }
+		kfree(pvAddr; \
+	} \
+	else { \
+		vfree(pvAddr); \
+	} \
+}
 #else
 #define kalMemFree(pvAddr, eMemType, u4Size)  \
-    {   \
+{   \
 	if (eMemType == PHY_MEM_TYPE) { \
-            kfree(pvAddr); \
-        } \
-        else { \
-            vfree(pvAddr); \
-        } \
-    }
+		kfree(pvAddr); \
+	} \
+	else { \
+		vfree(pvAddr); \
+	} \
+}
 #endif
 
 #define kalUdelay(u4USec)                           udelay(u4USec)
@@ -1102,8 +1091,10 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 #define kalStrLen(s)                                strlen(s)
 #define kalStrnLen(s, b)                             strnlen(s, b)
 #define kalStrniCmp(s, n)                            strnicmp(s, n)
-#define kalStrtoul(cp, endp, base)                    simple_strtoul(cp, endp, base)
-#define kalStrtol(cp, endp, base)                    simple_strtol(cp, endp, base)
+/* #define kalStrtoul(cp, endp, base)                    simple_strtoul(cp, endp, base)
+#define kalStrtol(cp, endp, base)                    simple_strtol(cp, endp, base) */
+#define kalkStrtou32(cp, base, resp)                   kstrtou32(cp, base, resp)
+#define kalkStrtos32(cp, base, resp)                   kstrtos32(cp, base, resp)
 #define kalSnprintf(buf, size, fmt, ...)              snprintf(buf, size, fmt, __VA_ARGS__)
 #define kalSprintf(buf, fmt, ...)                     sprintf(buf, fmt, __VA_ARGS__)
 /* remove for AOSP */
@@ -1111,7 +1102,6 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 #define kalStrStr(ct, cs)                            strstr(ct, cs)
 #define kalStrSep(s, ct)                            strsep(s, ct)
 #define kalStrCat(dest, src)                         strcat(dest, src)
-
 
 /* defined for wince sdio driver only */
 #if defined(_HIF_SDIO)
@@ -1133,8 +1123,7 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 */
 /*----------------------------------------------------------------------------*/
 #define kalSendComplete(prGlueInfo, pvPacket, status)   \
-            kalSendCompleteAndAwakeQueue(prGlueInfo, pvPacket)
-
+	    kalSendCompleteAndAwakeQueue(prGlueInfo, pvPacket)
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1148,8 +1137,7 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 */
 /*----------------------------------------------------------------------------*/
 #define kalQueryBufferPointer(prGlueInfo, pvPacket)     \
-            ((PUINT_8)((struct sk_buff *)pvPacket)->data)
-
+	    ((PUINT_8)((struct sk_buff *)pvPacket)->data)
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1163,8 +1151,8 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 */
 /*----------------------------------------------------------------------------*/
 #define kalQueryValidBufferLength(prGlueInfo, pvPacket)     \
-            ((UINT_32)((struct sk_buff *)pvPacket)->end -  \
-             (UINT_32)((struct sk_buff *)pvPacket)->data)
+	    ((UINT_32)((struct sk_buff *)pvPacket)->end -  \
+	     (UINT_32)((struct sk_buff *)pvPacket)->data)
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1179,52 +1167,48 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 */
 /*----------------------------------------------------------------------------*/
 #define kalCopyFrame(prGlueInfo, pvPacket, pucDestBuffer)   \
-            {struct sk_buff *skb = (struct sk_buff *)pvPacket; \
-	    memcpy(pucDestBuffer, skb->data, skb->len); }
+	    do {struct sk_buff *skb = (struct sk_buff *)pvPacket; \
+	    memcpy(pucDestBuffer, skb->data, skb->len); } while (0)
 
 #define kalGetTimeTick()                            jiffies_to_msecs(jiffies)
 
-#define kalPrint                                    printk
+#define kalPrint                                    pr_debug
+#define WLAN_TAG                                    "[wlan]"
 
-#if CFG_SUPPORT_XLOG
-#define XLOG_TAG   "wlan"
+#if 1
+#define kalPrintTag(_Fmt...)        kalPrint(WLAN_TAG _Fmt)
+#else
 
-#define XLogErrorFunc(_Fmt...)                     xlog_printk(ANDROID_LOG_ERROR, XLOG_TAG, _Fmt)
-#define XLogWarnFunc(_Fmt...)                      xlog_printk(ANDROID_LOG_WARN, XLOG_TAG, _Fmt)
-#define XLogInfoFunc(_Fmt...)                      xlog_printk(ANDROID_LOG_DEBUG, XLOG_TAG, _Fmt)
-#define XLogDebugFunc(_Fmt...)                     xlog_printk(ANDROID_LOG_DEBUG, XLOG_TAG, _Fmt)
-#define XLogVerboseFunc(_Fmt...)                   xlog_printk(ANDROID_LOG_VERBOSE, XLOG_TAG, _Fmt)
+#define kalPrintErr(_Fmt...)                    kalPrint(KERN_ERR WLAN_TAG _Fmt)
+#define kalPrintWarn(_Fmt...)                   kalPrint(KERN_WARNING WLAN_TAG _Fmt)
+#define kalPrintInfo(_Fmt...)                   kalPrint(KERN_INFO WLAN_TAG _Fmt)
+#define kalPrintDebug(_Fmt...)                  kalPrint(KERN_INFO WLAN_TAG _Fmt)
 
 #define kalDbgLog(_DbgClass, _Fmt) \
 { \
-    if (_DbgClass & DBG_CLASS_ERROR) { \
-        XLogErrorFunc _Fmt; \
-    } \
-    else if (_DbgClass & DBG_CLASS_WARN) { \
-        XLogWarnFunc _Fmt; \
-    } \
-    else if (_DbgClass & (DBG_CLASS_STATE | DBG_CLASS_EVENT | DBG_CLASS_INFO)) { \
-        XLogInfoFunc _Fmt; \
-    } \
-    else if (_DbgClass & (DBG_CLASS_TRACE | DBG_CLASS_LOUD)) { \
-        XLogDebugFunc _Fmt; \
-    } \
-    else if (_DbgClass & DBG_CLASS_TEMP) { \
-        XLogVerboseFunc _Fmt; \
-    } \
-}    
-#else
-#define WLAN_TAG "[wlan] "
-#define kalPrintTag(_Fmt...)        kalPrint(WLAN_TAG _Fmt)
-#define kalDbgLog(_DbgClass, _Fmt)  kalPrintTag _Fmt
-
+	if (_DbgClass & DBG_CLASS_ERROR) { \
+		kalPrintErr _Fmt; \
+	} \
+	else if (_DbgClass & DBG_CLASS_WARN) { \
+		kalPrintWarn _Fmt; \
+	} \
+	else if (_DbgClass & (DBG_CLASS_EVENT | DBG_CLASS_INFO)) { \
+		kalPrintInfo _Fmt; \
+	} \
+	else if (_DbgClass & (DBG_CLASS_STATE | DBG_CLASS_TRACE | DBG_CLASS_LOUD)) { \
+		kalPrintDebug _Fmt; \
+	} \
+	else if (_DbgClass & DBG_CLASS_TEMP) { \
+		kalPrintErr _Fmt; \
+	} \
+}
 #endif
 
 #define kalBreakPoint() \
-    do { \
-        BUG(); \
-        panic("Oops"); \
-    } while (0)
+do { \
+	BUG(); \
+	panic("Oops"); \
+} while (0)
 
 #if CFG_ENABLE_AEE_MSG
 #define kalSendAeeException                         aee_kernel_exception
@@ -1251,20 +1235,15 @@ typedef enum _ENUM_GET_SDIO_ERR_INFO_T {
 /*----------------------------------------------------------------------------*/
 /* Routines in gl_kal.c                                                       */
 /*----------------------------------------------------------------------------*/
-VOID
-kalAcquireSpinLock(IN P_GLUE_INFO_T prGlueInfo,
-		   IN ENUM_SPIN_LOCK_CATEGORY_E rLockCategory, OUT PULONG plFlags);
+VOID kalAcquireSpinLock(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_SPIN_LOCK_CATEGORY_E rLockCategory, OUT PULONG plFlags);
 
-VOID
-kalReleaseSpinLock(IN P_GLUE_INFO_T prGlueInfo,
-		   IN ENUM_SPIN_LOCK_CATEGORY_E rLockCategory, IN ULONG ulFlags);
+VOID kalReleaseSpinLock(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_SPIN_LOCK_CATEGORY_E rLockCategory, IN ULONG ulFlags);
 
 VOID kalUpdateMACAddress(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucMacAddr);
 
-VOID kalAcquireMutex (IN P_GLUE_INFO_T prGlueInfo, IN ENUM_MUTEX_CATEGORY_E rMutexCategory);
+VOID kalAcquireMutex(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_MUTEX_CATEGORY_E rMutexCategory);
 
-VOID kalReleaseMutex (IN P_GLUE_INFO_T prGlueInfo, IN ENUM_MUTEX_CATEGORY_E rMutexCategory);
-
+VOID kalReleaseMutex(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_MUTEX_CATEGORY_E rMutexCategory);
 
 VOID kalPacketFree(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket);
 
@@ -1275,28 +1254,22 @@ VOID kalOsTimerInitialize(IN P_GLUE_INFO_T prGlueInfo, IN PVOID prTimerHandler);
 BOOL kalSetTimer(IN P_GLUE_INFO_T prGlueInfo, IN OS_SYSTIME rInterval);
 
 WLAN_STATUS
-kalProcessRxPacket(IN P_GLUE_INFO_T prGlueInfo,
-		   IN PVOID pvPacket, IN PUINT_8 pucPacketStart, IN UINT_32 u4PacketLen,
+kalProcessRxPacket(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket, IN PUINT_8 pucPacketStart, IN UINT_32 u4PacketLen,
 		   /* IN PBOOLEAN           pfgIsRetain, */
-		   IN BOOLEAN fgIsRetain, IN ENUM_CSUM_RESULT_T aeCSUM[]
-    );
+		   IN BOOLEAN fgIsRetain, IN ENUM_CSUM_RESULT_T aeCSUM[]);
 
 WLAN_STATUS kalRxIndicatePkts(IN P_GLUE_INFO_T prGlueInfo, IN PVOID apvPkts[], IN UINT_8 ucPktNum);
 
 WLAN_STATUS kalRxIndicateOnePkt(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPkt);
 
 VOID
-kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo,
-			     IN WLAN_STATUS eStatus, IN PVOID pvBuf, IN UINT_32 u4BufLen);
+kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus, IN PVOID pvBuf, IN UINT_32 u4BufLen);
 
 VOID
 kalUpdateReAssocReqInfo(IN P_GLUE_INFO_T prGlueInfo,
-    IN PUINT_8       pucFrameBody,
-			IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest);
+			IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest);
 
-VOID
-kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo,
-			IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen);
+VOID kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen);
 
 #if CFG_TX_FRAGMENT
 BOOLEAN
@@ -1309,29 +1282,23 @@ VOID kalSendCompleteAndAwakeQueue(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
 VOID kalQueryTxChksumOffloadParam(IN PVOID pvPacket, OUT PUINT_8 pucFlag);
 
-VOID kalUpdateRxCSUMOffloadParam(IN PVOID pvPacket, IN ENUM_CSUM_RESULT_T eCSUM[]
-    );
+VOID kalUpdateRxCSUMOffloadParam(IN PVOID pvPacket, IN ENUM_CSUM_RESULT_T eCSUM[]);
 #endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
 
-
-BOOLEAN
-kalRetrieveNetworkAddress(IN P_GLUE_INFO_T prGlueInfo, IN OUT PARAM_MAC_ADDRESS * prMacAddr);
+BOOLEAN kalRetrieveNetworkAddress(IN P_GLUE_INFO_T prGlueInfo, IN OUT PARAM_MAC_ADDRESS * prMacAddr);
 
 VOID
 kalReadyOnChannel(IN P_GLUE_INFO_T prGlueInfo,
-    IN UINT_64          u8Cookie,
-    IN ENUM_BAND_T      eBand,
-		  IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum, IN UINT_32 u4DurationMs);
+		  IN UINT_64 u8Cookie,
+		  IN ENUM_BAND_T eBand, IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum, IN UINT_32 u4DurationMs);
 
 VOID
 kalRemainOnChannelExpired(IN P_GLUE_INFO_T prGlueInfo,
-    IN UINT_64          u8Cookie,
-			  IN ENUM_BAND_T eBand, IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum);
+			  IN UINT_64 u8Cookie, IN ENUM_BAND_T eBand, IN ENUM_CHNL_EXT_T eSco, IN UINT_8 ucChannelNum);
 
 VOID
 kalIndicateMgmtTxStatus(IN P_GLUE_INFO_T prGlueInfo,
-    IN UINT_64 u8Cookie,
-			IN BOOLEAN fgIsAck, IN PUINT_8 pucFrameBuf, IN UINT_32 u4FrameLen);
+			IN UINT_64 u8Cookie, IN BOOLEAN fgIsAck, IN PUINT_8 pucFrameBuf, IN UINT_32 u4FrameLen);
 
 VOID kalIndicateRxMgmtFrame(IN P_GLUE_INFO_T prGlueInfo, IN P_SW_RFB_T prSwRfb);
 
@@ -1344,18 +1311,13 @@ BOOL kalDevRegWrite(P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Register, IN UINT_32 
 
 BOOL
 kalDevPortRead(IN P_GLUE_INFO_T prGlueInfo,
-    IN  UINT_16         u2Port,
-	       IN UINT_32 u2Len, OUT PUINT_8 pucBuf, IN UINT_32 u2ValidOutBufSize);
+	       IN UINT_16 u2Port, IN UINT_32 u2Len, OUT PUINT_8 pucBuf, IN UINT_32 u2ValidOutBufSize);
 
 BOOL
 kalDevPortWrite(P_GLUE_INFO_T prGlueInfo,
-    IN UINT_16     u2Port,
-		IN UINT_32 u2Len, IN PUINT_8 pucBuf, IN UINT_32 u2ValidInBufSize);
-
-UINT_32 kalDevGetSdioErrInfo(IN ENUM_GET_SDIO_ERR_INFO_T eSdioErrInfo);
+		IN UINT_16 u2Port, IN UINT_32 u2Len, IN PUINT_8 pucBuf, IN UINT_32 u2ValidInBufSize);
 
 BOOL kalDevWriteWithSdioCmd52(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Addr, IN UINT_8 ucData);
-
 
 #if CFG_SUPPORT_EXT_CONFIG
 UINT_32 kalReadExtCfg(IN P_GLUE_INFO_T prGlueInfo);
@@ -1363,59 +1325,45 @@ UINT_32 kalReadExtCfg(IN P_GLUE_INFO_T prGlueInfo);
 
 BOOLEAN
 kalQoSFrameClassifierAndPacketInfo(IN P_GLUE_INFO_T prGlueInfo,
-    IN P_NATIVE_PACKET prPacket, OUT P_TX_PACKET_INFO prTxPktInfo);
+				   IN P_NATIVE_PACKET prPacket, OUT P_TX_PACKET_INFO prTxPktInfo);
 
-BOOLEAN
-kalGetEthDestAddr(IN P_GLUE_INFO_T prGlueInfo,
-		  IN P_NATIVE_PACKET prPacket, OUT PUINT_8 pucEthDestAddr);
+BOOLEAN kalGetEthDestAddr(IN P_GLUE_INFO_T prGlueInfo, IN P_NATIVE_PACKET prPacket, OUT PUINT_8 pucEthDestAddr);
 
 VOID
 kalOidComplete(IN P_GLUE_INFO_T prGlueInfo,
 	       IN BOOLEAN fgSetQuery, IN UINT_32 u4SetQueryInfoLen, IN WLAN_STATUS rOidStatus);
 
-
 WLAN_STATUS
 kalIoctl(IN P_GLUE_INFO_T prGlueInfo,
-    IN PFN_OID_HANDLER_FUNC     pfnOidHandler,
-    IN PVOID                    pvInfoBuf,
-    IN UINT_32                  u4InfoBufLen,
-	 IN BOOL fgRead, IN BOOL fgWaitResp, IN BOOL fgCmd, OUT PUINT_32 pu4QryInfoLen);
+	 IN PFN_OID_HANDLER_FUNC pfnOidHandler,
+	 IN PVOID pvInfoBuf,
+	 IN UINT_32 u4InfoBufLen, IN BOOL fgRead, IN BOOL fgWaitResp, IN BOOL fgCmd, OUT PUINT_32 pu4QryInfoLen);
 
 VOID kalHandleAssocInfo(IN P_GLUE_INFO_T prGlueInfo, IN P_EVENT_ASSOC_INFO prAssocInfo);
 
 #if CFG_ENABLE_FW_DOWNLOAD
 
-PVOID
-kalFirmwareImageMapping(IN P_GLUE_INFO_T prGlueInfo,
-			OUT PPVOID ppvMapFileBuf, OUT PUINT_32 pu4FileLength);
+PVOID kalFirmwareImageMapping(IN P_GLUE_INFO_T prGlueInfo, OUT PPVOID ppvMapFileBuf, OUT PUINT_32 pu4FileLength);
 
-VOID
-kalFirmwareImageUnmapping(IN P_GLUE_INFO_T prGlueInfo, IN PVOID prFwHandle, IN PVOID pvMapFileBuf);
+VOID kalFirmwareImageUnmapping(IN P_GLUE_INFO_T prGlueInfo, IN PVOID prFwHandle, IN PVOID pvMapFileBuf);
 #endif
-
 
 /*----------------------------------------------------------------------------*/
 /* Card Removal Check                                                         */
 /*----------------------------------------------------------------------------*/
 BOOLEAN kalIsCardRemoved(IN P_GLUE_INFO_T prGlueInfo);
 
-
 /*----------------------------------------------------------------------------*/
 /* TX                                                                         */
 /*----------------------------------------------------------------------------*/
 VOID kalFlushPendingTxPackets(IN P_GLUE_INFO_T prGlueInfo);
-
 
 /*----------------------------------------------------------------------------*/
 /* Media State Indication                                                     */
 /*----------------------------------------------------------------------------*/
 ENUM_PARAM_MEDIA_STATE_T kalGetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo);
 
-
-VOID
-kalSetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo,
-			  IN ENUM_PARAM_MEDIA_STATE_T eParamMediaStateIndicate);
-
+VOID kalSetMediaStateIndicated(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_PARAM_MEDIA_STATE_T eParamMediaStateIndicate);
 
 /*----------------------------------------------------------------------------*/
 /* OID handling                                                               */
@@ -1434,9 +1382,7 @@ VOID kalIndicateBOWEvent(IN P_GLUE_INFO_T prGlueInfo, IN P_AMPC_EVENT prEvent);
 
 ENUM_BOW_DEVICE_STATE kalGetBowState(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rPeerAddr);
 
-BOOLEAN
-kalSetBowState(IN P_GLUE_INFO_T prGlueInfo,
-	       IN ENUM_BOW_DEVICE_STATE eBowState, PARAM_MAC_ADDRESS rPeerAddr);
+BOOLEAN kalSetBowState(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_BOW_DEVICE_STATE eBowState, PARAM_MAC_ADDRESS rPeerAddr);
 
 ENUM_BOW_DEVICE_STATE kalGetBowGlobalState(IN P_GLUE_INFO_T prGlueInfo);
 
@@ -1455,9 +1401,8 @@ UINT_8 kalGetBowAvailablePhysicalLinkCount(IN P_GLUE_INFO_T prGlueInfo);
 BOOLEAN kalInitBowDevice(IN P_GLUE_INFO_T prGlueInfo, IN const char *prDevName);
 
 BOOLEAN kalUninitBowDevice(IN P_GLUE_INFO_T prGlueInfo);
-#endif				/* CFG_BOW_SEPARATE_DATA_PATH */
-#endif				/* CFG_ENABLE_BT_OVER_WIFI */
-
+#endif /* CFG_BOW_SEPARATE_DATA_PATH */
+#endif /* CFG_ENABLE_BT_OVER_WIFI */
 
 /*----------------------------------------------------------------------------*/
 /* Firmware Download Handling                                                 */
@@ -1473,10 +1418,7 @@ VOID kalClearSecurityFrames(IN P_GLUE_INFO_T prGlueInfo);
 
 VOID kalClearSecurityFramesByBssIdx(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucBssIndex);
 
-VOID
-kalSecurityFrameSendComplete(IN P_GLUE_INFO_T prGlueInfo,
-			     IN PVOID pvPacket, IN WLAN_STATUS rStatus);
-
+VOID kalSecurityFrameSendComplete(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket, IN WLAN_STATUS rStatus);
 
 /*----------------------------------------------------------------------------*/
 /* Management Frame Clearance                                                 */
@@ -1495,9 +1437,7 @@ BOOLEAN kalSetTimer(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Interval);
 
 BOOLEAN kalCancelTimer(IN P_GLUE_INFO_T prGlueInfo);
 
-VOID
-kalScanDone(IN P_GLUE_INFO_T prGlueInfo,
-	    IN ENUM_KAL_NETWORK_TYPE_INDEX_T eNetTypeIdx, IN WLAN_STATUS status);
+VOID kalScanDone(IN P_GLUE_INFO_T prGlueInfo, IN ENUM_KAL_NETWORK_TYPE_INDEX_T eNetTypeIdx, IN WLAN_STATUS status);
 
 UINT_32 kalRandomNumber(VOID);
 
@@ -1521,8 +1461,8 @@ P_REG_INFO_T kalGetConfiguration(IN P_GLUE_INFO_T prGlueInfo);
 
 VOID
 kalGetConfigurationVersion(IN P_GLUE_INFO_T prGlueInfo,
-    OUT PUINT_16        pu2Part1CfgOwnVersion,
-    OUT PUINT_16        pu2Part1CfgPeerVersion,
+			   OUT PUINT_16 pu2Part1CfgOwnVersion,
+			   OUT PUINT_16 pu2Part1CfgPeerVersion,
 			   OUT PUINT_16 pu2Part2CfgOwnVersion, OUT PUINT_16 pu2Part2CfgPeerVersion);
 
 BOOLEAN kalCfgDataRead16(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Offset, OUT PUINT_16 pu2Data);
@@ -1541,7 +1481,6 @@ VOID
 kalUpdateRSSI(IN P_GLUE_INFO_T prGlueInfo,
 	      IN ENUM_KAL_NETWORK_TYPE_INDEX_T eNetTypeIdx, IN INT_8 cRssi, IN INT_8 cLinkQuality);
 
-
 /*----------------------------------------------------------------------------*/
 /* I/O Buffer Pre-allocation                                                  */
 /*----------------------------------------------------------------------------*/
@@ -1555,9 +1494,8 @@ VOID kalReleaseIOBuffer(IN PVOID pvAddr, IN UINT_32 u4Size);
 
 VOID
 kalGetChannelList(IN P_GLUE_INFO_T prGlueInfo,
-    IN ENUM_BAND_T             eSpecificBand,
-    IN UINT_8                  ucMaxChannelNum,
-		  IN PUINT_8 pucNumOfChannel, IN P_RF_CHANNEL_INFO_T paucChannelList);
+		  IN ENUM_BAND_T eSpecificBand,
+		  IN UINT_8 ucMaxChannelNum, IN PUINT_8 pucNumOfChannel, IN P_RF_CHANNEL_INFO_T paucChannelList);
 
 BOOL kalIsAPmode(IN P_GLUE_INFO_T prGlueInfo);
 
@@ -1579,36 +1517,29 @@ INT_32 kalReadToFile(const PUINT_8 pucPath, PUINT_8 pucData, UINT_32 u4Size, PUI
 /*----------------------------------------------------------------------------*/
 VOID
 kalIndicateBssInfo(IN P_GLUE_INFO_T prGlueInfo,
-    IN PUINT_8  pucFrameBuf,
-		   IN UINT_32 u4BufLen, IN UINT_8 ucChannelNum, IN INT_32 i4SignalStrength);
+		   IN PUINT_8 pucFrameBuf, IN UINT_32 u4BufLen, IN UINT_8 ucChannelNum, IN INT_32 i4SignalStrength);
 
 /*----------------------------------------------------------------------------*/
 /* Net device                                                                 */
 /*----------------------------------------------------------------------------*/
 WLAN_STATUS
-kalHardStartXmit(struct sk_buff *prSkb,
-		 IN struct net_device *prDev, P_GLUE_INFO_T prGlueInfo, UINT_8 ucBssIndex);
+kalHardStartXmit(struct sk_buff *prSkb, IN struct net_device *prDev, P_GLUE_INFO_T prGlueInfo, UINT_8 ucBssIndex);
 
 BOOLEAN
 kalGetIPv4Address(IN struct net_device *prDev,
-    IN UINT_32 u4MaxNumOfAddr,
-		  OUT PUINT_8 pucIpv4Addrs, OUT PUINT_32 pu4NumOfIpv4Addr);
+		  IN UINT_32 u4MaxNumOfAddr, OUT PUINT_8 pucIpv4Addrs, OUT PUINT_32 pu4NumOfIpv4Addr);
 
 BOOLEAN
 kalGetIPv6Address(IN struct net_device *prDev,
-    IN UINT_32 u4MaxNumOfAddr,
-		  OUT PUINT_8 pucIpv6Addrs, OUT PUINT_32 pu4NumOfIpv6Addr);
+		  IN UINT_32 u4MaxNumOfAddr, OUT PUINT_8 pucIpv6Addrs, OUT PUINT_32 pu4NumOfIpv6Addr);
 
-VOID
-kalSetNetAddressFromInterface(IN P_GLUE_INFO_T prGlueInfo,
-			      IN struct net_device *prDev, IN BOOLEAN fgSet);
+VOID kalSetNetAddressFromInterface(IN P_GLUE_INFO_T prGlueInfo, IN struct net_device *prDev, IN BOOLEAN fgSet);
 
 WLAN_STATUS kalResetStats(IN struct net_device *prDev);
 
 PVOID kalGetStats(IN struct net_device *prDev);
 
-VOID kalResetPacket(IN P_GLUE_INFO_T prGlueInfo,
-    IN P_NATIVE_PACKET prPacket);
+VOID kalResetPacket(IN P_GLUE_INFO_T prGlueInfo, IN P_NATIVE_PACKET prPacket);
 
 #if CFG_SUPPORT_SDIO_READ_WRITE_PATTERN
 /*----------------------------------------------------------------------------*/
@@ -1625,18 +1556,34 @@ VOID kalSchedScanResults(IN P_GLUE_INFO_T prGlueInfo);
 VOID kalSchedScanStopped(IN P_GLUE_INFO_T prGlueInfo);
 
 #if CFG_MULTI_ECOVER_SUPPORT
+
+#if 0
 typedef enum _ENUM_WMTHWVER_TYPE_T {
-    WMTHWVER_E1 = 0x0,
-    WMTHWVER_E2 = 0x1,
-    WMTHWVER_E3 = 0x2,
-    WMTHWVER_E4 = 0x3,
-    WMTHWVER_E5 = 0x4,
-    WMTHWVER_E6 = 0x5,
-    WMTHWVER_MAX,
-    WMTHWVER_INVALID = 0xff
+	WMTHWVER_E1 = 0x0,
+	WMTHWVER_E2 = 0x1,
+	WMTHWVER_E3 = 0x2,
+	WMTHWVER_E4 = 0x3,
+	WMTHWVER_E5 = 0x4,
+	WMTHWVER_E6 = 0x5,
+	WMTHWVER_MAX,
+	WMTHWVER_INVALID = 0xff
 } ENUM_WMTHWVER_TYPE_T, *P_ENUM_WMTHWVER_TYPE_T;
 
 extern ENUM_WMTHWVER_TYPE_T mtk_wcn_wmt_hwver_get(VOID);
+
+#else
+
+typedef enum _ENUM_WMTCHIN_TYPE_T {
+	WMTCHIN_CHIPID = 0x0,
+	WMTCHIN_HWVER = WMTCHIN_CHIPID + 1,
+	WMTCHIN_MAPPINGHWVER = WMTCHIN_HWVER + 1,
+	WMTCHIN_FWVER = WMTCHIN_MAPPINGHWVER + 1,
+	WMTCHIN_MAX
+} ENUM_WMT_CHIPINFO_TYPE_T, *P_ENUM_WMT_CHIPINFO_TYPE_T;
+
+UINT_32 mtk_wcn_wmt_ic_info_get(ENUM_WMT_CHIPINFO_TYPE_T type);
+
+#endif
 
 #endif
 
@@ -1655,9 +1602,6 @@ int rx_thread(void *data);
 #endif
 UINT_64 kalGetBootTime(VOID);
 
-int kalMetInitProcfs(
-    IN P_GLUE_INFO_T prGlueInfo
-    );
-int kalMetRemoveProcfs(void);        
-BOOLEAN kalIsWakeupByWlan(P_ADAPTER_T  prAdapter);
+int kalMetInitProcfs(IN P_GLUE_INFO_T prGlueInfo);
+int kalMetRemoveProcfs(void);
 #endif /* _GL_KAL_H */

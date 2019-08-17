@@ -21,7 +21,7 @@ typedef struct
     ccci_ch_set       ccci_ch;
 #if (defined(_ECCMNI_SEQ_SUPPORT_))
     struct{
-        KAL_UINT32 UL;
+        KAL_UINT32 UL[2];
         KAL_UINT32 DL;
     }                 seqno; 
 #endif

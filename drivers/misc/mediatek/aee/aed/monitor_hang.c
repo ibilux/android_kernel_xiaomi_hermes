@@ -55,27 +55,33 @@ static long monitor_hang_ioctl(struct file *file, unsigned int cmd, unsigned lon
  *****************************************************************************/
 static int monitor_hang_open(struct inode *inode, struct file *filp)
 {
+/*	LOGD("%s\n", __func__); */
+//	aee_kernel_RT_Monitor_api (600) ;
 	return 0;
 }
 
 static int monitor_hang_release(struct inode *inode, struct file *filp)
 {
+/*	LOGD("%s\n", __func__); */
 	return 0;
 }
 
 static unsigned int monitor_hang_poll(struct file *file, struct poll_table_struct *ptable)
 {
+/*	LOGD("%s\n", __func__); */
 	return 0;
 }
 
 static ssize_t monitor_hang_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
 {
+/*	LOGD("%s\n", __func__); */
 	return 0;
 }
 
 static ssize_t monitor_hang_write(struct file *filp, const char __user *buf, size_t count,
 				  loff_t *f_pos)
 {
+/*	LOGD("%s\n", __func__); */
 	return 0;
 }
 
@@ -107,8 +113,6 @@ static long monitor_hang_ioctl(struct file *file, unsigned int cmd, unsigned lon
 		} else if ((int)arg < 0xf) {
 			aee_kernel_wdt_kick_Powkey_api("Powerkey ioctl", (int)arg);
 		}
-
-		LOGE("AEEIOCTL_WDT_Kick_Powerkey ( 0x%x)\n", (int)arg);
 #endif
 
 		return ret;
@@ -306,6 +310,7 @@ static int FindTaskByName(char *name)
       system_ui_pid=task->pid;
       LOGE("[Hang_Detect] %s found pid:%d.\n", task->comm, task->pid);
       //return system_server_pid;  //for_each_process list by pid
+      break;
     }
  }
  read_unlock(&tasklist_lock);
@@ -367,11 +372,9 @@ void show_state_filter_local(unsigned long state_filter)
 		 * reset the NMI-timeout, listing all files on a slow
 		 * console might take a lot of time:
 		 */
-		if ((!state_filter || (p->state & state_filter) )&&  !strstr(p->comm,"wdtk"))
+		if (!state_filter || (p->state & state_filter))
 			sched_show_task_local(p);
 	} while_each_thread(g, p);
-	
-	
 }
 
 
@@ -404,39 +407,36 @@ static void ShowStatus(void)
 	struct pid *pid;
 	int count=0;
 	InDumpAllStack=1;
-	
-	LOGE("[Hang_Detect] dump system_ui all thread bt \n");
-	if(system_ui_pid)
-		show_bt_by_pid(system_ui_pid);
-	    
-	//show all kbt in surfaceflinger
-	LOGE("[Hang_Detect] dump surfaceflinger all thread bt \n");
-	if(surfaceflinger_pid)
-		show_bt_by_pid(surfaceflinger_pid);
-	
-	//show all kbt in system_server
-	LOGE("[Hang_Detect] dump system_server all thread bt \n");
-	if(system_server_pid)
-    		show_bt_by_pid(system_server_pid);
-    		
-	//show all D state thread kbt
-	LOGE("[Hang_Detect] dump all D thread bt \n");
-		show_state_filter_local(TASK_UNINTERRUPTIBLE); 
-	
+
 	//show all kbt in init
 	LOGE("[Hang_Detect] dump init all thread bt \n");
 	if(init_pid)
 		show_bt_by_pid(init_pid);
-	
+
+	//show all kbt in surfaceflinger
+	LOGE("[Hang_Detect] dump surfaceflinger all thread bt \n");
+	if(surfaceflinger_pid)
+		show_bt_by_pid(surfaceflinger_pid);
+
+	//show all kbt in system_server
+	LOGE("[Hang_Detect] dump system_server all thread bt \n");
+	if(system_server_pid)
+    	show_bt_by_pid(system_server_pid);
+
+	//show all D state thread kbt
+	LOGE("[Hang_Detect] dump all D thread bt \n");
+	show_state_filter_local(TASK_UNINTERRUPTIBLE);
+
 	//show all kbt in mmcqd/0
 	LOGE("[Hang_Detect] dump mmcqd/0 all thread bt \n");
 	if(mmcqd0)
    		show_bt_by_pid(mmcqd0);
+
 	//show all kbt in mmcqd/1
 	LOGE("[Hang_Detect] dump mmcqd/1 all thread bt \n");
 	if(mmcqd1)
    		show_bt_by_pid(mmcqd1);
-   		
+
 	LOGE("[Hang_Detect] dump debug_show_all_locks \n");
 	debug_show_all_locks();
 	LOGE("[Hang_Detect] show_free_areas \n");
@@ -450,6 +450,7 @@ static void ShowStatus(void)
 	mmcqd1=0;
 	debuggerd=0;
 	debuggerd64=0;
+	msleep(10);
 }
 
 static int hang_detect_thread(void *arg)
@@ -483,7 +484,11 @@ static int hang_detect_thread(void *arg)
 				}
 				else //only Customer user load  trigger HWT
 				{
-					BUG(); //in order to get Hang info ASAP 
+					aee_kernel_exception_api(__FILE__, __LINE__, DB_OPT_NE_JBT_TRACES|DB_OPT_DISPLAY_HANG_DUMP, "\nCRDISPATCH_KEY:SS Hang\n","we triger HWT ");
+					msleep(30 * 1000);
+					local_irq_disable();
+					while (1);
+					BUG();
 				}	
 			}
 
@@ -515,8 +520,18 @@ void aee_kernel_RT_Monitor_api(int lParam)
 		hang_detect_counter = hd_timeout;
 		LOGE("[Hang_Detect] hang_detect disabled\n");
 	} else if (lParam > 0) {
-		hd_detect_enabled = 1;
-		hang_detect_counter = hd_timeout = ((long)lParam + HD_INTER - 1) / (HD_INTER);
+		/* lParem=0x1000|timeout,only set in aee call when NE in system_server
+		*  so only change hang_detect_counter when call from AEE
+		*  Others ioctl, will change hd_detect_enabled & hang_detect_counter
+		*/
+		if (lParam & 0x1000) {
+			hang_detect_counter =
+			hd_timeout = ((long)(lParam & 0x0fff) + HD_INTER - 1) / (HD_INTER);
+		} else {
+			hd_detect_enabled = 1;
+			hang_detect_counter =
+				hd_timeout = ((long)lParam + HD_INTER - 1) / (HD_INTER);
+		}
 		LOGE("[Hang_Detect] hang_detect enabled %d\n", hd_timeout);
 	}
 }

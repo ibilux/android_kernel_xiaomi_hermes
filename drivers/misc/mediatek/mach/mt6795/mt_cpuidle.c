@@ -204,20 +204,15 @@ static unsigned long gic_dist_base = 0xf0221000;
  * macro for log
  **********************************/
 #define CPU_DORMANT_LOG_WITH_NONE                           0
-#define CPU_DORMANT_LOG_WITH_PR                           1
-#define CPU_DORMANT_LOG_WITH_XLOG                           2
+#define CPU_DORMANT_LOG_WITH_DEBUG                          1
 
 #define CPU_DORMANT_LOG_PRINT CPU_DORMANT_LOG_WITH_NONE
 
 #if (CPU_DORMANT_LOG_PRINT == CPU_DORMANT_LOG_WITH_NONE)
 #define CPU_DORMANT_INFO(fmt, args...)          do { } while(0)
-#elif (CPU_DORMANT_LOG_PRINT == CPU_DORMANT_LOG_WITH_PR)
+#elif (CPU_DORMANT_LOG_PRINT == CPU_DORMANT_LOG_WITH_DEBUG)
 #define CPU_DORMANT_INFO(fmt, args...)		do { pr_debug("[Power/cpu_dormant] "fmt, ##args); } while(0)
-#elif (CPU_DORMANT_LOG_PRINT == CPU_DORMANT_LOG_WITH_XLOG)
-#define CPU_DORMANT_INFO(fmt, args...)		do { xlog_printk(ANDROID_LOG_INFO, "Power/cpu_dormant", fmt, ##args); } while(0)
 #endif
-
-#define zlog(fmt, args...)		do { xlog_printk(ANDROID_LOG_INFO, "Power/cpu_dormant", fmt, ##args); } while(0)
 
 #define MT_DORMANT_DEBUG 1
 
@@ -2346,18 +2341,18 @@ static int mt_dormant_dts_map(void)
         node = of_find_compatible_node(NULL, NULL, DBGAPB_NODE);
         if (!node) 
         {
-                zlog("error: cannot find node " DBGAPB_NODE); 
+                CPU_DORMANT_INFO("error: cannot find node " DBGAPB_NODE); 
                 BUG();
         }
         ca7_dbgapb_base = of_iomap(node, 0);
         if(!ca7_dbgapb_base) {
-                zlog("error: cannot iomap 0 " DBGAPB_NODE);
+                CPU_DORMANT_INFO("error: cannot iomap 0 " DBGAPB_NODE);
                 BUG();
         }
 
         ca15l_dbgapb_base = of_iomap(node, 4);
         if(!ca15l_dbgapb_base) {
-                zlog("error: cannot iomap 4 " DBGAPB_NODE);
+                CPU_DORMANT_INFO("error: cannot iomap 4 " DBGAPB_NODE);
                 BUG();
         }
 
@@ -2365,16 +2360,16 @@ static int mt_dormant_dts_map(void)
         node = of_find_compatible_node(NULL, NULL, MCUCFG_NODE);
         if (!node) 
         {
-                zlog("error: cannot find node " MCUCFG_NODE); 
+                CPU_DORMANT_INFO("error: cannot find node " MCUCFG_NODE); 
                 BUG();
         }
         mcucfg_base = of_iomap(node, 0);
         if(!mcucfg_base) {
-                zlog("error: cannot iomap " MCUCFG_NODE);
+                CPU_DORMANT_INFO("error: cannot iomap " MCUCFG_NODE);
                 BUG();
         }
         if (of_address_to_resource(node, 0, &r)) {
-                zlog("error: cannot get phys addr" MCUCFG_NODE);
+                CPU_DORMANT_INFO("error: cannot get phys addr" MCUCFG_NODE);
                 BUG();
         }
         CA7_BUS_CONFIG_PHY = r.start + 0x100 + 0x1c;
@@ -2385,16 +2380,16 @@ static int mt_dormant_dts_map(void)
         node = of_find_compatible_node(NULL, NULL, CCI400_NODE);
         if (!node) 
         {
-                zlog("error: cannot find node " CCI400_NODE); 
+                CPU_DORMANT_INFO("error: cannot find node " CCI400_NODE); 
                 BUG();
         }
         cci400_base = of_iomap(node, 0);
         if(!cci400_base) {
-                zlog("error: cannot iomap " CCI400_NODE);
+                CPU_DORMANT_INFO("error: cannot iomap " CCI400_NODE);
                 BUG();
         }
         if (of_address_to_resource(node, 0, &r)) {
-                zlog("error: cannot get phys addr" CCI400_NODE);
+                CPU_DORMANT_INFO("error: cannot get phys addr" CCI400_NODE);
                 BUG();
         }
         CCI400_CA7_SNOOP_CTLR_PHY = r.start + 0x5000;
@@ -2406,12 +2401,12 @@ static int mt_dormant_dts_map(void)
         node = of_find_compatible_node(NULL, NULL, INFRACFG_AO_NODE);
         if (!node) 
         {
-                zlog("error: cannot find node " INFRACFG_AO_NODE); 
+                CPU_DORMANT_INFO("error: cannot find node " INFRACFG_AO_NODE); 
                 BUG();
         }
         infracfg_ao_base = of_iomap(node, 0);
         if(!infracfg_ao_base) {
-                zlog("error: cannot iomap " INFRACFG_AO_NODE);
+                CPU_DORMANT_INFO("error: cannot iomap " INFRACFG_AO_NODE);
                 BUG();
         }
 
@@ -2419,23 +2414,23 @@ static int mt_dormant_dts_map(void)
         node = of_find_compatible_node(NULL, NULL, GIC_NODE);
         if (!node) 
         {
-                zlog("error: cannot find node " GIC_NODE); 
+                CPU_DORMANT_INFO("error: cannot find node " GIC_NODE); 
                 BUG();
         }
         gic_dist_base = of_iomap(node, 0);
         gic_cpu_base = of_iomap(node, 1);
         if(!gic_dist_base || !gic_cpu_base) {
-                zlog("error: cannot iomap " GIC_NODE);
+                CPU_DORMANT_INFO("error: cannot iomap " GIC_NODE);
                 BUG();
         }
     
         of_node_put(node);
 
-        zlog("dts map: %lx %lx %lx %lx %lx %lx %lx\n\n", 
+        CPU_DORMANT_INFO("dts map: %lx %lx %lx %lx %lx %lx %lx\n\n", 
              ca7_dbgapb_base, ca15l_dbgapb_base, mcucfg_base,
              cci400_base, infracfg_ao_base, gic_dist_base, gic_cpu_base); 
 
-        zlog("dts map: %lx %lx %lx %lx %lx \n\n", 
+        CPU_DORMANT_INFO("dts map: %lx %lx %lx %lx %lx \n\n", 
              CA7_BUS_CONFIG_PHY,
              CA15L_MISDBG_PHY, 
              CCI400_CA7_SNOOP_CTLR_PHY,

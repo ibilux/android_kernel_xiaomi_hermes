@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/gl_init.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/common/gl_init.c#1
 */
 
 /*! \file   gl_init.c
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: gl_init.c $
+** Log: gl_init.c
 **
 ** 08 05 2013 cp.wu
 ** [BORA00002227] [MT6630 Wi-Fi][Driver] Update for Makefile and HIFSYS modifications
@@ -31,7 +29,8 @@
 ** (Davinci label: MT6620_WIFI_Driver_V2_3_120913_1942_As_MT6630_Base)
  *
  * 09 13 2011 pat.lu
- * [WCXRP00000981] [WiFi][Win Driver] SDIO interface should be released in free adapter API when the driver in not initialized successful
+ * [WCXRP00000981] [WiFi][Win Driver] SDIO interface should be released
+ * in free adapter API when the driver in not initialized successful
  * Add SDIO interface release call at freeadapter API for XP driver unsuccessful initialization case.
  *
  * 08 15 2011 cp.wu
@@ -43,11 +42,13 @@
  * Revert windows debug message.
  *
  * 01 04 2011 cp.wu
- * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and vmalloc implementations to ease physically continous memory demands
+ * [WCXRP00000338] [MT6620 Wi-Fi][Driver] Separate kalMemAlloc into kmalloc and
+ * vmalloc implementations to ease physically continous memory demands
  * separate kalMemAlloc() into virtually-continous and physically-continous type to ease slab system pressure
  *
  * 11 01 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150]
+ * [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
  * 1) Query link speed (TX rate) from firmware directly with buffering mechanism to reduce overhead
  * 2) Remove CNM CH-RECOVER event handling
  * 3) cfg read/write API renamed with kal prefix for unified naming rules.
@@ -251,7 +252,7 @@
 #if DBG
 UINT_8 aucDebugModule[DBG_MODULE_NUM];
 UINT_32 u4DebugModule = 0;
-#endif				/* DBG */
+#endif /* DBG */
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A
@@ -274,200 +275,11 @@ static UINT_8 mpNdisMinorVersion;
 *                   F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-BOOLEAN mpCheckForHang(NDIS_HANDLE miniportAdapterContext);
-
-VOID
-mpIsr(OUT PBOOLEAN interruptRecognized_p,
-      OUT PBOOLEAN queueMiniportHandleInterrupt_p, IN NDIS_HANDLE miniportAdapterContext);
-
-VOID mpHandleInterrupt(IN NDIS_HANDLE miniportAdapterContext);
-
-NDIS_STATUS
-mpInitialize(OUT PNDIS_STATUS prOpenErrorStatus,
-	     OUT PUINT prSelectedMediumIndex,
-	     IN PNDIS_MEDIUM prMediumArray,
-	     IN UINT u4MediumArraySize,
-	     IN NDIS_HANDLE rMiniportAdapterHandle, IN NDIS_HANDLE rWrapperConfigurationContext);
-
-VOID
-mpSendPackets(IN NDIS_HANDLE miniportAdapterContext,
-	      IN PPNDIS_PACKET packetArray_p, IN UINT numberOfPackets);
-
-VOID mpReturnPacket(IN NDIS_HANDLE miniportAdapterContext, IN PNDIS_PACKET prPacket);
-
-NDIS_STATUS mpReset(OUT PBOOLEAN addressingReset_p, IN NDIS_HANDLE miniportAdapterContext);
-
-VOID mpHalt(IN NDIS_HANDLE miniportAdapterContext);
-
-NDIS_STATUS
-mpQueryInformation(IN NDIS_HANDLE miniportAdapterContext,
-		   IN NDIS_OID oid,
-		   IN PVOID pvInfomationBuffer,
-		   IN UINT_32 u4InformationBufferLength,
-		   OUT PUINT_32 pu4ByteWritten, OUT PUINT_32 pu4ByteNeeded);
-
-NDIS_STATUS
-mpSetInformation(IN NDIS_HANDLE miniportAdapterContext,
-		 IN NDIS_OID oid,
-		 IN PVOID pvInfomationBuffer,
-		 IN UINT_32 u4InformationBufferLength,
-		 OUT PUINT_32 pu4ByteRead, OUT PUINT_32 pu4ByteNeeded);
-
-VOID mpShutdown(IN PVOID shutdownContext);
-
-P_GLUE_INFO_T windowsCreateGlue(NDIS_HANDLE rMiniportAdapterHandle, UINT_16 u2NdisVersion);
-
-VOID mpFreeAdapterObject(IN P_GLUE_INFO_T prGlueInfo);
-
-NDIS_STATUS
-windowsReadRegistryParameters(IN P_GLUE_INFO_T prGlueInfo,
-			      IN NDIS_HANDLE wrapperConfigurationContext);
-
-UINT_32 windowsInitRxPacketPool(P_GLUE_INFO_T prGlueInfo, UINT_32 u4NumPkt, UINT_32 u4MaxPktSz);
-
-#if DBG
-BOOLEAN reqCheckOrderOfSupportedOids(IN PVOID pvAdapter);
-#endif
-
-#ifdef NDIS51_MINIPORT
-VOID
-mpPnPEventNotify(IN NDIS_HANDLE miniportAdapterContext,
-		 IN NDIS_DEVICE_PNP_EVENT pnpEvent,
-		 IN PVOID informationBuffer_p, IN UINT_32 informationBufferLength);
-
-VOID mpShutdown(IN PVOID shutdownContext);
-#endif				/* DBG */
-
 
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
 */
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief Driver entry. It is the first routine called after a driver is loaded,
-*        and is responsible for initializing the driver
-*
-* \param[in] driverObject Caller-supplied pointer to a DRIVER_OBJECT structure.
-*                         This is the driver's driver object.
-* \param[in] registryPath Pointer to a counted Unicode string specifying the
-*                         path to the driver's registry key.
-*
-* \return If the routine succeeds, it must return STATUS_SUCCESS.
-*         Otherwise, it must return one of the error status values defined
-*         in ntstatus.h.
-*/
-/*----------------------------------------------------------------------------*/
-NTSTATUS DriverEntry(IN PDRIVER_OBJECT driverObject, IN PUNICODE_STRING registryPath)
-{
-	NDIS_STATUS status;
-	NDIS_HANDLE ndisWrapperHandle;
-	NDIS_MINIPORT_CHARACTERISTICS mpChar;
-#if DBG
-	INT i;
-#endif
-
-	DEBUGFUNC("DriverEntry");
-
-#if DBG
-	/* Initialize debug class of each module */
-	for (i = 0; i < DBG_MODULE_NUM; i++) {
-		aucDebugModule[i] = DBG_CLASS_ERROR |
-		    DBG_CLASS_WARN | DBG_CLASS_STATE | DBG_CLASS_EVENT;
-	}
-	aucDebugModule[DBG_INIT_IDX] |= DBG_CLASS_TRACE | DBG_CLASS_INFO;
-/* aucDebugModule[DBG_TX_IDX] |= DBG_CLASS_TRACE | DBG_CLASS_INFO; */
-	aucDebugModule[DBG_RX_IDX] |= DBG_CLASS_TRACE | DBG_CLASS_INFO;
-	aucDebugModule[DBG_RFTEST_IDX] |= DBG_CLASS_TRACE | DBG_CLASS_INFO;
-
-	aucDebugModule[DBG_REQ_IDX] &= ~DBG_CLASS_WARN;
-
-	aucDebugModule[DBG_EMU_IDX] |= DBG_CLASS_TRACE | DBG_CLASS_INFO;
-/* aucDebugModule[DBG_TX_IDX] |= DBG_CLASS_TRACE; */
-	aucDebugModule[DBG_TX_IDX] &= ~DBG_CLASS_EVENT;
-	aucDebugModule[DBG_RX_IDX] &= ~DBG_CLASS_EVENT;
-
-#endif				/* DBG */
-
-	DBGLOG(INIT, TRACE, ("\n"));
-	DBGLOG(INIT, TRACE, ("DriverEntry: Driver object @0x%p\n", driverObject));
-
-	/* Now we must initialize the wrapper, and then register the Miniport */
-	NdisMInitializeWrapper(&ndisWrapperHandle, driverObject, registryPath, NULL);
-
-	if (ndisWrapperHandle == NULL) {
-		status = NDIS_STATUS_FAILURE;
-
-		DBGLOG(INIT, ERROR, ("Init wrapper ==> FAILED (status=0x%x)\n", status));
-		return status;
-	}
-
-	NdisZeroMemory(&mpChar, sizeof(NDIS_MINIPORT_CHARACTERISTICS));
-
-	/* Initialize the Miniport characteristics for the call to
-	   NdisMRegisterMiniport. */
-	mpChar.MajorNdisVersion = mpNdisMajorVersion;
-	mpChar.MinorNdisVersion = mpNdisMinorVersion;
-	mpChar.CheckForHangHandler = NULL;	/* mpCheckForHang; */
-	mpChar.DisableInterruptHandler = NULL;
-	mpChar.EnableInterruptHandler = NULL;
-	mpChar.HaltHandler = mpHalt;
-	mpChar.HandleInterruptHandler = mpHandleInterrupt;
-	mpChar.InitializeHandler = mpInitialize;
-	mpChar.ISRHandler = mpIsr;
-	mpChar.QueryInformationHandler = mpQueryInformation;
-	/*mpChar.ReconfigureHandler      = NULL; */
-	mpChar.ResetHandler = mpReset;
-	mpChar.SetInformationHandler = mpSetInformation;
-	mpChar.SendHandler = NULL;
-	mpChar.SendPacketsHandler = mpSendPackets;
-	mpChar.ReturnPacketHandler = mpReturnPacket;
-	mpChar.TransferDataHandler = NULL;
-	mpChar.AllocateCompleteHandler = NULL;
-#ifdef NDIS51_MINIPORT
-	mpChar.CancelSendPacketsHandler = NULL;
-	/*mpChar.CancelSendPacketsHandler = MPCancelSendPackets; */
-	mpChar.PnPEventNotifyHandler = mpPnPEventNotify;
-	mpChar.AdapterShutdownHandler = mpShutdown;
-#endif
-
-	/* Register this driver to use the NDIS library of version the same as
-	   the default setting of the build environment. */
-	status = NdisMRegisterMiniport(ndisWrapperHandle,
-				       &mpChar, sizeof(NDIS_MINIPORT_CHARACTERISTICS));
-
-	DBGLOG(INIT, TRACE, ("NdisMRegisterMiniport (NDIS %d.%d) returns 0x%x\n",
-			     mpNdisMajorVersion, mpNdisMinorVersion, status));
-
-#ifndef _WIN64
-#ifdef NDIS51_MINIPORT
-	/* If the current platform cannot support NDIS 5.1, we attempt to declare
-	   ourselves as an NDIS 5.0 miniport driver. */
-	if (status == NDIS_STATUS_BAD_VERSION) {
-		mpNdisMinorVersion = 0;
-		mpChar.MinorNdisVersion = 0;
-		/* Register this driver to use the NDIS 5.0 library. */
-		status = NdisMRegisterMiniport(ndisWrapperHandle, &mpChar,
-					       sizeof(NDIS50_MINIPORT_CHARACTERISTICS));
-
-		DBGLOG(INIT, TRACE, ("NdisMRegisterMiniport (NDIS %d.%d) returns 0x%x\n",
-				     mpNdisMajorVersion, mpNdisMinorVersion, status));
-	}
-#endif
-#endif
-
-	if (status != NDIS_STATUS_SUCCESS) {
-		DBGLOG(INIT, ERROR, ("Register NDIS %d.%d miniport ==> FAILED (status=0x%x)\n",
-				     mpNdisMajorVersion, mpNdisMinorVersion, status));
-
-		NdisTerminateWrapper(ndisWrapperHandle, NULL);
-
-		return status;
-	}
-
-	return STATUS_SUCCESS;
-}				/* DriverEntry */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -483,8 +295,8 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT driverObject, IN PUNICODE_STRING registry
 */
 /*----------------------------------------------------------------------------*/
 VOID
-mpIsr(OUT PBOOLEAN interruptRecognized_p,
-      OUT PBOOLEAN queueMiniportHandleInterrupt_p, IN NDIS_HANDLE miniportAdapterContext)
+mpIsr(OUT PBOOLEAN interruptRecognized_p, OUT PBOOLEAN queueMiniportHandleInterrupt_p,
+	IN NDIS_HANDLE miniportAdapterContext)
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) miniportAdapterContext;
 
@@ -517,269 +329,6 @@ VOID mpHandleInterrupt(IN NDIS_HANDLE miniportAdapterContext)
 
 }				/* mpHandleInterrupt */
 
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief This function is a required function that sets up a network adapter,
-*        or virtual network adapter, for network I/O operations, claims all
-*        hardware resources necessary to the network adapter in the registry,
-*        and allocates resources the driver needs to carry out network I/O
-	 operations.
-*
-* \param[out] prOpenErrorStatus              Follow MSDN definition.
-* \param[out] prSelectedMediumIndex          Follow MSDN definition.
-* \param[in]  prMediumArray                  Follow MSDN definition.
-* \param[in]  u4MediumArraySize              Follow MSDN definition.
-* \param[in]  rMiniportAdapterHandle         Follow MSDN definition.
-* \param[in]  rWrapperConfigurationContext   Follow MSDN definition.
-*
-* \retval NDIS_STATUS_SUCCESS   success
-* \retval others                fail for some reasons.
-*/
-/*----------------------------------------------------------------------------*/
-NDIS_STATUS
-mpInitialize(OUT PNDIS_STATUS prOpenErrorStatus,
-	     OUT PUINT prSelectedMediumIndex,
-	     IN PNDIS_MEDIUM prMediumArray,
-	     IN UINT u4MediumArraySize,
-	     IN NDIS_HANDLE rMiniportAdapterHandle, IN NDIS_HANDLE rWrapperConfigurationContext)
-{
-	P_ADAPTER_T prAdapter = NULL;
-	P_GLUE_INFO_T prGlueInfo = NULL;
-	UINT i;
-	NDIS_STATUS status;
-#if DBG
-	CHAR companyName[] = NIC_VENDOR;
-	CHAR productName[] = NIC_PRODUCT_NAME;
-	CHAR driverVersion[] = NIC_DRIVER_VERSION_STRING;
-#endif
-	UINT_8 desc[] = NIC_DRIVER_NAME;
-	PVOID pvFwImageMapFile = NULL;
-	NDIS_HANDLE rFileHandleFwImg = NULL;
-	NDIS_STRING rFileWifiRam;
-	UINT_32 u4FwImageFileLength = 0;
-#if defined(WINDOWS_DDK)
-	NTSTATUS rStatus = 0;
-#endif
-
-
-	DEBUGFUNC("MPInitialize");
-	DBGLOG(INIT, TRACE, ("\n"));
-	DBGPRINTF("MPInitialize() / Current IRQL = %d\n", KeGetCurrentIrql());
-
-	DBGLOG(INIT, TRACE, ("%s\n", productName));
-	DBGLOG(INIT, TRACE, ("(C) Copyright 2002-2007 %s\n", companyName));
-
-	DBGLOG(INIT, TRACE, ("Version %s (NDIS 5.1/5.0 Checked Build)\n", driverVersion));
-
-	DBGLOG(INIT, TRACE, ("***** BUILD TIME: %s %s *****\n", __DATE__, __TIME__));
-	DBGLOG(INIT, TRACE, ("***** Current Platform: NDIS %d.%d *****\n",
-			     mpNdisMajorVersion, mpNdisMinorVersion));
-
-	do {
-		/* Find the media type we support. */
-		for (i = 0; i < u4MediumArraySize; i++) {
-			if (prMediumArray[i] == NIC_MEDIA_TYPE) {
-				break;
-			}
-		}
-
-		if (i == u4MediumArraySize) {
-			DBGLOG(INIT, ERROR, ("Supported media type ==> Not found\n"));
-			status = NDIS_STATUS_UNSUPPORTED_MEDIA;
-			break;
-		}
-
-		/* Select ethernet (802.3). */
-		*prSelectedMediumIndex = i;
-
-		/* Allocate OS glue object */
-		prGlueInfo = windowsCreateGlue(rMiniportAdapterHandle,
-					       (UINT_16) ((UINT_16) mpNdisMajorVersion * 0x100 +
-							  (UINT_16) mpNdisMinorVersion));
-		if (prGlueInfo == NULL) {
-			status = WLAN_STATUS_FAILURE;
-			break;
-		}
-
-
-		prGlueInfo->ucDriverDescLen = (UINT_8) strlen(desc) + 1;
-		if (prGlueInfo->ucDriverDescLen >= sizeof(prGlueInfo->aucDriverDesc)) {
-			prGlueInfo->ucDriverDescLen = sizeof(prGlueInfo->aucDriverDesc);
-		}
-		strncpy(prGlueInfo->aucDriverDesc, desc, prGlueInfo->ucDriverDescLen);
-		prGlueInfo->aucDriverDesc[prGlueInfo->ucDriverDescLen - 1] = '\0';
-
-
-		prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_DISCONNECTED;
-		prGlueInfo->fgIsCardRemoved = FALSE;
-
-#if CFG_SUPPORT_SDIO_READ_WRITE_PATTERN
-		/* initialize SDIO read-write pattern control */
-		prGlueInfo->fgEnSdioTestPattern = FALSE;
-		prGlueInfo->fgIsSdioTestInitialized = FALSE;
-#endif
-
-		/* Allocate adapter object */
-		prAdapter = wlanAdapterCreate(prGlueInfo);
-		if (prAdapter == NULL) {
-			status = WLAN_STATUS_FAILURE;
-			break;
-		}
-
-		DBGLOG(INIT, TRACE, ("Adapter structure pointer @0x%p\n", prAdapter));
-
-		/* link glue info and adapter with each other */
-		prGlueInfo->prAdapter = prAdapter;
-
-		/* Read the registry parameters. */
-		kalMemZero(&(prGlueInfo->rRegInfo), sizeof(REG_INFO_T));
-		status = windowsReadRegistryParameters(prGlueInfo, rWrapperConfigurationContext);
-		DBGPRINTF("windowsReadRegistryParameters() = %08x\n", status);
-		if (status != NDIS_STATUS_SUCCESS) {
-			DBGLOG(INIT, ERROR,
-			       ("Read registry parameters FAILED (status=0x%x)\n", status));
-			break;
-		}
-		DBGLOG(INIT, TRACE, ("Read registry parameters -- OK\n"));
-
-		/* Inform NDIS of the attributes of our adapter.
-		   This has to be done before calling NdisMRegisterXxx or NdisXxxx
-		   function that depends on the information supplied to
-		   NdisMSetAttributesEx.
-		   e.g. NdisMAllocateMapRegisters  */
-		NdisMSetAttributesEx(rMiniportAdapterHandle,
-				     (NDIS_HANDLE) prGlueInfo,
-				     0, (ULONG) NIC_ATTRIBUTE, NIC_INTERFACE_TYPE);
-		DBGLOG(INIT, TRACE, ("Set attributes -- OK\n"));
-
-		/* initialize timer for OID timeout checker */
-		kalOsTimerInitialize(prGlueInfo, kalTimeoutHandler);
-
-		/* Allocate SPIN LOCKs */
-		for (i = 0; i < SPIN_LOCK_NUM; i++) {
-			NdisAllocateSpinLock(&(prGlueInfo->arSpinLock[i]));
-		}
-		GLUE_SET_FLAG(prGlueInfo, GLUE_FLAG_SPIN_LOCK);
-
-		/* Setup Packet pool for Rx frame indication packets */
-		status = windowsInitRxPacketPool(prGlueInfo,
-						 CFG_RX_MAX_PKT_NUM, CFG_RX_MAX_PKT_SIZE);
-		DBGPRINTF("windowsInitRxPacketPool() = %08x\n", status);
-
-		if (status != NDIS_STATUS_SUCCESS) {
-			DBGLOG(INIT, ERROR, ("Allocate Rx packet pool ==> FAILED (status=0x%x)\n",
-					     status));
-			break;
-		}
-
-		DBGLOG(INIT, TRACE, ("Init packet pool -- OK\n"));
-
-		NdisInitializeEvent(&prGlueInfo->rTxReqEvent);
-
-		/* initialize remaining adapter members and initialize the card */
-		status = windowsFindAdapter(prGlueInfo, rWrapperConfigurationContext);
-		DBGPRINTF("windowsFindAdapter() = %08x\n", status);
-
-		if (status != NDIS_STATUS_SUCCESS) {
-			DBGLOG(INIT, ERROR, ("Cannot find the adapter\n"));
-			break;
-		}
-		DBGLOG(INIT, TRACE, ("Adapter Found -- OK\n"));
-
-
-		/* Register a shutdown handler for NDIS50 or earlier miniports.
-		   For NDIS 5.1 miniports, set AdapterShutdownHandler as shown
-		   above. */
-		if (prGlueInfo->u2NdisVersion == 0x500) {
-			NdisMRegisterAdapterShutdownHandler(prGlueInfo->rMiniportAdapterHandle,
-							    (PVOID) prAdapter,
-							    (ADAPTER_SHUTDOWN_HANDLER) mpShutdown);
-		}
-
-		/* Register interrupt handler to OS. */
-		windowsRegisterIsrt(prGlueInfo);
-		DBGLOG(INIT, TRACE, ("Register interrupt handler -- OK\n"));
-
-#if CFG_ENABLE_FW_DOWNLOAD
-		/* Mapping FW image to be downloaded from file */
-#if defined(MT6620) && CFG_MULTI_ECOVER_SUPPORT
-		if (wlanGetEcoVersion(prAdapter) >= 6) {
-			NdisInitUnicodeString(&rFileWifiRam,
-					      prGlueInfo->rRegInfo.aucFwImgFilenameE6);
-		} else {
-			NdisInitUnicodeString(&rFileWifiRam, prGlueInfo->rRegInfo.aucFwImgFilename);
-		}
-#else
-		NdisInitUnicodeString(&rFileWifiRam, prGlueInfo->rRegInfo.aucFwImgFilename);
-#endif
-		if (!imageFileMapping
-		    (rFileWifiRam, &rFileHandleFwImg, &pvFwImageMapFile, &u4FwImageFileLength)) {
-			DBGLOG(INIT, ERROR, ("Fail to load FW image from file!\n"));
-		}
-#endif
-
-		/* Start adapter */
-		status = wlanAdapterStart((PVOID) prAdapter,
-					  &prGlueInfo->rRegInfo,
-					  pvFwImageMapFile, u4FwImageFileLength);
-		DBGPRINTF("wlanAdapterStart() = %08x\n", status);
-
-#if CFG_ENABLE_FW_DOWNLOAD
-		/* Un-Mapping FW image from file */
-		imageFileUnMapping(rFileHandleFwImg, pvFwImageMapFile);
-#endif
-
-		if (status != NDIS_STATUS_SUCCESS) {
-			DBGLOG(INIT, ERROR, ("Start adapter ==> FAILED (status=0x%x)\n", status));
-			break;
-		}
-
-		/*Create Event, Threads for Windows SDIO driver */
-		/*20091011: initialize rOidReqEvent earlier than kalTxServiceThread creation */
-		KeInitializeEvent(&prGlueInfo->rHifInfo.rOidReqEvent, SynchronizationEvent, FALSE);
-
-		/* Create Tx Service System Thread */
-#if defined(WINDOWS_DDK)
-		KAL_CREATE_THREAD(prGlueInfo->hTxService, kalTxServiceThread, prGlueInfo,
-				  &prGlueInfo->pvKThread);
-#else
-		KAL_CREATE_THREAD(prGlueInfo->hTxService, kalTxServiceThread, prGlueInfo);
-#endif
-		if (prGlueInfo->hTxService) {
-			DBGLOG(INIT, TRACE, ("Thread has been created successfully\n"));
-
-			KeWaitForSingleObject(&prGlueInfo->rHifInfo.rOidReqEvent, Executive, KernelMode, FALSE, NULL);	/* NULL, wait endless */
-		} else {
-			DBGLOG(INIT, WARN, ("CreateThread Failed\n"));
-			break;
-		}
-		DBGLOG(INIT, TRACE, ("...done\n"));
-
-		GLUE_SET_FLAG(prGlueInfo, GLUE_FLAG_WLAN_PROBE);
-		DBGLOG(INIT, TRACE, ("Start adapter -- OK\n"));
-
-#if DBG
-		/* Check the order of supported OIDs. */
-		reqCheckOrderOfSupportedOids(prAdapter);
-#endif
-
-
-	} while (FALSE);
-
-	DBGPRINTF("MPInitialize Completed: %08X (%d)\n", status, prGlueInfo->fgIsCardRemoved);
-
-	if (prAdapter && status != NDIS_STATUS_SUCCESS) {
-		/* Undo everything if it failed. */
-		GLUE_DEC_REF_CNT(prGlueInfo->exitRefCount);
-		mpFreeAdapterObject(prGlueInfo);
-		return status;
-	}
-
-	return status;
-}				/* mpInitialize */
-
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function is a required function in drivers that indicate receives
@@ -800,7 +349,6 @@ VOID mpReturnPacket(IN NDIS_HANDLE miniportAdapterContext, IN PNDIS_PACKET prPac
 	DEBUGFUNC("mpReturnPacket");
 
 	GLUE_SPIN_LOCK_DECLARATION();
-
 
 	ASSERT(miniportAdapterContext);
 	ASSERT(prPacket);
@@ -826,7 +374,6 @@ VOID mpReturnPacket(IN NDIS_HANDLE miniportAdapterContext, IN PNDIS_PACKET prPac
 	return;
 }				/* end of mpReturnPacket() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function transfers some number of packets, specified as an
@@ -839,9 +386,7 @@ VOID mpReturnPacket(IN NDIS_HANDLE miniportAdapterContext, IN PNDIS_PACKET prPac
 * \retval none
 */
 /*----------------------------------------------------------------------------*/
-VOID
-mpSendPackets(IN NDIS_HANDLE miniportAdapterContext,
-	      IN PPNDIS_PACKET packetArray_p, IN UINT numberOfPackets)
+VOID mpSendPackets(IN NDIS_HANDLE miniportAdapterContext, IN PPNDIS_PACKET packetArray_p, IN UINT numberOfPackets)
 {
 	P_GLUE_INFO_T prGlueInfo;
 	PNDIS_PACKET prNdisPacket;
@@ -864,8 +409,7 @@ mpSendPackets(IN NDIS_HANDLE miniportAdapterContext,
 		prNdisPacket = packetArray_p[i];
 
 		if (prGlueInfo->fgIsCardRemoved) {
-			NdisMSendComplete(prGlueInfo->rMiniportAdapterHandle,
-					  prNdisPacket, NDIS_STATUS_NOT_ACCEPTED);
+			NdisMSendComplete(prGlueInfo->rMiniportAdapterHandle, prNdisPacket, NDIS_STATUS_NOT_ACCEPTED);
 			continue;
 		}
 		if (wlanQueryTestMode(prGlueInfo->prAdapter) == TRUE) {
@@ -901,98 +445,6 @@ mpSendPackets(IN NDIS_HANDLE miniportAdapterContext,
 
 }				/* mpSendPackets */
 
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief This function de-allocates resources when the network adapter is
-*        removed and halts the network adapter.
-*
-* \param[in] miniportAdapterContext Follow MSDN definition.
-*
-* \retval none
-*/
-/*----------------------------------------------------------------------------*/
-VOID mpHalt(IN NDIS_HANDLE miniportAdapterContext)
-{
-	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) miniportAdapterContext;
-
-	DEBUGFUNC("MPHalt");
-
-	INITLOG(("\n"));
-	DBGPRINTF("MPHalt (Card Removed: %d)\n", prGlueInfo->fgIsCardRemoved);
-
-	/* WinCE didn't has InterlockedOr() */
-	GLUE_SET_FLAG(prGlueInfo, GLUE_FLAG_HALT);
-
-	kalCancelTimer(prGlueInfo);
-
-#if defined(WINDOWS_DDK)
-	KAL_KILL_THREAD(&prGlueInfo->rTxReqEvent, prGlueInfo->pvKThread);
-	prGlueInfo->hTxService = NULL;
-#else
-	/* Notify TxServiceThread to terminate it. */
-	NdisSetEvent(&prGlueInfo->rTxReqEvent);
-
-	DBGLOG(INIT, TRACE, ("Notify TxServiceThread to terminate it\n"));
-
-	if (prGlueInfo->hTxService) {
-		DBGLOG(INIT, TRACE,
-		       ("KAL_WAIT_FOR_SINGLE_OBJECT (0x%x)\n", prGlueInfo->hTxService));
-		KAL_WAIT_FOR_SINGLE_OBJECT(prGlueInfo->hTxService);
-
-		KAL_CLOSE_HANDLE(prGlueInfo->hTxService);
-		prGlueInfo->hTxService = NULL;
-	}
-#endif
-
-#if defined(WINDOWS_CE)
-	NdisFreeEvent(&prGlueInfo->rTxReqEvent);
-#endif
-
-	while (prGlueInfo->i4RxPendingFrameNum > 0) {
-		/* Wait for MPReturnPacket to return indicated packets */
-		/* DbgPrint("Wait for RX return, left = %d\n", prGlueInfo->u4RxPendingFrameNum); */
-		NdisMSleep(100000);	/* Unit in microseconds. Sleep 100ms */
-	}
-
-	wlanAdapterStop(prGlueInfo->prAdapter);
-	DBGLOG(INIT, TRACE, ("wlanAdapterStop\n"));
-
-
-	/* For NDIS 5.0 driver, deregister shutdown handler because we are halting
-	   now. */
-#ifdef NDIS51_MINIPORT
-	if (prGlueInfo->u2NdisVersion == 0x500)
-#endif
-	{
-		NdisMDeregisterAdapterShutdownHandler(prGlueInfo->rMiniportAdapterHandle);
-
-		INITLOG(("Shutdown handler deregistered\n"));
-	}
-#if defined(WINDOWS_DDK) && defined(_HIF_SDIO)
-	/* According to MSDN, we should dereference count after receiving removal.
-	 * If we didn't do this, disable/enable device fails. However, if we did
-	 * dereference the INTerface and we use continually packet transmission,
-	 * driver fault happens after it's disabled.
-	 */
-	if (prGlueInfo->rHifInfo.dx.BusInterface.InterfaceDereference &&
-	    prGlueInfo->rHifInfo.dx.busInited) {
-		(prGlueInfo->rHifInfo.dx.BusInterface.InterfaceDereference)
-		    (prGlueInfo->rHifInfo.dx.BusInterface.Context);
-		RtlZeroMemory(&prGlueInfo->rHifInfo.dx.BusInterface,
-			      sizeof(SDBUS_INTERFACE_STANDARD));
-		prGlueInfo->rHifInfo.dx.busInited = FALSE;
-	}
-#endif
-
-	/* Free the entire adapter object, including the shared memory
-	   structures. */
-	mpFreeAdapterObject((PVOID) prGlueInfo);
-
-	INITLOG(("Halt handler -- Completed\n"));
-
-}				/* mpHalt */
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function issues a hardware reset to the network adapter
@@ -1009,10 +461,9 @@ NDIS_STATUS mpReset(OUT PBOOLEAN addressingReset_p, IN NDIS_HANDLE miniportAdapt
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) miniportAdapterContext;
 
-
 	ASSERT(prGlueInfo);
 
-	DBGLOG(INIT, ERROR, ("mpReset()\n"));
+	DBGLOG1(INIT, ERROR, "mpReset()\n");
 
 	if ((prGlueInfo->i4OidPendingCount)
 	    || (prGlueInfo->i4TxPendingFrameNum)
@@ -1105,14 +556,11 @@ VOID windowsDestroyPacketPool(P_GLUE_INFO_T prGlueInfo)
 /*----------------------------------------------------------------------------*/
 VOID windowsDestroyGlue(IN P_GLUE_INFO_T prGlueInfo)
 {
-	if (prGlueInfo) {
+	if (prGlueInfo)
 		NdisFreeMemory(prGlueInfo, sizeof(GLUE_INFO_T), 0);
-	}
 
 	return;
 }				/* windowsDestroyGlue */
-
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1133,9 +581,8 @@ VOID mpFreeAdapterObject(IN P_GLUE_INFO_T prGlueInfo)
 
 	INITLOG(("\n"));
 
-	if (prGlueInfo == NULL) {
+	if (prGlueInfo == NULL)
 		return;
-	}
 
 	if (GLUE_TEST_FLAG(prGlueInfo, GLUE_FLAG_WLAN_PROBE)) {
 		GLUE_CLEAR_FLAG(prGlueInfo, GLUE_FLAG_WLAN_PROBE);
@@ -1164,12 +611,10 @@ VOID mpFreeAdapterObject(IN P_GLUE_INFO_T prGlueInfo)
 	 * dereference the INTerface and we use continually packet transmission,
 	 * driver fault happens after it's disabled.
 	 */
-	if (prGlueInfo->rHifInfo.dx.BusInterface.InterfaceDereference &&
-	    prGlueInfo->rHifInfo.dx.busInited) {
+	if (prGlueInfo->rHifInfo.dx.BusInterface.InterfaceDereference && prGlueInfo->rHifInfo.dx.busInited) {
 		(prGlueInfo->rHifInfo.dx.BusInterface.InterfaceDereference)
 		    (prGlueInfo->rHifInfo.dx.BusInterface.Context);
-		RtlZeroMemory(&prGlueInfo->rHifInfo.dx.BusInterface,
-			      sizeof(SDBUS_INTERFACE_STANDARD));
+		RtlZeroMemory(&prGlueInfo->rHifInfo.dx.BusInterface, sizeof(SDBUS_INTERFACE_STANDARD));
 		prGlueInfo->rHifInfo.dx.busInited = FALSE;
 	}
 #endif
@@ -1177,14 +622,12 @@ VOID mpFreeAdapterObject(IN P_GLUE_INFO_T prGlueInfo)
 	/* Before we destroy Packet pool, we have recover TFCB and RFB for all
 	 * outstanding driver packets
 	 */
-	if (prGlueInfo->pvPktDescrHead) {
+	if (prGlueInfo->pvPktDescrHead)
 		windowsDestroyPacketPool(prGlueInfo);
-	}
 
 	if (GLUE_TEST_FLAG(prGlueInfo, GLUE_FLAG_SPIN_LOCK)) {
-		for (i = 0; i < SPIN_LOCK_NUM; i++) {
+		for (i = 0; i < SPIN_LOCK_NUM; i++)
 			NdisFreeSpinLock(&prGlueInfo->arSpinLock[i]);
-		}
 	}
 	INITLOG(("Spin lock freed\n"));
 
@@ -1195,7 +638,93 @@ VOID mpFreeAdapterObject(IN P_GLUE_INFO_T prGlueInfo)
 
 }				/* mpFreeAdapterObject */
 
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief This function de-allocates resources when the network adapter is
+*        removed and halts the network adapter.
+*
+* \param[in] miniportAdapterContext Follow MSDN definition.
+*
+* \retval none
+*/
+/*----------------------------------------------------------------------------*/
+VOID mpHalt(IN NDIS_HANDLE miniportAdapterContext)
+{
+	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) miniportAdapterContext;
 
+	DEBUGFUNC("MPHalt");
+
+	INITLOG(("\n"));
+	DBGPRINTF("MPHalt (Card Removed: %d)\n", prGlueInfo->fgIsCardRemoved);
+
+	/* WinCE didn't has InterlockedOr() */
+	GLUE_SET_FLAG(prGlueInfo, GLUE_FLAG_HALT);
+
+	kalCancelTimer(prGlueInfo);
+
+#if defined(WINDOWS_DDK)
+	KAL_KILL_THREAD(&prGlueInfo->rTxReqEvent, prGlueInfo->pvKThread);
+	prGlueInfo->hTxService = NULL;
+#else
+	/* Notify TxServiceThread to terminate it. */
+	NdisSetEvent(&prGlueInfo->rTxReqEvent);
+
+	DBGLOG1(INIT, TRACE, "Notify TxServiceThread to terminate it\n");
+
+	if (prGlueInfo->hTxService) {
+		DBGLOG1(INIT, TRACE, "KAL_WAIT_FOR_SINGLE_OBJECT (0x%x)\n", prGlueInfo->hTxService);
+		KAL_WAIT_FOR_SINGLE_OBJECT(prGlueInfo->hTxService);
+
+		KAL_CLOSE_HANDLE(prGlueInfo->hTxService);
+		prGlueInfo->hTxService = NULL;
+	}
+#endif
+
+#if defined(WINDOWS_CE)
+	NdisFreeEvent(&prGlueInfo->rTxReqEvent);
+#endif
+
+	while (prGlueInfo->i4RxPendingFrameNum > 0) {
+		/* Wait for MPReturnPacket to return indicated packets */
+		/* DbgPrint("Wait for RX return, left = %d\n", prGlueInfo->u4RxPendingFrameNum); */
+		NdisMSleep(100000);	/* Unit in microseconds. Sleep 100ms */
+	}
+
+	wlanAdapterStop(prGlueInfo->prAdapter);
+	DBGLOG1(INIT, TRACE, "wlanAdapterStop\n");
+
+	/* For NDIS 5.0 driver, deregister shutdown handler because we are halting
+	   now. */
+#ifdef NDIS51_MINIPORT
+	if (prGlueInfo->u2NdisVersion == 0x500) {
+#endif
+		NdisMDeregisterAdapterShutdownHandler(prGlueInfo->rMiniportAdapterHandle);
+
+		INITLOG(("Shutdown handler deregistered\n"));
+#ifdef NDIS51_MINIPORT
+	}
+#endif
+#if defined(WINDOWS_DDK) && defined(_HIF_SDIO)
+	/* According to MSDN, we should dereference count after receiving removal.
+	 * If we didn't do this, disable/enable device fails. However, if we did
+	 * dereference the INTerface and we use continually packet transmission,
+	 * driver fault happens after it's disabled.
+	 */
+	if (prGlueInfo->rHifInfo.dx.BusInterface.InterfaceDereference && prGlueInfo->rHifInfo.dx.busInited) {
+		(prGlueInfo->rHifInfo.dx.BusInterface.InterfaceDereference)
+		    (prGlueInfo->rHifInfo.dx.BusInterface.Context);
+		RtlZeroMemory(&prGlueInfo->rHifInfo.dx.BusInterface, sizeof(SDBUS_INTERFACE_STANDARD));
+		prGlueInfo->rHifInfo.dx.busInited = FALSE;
+	}
+#endif
+
+	/* Free the entire adapter object, including the shared memory
+	   structures. */
+	mpFreeAdapterObject((PVOID) prGlueInfo);
+
+	INITLOG(("Halt handler -- Completed\n"));
+
+}				/* mpHalt */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1217,11 +746,9 @@ P_GLUE_INFO_T windowsCreateGlue(IN NDIS_HANDLE rMiniportAdapterHandle, IN UINT_1
 	DEBUGFUNC("windowsCreateGlue");
 
 	/* Setup private information of glue layer for this adapter */
-	status = NdisAllocateMemoryWithTag((PVOID *) &prGlueInfo,
-					   sizeof(GLUE_INFO_T), NIC_MEM_TAG);
-	if (status != NDIS_STATUS_SUCCESS) {
+	status = NdisAllocateMemoryWithTag((PVOID *) &prGlueInfo, sizeof(GLUE_INFO_T), NIC_MEM_TAG);
+	if (status != NDIS_STATUS_SUCCESS)
 		return NULL;
-	}
 
 	NdisZeroMemory(prGlueInfo, sizeof(GLUE_INFO_T));
 
@@ -1240,8 +767,6 @@ P_GLUE_INFO_T windowsCreateGlue(IN NDIS_HANDLE rMiniportAdapterHandle, IN UINT_1
 
 	return prGlueInfo;
 }				/* windowsCreateGlue */
-
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1282,8 +807,7 @@ UINT_32 windowsInitRxPacketPool(P_GLUE_INFO_T prGlueInfo, UINT_32 u4NumPkt, UINT
 	prBufVirAddr = kalMemAlloc(u4TotalPayloadBufSz, VIR_MEM_TYPE);
 
 	if (prBufVirAddr == NULL) {
-		DBGLOG(INIT, ERROR, ("Could not allocate the Rx payload buffer: %d (bytes)\n",
-				     u4TotalPayloadBufSz));
+		DBGLOG1(INIT, ERROR, "Could not allocate the Rx payload buffer: %d (bytes)\n", u4TotalPayloadBufSz);
 		return ERRLOG_OUT_OF_SHARED_MEMORY;
 	}
 
@@ -1298,20 +822,17 @@ UINT_32 windowsInitRxPacketPool(P_GLUE_INFO_T prGlueInfo, UINT_32 u4NumPkt, UINT
 	   This could be quite the memory hog, but makes management
 	   of the pointers associated with Asynchronous memory allocation
 	   easier. */
-	NdisAllocatePacketPoolEx(&status,
-				 &prGlueInfo->hPktPool,
-				 (UINT) u4NumPkt, (UINT) u4NumPkt, 4 * sizeof(PVOID));
+	NdisAllocatePacketPoolEx(&status, &prGlueInfo->hPktPool, (UINT) u4NumPkt, (UINT) u4NumPkt, 4 * sizeof(PVOID));
 
 	if (status != NDIS_STATUS_SUCCESS) {
-		DBGLOG(INIT, ERROR,
-		       ("Could not allocate a Rx packet pool of %d descriptors (max. %d)\n",
-			u4NumPkt, u4NumPkt));
+		DBGLOG2(INIT, ERROR,
+		       "Could not allocate a Rx packet pool of %d descriptors (max. %d)\n", u4NumPkt, u4NumPkt);
 		return ERRLOG_OUT_OF_PACKET_POOL;
 	}
 
 	GLUE_SET_FLAG(prGlueInfo, GLUE_FLAG_PKT_POOL);
 
-	DBGLOG(INIT, TRACE, ("Allocate Rx packet pool of %d descriptors\n", u4NumPkt));
+	DBGLOG1(INIT, TRACE, "Allocate Rx packet pool of %d descriptors\n", u4NumPkt);
 
 	/* Allocate packet descriptors and link the them with payload buffer into
 	   packet pool */
@@ -1319,9 +840,8 @@ UINT_32 windowsInitRxPacketPool(P_GLUE_INFO_T prGlueInfo, UINT_32 u4NumPkt, UINT
 	for (i = 0; i < u4NumPkt; i++) {
 		NdisAllocatePacket(&status, &prPktDescriptor, prGlueInfo->hPktPool);
 
-		if (status != NDIS_STATUS_SUCCESS) {
+		if (status != NDIS_STATUS_SUCCESS)
 			break;
-		}
 
 		putPoolPacket(prGlueInfo, prPktDescriptor, prPktBufStartAddr);
 
@@ -1329,20 +849,19 @@ UINT_32 windowsInitRxPacketPool(P_GLUE_INFO_T prGlueInfo, UINT_32 u4NumPkt, UINT
 	}
 
 	if (i == 0) {
-		DBGLOG(INIT, ERROR, ("Fail to allocate any packet descriptor\n"));
+		DBGLOG1(INIT, ERROR, "Fail to allocate any packet descriptor\n");
 		return ERRLOG_OUT_OF_PACKET_POOL;
 	}
 
-	if (i != u4NumPkt) {
-		DBGLOG(INIT, WARN, ("Only %d packet descriptors are allocated. (%d should be "
-				    "allocated)\n", i, u4NumPkt));
-	}
+	if (i != u4NumPkt)
+		DBGLOG2(INIT, WARN,
+			"Only %d packet descriptors are allocated. (%d should be allocated)\n", i, u4NumPkt);
 
 	prGlueInfo->u4PktPoolSz = i;
 
 	GLUE_SET_FLAG(prGlueInfo, GLUE_FLAG_PKT_DESCR);
 
-	DBGLOG(INIT, TRACE, ("Allocate %d descriptors\n", prGlueInfo->u4PktPoolSz));
+	DBGLOG1(INIT, TRACE, "Allocate %d descriptors\n", prGlueInfo->u4PktPoolSz);
 
 	/* Allocate buffer descriptor pool:
 	   We will at most have 1 per packet, so just allocate as
@@ -1350,18 +869,16 @@ UINT_32 windowsInitRxPacketPool(P_GLUE_INFO_T prGlueInfo, UINT_32 u4NumPkt, UINT
 	NdisAllocateBufferPool(&status, &prGlueInfo->hBufPool, (UINT) u4NumPkt);
 
 	if (status != NDIS_STATUS_SUCCESS) {
-		DBGLOG(INIT, ERROR,
-		       ("Could not allocate buffer descriptor pool of %d descriptors\n", u4NumPkt));
+		DBGLOG1(INIT, ERROR, "Could not allocate buffer descriptor pool of %d descriptors\n", u4NumPkt);
 		return ERRLOG_OUT_OF_BUFFER_POOL;
 	}
 
 	GLUE_SET_FLAG(prGlueInfo, GLUE_FLAG_BUF_POOL);
 
-	DBGLOG(INIT, TRACE, ("Allocate buffer descriptor pool of %d descriptors\n", u4NumPkt));
+	DBGLOG1(INIT, TRACE, "Allocate buffer descriptor pool of %d descriptors\n", u4NumPkt);
 
 	return 0;
 }				/* windowsInitRxPacketPool */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1388,28 +905,21 @@ VOID putPoolPacket(IN P_GLUE_INFO_T prGlueInfo, IN PNDIS_PACKET prPktDscr, IN PV
 
 	ASSERT(prPktDscr);
 
-	pprPkt =
-	    (PNDIS_PACKET *) &prPktDscr->
-	    MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, prNextPkt)];
+	pprPkt = (PNDIS_PACKET *) &prPktDscr->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, prNextPkt)];
 	*pprPkt = prGlueInfo->pvPktDescrHead;
 
 	if (pvPayloadBuf) {
-		ppvBuf =
-		    (PVOID *) &prPktDscr->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pvBuf)];
+		ppvBuf = (PVOID *) &prPktDscr->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pvBuf)];
 		*ppvBuf = pvPayloadBuf;
 
 		ASSERT((UINT_32) pvPayloadBuf >= (UINT_32) prGlueInfo->pucPayloadPool);
-		ASSERT((UINT_32) pvPayloadBuf <
-		       (UINT_32) (prGlueInfo->pucPayloadPool + prGlueInfo->u4PayloadPoolSz));
+		ASSERT((UINT_32) pvPayloadBuf < (UINT_32) (prGlueInfo->pucPayloadPool + prGlueInfo->u4PayloadPoolSz));
 	}
 #if DBG
 	else {
-		UINT_32 buffer_addr =
-		    *(PUINT_32) & prPktDscr->
-		    MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pvBuf)];
+		UINT_32 buffer_addr = *(PUINT_32) & prPktDscr->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, pvBuf)];
 		ASSERT(buffer_addr >= (UINT_32) prGlueInfo->pucPayloadPool);
-		ASSERT(buffer_addr <
-		       (UINT_32) (prGlueInfo->pucPayloadPool + prGlueInfo->u4PayloadPoolSz));
+		ASSERT(buffer_addr < (UINT_32) (prGlueInfo->pucPayloadPool + prGlueInfo->u4PayloadPoolSz));
 	}
 #endif
 	prGlueInfo->pvPktDescrHead = prPktDscr;
@@ -1432,13 +942,10 @@ PNDIS_PACKET getPoolPacket(IN P_GLUE_INFO_T prGlueInfo)
 	PNDIS_PACKET prPktDscr;
 	PNDIS_PACKET *pprPkt;
 
-
 	prPktDscr = (PNDIS_PACKET) prGlueInfo->pvPktDescrHead;
 	if (prPktDscr) {
 		/* get the next pktDscr */
-		pprPkt =
-		    (PNDIS_PACKET *) &prPktDscr->
-		    MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, prNextPkt)];
+		pprPkt = (PNDIS_PACKET *) &prPktDscr->MiniportReservedEx[OFFSET_OF(PKT_INFO_RESERVED, prNextPkt)];
 
 		ASSERT(prGlueInfo->u4PktDescrFreeNum >= 1);
 		prGlueInfo->pvPktDescrHead = *pprPkt;
@@ -1447,9 +954,6 @@ PNDIS_PACKET getPoolPacket(IN P_GLUE_INFO_T prGlueInfo)
 
 	return prPktDscr;
 }				/* getPoolPacket */
-
-
-
 
 #ifdef NDIS51_MINIPORT
 /*----------------------------------------------------------------------------*/
@@ -1463,8 +967,7 @@ PNDIS_PACKET getPoolPacket(IN P_GLUE_INFO_T prGlueInfo)
 /*----------------------------------------------------------------------------*/
 VOID
 mpPnPEventNotify(IN NDIS_HANDLE miniportAdapterContext,
-		 IN NDIS_DEVICE_PNP_EVENT pnpEvent,
-		 IN PVOID informationBuffer_p, IN UINT_32 informationBufferLength)
+		 IN NDIS_DEVICE_PNP_EVENT pnpEvent, IN PVOID informationBuffer_p, IN UINT_32 informationBufferLength)
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) miniportAdapterContext;
 	P_QUE_ENTRY_T prQueueEntry;
@@ -1491,17 +994,14 @@ mpPnPEventNotify(IN NDIS_HANDLE miniportAdapterContext,
 		prGlueInfo->fgIsCardRemoved = TRUE;
 
 		/* Release pending OID */
-		if (prGlueInfo->i4OidPendingCount) {
+		if (prGlueInfo->i4OidPendingCount)
 			wlanReleasePendingOid(prGlueInfo->prAdapter, 0);
-		}
 		/* Remove pending TX */
-		if (prGlueInfo->i4TxPendingFrameNum) {
+		if (prGlueInfo->i4TxPendingFrameNum)
 			kalFlushPendingTxPackets(prGlueInfo);
-		}
 		/* Remove pending security frames */
-		if (prGlueInfo->i4TxPendingSecurityFrameNum) {
+		if (prGlueInfo->i4TxPendingSecurityFrameNum)
 			kalClearSecurityFrames(prGlueInfo);
-		}
 
 		wlanCardEjected(prGlueInfo->prAdapter);
 		INITLOG(("NdisDevicePnPEventSurpriseRemoved\n"));
@@ -1528,8 +1028,7 @@ mpPnPEventNotify(IN NDIS_HANDLE miniportAdapterContext,
 			break;
 
 		default:
-			INITLOG(("unknown power profile mode: %d\n",
-				 *((PUINT_32) informationBuffer_p)));
+			INITLOG(("unknown power profile mode: %d\n", *((PUINT_32) informationBuffer_p)));
 		}
 #endif
 
@@ -1539,9 +1038,8 @@ mpPnPEventNotify(IN NDIS_HANDLE miniportAdapterContext,
 		INITLOG(("unknown PnP event 0x%x\n", pnpEvent));
 	}
 
-
-
 }				/* MPPnPEventNotify */
+#endif /* NDIS51_MINIPORT */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1556,4 +1054,368 @@ VOID mpShutdown(IN PVOID shutdownContext)
 {
 }				/* mpShutdown */
 
-#endif				/* NDIS51_MINIPORT */
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief This function is a required function that sets up a network adapter,
+*        or virtual network adapter, for network I/O operations, claims all
+*        hardware resources necessary to the network adapter in the registry,
+*        and allocates resources the driver needs to carry out network I/O
+	 operations.
+*
+* \param[out] prOpenErrorStatus              Follow MSDN definition.
+* \param[out] prSelectedMediumIndex          Follow MSDN definition.
+* \param[in]  prMediumArray                  Follow MSDN definition.
+* \param[in]  u4MediumArraySize              Follow MSDN definition.
+* \param[in]  rMiniportAdapterHandle         Follow MSDN definition.
+* \param[in]  rWrapperConfigurationContext   Follow MSDN definition.
+*
+* \retval NDIS_STATUS_SUCCESS   success
+* \retval others                fail for some reasons.
+*/
+/*----------------------------------------------------------------------------*/
+NDIS_STATUS
+mpInitialize(OUT PNDIS_STATUS prOpenErrorStatus,
+	     OUT PUINT prSelectedMediumIndex,
+	     IN PNDIS_MEDIUM prMediumArray,
+	     IN UINT u4MediumArraySize,
+	     IN NDIS_HANDLE rMiniportAdapterHandle, IN NDIS_HANDLE rWrapperConfigurationContext)
+{
+	P_ADAPTER_T prAdapter = NULL;
+	P_GLUE_INFO_T prGlueInfo = NULL;
+	UINT i;
+	NDIS_STATUS status;
+#if DBG
+	CHAR companyName[] = NIC_VENDOR;
+	CHAR productName[] = NIC_PRODUCT_NAME;
+	CHAR driverVersion[] = NIC_DRIVER_VERSION_STRING;
+#endif
+	UINT_8 desc[] = NIC_DRIVER_NAME;
+	PVOID pvFwImageMapFile = NULL;
+	NDIS_HANDLE rFileHandleFwImg = NULL;
+	NDIS_STRING rFileWifiRam;
+	UINT_32 u4FwImageFileLength = 0;
+#if defined(WINDOWS_DDK)
+	NTSTATUS rStatus = 0;
+#endif
+
+	DEBUGFUNC("MPInitialize");
+	DBGLOG1(INIT, TRACE, "\n");
+	DBGPRINTF("MPInitialize() / Current IRQL = %d\n", KeGetCurrentIrql());
+
+	DBGLOG1(INIT, TRACE, "%s\n", productName);
+	DBGLOG1(INIT, TRACE, "(C) Copyright 2002-2007 %s\n", companyName);
+
+	DBGLOG1(INIT, TRACE, "Version %s (NDIS 5.1/5.0 Checked Build)\n", driverVersion);
+
+	DBGLOG1(INIT, TRACE, "***** BUILD TIME: %s %s *****\n", __DATE__, __TIME__);
+	DBGLOG1(INIT, TRACE, "***** Current Platform: NDIS %d.%d *****\n", mpNdisMajorVersion, mpNdisMinorVersion);
+
+	do {
+		/* Find the media type we support. */
+		for (i = 0; i < u4MediumArraySize; i++) {
+			if (prMediumArray[i] == NIC_MEDIA_TYPE)
+				break;
+		}
+
+		if (i == u4MediumArraySize) {
+			DBGLOG1(INIT, ERROR, "Supported media type ==> Not found\n");
+			status = NDIS_STATUS_UNSUPPORTED_MEDIA;
+			break;
+		}
+
+		/* Select ethernet (802.3). */
+		*prSelectedMediumIndex = i;
+
+		/* Allocate OS glue object */
+		prGlueInfo = windowsCreateGlue(rMiniportAdapterHandle,
+					       (UINT_16) ((UINT_16) mpNdisMajorVersion * 0x100 +
+							  (UINT_16) mpNdisMinorVersion));
+		if (prGlueInfo == NULL) {
+			status = WLAN_STATUS_FAILURE;
+			break;
+		}
+
+		prGlueInfo->ucDriverDescLen = (UINT_8) strlen(desc) + 1;
+		if (prGlueInfo->ucDriverDescLen >= sizeof(prGlueInfo->aucDriverDesc))
+			prGlueInfo->ucDriverDescLen = sizeof(prGlueInfo->aucDriverDesc);
+		strncpy(prGlueInfo->aucDriverDesc, desc, prGlueInfo->ucDriverDescLen);
+		prGlueInfo->aucDriverDesc[prGlueInfo->ucDriverDescLen - 1] = '\0';
+
+		prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_DISCONNECTED;
+		prGlueInfo->fgIsCardRemoved = FALSE;
+
+#if CFG_SUPPORT_SDIO_READ_WRITE_PATTERN
+		/* initialize SDIO read-write pattern control */
+		prGlueInfo->fgEnSdioTestPattern = FALSE;
+		prGlueInfo->fgIsSdioTestInitialized = FALSE;
+#endif
+
+		/* Allocate adapter object */
+		prAdapter = wlanAdapterCreate(prGlueInfo);
+		if (prAdapter == NULL) {
+			status = WLAN_STATUS_FAILURE;
+			break;
+		}
+
+		DBGLOG1(INIT, TRACE, "Adapter structure pointer @0x%p\n", prAdapter);
+
+		/* link glue info and adapter with each other */
+		prGlueInfo->prAdapter = prAdapter;
+
+		/* Read the registry parameters. */
+		kalMemZero(&(prGlueInfo->rRegInfo), sizeof(REG_INFO_T));
+		status = windowsReadRegistryParameters(prGlueInfo, rWrapperConfigurationContext);
+		DBGPRINTF("windowsReadRegistryParameters() = %08x\n", status);
+		if (status != NDIS_STATUS_SUCCESS) {
+			DBGLOG1(INIT, ERROR, "Read registry parameters FAILED (status=0x%x)\n", status);
+			break;
+		}
+		DBGLOG1(INIT, TRACE, "Read registry parameters -- OK\n");
+
+		/* Inform NDIS of the attributes of our adapter.
+		   This has to be done before calling NdisMRegisterXxx or NdisXxxx
+		   function that depends on the information supplied to
+		   NdisMSetAttributesEx.
+		   e.g. NdisMAllocateMapRegisters  */
+		NdisMSetAttributesEx(rMiniportAdapterHandle,
+				     (NDIS_HANDLE) prGlueInfo, 0, (ULONG) NIC_ATTRIBUTE, NIC_INTERFACE_TYPE);
+		DBGLOG1(INIT, TRACE, "Set attributes -- OK\n");
+
+		/* initialize timer for OID timeout checker */
+		kalOsTimerInitialize(prGlueInfo, kalTimeoutHandler);
+
+		/* Allocate SPIN LOCKs */
+		for (i = 0; i < SPIN_LOCK_NUM; i++)
+			NdisAllocateSpinLock(&(prGlueInfo->arSpinLock[i]));
+		GLUE_SET_FLAG(prGlueInfo, GLUE_FLAG_SPIN_LOCK);
+
+		/* Setup Packet pool for Rx frame indication packets */
+		status = windowsInitRxPacketPool(prGlueInfo, CFG_RX_MAX_PKT_NUM, CFG_RX_MAX_PKT_SIZE);
+		DBGPRINTF("windowsInitRxPacketPool() = %08x\n", status);
+
+		if (status != NDIS_STATUS_SUCCESS) {
+			DBGLOG1(INIT, ERROR, "Allocate Rx packet pool ==> FAILED (status=0x%x)\n", status);
+			break;
+		}
+
+		DBGLOG1(INIT, TRACE, "Init packet pool -- OK\n");
+
+		NdisInitializeEvent(&prGlueInfo->rTxReqEvent);
+
+		/* initialize remaining adapter members and initialize the card */
+		status = windowsFindAdapter(prGlueInfo, rWrapperConfigurationContext);
+		DBGPRINTF("windowsFindAdapter() = %08x\n", status);
+
+		if (status != NDIS_STATUS_SUCCESS) {
+			DBGLOG1(INIT, ERROR, "Cannot find the adapter\n");
+			break;
+		}
+		DBGLOG1(INIT, TRACE, "Adapter Found -- OK\n");
+
+		/* Register a shutdown handler for NDIS50 or earlier miniports.
+		   For NDIS 5.1 miniports, set AdapterShutdownHandler as shown
+		   above. */
+		if (prGlueInfo->u2NdisVersion == 0x500) {
+			NdisMRegisterAdapterShutdownHandler(prGlueInfo->rMiniportAdapterHandle,
+							    (PVOID) prAdapter, (ADAPTER_SHUTDOWN_HANDLER) mpShutdown);
+		}
+
+		/* Register interrupt handler to OS. */
+		windowsRegisterIsrt(prGlueInfo);
+		DBGLOG1(INIT, TRACE, "Register interrupt handler -- OK\n");
+
+#if CFG_ENABLE_FW_DOWNLOAD
+		/* Mapping FW image to be downloaded from file */
+#if defined(MT6620) && CFG_MULTI_ECOVER_SUPPORT
+		if (wlanGetEcoVersion(prAdapter) >= 6)
+			NdisInitUnicodeString(&rFileWifiRam, prGlueInfo->rRegInfo.aucFwImgFilenameE6);
+		else
+			NdisInitUnicodeString(&rFileWifiRam, prGlueInfo->rRegInfo.aucFwImgFilename);
+#else
+		NdisInitUnicodeString(&rFileWifiRam, prGlueInfo->rRegInfo.aucFwImgFilename);
+#endif
+		if (!imageFileMapping(rFileWifiRam, &rFileHandleFwImg, &pvFwImageMapFile, &u4FwImageFileLength)) {
+			DBGLOG2(INIT, ERROR,
+				"Fail to load FW image from file!\n");
+		}
+#endif
+
+		/* Start adapter */
+		status = wlanAdapterStart((PVOID) prAdapter,
+					  &prGlueInfo->rRegInfo, pvFwImageMapFile, u4FwImageFileLength);
+		DBGPRINTF("wlanAdapterStart() = %08x\n", status);
+
+#if CFG_ENABLE_FW_DOWNLOAD
+		/* Un-Mapping FW image from file */
+		imageFileUnMapping(rFileHandleFwImg, pvFwImageMapFile);
+#endif
+
+		if (status != NDIS_STATUS_SUCCESS) {
+			DBGLOG1(INIT, ERROR, "Start adapter ==> FAILED (status=0x%x)\n", status);
+			break;
+		}
+
+		/*Create Event, Threads for Windows SDIO driver */
+		/*20091011: initialize rOidReqEvent earlier than kalTxServiceThread creation */
+		KeInitializeEvent(&prGlueInfo->rHifInfo.rOidReqEvent, SynchronizationEvent, FALSE);
+
+		/* Create Tx Service System Thread */
+#if defined(WINDOWS_DDK)
+		KAL_CREATE_THREAD(prGlueInfo->hTxService, kalTxServiceThread, prGlueInfo, &prGlueInfo->pvKThread);
+#else
+		KAL_CREATE_THREAD(prGlueInfo->hTxService, kalTxServiceThread, prGlueInfo);
+#endif
+		if (prGlueInfo->hTxService) {
+			DBGLOG1(INIT, TRACE, "Thread has been created successfully\n");
+			/* NULL, wait endless */
+			KeWaitForSingleObject(&prGlueInfo->rHifInfo.rOidReqEvent, Executive, KernelMode, FALSE, NULL);
+		} else {
+			DBGLOG1(INIT, WARN, "CreateThread Failed\n");
+			break;
+		}
+		DBGLOG1(INIT, TRACE, "...done\n");
+
+		GLUE_SET_FLAG(prGlueInfo, GLUE_FLAG_WLAN_PROBE);
+		DBGLOG1(INIT, TRACE, "Start adapter -- OK\n");
+
+#if DBG
+		/* Check the order of supported OIDs. */
+		reqCheckOrderOfSupportedOids(prAdapter);
+#endif
+
+	} while (FALSE);
+
+	DBGPRINTF("MPInitialize Completed: %08X (%d)\n", status, prGlueInfo->fgIsCardRemoved);
+
+	if (prAdapter && status != NDIS_STATUS_SUCCESS) {
+		/* Undo everything if it failed. */
+		GLUE_DEC_REF_CNT(prGlueInfo->exitRefCount);
+		mpFreeAdapterObject(prGlueInfo);
+		return status;
+	}
+
+	return status;
+}				/* mpInitialize */
+
+
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief Driver entry. It is the first routine called after a driver is loaded,
+*        and is responsible for initializing the driver
+*
+* \param[in] driverObject Caller-supplied pointer to a DRIVER_OBJECT structure.
+*                         This is the driver's driver object.
+* \param[in] registryPath Pointer to a counted Unicode string specifying the
+*                         path to the driver's registry key.
+*
+* \return If the routine succeeds, it must return STATUS_SUCCESS.
+*         Otherwise, it must return one of the error status values defined
+*         in ntstatus.h.
+*/
+/*----------------------------------------------------------------------------*/
+NTSTATUS DriverEntry(IN PDRIVER_OBJECT driverObject, IN PUNICODE_STRING registryPath)
+{
+	NDIS_STATUS status;
+	NDIS_HANDLE ndisWrapperHandle;
+	NDIS_MINIPORT_CHARACTERISTICS mpChar;
+#if DBG
+	INT i;
+#endif
+
+	DEBUGFUNC("DriverEntry");
+
+#if DBG
+	/* Initialize debug class of each module */
+	for (i = 0; i < DBG_MODULE_NUM; i++)
+		aucDebugModule[i] = DBG_CLASS_ERROR | DBG_CLASS_WARN | DBG_CLASS_STATE | DBG_CLASS_EVENT;
+	aucDebugModule[DBG_INIT_IDX] |= DBG_CLASS_TRACE | DBG_CLASS_INFO;
+/* aucDebugModule[DBG_TX_IDX] |= DBG_CLASS_TRACE | DBG_CLASS_INFO; */
+	aucDebugModule[DBG_RX_IDX] |= DBG_CLASS_TRACE | DBG_CLASS_INFO;
+	aucDebugModule[DBG_RFTEST_IDX] |= DBG_CLASS_TRACE | DBG_CLASS_INFO;
+
+	aucDebugModule[DBG_REQ_IDX] &= ~DBG_CLASS_WARN;
+
+	aucDebugModule[DBG_EMU_IDX] |= DBG_CLASS_TRACE | DBG_CLASS_INFO;
+/* aucDebugModule[DBG_TX_IDX] |= DBG_CLASS_TRACE; */
+	aucDebugModule[DBG_TX_IDX] &= ~DBG_CLASS_EVENT;
+	aucDebugModule[DBG_RX_IDX] &= ~DBG_CLASS_EVENT;
+
+#endif /* DBG */
+
+	DBGLOG1(INIT, TRACE, "\n");
+	DBGLOG1(INIT, TRACE, "DriverEntry: Driver object @0x%p\n", driverObject);
+
+	/* Now we must initialize the wrapper, and then register the Miniport */
+	NdisMInitializeWrapper(&ndisWrapperHandle, driverObject, registryPath, NULL);
+
+	if (ndisWrapperHandle == NULL) {
+		status = NDIS_STATUS_FAILURE;
+
+		DBGLOG1(INIT, ERROR, "Init wrapper ==> FAILED (status=0x%x)\n", status);
+		return status;
+	}
+
+	NdisZeroMemory(&mpChar, sizeof(NDIS_MINIPORT_CHARACTERISTICS));
+
+	/* Initialize the Miniport characteristics for the call to
+	   NdisMRegisterMiniport. */
+	mpChar.MajorNdisVersion = mpNdisMajorVersion;
+	mpChar.MinorNdisVersion = mpNdisMinorVersion;
+	mpChar.CheckForHangHandler = NULL;	/* mpCheckForHang; */
+	mpChar.DisableInterruptHandler = NULL;
+	mpChar.EnableInterruptHandler = NULL;
+	mpChar.HaltHandler = mpHalt;
+	mpChar.HandleInterruptHandler = mpHandleInterrupt;
+	mpChar.InitializeHandler = mpInitialize;
+	mpChar.ISRHandler = mpIsr;
+	mpChar.QueryInformationHandler = mpQueryInformation;
+	/*mpChar.ReconfigureHandler      = NULL; */
+	mpChar.ResetHandler = mpReset;
+	mpChar.SetInformationHandler = mpSetInformation;
+	mpChar.SendHandler = NULL;
+	mpChar.SendPacketsHandler = mpSendPackets;
+	mpChar.ReturnPacketHandler = mpReturnPacket;
+	mpChar.TransferDataHandler = NULL;
+	mpChar.AllocateCompleteHandler = NULL;
+#ifdef NDIS51_MINIPORT
+	mpChar.CancelSendPacketsHandler = NULL;
+	/*mpChar.CancelSendPacketsHandler = MPCancelSendPackets; */
+	mpChar.PnPEventNotifyHandler = mpPnPEventNotify;
+	mpChar.AdapterShutdownHandler = mpShutdown;
+#endif
+
+	/* Register this driver to use the NDIS library of version the same as
+	   the default setting of the build environment. */
+	status = NdisMRegisterMiniport(ndisWrapperHandle, &mpChar, sizeof(NDIS_MINIPORT_CHARACTERISTICS));
+
+	DBGLOG2(INIT, TRACE, "NdisMRegisterMiniport (NDIS %d.%d) returns 0x%x\n",
+			     mpNdisMajorVersion, mpNdisMinorVersion, status;
+
+#ifndef _WIN64
+#ifdef NDIS51_MINIPORT
+	/* If the current platform cannot support NDIS 5.1, we attempt to declare
+	   ourselves as an NDIS 5.0 miniport driver. */
+	if (status == NDIS_STATUS_BAD_VERSION) {
+		mpNdisMinorVersion = 0;
+		mpChar.MinorNdisVersion = 0;
+		/* Register this driver to use the NDIS 5.0 library. */
+		status = NdisMRegisterMiniport(ndisWrapperHandle, &mpChar, sizeof(NDIS50_MINIPORT_CHARACTERISTICS));
+
+		DBGLOG2(INIT, TRACE, "NdisMRegisterMiniport (NDIS %d.%d) returns 0x%x\n",
+				     mpNdisMajorVersion, mpNdisMinorVersion, status;
+	}
+#endif
+#endif
+
+	if (status != NDIS_STATUS_SUCCESS) {
+		DBGLOG2(INIT, ERROR, "Register NDIS %d.%d miniport ==> FAILED (status=0x%x)\n",
+				     mpNdisMajorVersion, mpNdisMinorVersion, status;
+
+		NdisTerminateWrapper(ndisWrapperHandle, NULL;
+
+		return status;
+	}
+
+	return STATUS_SUCCESS;
+}				/* DriverEntry */
+

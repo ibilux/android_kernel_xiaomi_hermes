@@ -21,6 +21,15 @@ static spinlock_t swint_cb_lock;
 static ccci_tx_waitq_t ccci_tx_waitq[TXQ_NUM];
 static EEMCS_CCCI_SWINT_CALLBACK ccci_swint_cb;
 static EEMCS_CCCI_WDT_CALLBACK ccci_WDT_cb = NULL;
+
+#if defined (DBG_FEATURE_POLL_MD_STA)
+struct timer_list md_status_poller; 
+struct timer_list md_status_timeout;
+struct work_struct md_status_timeout_work;
+#endif
+
+extern volatile KAL_UINT8 md_wdt_timeout_isr;
+
 static KAL_UINT32 ccci_ch_to_port_mapping[CH_NUM_MAX];
 static ccci_port_cfg ccci_port_info[CCCI_PORT_NUM_MAX] = {
     /* CCCI Character Devices */
@@ -49,13 +58,21 @@ static ccci_port_cfg ccci_port_info[CCCI_PORT_NUM_MAX] = {
     {{CH_DUMMY,     CH_DUMMY   ,NULL, NULL}, HIF_SDIO, TX_Q_0, RX_Q_0, 0, 0, BLK_4K, 8, BLK_4K, 8, EX_T_USER, PRI_RT, 0}, /*CCCI_PORT_IOCTL*/
     {{CH_DUMMY,     CH_DUMMY   ,NULL, NULL}, HIF_SDIO, TX_Q_0, RX_Q_0, 0, 0, BLK_4K, 8, BLK_4K, 8, EX_T_USER, PRI_RT, 0}, /*CCCI_PORT_RILD*/
         
-    {{CH_IT_RX,   CH_IT_TX, NULL, NULL}, HIF_SDIO, TX_Q_0, RX_Q_0, 0, 0, BLK_4K, 4, BLK_4K, 4, EX_T_USER, PRI_RT,EXPORT_CCCI_H|TX_PRVLG1|TX_PRVLG2},    
+    {{CH_IT_RX,   CH_IT_TX, NULL, NULL}, HIF_SDIO, TX_Q_0, RX_Q_0, 0, 0, BLK_4K, 4, BLK_4K, 4, EX_T_USER, PRI_RT,EXPORT_CCCI_H|TX_PRVLG1|TX_PRVLG2},
+#if defined (DBG_FEATURE_POLL_MD_STA)
+    {{CH_STATUS_RX, CH_STATUS_TX, NULL, NULL}, HIF_SDIO, TX_Q_0, RX_Q_0, 0, 0, BLK_4K, 4, BLK_4K, 4, EX_T_USER, PRI_RT, 0},
+#endif
+#if defined (DBG_FEATURE_CCCI_LB_IT)
+    {{CH_LB_IT_RX, CH_LB_IT_TX, NULL, NULL}, HIF_SDIO, TX_Q_0, RX_Q_0, 0, 0, BLK_4K, 4, BLK_4K, 4, EX_T_USER, PRI_RT, 0},
+#endif
     /* CCCI Network Interface */
     {{CH_NET1_RX,   CH_NET1_TX, NULL, NULL}, HIF_SDIO, TX_Q_2, RX_Q_3, 0, 0, BLK_2K, 32, BLK_2K, 32, EX_T_KERN, PRI_NR,0},
     {{CH_NET2_RX,   CH_NET2_TX, NULL, NULL}, HIF_SDIO, TX_Q_3, RX_Q_3, 0, 0, BLK_2K, 4, BLK_2K, 4, EX_T_KERN, PRI_NR,0},
     {{CH_NET3_RX,   CH_NET3_TX, NULL, NULL}, HIF_SDIO, TX_Q_4, RX_Q_3, 0, 0, BLK_2K, 4, BLK_2K, 4, EX_T_KERN, PRI_NR,0},
 
 };
+
+
 KAL_UINT32 ccci_ch_to_port(KAL_UINT32 ccci_ch_num){
     KAL_UINT32 port_index;
     KAL_ASSERT(ccci_ch_num < CH_NUM_MAX);
@@ -285,6 +302,18 @@ KAL_UINT32 eemcs_ccci_UL_write_wait(CCCI_CHANNEL_T chn)
     return ret;
 }
 
+#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+void eemcs_ccci_reset_seq_no(void)
+{
+    KAL_UINT32 ch = 0;
+    DBGLOG(CCCI, INF, "reset tx/rx sequence number");
+    for(ch = 0; ch < CH_NUM_MAX; ch++){
+        ccci_seqno_tbl[ch].seqno[TX] = 0;
+        ccci_seqno_tbl[ch].seqno[RX] = -1;		
+    }
+}
+#endif
+
 void eemcs_ccci_reset(void)
 {
     KAL_UINT32 port_id = 0;
@@ -292,11 +321,17 @@ void eemcs_ccci_reset(void)
 
     for(port_id = 0; port_id < CCCI_PORT_NUM_MAX; port_id++){
         if ((ccci_port_info[port_id].ch.tx != CH_DUMMY) && (ccci_port_info[port_id].ch.rx != CH_DUMMY)) {
-		txq = ccci_port_info[port_id].txq_id;
-		atomic_set(&ccci_tx_waitq[txq].reserve_space, 0);
-		atomic_set(&ccci_port_info[port_id].reserve_space, 0);
+            txq = ccci_port_info[port_id].txq_id;
+            atomic_set(&ccci_tx_waitq[txq].reserve_space, 0);
+            atomic_set(&ccci_port_info[port_id].reserve_space, 0);
         }
     }
+	
+    //initial ccci sequence number array	
+    #if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    eemcs_ccci_reset_seq_no();
+    #endif
+	
     return;
 }
 
@@ -312,37 +347,81 @@ KAL_INT32 eemcs_ccci_UL_write_skb_to_swq(CCCI_CHANNEL_T chn, struct sk_buff *skb
     ccci_expt_port_cfg *expt_port_info;
     EEMCS_EXCEPTION_STATE mode = EEMCS_EX_INVALID;
 #endif
-	DEBUG_LOG_FUNCTION_ENTRY;
+    KAL_UINT32 channel = 0;
+    bool force_md_assert_flag = false;
+#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    KAL_UINT64 flag;
+#endif
+
+    DEBUG_LOG_FUNCTION_ENTRY;
 
     if(NULL != skb){
         pccci_h = (CCCI_BUFF_T *)skb->data;
     	DBGLOG(CCCI, DBG, "[TX]CCCI_H: 0x%x, 0x%x, 0x%x, 0x%x",\
             pccci_h->data[0], pccci_h->data[1], pccci_h->channel, pccci_h->reserved);
-        KAL_ASSERT(pccci_h->channel == chn);
-        KAL_ASSERT(pccci_h->channel < CH_NUM_MAX || pccci_h->channel == CCCI_FORCE_RESET_MODEM_CHANNEL); 
-    }else{
-        DBGLOG(CCCI, WAR, "CH%d write NULL skb to kick DF process!", chn);
+
+    	#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    	channel = (pccci_h->channel)|(pccci_h->seq_num <<16)|(pccci_h->assert_bit <<31);
+    	#else
+    	channel = pccci_h->channel;
+    	#endif
+    	if (channel == CCCI_FORCE_RESET_MODEM_CHANNEL)
+            force_md_assert_flag = true;
+		
+    	//1. seperate data and ack packet for ccmni0&1 UL
+    	#if defined (TDD_DL_DROP_SOLUTION2)
+    	if ((chn != CH_NET1_TX) && (chn != CH_NET2_TX) && !force_md_assert_flag) {
+            KAL_ASSERT(pccci_h->channel == chn); 
+    	}
+    	#else
+    	KAL_ASSERT(pccci_h->channel == chn);
+    	#endif
+
+    	//2. ccci channel check
+    	KAL_ASSERT(pccci_h->channel < CH_NUM_MAX || force_md_assert_flag); 
+
+    	//3. fs packet check: the value of reserve is less than fs_buf_max_num=5
+    	if ((pccci_h->channel == CH_FS_TX) && (pccci_h->reserved > 0x4)) {
+            int *pdata = skb->data;
+            DBGLOG(CCCI, ERR, "[TX]FS: 0x%08x, 0x%08x, 0x%08x, 0x%08x, 0x%08x, 0x%08x, 0x%08x, 0x%08x",\
+            	*pdata, *(pdata+1), *(pdata+2), *(pdata+3), *(pdata+4), *(pdata+5), *(pdata+6), *(pdata+7));
+    	}
+    } else {
+    	DBGLOG(CCCI, WAR, "CH%d write NULL skb to kick DF process!", chn);
     }
-	if(pccci_h->channel == CCCI_FORCE_RESET_MODEM_CHANNEL){
-	    tx_queue_idx = 0;
-		hif_ul_write_swq(tx_queue_idx, skb);
+
+    if(force_md_assert_flag){
+    	tx_queue_idx = 0;
+    	hif_ul_write_swq(tx_queue_idx, skb);
     }else{
 #ifdef __EEMCS_EXPT_SUPPORT__
         if(is_exception_mode(&mode))
         {
             if(is_valid_exception_tx_channel(chn))
             {
+            	/* add sequence number in ccci header */
+            	#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+            	if (likely(pccci_h)) {
+                    spin_lock_irqsave(&ccci_seqno_tbl[pccci_h->channel].tx_seqno_lock, flag);
+                    pccci_h->seq_num = ccci_seqno_tbl[pccci_h->channel].seqno[TX]++;
+                    pccci_h->assert_bit = 1; //why assert_bit=1 instead of assert_bit=0???? 			
+                    spin_unlock_irqrestore(&ccci_seqno_tbl[pccci_h->channel].tx_seqno_lock, flag);
+			
+                    DBGLOG(CCCI, DBG, "[TX] CH%d:ch=%d seq_num=(0x%02X->0x%02X) assert_bit=%d channel=0x%08X", chn, \
+                            pccci_h->channel, pccci_h->seq_num, ccci_seqno_tbl[pccci_h->channel].seqno[TX], \
+                            pccci_h->assert_bit, channel);
+			
+            	}
+            	#endif
+				
                 expt_port_info = get_expt_port_info(ccci_ch_to_port(chn));
                 /* set exception TX Q*/
                 tx_queue_idx = expt_port_info->expt_txq_id;
-                DBGLOG(CCCI, DBG, "[EXPT] ccci_UL_write_skb_to_swq write skb to DF: ch=%d, txq=%d", chn, tx_queue_idx);
                 hif_ul_write_swq(tx_queue_idx, skb);
-        	    atomic_dec(&ccci_port_info[ccci_ch_to_port(chn)].reserve_space);
-        	    atomic_dec(&ccci_tx_waitq[tx_queue_idx].reserve_space);
+                atomic_dec(&ccci_port_info[ccci_ch_to_port(chn)].reserve_space);
+                atomic_dec(&ccci_tx_waitq[tx_queue_idx].reserve_space);
                 eemcs_update_statistics(0, ccci_ch_to_port(chn), TX, NORMAL);
-            }
-            else
-            {
+            } else {
                 DBGLOG(CCCI, WAR, "[EXPT] Invalid exception channel(%d)!", chn);
                 /*
                  * if KAL_FAIL is returned, skb is freed at device layer
@@ -355,16 +434,29 @@ KAL_INT32 eemcs_ccci_UL_write_skb_to_swq(CCCI_CHANNEL_T chn, struct sk_buff *skb
         else
 #endif
         {
+    	    /* add sequence number in ccci header */
+    	    #if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    	    if (likely(pccci_h)) {
+            	spin_lock_irqsave(&ccci_seqno_tbl[pccci_h->channel].tx_seqno_lock, flag);
+            	pccci_h->seq_num = ccci_seqno_tbl[pccci_h->channel].seqno[TX]++;
+            	pccci_h->assert_bit = 1; //why assert_bit=1 instead of assert_bit=0????           	
+            	spin_unlock_irqrestore(&ccci_seqno_tbl[pccci_h->channel].tx_seqno_lock, flag);
+            	DBGLOG(CCCI, DBG, "[TX] CH%d:ch=%d seq_num=(0x%02X->0x%02X) assert_bit=%d channel=0x%08X", chn, \
+					pccci_h->channel, pccci_h->seq_num, ccci_seqno_tbl[pccci_h->channel].seqno[TX], \
+					pccci_h->assert_bit, channel);
+    	    }
+    	    #endif
+			
     	    tx_queue_idx = ccci_port_info[ccci_ch_to_port(chn)].txq_id;
-    		hif_ul_write_swq(tx_queue_idx, skb);
+    	    hif_ul_write_swq(tx_queue_idx, skb);
     	    atomic_dec(&ccci_port_info[ccci_ch_to_port(chn)].reserve_space);
     	    atomic_dec(&ccci_tx_waitq[tx_queue_idx].reserve_space);
             eemcs_update_statistics(0, ccci_ch_to_port(chn), TX, NORMAL);
         }
-	}
+    }
 	
-	DEBUG_LOG_FUNCTION_LEAVE;
-	return ret;
+    DEBUG_LOG_FUNCTION_LEAVE;
+    return ret;
 }
 
 KAL_UINT32 eemcs_ccci_boot_UL_write_room_check(void)
@@ -483,8 +575,10 @@ int ccci_df_to_ccci_callback(unsigned int rxq_no)
 #ifdef __EEMCS_EXPT_SUPPORT__
     EEMCS_EXCEPTION_STATE mode = EEMCS_EX_INVALID;
 #endif
+#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    KAL_INT16 channel, seq_num, assert_bit;
+#endif
 
-    
     DEBUG_LOG_FUNCTION_ENTRY;
     /* Step 1. read skb from swq */
     skb = hif_dl_read_swq(rxq_no);
@@ -525,6 +619,25 @@ int ccci_df_to_ccci_callback(unsigned int rxq_no)
     	port_id = ccci_ch_to_port(ccci_h->channel);		
     	CDEV_LOG(port_id, CCCI, INF, "CCCI_H: 0x%08X, 0x%08X, 0x%08X, 0x%08X",\
         	ccci_h->data[0],ccci_h->data[1],ccci_h->channel, ccci_h->reserved);
+
+    	/*check rx sequence number for expect*/
+    	#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    	channel = ccci_h->channel;
+    	seq_num = ccci_h->seq_num;
+    	assert_bit = ccci_h->assert_bit;	
+    	DBGLOG(CCCI, DBG, "Port%d CCCI_H: data[0]=0x%08X, data[1]=0x%08X, ch=0x%02X, seqno=0x%02X, assert=%d, resv=0x%08X(0x%08X, 0x%08X, 0x%08X)",\
+        	port_id, ccci_h->data[0],ccci_h->data[1],ccci_h->channel, ccci_h->seq_num, \
+        	ccci_h->assert_bit, ccci_h->reserved, channel, seq_num, assert_bit);
+		
+    	if(((seq_num - ccci_seqno_tbl[channel].seqno[RX]) & 0x7FFF) != 1 && assert_bit) {
+            DBGLOG(CCCI, ERR, "Port%d seqno out-of-order(0x%02X->0x%02X): data[0]=0x%08X, data[1]=0x%08X, ch=0x%02X, seqno=0x%02X, assert=%d, resv=0x%08X", \							
+				port_id, seq_num, ccci_seqno_tbl[channel].seqno[RX], ccci_h->data[0], ccci_h->data[1], \
+				ccci_h->channel, ccci_h->seq_num, ccci_h->assert_bit, ccci_h->reserved);						
+            hif_force_md_assert_swint();
+    	}					
+    	ccci_seqno_tbl[channel].seqno[RX] = seq_num;
+    	#endif
+		
         /* Step 4. callback to CCCI device */       
         if(NULL != ccci_port_info[port_id].ch.rx_cb){
             #ifdef __EEMCS_EXPT_SUPPORT__
@@ -622,6 +735,148 @@ int ccci_df_to_ccci_WDT_callback(unsigned int WDT)
     return KAL_SUCCESS;
 }
 
+int ccci_df_to_ccci_send_msg(CCCI_CHANNEL_T ch, unsigned int msg, unsigned int reserv){
+    struct sk_buff *new_skb;
+    CCCI_BUFF_T    *pccci_h;
+    KAL_UINT32 port_id;
+    KAL_INT32 ret;
+
+    DEBUG_LOG_FUNCTION_ENTRY;
+    if ((check_device_state() != EEMCS_BOOTING_DONE) || md_wdt_timeout_isr) {//modem not ready
+        DBGLOG(CCCI, ERR, "CH%d send ccci msg(%d) fail when modem not ready", ch, msg);
+        return -ENODEV;
+    }
+	
+    new_skb = ccci_cdev_mem_alloc(sizeof(CCCI_BUFF_T), GFP_ATOMIC);
+    if(new_skb == NULL){
+        DBGLOG(CCCI, ERR, "[TX]CH%d alloc skb fail", ch);   
+        return -ENOMEM;
+    }
+
+    pccci_h = (CCCI_BUFF_T *)skb_put(new_skb, sizeof(CCCI_BUFF_T)) ;
+    memset(pccci_h, 0, sizeof(CCCI_BUFF_T));
+    pccci_h->data[0]  = CCCI_MAGIC_NUM;
+    pccci_h->data[1]  = msg;
+    pccci_h->reserved = reserv;
+
+#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    if (ch == CCCI_FORCE_RESET_MODEM_CHANNEL) {
+    	pccci_h->channel = (CCCI_FORCE_RESET_MODEM_CHANNEL&0xFFFF);
+    	pccci_h->seq_num = (CCCI_FORCE_RESET_MODEM_CHANNEL&0x7FFF0000) >> 16;
+    	pccci_h->assert_bit = (CCCI_FORCE_RESET_MODEM_CHANNEL&0x80000000) >> 31;
+    } 
+    else
+#endif
+    {
+    	pccci_h->channel = ch;
+    }
+	
+    ret = eemcs_ccci_UL_write_skb_to_swq(ch, new_skb);
+
+    return ret;
+}
+
+
+#if defined (DBG_FEATURE_POLL_MD_STA)
+void eemcs_start_md_status_poll_timer(unsigned int timeout)
+{
+    if (check_device_state() == EEMCS_BOOTING_DONE) {
+    	mod_timer(&md_status_poller, jiffies+timeout);
+    }
+}
+
+void eemcs_start_md_status_timeout_timer(unsigned int timeout)
+{
+    if (check_device_state() == EEMCS_BOOTING_DONE)
+    	mod_timer(&md_status_timeout, jiffies+timeout); 
+}
+
+void eemcs_md_status_msg_callback(struct sk_buff *skb, KAL_UINT32 private_data)
+{
+    del_timer(&md_status_timeout);
+    DBGLOG(CCCI, INF, "dump md status info");
+    eemcs_mem_dump(skb->data, skb->len);
+    dev_kfree_skb(skb);
+    eemcs_start_md_status_poll_timer(10*HZ);
+}
+
+void md_status_poller_func(unsigned long data)
+{
+    CCCI_BUFF_T * ccci_header;
+    struct sk_buff *new_skb;
+    KAL_INT32 ret = KAL_FAIL;
+
+    eemcs_start_md_status_timeout_timer(5*HZ);
+    ret = ccci_df_to_ccci_send_msg(CH_STATUS_TX, 0, 0);
+    if(ret) {
+    	DBGLOG(CCCI, ERR, "send md sta polling msg fail: %d", ret);
+    	del_timer(&md_status_timeout);
+    	eemcs_start_md_status_poll_timer(10*HZ);
+    }
+    DBGLOG(CCCI, INF, "send poll msg to md: %d", ret);
+
+    return;
+}
+
+static void eemcs_md_status_timeout_work(struct work_struct *work)
+{
+    DBGLOG(CCCI, ERR, "force md assert");
+    //force md assert by swint
+    hif_force_md_assert_swint();
+}
+
+void md_status_timeout_func(unsigned long data)
+{	
+    DBGLOG(CCCI, ERR, "schedule work to force md assert");
+    schedule_work(&md_status_timeout_work);
+}
+
+void eemcs_md_status_poll_init(void)
+{
+        DBGLOG(CCCI, INF, "eemcs_md_status_poll_init");
+        init_timer(&md_status_poller);	
+        md_status_poller.function = md_status_poller_func;	
+        md_status_poller.data = 0;	
+        init_timer(&md_status_timeout); 
+        md_status_timeout.function = md_status_timeout_func;	
+        md_status_timeout.data = 0;
+}
+
+void eemcs_md_status_poll_exit(void)
+{
+        DBGLOG(CCCI, INF, "eemcs_md_status_poll_exit");
+        del_timer(&md_status_timeout); 
+        del_timer(&md_status_poller);
+}
+#endif
+
+void ccci_state_callback_func(EEMCS_STATE state){
+    int ccmni_idx = 0;
+	
+    switch(state){
+        case EEMCS_GATE: //MD reset
+            #if defined (DBG_FEATURE_POLL_MD_STA)
+            eemcs_md_status_poll_exit();
+            #endif
+            break;
+			
+        case EEMCS_EXCEPTION:
+            #if defined (DBG_FEATURE_POLL_MD_STA)
+            //cancel md stauts polling timer
+            eemcs_md_status_poll_exit();
+            #endif
+            break;
+			
+        default:
+            break;
+    }
+}
+
+
+EEMCS_STATE_CALLBACK_T eemcs_ccci_state_callback ={
+    .callback = ccci_state_callback_func,
+};
+
 KAL_INT32 eemcs_ccci_mod_init(void)
 {
     KAL_UINT32 i, ret;
@@ -649,7 +904,7 @@ KAL_INT32 eemcs_ccci_mod_init(void)
 
     ret = hif_reg_WDT_cb(ccci_df_to_ccci_WDT_callback);
     KAL_ASSERT(ret == KAL_SUCCESS);
-    
+	
     // 4 <3> initialize ccci_ch_to_port_mapping
     for(i = 0; i<CH_NUM_MAX; i++){
         ccci_ch_to_port_mapping[i] = 0xff;
@@ -673,7 +928,26 @@ KAL_INT32 eemcs_ccci_mod_init(void)
     
     snprintf(eemcs_wakelock_name, sizeof(eemcs_wakelock_name), "eemcs_wakelock");
     wake_lock_init(&eemcs_wake_lock, WAKE_LOCK_SUSPEND, eemcs_wakelock_name);    
-    wake_lock_init(&sdio_wake_lock, WAKE_LOCK_SUSPEND, "sdio_wakelock");    
+    wake_lock_init(&sdio_wake_lock, WAKE_LOCK_SUSPEND, "sdio_wakelock");
+
+    //register md status callback func
+    eemcs_state_callback_register(&eemcs_ccci_state_callback);
+	
+    //initial ccci sequence number array
+    #if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    for(i = 0; i < CH_NUM_MAX; i++){
+        ccci_seqno_tbl[i].seqno[TX] = 0;
+        ccci_seqno_tbl[i].seqno[RX] = -1;
+        spin_lock_init(&ccci_seqno_tbl[i].tx_seqno_lock);		
+    }
+    #endif
+	
+    //initial polling md status timer
+    #if defined (DBG_FEATURE_POLL_MD_STA)
+    eemcs_ccci_register_callback(CH_STATUS_RX, eemcs_md_status_msg_callback, 0);
+    INIT_WORK(&md_status_timeout_work, eemcs_md_status_timeout_work);
+    eemcs_md_status_poll_init();
+    #endif
     
 #ifdef _EEMCS_CCCI_LB_UT
     ccci_ut_init_probe();

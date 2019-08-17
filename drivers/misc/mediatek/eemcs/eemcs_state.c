@@ -48,7 +48,7 @@ kal_bool eemcs_state_callback(EEMCS_STATE state){
     list_for_each(next, &eemcs_stat_callback_head.list) {
         node = (EEMCS_STATE_CALLBACK_T *) list_entry(next, EEMCS_STATE_CALLBACK_T, list);
         node->callback(state);
-        }
+    }
     mutex_unlock(&eemcs_stat_callback_head.mutex);
     return 0;
 }

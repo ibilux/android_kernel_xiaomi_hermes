@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/sdio/include/hif.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/sdio/include/hif.h#1
 */
 
 /*! \file   "hif.h"
@@ -8,10 +8,8 @@
     Functions for the driver to register bus and setup the IRQ
 */
 
-
-
 /*
-** $Log: hif.h $
+** Log: hif.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -23,7 +21,8 @@
  * Add GPIO debug function
  *
  * 10 19 2010 jeffrey.chang
- * [WCXRP00000120] [MT6620 Wi-Fi][Driver] Refine linux kernel module to the license of MTK propietary and enable MTK HIF by default
+ * [WCXRP00000120] [MT6620 Wi-Fi][Driver] Refine linux kernel module to the license of
+ * MTK propietary and enable MTK HIF by default
  * Refine linux kernel module to the license of MTK and enable MTK HIF
  *
  * 08 18 2010 jeffrey.chang
@@ -46,7 +45,8 @@
  * [WPD00003826]Initial import for Linux port
  * initial import for Linux port
 **  \main\maintrunk.MT5921\4 2009-10-20 17:38:28 GMT mtk01090
-**  Refine driver unloading and clean up procedure. Block requests, stop main thread and clean up queued requests, and then stop hw.
+**  Refine driver unloading and clean up procedure. Block requests, stop main thread and clean up queued requests,
+**  and then stop hw.
 **  \main\maintrunk.MT5921\3 2009-09-28 20:19:20 GMT mtk01090
 **  Add private ioctl to carry OID structures. Restructure public/private ioctl interfaces to Linux kernel.
 **  \main\maintrunk.MT5921\2 2009-08-18 22:57:05 GMT mtk01090
@@ -66,7 +66,6 @@
 #ifndef _HIF_H
 #define _HIF_H
 
-
 #if MTK_WCN_HIF_SDIO
 #include "hif_sdio.h"
 #endif
@@ -75,7 +74,6 @@
 *                         C O M P I L E R   F L A G S
 ********************************************************************************
 */
-
 
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
@@ -107,11 +105,9 @@ typedef struct _GL_HIF_INFO_T {
 	BOOLEAN fgMbxReadClear;
 } GL_HIF_INFO_T, *P_GL_HIF_INFO_T;
 
-
 #if CFG_DBG_GPIO_PINS
 
 extern void mtk_wcn_stp_debug_gpio_assert(UINT_32 dwIndex, UINT_32 dwMethod);
-
 
 /* Platform DEPENDENT configurations: MT6516 GPIO pin name */
 #define GPIO_6516(x) (GPIO##x)
@@ -193,4 +189,4 @@ VOID glSetPowerState(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 ePowerMode);
 *                              F U N C T I O N S
 ********************************************************************************
 */
-#endif				/* _HIF_H */
+#endif /* _HIF_H */

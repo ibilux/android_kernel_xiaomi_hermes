@@ -20,8 +20,8 @@
 #include <tlspi_Api.h>
 #endif
 
-#define SPIDEV_LOG(fmt, args...) printk("[SPI-UT]: [%s]:[%d]" fmt, __func__, __LINE__, ##args) 
-#define SPIDEV_MSG(fmt, args...) printk(KERN_ERR  fmt, ##args )
+#define SPIDEV_LOG(fmt, args...) pr_debug("[SPI-UT]: [%s]:[%d]" fmt, __func__, __LINE__, ##args) 
+#define SPIDEV_MSG(fmt, args...) pr_debug( fmt, ##args )
 //#define SPI_STRESS_MAX 512
 #define SPI_STRESS_MAX 1 
 DECLARE_COMPLETION(mt_spi_done);
@@ -663,7 +663,7 @@ spi_msg_store(struct device *dev, struct device_attribute *attr,
 			ret = spi_recv_check(&msg);
 			if(ret != 0){
 				ret = -ret;					
-				printk(KERN_ERR"Message transfer err:%d\n", ret);
+				SPIDEV_LOG("Message transfer err:%d\n", ret);
 			}
 		}		
 	}else if(!strncmp(buf, "-stress", 7)){

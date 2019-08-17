@@ -1,11 +1,9 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/bow.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/nic/bow.h#1
 */
 
-
-
 /*
-** $Log: bow.h $
+** Log: bow.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -139,7 +137,8 @@
 
 #define MAX_BOW_NUMBER_OF_CHANNEL_2G4            14
 #define MAX_BOW_NUMBER_OF_CHANNEL_5G              4
-#define MAX_BOW_NUMBER_OF_CHANNEL                    18	/* (MAX_BOW_NUMBER_OF_CHANNEL_2G4 + MAX_BOW_NUMBER_OF_CHANNEL_5G) */
+/* (MAX_BOW_NUMBER_OF_CHANNEL_2G4 + MAX_BOW_NUMBER_OF_CHANNEL_5G) */
+#define MAX_BOW_NUMBER_OF_CHANNEL                    18
 
 #define MAX_ACTIVITY_REPORT                                    2
 #define MAX_ACTIVITY_REPROT_TIME                          660

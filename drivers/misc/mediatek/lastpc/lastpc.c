@@ -7,6 +7,7 @@
 #include <linux/platform_device.h>
 #include <linux/kallsyms.h>
 #include <linux/of_address.h>
+#include <linux/slab.h>
 #include <asm/io.h>
 #include <mach/mt_chip.h>
 #include <mach/mt_lastpc.h>
@@ -21,6 +22,8 @@ static int lastpc_probe(struct platform_device *pdev);
 static int lastpc_remove(struct platform_device *pdev);
 static int lastpc_suspend(struct platform_device *pdev, pm_message_t state);
 static int lastpc_resume(struct platform_device *pdev);
+
+static char *lastpc_dump_buf = NULL;
 
 static struct lastpc lastpc_drv = {
 	.plt_drv = {
@@ -166,7 +169,8 @@ int lastpc_dump_min_len(void)
 
 int mt_reg_dump(char *buf)
 {
-	return lastpc_dump(buf, -1);
+	strncpy(buf, lastpc_dump_buf, strlen(lastpc_dump_buf)+1);
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -293,6 +297,16 @@ static int __init lastpc_init(void)
 	if (ret) {
 		pr_err("%s:%d: driver_create_file failed.\n", __func__, __LINE__);
 	}
+
+	lastpc_dump_buf = kzalloc(lastpc_drv.cur_plt->min_buf_len, GFP_KERNEL);
+	if (!lastpc_dump_buf) {
+		pr_err("%s:%d: kzalloc failed\n", __func__, __LINE__);
+		return -ENOMEM;
+	}
+
+	/* we dump here and then return lastpc_dump_buf to users to prevent lastpc values cleaned by low power mechanism
+           (MCUSYS might be turned off before lastpc_dump()) */
+	lastpc_dump(lastpc_dump_buf, lastpc_drv.cur_plt->min_buf_len);
 
 	return 0;
 }

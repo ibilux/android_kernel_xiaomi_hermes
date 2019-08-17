@@ -23,7 +23,6 @@
 #include <linux/slab.h>
 #include <linux/err.h>
 
-
 /*******************************************************************************
 *                                 M A C R O S
 ********************************************************************************
@@ -34,7 +33,6 @@
 #endif
 #define DFT_TAG         "[WMT-CCCI]"
 
-
 #define WMT_CCCI_LOG_LOUD                 4
 #define WMT_CCCI_LOG_DBG                  3
 #define WMT_CCCI_LOG_INFO                 2
@@ -43,13 +41,37 @@
 
 extern unsigned int wmtCcciLogLvl;
 
-#define WMT_CCCI_LOUD_FUNC(fmt, arg...)    if (wmtCcciLogLvl >= WMT_CCCI_LOG_LOUD) { pr_debug(KERN_DEBUG DFT_TAG "[L]%s:"  fmt, __func__ , ##arg); }
-#define WMT_CCCI_INFO_FUNC(fmt, arg...)    if (wmtCcciLogLvl >= WMT_CCCI_LOG_INFO) { pr_err(KERN_ERR DFT_TAG "[I]%s:"  fmt, __func__ , ##arg); }
-#define WMT_CCCI_WARN_FUNC(fmt, arg...)    if (wmtCcciLogLvl >= WMT_CCCI_LOG_WARN) { pr_warn(KERN_WARNING DFT_TAG "[W]%s:"  fmt, __func__ , ##arg); }
-#define WMT_CCCI_ERR_FUNC(fmt, arg...)     if (wmtCcciLogLvl >= WMT_CCCI_LOG_ERR)  { pr_err(KERN_ERR DFT_TAG "[E]%s(%d):"  fmt, __func__ , __LINE__, ##arg); }
-#define WMT_CCCI_DBG_FUNC(fmt, arg...)     if (wmtCcciLogLvl >= WMT_CCCI_LOG_DBG)  { pr_debug(KERN_DEBUG DFT_TAG "[D]%s:"  fmt, __func__ , ##arg); }
+#define WMT_CCCI_LOUD_FUNC(fmt, arg...) \
+do { \
+	if (wmtCcciLogLvl >= WMT_CCCI_LOG_LOUD) \
+		pr_debug(DFT_TAG "[L]%s:"  fmt, __func__ , ##arg); \
+} while (0)
+#define WMT_CCCI_INFO_FUNC(fmt, arg...) \
+do { \
+	if (wmtCcciLogLvl >= WMT_CCCI_LOG_INFO) \
+		pr_err(DFT_TAG "[I]%s:"  fmt, __func__ , ##arg); \
+} while (0)
+#define WMT_CCCI_WARN_FUNC(fmt, arg...) \
+do { \
+	if (wmtCcciLogLvl >= WMT_CCCI_LOG_WARN) \
+		pr_warn(DFT_TAG "[W]%s:"  fmt, __func__ , ##arg); \
+} while (0)
+#define WMT_CCCI_ERR_FUNC(fmt, arg...) \
+do { \
+	if (wmtCcciLogLvl >= WMT_CCCI_LOG_ERR) \
+		pr_err(DFT_TAG "[E]%s(%d):"  fmt, __func__ , __LINE__, ##arg); \
+} while (0)
+#define WMT_CCCI_DBG_FUNC(fmt, arg...) \
+do { \
+	if (wmtCcciLogLvl >= WMT_CCCI_LOG_DBG) \
+		pr_debug(DFT_TAG "[D]%s:"  fmt, __func__ , ##arg); \
+} while (0)
 
-#define wmt_ccci_assert(condition) if (!(condition)) {pr_err(KERN_ERR DFT_TAG "%s, %d, (%s)\n", __FILE__, __LINE__, #condition); }
+#define wmt_ccci_assert(condition) \
+do { \
+	if (!(condition)) \
+		pr_err(DFT_TAG "%s, %d, (%s)\n", __FILE__, __LINE__, #condition); \
+} while (0)
 
 #ifndef NAME_MAX
 #define NAME_MAX 256
@@ -62,7 +84,6 @@ extern unsigned int wmtCcciLogLvl;
 *                             D A T A   T Y P E S
 ********************************************************************************
 */
-
 
 typedef struct _WMT_CONF_FILE_ {
 	unsigned char cfgExist;

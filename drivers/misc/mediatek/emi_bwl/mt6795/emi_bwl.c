@@ -4,7 +4,6 @@
 #include <linux/semaphore.h>
 #include <linux/device.h>
 #include <linux/platform_device.h>
-#include <linux/xlog.h>
 #include <linux/of.h>
 #include <linux/of_address.h>
 #include <linux/of_irq.h>
@@ -569,39 +568,39 @@ static int __init emi_bwl_mod_init(void)
 	node = of_find_compatible_node(NULL, NULL, "mediatek,EMI");
 	if (node) {
 		  EMI_BASE_ADDR = of_iomap(node, 0);
-		  printk("get EMI_BASE_ADDR @ %p\n", EMI_BASE_ADDR);
+		  pr_debug("get EMI_BASE_ADDR @ %p\n", EMI_BASE_ADDR);
 	} else {
-		  printk("can't find compatible node\n");
+		  pr_err("can't find compatible node\n");
 		  return -1;
 	}
 	
 	node = of_find_compatible_node(NULL, NULL, "mediatek,DRAMC0");
 	if (node) {
       DRAMCAO_BASE_ADDR = of_iomap(node, 0);
-      printk("get DRAMCAO_BASE_ADDR @ %p\n", DRAMCAO_BASE_ADDR);
+      pr_debug("get DRAMCAO_BASE_ADDR @ %p\n", DRAMCAO_BASE_ADDR);
   }
   else {
-      printk("can't find DRAMC0 compatible node\n");
+      pr_err("can't find DRAMC0 compatible node\n");
       return -1;
   }
 
   node = of_find_compatible_node(NULL, NULL, "mediatek,DDRPHY");
   if(node) {
       DDRPHY_BASE_ADDR = of_iomap(node, 0);
-      printk("get DDRPHY_BASE_ADDR @ %p\n", DDRPHY_BASE_ADDR);
+      pr_debug("get DDRPHY_BASE_ADDR @ %p\n", DDRPHY_BASE_ADDR);
   }
   else {
-      printk("can't find DDRPHY compatible node\n");
+      pr_err("can't find DDRPHY compatible node\n");
       return -1;
   }
 
   node = of_find_compatible_node(NULL, NULL, "mediatek,DRAMC_NAO");
   if(node) {
       DRAMCNAO_BASE_ADDR = of_iomap(node, 0);
-      printk("get DRAMCNAO_BASE_ADDR @ %p\n", DRAMCNAO_BASE_ADDR);
+      pr_debug("get DRAMCNAO_BASE_ADDR @ %p\n", DRAMCNAO_BASE_ADDR);
   }
   else {
-      printk("can't find DRAMCNAO compatible node\n");
+      pr_err("can't find DRAMCNAO compatible node\n");
 		return -1;
 	}
 

@@ -7,6 +7,42 @@
 #include <linux/cpumask.h>
 #include <linux/kthread.h>
 
+#ifdef DEBUG_SDIO
+
+TX_DATA_KTHREAD_Q tx_data_kthread_queues[TX_QUEUE_LEN];
+void PutInKthreadDumpBuffer(unsigned short qno, struct sk_buff *skb, SKB_LIFE flag)
+{
+	unsigned int i = tx_data_kthread_queues[qno].index++ % HISTORY_NUM;
+	//tx_data_kthread_queues[qno].dump_data[i].log_ch = ((CCCI_BUFF_T *)skb->data)->channel;
+	//tx_data_kthread_queues[qno].dump_data[i].seq = ((CCCI_BUFF_T *)skb->data)->seq_num;
+	memcpy(&tx_data_kthread_queues[qno].dump_data[i], skb->data, 16);
+	tx_data_kthread_queues[qno].dump_data[i].flag = flag;
+}
+
+void setBufferFlag(unsigned short qno, unsigned int start, unsigned int length)
+{
+	unsigned int i;
+	for (i = 0; i < length; i++)
+	{
+		tx_data_kthread_queues[qno].dump_data[(start+i)%HISTORY_NUM].flag = SDIO_SEND_OUT;
+	}
+}
+
+void DumpKthreadBuffer()
+{
+	int i,j;
+	for(i=0; i<TX_QUEUE_LEN; i++) 
+	{
+		KAL_DBGPRINT(KAL, DBG_ERROR,("This is queue %d history: index=%d, current=%d\n", i, tx_data_kthread_queues[i].index, tx_data_kthread_queues[i].index%HISTORY_NUM));
+		for (j=0; j<HISTORY_NUM; j++)
+		{
+			struct sdio_memdump tmp =  tx_data_kthread_queues[i].dump_data[j];
+			KAL_DBGPRINT(KAL, DBG_ERROR,("[EEMCS/EXPT] %08X %08X %04X %04X %08X %d\n", tmp.data[0], tmp.data[1], tmp.log_ch, tmp.seq, tmp.reserved, tmp.flag));
+		}
+	}
+}
+
+#endif
 
 extern void lte_sdio_trigger_wakedevice(void);
 extern void lte_sdio_turnoff_wakedevice(void);
@@ -926,6 +962,8 @@ inline KAL_UINT32 mtlte_hif_sdio_rx_chk_pkt_num(KAL_UINT32 rxqno){
 static SDIO_TXRXWORK_RESP mtlte_hif_sdio_tx(KAL_UINT32 txqno)
 {
 	KAL_UINT32 pkt_in_q, try_to_send_pkt_num ;
+	KAL_UINT32 pkt_num_sent = 0;
+
 	SDIO_TXRXWORK_RESP ret_resp = 0 ;
 	sdio_tx_sdu_header * tx_header_temp ;
 	KAL_UINT32 tx_pkt_len ;
@@ -989,6 +1027,7 @@ static SDIO_TXRXWORK_RESP mtlte_hif_sdio_tx(KAL_UINT32 txqno)
 			// 4. update the packet count			
 		    try_to_send_pkt_num-- ;
 		    hif_sdio_handler.tx_pkt_cnt[txqno]-- ;			
+			pkt_num_sent++;
 
             #if INTEGRATION_DEBUG
             if(eemcs_sdio_throughput_log == 1){
@@ -1021,6 +1060,14 @@ static SDIO_TXRXWORK_RESP mtlte_hif_sdio_tx(KAL_UINT32 txqno)
 			ret_resp |= WORK_RESP_TX_DATA_ERROR ;
 			KAL_DBGPRINT(KAL, DBG_ERROR,("[ERR] mtlte_hif_sdio_tx => sdio_func1_wr 0x%08x fail\r\n",tx_queue_info[txqno].port_address)) ;
 		}
+
+#ifdef DEBUG_SDIO
+		if (pkt_num_sent > 0)
+		{
+			setBufferFlag(txqno, tx_data_kthread_queues[txqno].index-pkt_num_sent, pkt_num_sent);
+		}
+#endif	
+
         mtlte_df_UL_callback(txqno); // for wake up tx blocking I/O
         /* debug*/
         //KAL_UINT32 print_index ;
@@ -2326,7 +2373,7 @@ KAL_INT32 mtlte_hif_sdio_init()
 
 	KAL_DBGPRINT(KAL, DBG_INFO,("====> %s\n",KAL_FUNC_NAME)) ;
 
-#ifdef USER_BUILD_KERNEL
+#ifndef CONFIG_MT_ENG_BUILD
     mtlte_hal_register_MSDC_ERR_callback(mtlte_hif_WDT_handle);
 #endif
 	
@@ -2480,9 +2527,9 @@ KAL_INT32 mtlte_hif_sdio_deinit()
         KAL_FREE_PHYSICAL_MEM(hif_sdio_handler.whisr_for_rxbuf[i]) ;
     }
 	
-	KAL_DBGPRINT(KAL, DBG_INFO,("<==== %s\n",KAL_FUNC_NAME)) ;
+    KAL_DBGPRINT(KAL, DBG_INFO,("<==== %s\n",KAL_FUNC_NAME)) ;
 	
-	return ret ;
+    return ret ;
 }
 
 
@@ -2496,7 +2543,24 @@ KAL_INT32 mtlte_hif_sdio_get_driver_own_in_main(void)
     return mtlte_hif_sdio_get_driver_own();
 }
 
+KAL_INT32 mtlte_hif_force_md_assert_by_swint(void)
+{
+    KAL_INT32 ret = KAL_SUCCESS; 
+    KAL_UINT32 value = H2D_INT_CCCI_force_MD_assert;
 
+	if ((ret = mtlte_hif_sdio_get_driver_own()) != KAL_SUCCESS){
+		KAL_DBGPRINT(KAL, DBG_ERROR,("[ERROR] %s : mtlte_hif_sdio_get_driver_own fail !!!\r\n",KAL_FUNC_NAME)) ;	
+		return ret ; 
+	}
+
+    ret = sdio_func1_wr(SDIO_IP_WSICR, &value, 4);
+    if (ret != KAL_SUCCESS) {
+        KAL_DBGPRINT(KAL, DBG_ERROR,("[EEMCS/HIF]force md assert swint fail\n")) ;
+    } else {
+        KAL_DBGPRINT(KAL, DBG_ERROR,("[EEMCS/HIF]force md assert swint OK\n")) ;
+    }
+    return ret ; 
+}
 
 /*************************************************************
 *

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/ais_fsm.h#2 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/ais_fsm.h#2
 */
 
 /*! \file   ais_fsm.h
@@ -8,10 +8,12 @@
     Declaration of functions and finite state machine for AIS Module.
 */
 
-
-
 /*
-** $Log: ais_fsm.h $
+** Log: ais_fsm.h
+**
+** 01 06 2015 eason.tsai
+** [ALPS01886576] [A55ML][WIFI][Miracast] Group format time out
+** actiontec dongle MCC connect
 **
 ** 08 12 2013 cp.wu
 ** [BORA00002253] [MT6630 Wi-Fi][Driver][Firmware] Add NLO and timeout mechanism to SCN module
@@ -53,9 +55,11 @@
 ** cfg80211 support merge back from ALPS.JB to DaVinci - MT6620 Driver v2.3 branch.
  *
  * 11 22 2011 cp.wu
- * [WCXRP00001120] [MT6620 Wi-Fi][Driver] Modify roaming to AIS state transition from synchronous to asynchronous approach to avoid incomplete state termination
+ * [WCXRP00001120] [MT6620 Wi-Fi][Driver] Modify roaming to AIS state transition
+ * from synchronous to asynchronous approach to avoid incomplete state termination
  * 1. change RDD related compile option brace position.
- * 2. when roaming is triggered, ask AIS to transit immediately only when AIS is in Normal TR state without join timeout timer ticking
+ * 2. when roaming is triggered, ask AIS to transit immediately only when AIS
+ * is in Normal TR state without join timeout timer ticking
  * 3. otherwise, insert AIS_REQUEST into pending request queue
  *
  * 04 25 2011 cp.wu
@@ -67,7 +71,8 @@
  * not send disassoc or deauth to leaving AP so as to improve performace of roaming.
  *
  * 02 22 2011 cp.wu
- * [WCXRP00000487] [MT6620 Wi-Fi][Driver][AIS] Serve scan and connect request with a queue-based approach to improve response time for scanning request
+ * [WCXRP00000487] [MT6620 Wi-Fi][Driver][AIS] Serve scan and connect request with
+ * a queue-based approach to improve response time for scanning request
  * handle SCAN and RECONNECT with a FIFO approach.
  *
  * 01 27 2011 tsaiyuan.hsu
@@ -88,7 +93,8 @@
  * add scanning with specified SSID facility to AIS-FSM
  *
  * 11 01 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check
+ * [WCXRP00000150] [MT6620 Wi-Fi][Driver] Add implementation for querying current TX rate from firmware auto rate module
  * 1) Query link speed (TX rate) from firmware directly with buffering mechanism to reduce overhead
  * 2) Remove CNM CH-RECOVER event handling
  * 3) cfg read/write API renamed with kal prefix for unified naming rules.
@@ -104,7 +110,8 @@
  *
  * 08 25 2010 cp.wu
  * NULL
- * [AIS-FSM] IBSS no longer needs to acquire channel for beaconing, RLM/CNM will handle the channel switching when BSS information is updated
+ * [AIS-FSM] IBSS no longer needs to acquire channel for beaconing, RLM/CNM will handle
+ * the channel switching when BSS information is updated
  *
  * 08 12 2010 kevin.huang
  * NULL
@@ -126,7 +133,8 @@
  *
  * 07 26 2010 cp.wu
  *
- * AIS-FSM: when scan request is coming in the 1st 5 seconds of channel privilege period, just pend it til 5-sec. period finishes
+ * AIS-FSM: when scan request is coming in the 1st 5 seconds of channel privilege period,
+ * just pend it til 5-sec. period finishes
  *
  * 07 26 2010 cp.wu
  *
@@ -160,7 +168,8 @@
  *
  * 1) separate AIS_FSM state for two kinds of scanning. (OID triggered scan, and scan-for-connection)
  * 2) eliminate PRE_BSS_DESC_T, Beacon/PrebResp is now parsed in single pass
- * 3) implment DRV-SCN module, currently only accepts single scan request, other request will be directly dropped by returning BUSY
+ * 3) implment DRV-SCN module, currently only accepts single scan request,
+ * other request will be directly dropped by returning BUSY
  *
  * 07 08 2010 cp.wu
  *
@@ -276,7 +285,7 @@
 #define AIS_BG_SCAN_INTERVAL_MIN_SEC        2	/* 30 // exponential to 960 */
 #define AIS_BG_SCAN_INTERVAL_MAX_SEC        2	/* 960 // 16min */
 
-#define AIS_DELAY_TIME_OF_DISCONNECT_SEC    7   /* 10 */   //modify by qinhai for ALPS02418840 wifi disconenct when screen sleep from 5 to 7 2015-12-04 
+#define AIS_DELAY_TIME_OF_DISCONNECT_SEC    5	/* 10 */
 
 #define AIS_IBSS_ALONE_TIMEOUT_SEC          20	/* seconds */
 
@@ -296,9 +305,7 @@
 
 #define AIS_JOIN_CH_GRANT_THRESHOLD         10
 #define AIS_JOIN_CH_REQUEST_INTERVAL        4000
-#define AIS_SCN_DONE_TIMEOUT_SEC            30 /* 30 for 2.4G + 5G */ //5
-
-#define AIS_AUTORN_MIN_INTERVAL				20
+#define AIS_SCN_DONE_TIMEOUT_SEC            30 /* 30 for 2.4G + 5G */	/* 5 */
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -323,21 +330,11 @@ typedef enum _ENUM_AIS_STATE_T {
 	AIS_STATE_NUM
 } ENUM_AIS_STATE_T;
 
-/* reconnect level for determining if we should reconnect */
-typedef enum _ENUM_RECONNECT_LEVEL_T {
-	RECONNECT_LEVEL_MIN = 0,
-	RECONNECT_LEVEL_ROAMING_FAIL,		/* roaming failed */
-	RECONNECT_LEVEL_BEACON_TIMEOUT,		/* driver beacon timeout */
-	RECONNECT_LEVEL_USER_SET,			/* user set connect or disassociate */
-	RECONNECT_LEVEL_MAX
-} ENUM_RECONNECT_LEVEL_T;
-
 typedef struct _MSG_AIS_ABORT_T {
 	MSG_HDR_T rMsgHdr;	/* Must be the first member */
 	UINT_8 ucReasonOfDisconnect;
 	BOOLEAN fgDelayIndication;
 } MSG_AIS_ABORT_T, *P_MSG_AIS_ABORT_T;
-
 
 typedef struct _MSG_AIS_IBSS_PEER_FOUND_T {
 	MSG_HDR_T rMsgHdr;	/* Must be the first member */
@@ -358,8 +355,6 @@ typedef enum _ENUM_AIS_REQUEST_TYPE_T {
 typedef struct _AIS_REQ_HDR_T {
 	LINK_ENTRY_T rLinkEntry;
 	ENUM_AIS_REQUEST_TYPE_T eReqType;
-	/*temp save partional scan channel info*/
-	PUINT_8	pu8ChannelInfo;
 } AIS_REQ_HDR_T, *P_AIS_REQ_HDR_T;
 
 typedef struct _AIS_REQ_CHNL_INFO {
@@ -407,13 +402,11 @@ typedef struct _AIS_FSM_INFO_T {
 	TIMER_T rJoinTimeoutTimer;
 
 	TIMER_T rChannelTimeoutTimer;
-	
-	TIMER_T	rScanDoneTimer;
+
+	TIMER_T rScanDoneTimer;
 
 	TIMER_T rDeauthDoneTimer;
-#if CFG_SUPPORT_DETECT_SECURITY_MODE_CHANGE
-	TIMER_T rSecModeChangeTimer;
-#endif
+
 	UINT_8 ucSeqNumOfReqMsg;
 	UINT_8 ucSeqNumOfChReq;
 	UINT_8 ucSeqNumOfScanReq;
@@ -448,7 +441,6 @@ typedef struct _AIS_FSM_INFO_T {
 
 } AIS_FSM_INFO_T, *P_AIS_FSM_INFO_T;
 
-
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -465,7 +457,6 @@ typedef struct _AIS_FSM_INFO_T {
 */
 #define aisChangeMediaState(_prAdapter, _eNewMediaState) \
 	    (_prAdapter->prAisBssInfo->eConnectionState = (_eNewMediaState));
-
 
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
@@ -485,8 +476,7 @@ VOID aisFsmStateInit_IBSS_ALONE(IN P_ADAPTER_T prAdapter);
 
 VOID aisFsmStateInit_IBSS_MERGE(IN P_ADAPTER_T prAdapter, P_BSS_DESC_T prBssDesc);
 
-VOID
-aisFsmStateAbort(IN P_ADAPTER_T prAdapter, UINT_8 ucReasonOfDisconnect, BOOLEAN fgDelayIndication);
+VOID aisFsmStateAbort(IN P_ADAPTER_T prAdapter, UINT_8 ucReasonOfDisconnect, BOOLEAN fgDelayIndication);
 
 VOID aisFsmStateAbort_JOIN(IN P_ADAPTER_T prAdapter);
 
@@ -509,7 +499,6 @@ VOID aisFsmRunEventJoinComplete(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHd
 
 enum _ENUM_AIS_STATE_T aisFsmJoinCompleteAction(IN struct _ADAPTER_T *prAdapter, IN struct _MSG_HDR_T *prMsgHdr);
 
-
 VOID aisFsmRunEventFoundIBSSPeer(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr);
 
 VOID aisFsmRunEventRemainOnChannel(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr);
@@ -528,33 +517,27 @@ VOID aisFsmMergeIBSS(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec);
 /*----------------------------------------------------------------------------*/
 VOID aisFsmRunEventChGrant(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr);
 
-
 /*----------------------------------------------------------------------------*/
 /* Generating Outgoing Mailbox Message to CNM                                 */
 /*----------------------------------------------------------------------------*/
 VOID aisFsmReleaseCh(IN P_ADAPTER_T prAdapter);
-
 
 /*----------------------------------------------------------------------------*/
 /* Event Indication                                                           */
 /*----------------------------------------------------------------------------*/
 VOID
 aisIndicationOfMediaStateToHost(IN P_ADAPTER_T prAdapter,
-				ENUM_PARAM_MEDIA_STATE_T eConnectionState,
-				BOOLEAN fgDelayIndication);
+				ENUM_PARAM_MEDIA_STATE_T eConnectionState, BOOLEAN fgDelayIndication);
 
-VOID aisPostponedEventOfDisconnTimeout(IN P_ADAPTER_T prAdapter);
+VOID aisCheckPostponedDisconnTimeout(IN P_ADAPTER_T prAdapter, P_AIS_FSM_INFO_T prAisFsmInfo);
 
-VOID
-aisUpdateBssInfoForJOIN(IN P_ADAPTER_T prAdapter,
-			P_STA_RECORD_T prStaRec, P_SW_RFB_T prAssocRspSwRfb);
+VOID aisUpdateBssInfoForJOIN(IN P_ADAPTER_T prAdapter, P_STA_RECORD_T prStaRec, P_SW_RFB_T prAssocRspSwRfb);
 
 VOID aisUpdateBssInfoForCreateIBSS(IN P_ADAPTER_T prAdapter);
 
 VOID aisUpdateBssInfoForMergeIBSS(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec);
 
-BOOLEAN
-aisValidateProbeReq(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT PUINT_32 pu4ControlFlags);
+BOOLEAN aisValidateProbeReq(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT PUINT_32 pu4ControlFlags);
 
 WLAN_STATUS
 aisFsmRunEventMgmtFrameTxDone(IN P_ADAPTER_T prAdapter,
@@ -565,19 +548,13 @@ aisFsmRunEventMgmtFrameTxDone(IN P_ADAPTER_T prAdapter,
 /*----------------------------------------------------------------------------*/
 VOID aisFsmDisconnect(IN P_ADAPTER_T prAdapter, IN BOOLEAN fgDelayIndication);
 
-
 /*----------------------------------------------------------------------------*/
 /* Event Handling                                                             */
 /*----------------------------------------------------------------------------*/
 VOID aisBssBeaconTimeout(IN P_ADAPTER_T prAdapter);
 
-#if CFG_SUPPORT_DETECT_SECURITY_MODE_CHANGE
-VOID aisBssSecurityChanged(IN P_ADAPTER_T prAdapter);
-#endif
-
 WLAN_STATUS
-aisDeauthXmitComplete(IN P_ADAPTER_T prAdapter,
-		      IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
+aisDeauthXmitComplete(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
 
 #if CFG_SUPPORT_ROAMING
 VOID aisFsmRunEventRoamingDiscovery(IN P_ADAPTER_T prAdapter, UINT_32 u4ReqScan);
@@ -586,10 +563,8 @@ ENUM_AIS_STATE_T aisFsmRoamingScanResultsUpdate(IN P_ADAPTER_T prAdapter);
 
 VOID aisFsmRoamingDisconnectPrevAP(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prTargetStaRec);
 
-VOID
-aisUpdateBssInfoForRoamingAP(IN P_ADAPTER_T prAdapter,
-			     IN P_STA_RECORD_T prStaRec, IN P_SW_RFB_T prAssocRspSwRfb);
-#endif				/*CFG_SUPPORT_ROAMING */
+VOID aisUpdateBssInfoForRoamingAP(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN P_SW_RFB_T prAssocRspSwRfb);
+#endif /*CFG_SUPPORT_ROAMING */
 
 /*----------------------------------------------------------------------------*/
 /* Timeout Handling                                                           */
@@ -603,27 +578,20 @@ VOID aisFsmRunEventJoinTimeout(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr);
 VOID aisFsmRunEventChannelTimeout(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr);
 
 VOID aisFsmRunEventDeauthTimeout(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr);
-#if CFG_SUPPORT_DETECT_SECURITY_MODE_CHANGE
-VOID aisFsmRunEventSecModeChangeTimeout(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr);
-#endif
+
 /*----------------------------------------------------------------------------*/
 /* OID/IOCTL Handling                                                         */
 /*----------------------------------------------------------------------------*/
-VOID
-aisFsmScanRequest(IN P_ADAPTER_T prAdapter,
-		  IN P_PARAM_SSID_T prSsid, IN PUINT_8 pucIe, IN UINT_32 u4IeLength);
+VOID aisFsmScanRequest(IN P_ADAPTER_T prAdapter, IN P_PARAM_SSID_T prSsid, IN PUINT_8 pucIe, IN UINT_32 u4IeLength);
 
 VOID
 aisFsmScanRequestAdv(IN P_ADAPTER_T prAdapter,
-		     IN UINT_8 ucSsidNum,
-		     IN P_PARAM_SSID_T prSsid, IN PUINT_8 pucIe, IN UINT_32 u4IeLength);
+		     IN UINT_8 ucSsidNum, IN P_PARAM_SSID_T prSsid, IN PUINT_8 pucIe, IN UINT_32 u4IeLength);
 
 /*----------------------------------------------------------------------------*/
 /* Internal State Checking                                                    */
 /*----------------------------------------------------------------------------*/
-BOOLEAN
-aisFsmIsRequestPending(IN P_ADAPTER_T prAdapter,
-		       IN ENUM_AIS_REQUEST_TYPE_T eReqType, IN BOOLEAN bRemove);
+BOOLEAN aisFsmIsRequestPending(IN P_ADAPTER_T prAdapter, IN ENUM_AIS_REQUEST_TYPE_T eReqType, IN BOOLEAN bRemove);
 
 P_AIS_REQ_HDR_T aisFsmGetNextRequest(IN P_ADAPTER_T prAdapter);
 
@@ -633,8 +601,7 @@ VOID aisFsmFlushRequest(IN P_ADAPTER_T prAdapter);
 
 WLAN_STATUS
 aisFuncTxMgmtFrame(IN P_ADAPTER_T prAdapter,
-		   IN P_AIS_MGMT_TX_REQ_INFO_T prMgmtTxReqInfo,
-		   IN P_MSDU_INFO_T prMgmtTxMsdu, IN UINT_64 u8Cookie);
+		   IN P_AIS_MGMT_TX_REQ_INFO_T prMgmtTxReqInfo, IN P_MSDU_INFO_T prMgmtTxMsdu, IN UINT_64 u8Cookie);
 
 VOID aisFsmRunEventMgmtFrameTx(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr);
 
@@ -643,10 +610,10 @@ VOID aisFuncValidateRxActionFrame(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRf
 enum _ENUM_AIS_STATE_T aisFsmStateSearchAction(IN struct _ADAPTER_T *prAdapter, UINT_8 ucPhase);
 #if defined(CFG_TEST_MGMT_FSM) && (CFG_TEST_MGMT_FSM != 0)
 VOID aisTest(VOID);
-#endif				/* CFG_TEST_MGMT_FSM */
+#endif /* CFG_TEST_MGMT_FSM */
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
 */
 
-#endif				/* _AIS_FSM_H */
+#endif /* _AIS_FSM_H */

@@ -1,8 +1,6 @@
 #ifndef _HOTPLUG
 #define _HOTPLUG
 
-
-#include <linux/xlog.h>
 #include <linux/kernel.h>   //printk
 #include <asm/atomic.h>
 #include <mach/mt_reg_base.h>
@@ -19,7 +17,7 @@
 #if (HOTPLUG_LOG_PRINT == HOTPLUG_LOG_NONE)
 #define HOTPLUG_INFO(fmt, args...)                    
 #elif (HOTPLUG_LOG_PRINT == HOTPLUG_LOG_WITH_XLOG)
-#define HOTPLUG_INFO(fmt, args...)                      xlog_printk(ANDROID_LOG_INFO, "Power/hotplug", fmt, ##args)
+#define HOTPLUG_INFO(fmt, args...)                      pr_debug("[Power/hotplug] "fmt, ##args)
 #elif (HOTPLUG_LOG_PRINT == HOTPLUG_LOG_WITH_PRINTK)
 #define HOTPLUG_INFO(fmt, args...)                      pr_warn("[Power/hotplug] "fmt, ##args)
 //#define HOTPLUG_INFO(fmt, args...)                      pr_emerg("[Power/hotplug] "fmt, ##args)

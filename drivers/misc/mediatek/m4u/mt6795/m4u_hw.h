@@ -25,7 +25,7 @@ typedef struct _M4U_PERF_COUNT
     unsigned int main_tlb_miss_cnt;
     unsigned int pfh_tlb_miss_cnt;
     unsigned int pfh_cnt;
-    unsigned int rs_perf_cnt;
+	unsigned int rs_perf_cnt;
 }M4U_PERF_COUNT;
 
 typedef struct __mmu_tlb

@@ -48,18 +48,18 @@ static fm_s32 fm_state_set(struct fm_state_machine *thiz, fm_s32 new_state)
 
 #define STATE_SET(a, s)        \
 {                           \
-    if ((a)->state_set) {          \
-	(a)->state_set((a), (s));    \
-    }                       \
+	if ((a)->state_set) {          \
+		(a)->state_set((a), (s));    \
+	}                       \
 }
 
 #define STATE_GET(a)         \
 ({                             \
-    fm_s32 __ret = 0;              \
-    if ((a)->state_get) {          \
-	__ret = (a)->state_get((a));    \
-    }                       \
-    __ret;                  \
+	fm_s32 __ret = 0;              \
+	if ((a)->state_get) {          \
+		__ret = (a)->state_get((a));    \
+	}                       \
+	__ret;                  \
 })
 
 static fm_u16(*rds_get_freq) (void);
@@ -92,9 +92,8 @@ static fm_s32 rds_grp_get(fm_u16 *dst, struct rds_rx_t *raw, fm_s32 idx)
 	FMR_ASSERT(dst);
 	FMR_ASSERT(raw);
 
-	if (idx > (MAX_RDS_RX_GROUP_CNT - 1)) {
+	if (idx > (MAX_RDS_RX_GROUP_CNT - 1))
 		return -FM_EPARA;
-	}
 
 	dst[0] = raw->data[idx].blkA;
 	dst[1] = raw->data[idx].blkB;
@@ -118,11 +117,10 @@ static fm_s32 rds_checksum_check(fm_u16 crc, fm_s32 mask, fm_bool *valid)
 {
 	FMR_ASSERT(valid);
 
-	if ((crc & mask) == mask) {
+	if ((crc & mask) == mask)
 		*valid = fm_true;
-	} else {
+	else
 		*valid = fm_false;
-	}
 
 	return 0;
 }
@@ -210,8 +208,7 @@ static fm_s32 rds_grp_type_get(fm_u16 crc, fm_u16 blk, fm_u8 *type, fm_u8 *subty
 		return -FM_ECRC;
 	}
 
-	WCN_DBG(FM_DBG | RDSC, "Type=%d, subtype:%s\n", (fm_s32) *type,
-		*subtype ? "version B" : "version A");
+	WCN_DBG(FM_DBG | RDSC, "Type=%d, subtype:%s\n", (fm_s32) *type, *subtype ? "version B" : "version A");
 	return 0;
 }
 
@@ -228,9 +225,8 @@ static fm_s32 rds_grp_counter_add(fm_u8 type, fm_u8 subtype, struct rds_group_cn
 {
 	FMR_ASSERT(gc);
 
-	if (type > 15) {
+	if (type > 15)
 		return -FM_EPARA;
-	}
 
 	switch (subtype) {
 	case RDS_GRP_VER_A:
@@ -303,8 +299,7 @@ extern fm_s32 rds_log_out(struct rds_log_t *thiz, struct rds_rx_t *dst, fm_s32 *
 
 	if (thiz->len > 0) {
 		*dst_len = thiz->log_len[thiz->out];
-		*dst_len =
-		    (*dst_len < sizeof(struct rds_rx_t)) ? *dst_len : sizeof(struct rds_rx_t);
+		*dst_len = (*dst_len < sizeof(struct rds_rx_t)) ? *dst_len : sizeof(struct rds_rx_t);
 		fm_memcpy(dst, &(thiz->rds_log[thiz->out]), *dst_len);
 		thiz->out = (thiz->out + 1) % thiz->size;
 		thiz->len--;
@@ -546,7 +541,11 @@ static fm_s32 rds_g0_ps_cmp(fm_u8 addr, fm_u16 cbc, fm_u8 *fresh,
 	FMR_ASSERT(fresh);
 	FMR_ASSERT(once);
 	FMR_ASSERT(twice);
-/* FMR_ASSERT(valid); */
+
+	if (addr > 3) {		/* ps limited in 8 chars */
+		WCN_DBG(FM_NTC | RDSC, "PS Address error, addr=%x\n", addr);
+		return -1;
+	}
 
 	/* j = 2; // PS segment width */
 	PS_Num = addr;
@@ -579,9 +578,8 @@ static fm_s32 rds_g0_ps_cmp(fm_u8 addr, fm_u16 cbc, fm_u8 *fresh,
 		}
 
 		if ((once[2 * PS_Num] != 0) || (once[2 * PS_Num + 1] != 0)) {
-			for (indx = PS_Num; indx < 4; indx++) {
+			for (indx = PS_Num; indx < 4; indx++)
 				*bm &= ~(1 << indx);
-			}
 		}
 		/* if((corrBitCnt_BlkB == 0) && (corrBitCnt_BlkD == 0)) */
 		/* ALPS00523685:6627 CBC sometime is unreliable */
@@ -627,11 +625,10 @@ static fm_s32 rds_g0_ps_cmp(fm_u8 addr, fm_u16 cbc, fm_u8 *fresh,
 	}
 
 	/* check if we got a valid segment */
-	if (cnt == j) {
+	if (cnt == j)
 		*valid = fm_true;
-	} else {
+	else
 		*valid = fm_false;
-	}
 #endif
 	/* WCN_DBG(FM_NTC | RDSC, "PS seg=%s\n", *valid == fm_true ? "fm_true" : "fm_false"); */
 	WCN_DBG(FM_NTC | RDSC, "bitmap=%x\n", *bm);
@@ -673,9 +670,8 @@ static fm_s32 rds_bm_get_pos(struct rds_bitmap *thiz)
 
 	j = 0;
 
-	while (!(thiz->bm & (1 << i)) && (i > -1)) {
+	while (!(thiz->bm & (1 << i)) && (i > -1))
 		i--;
-	}
 
 #ifdef FM_RDS_USE_SOLUTION_B
 	for (j = i; j >= 0; j--) {
@@ -714,15 +710,13 @@ static fm_s32 rds_bm_set(struct rds_bitmap *thiz, fm_u8 addr)
 	bm_old.bm = thiz->bm;
 	thiz->bm |= (1 << addr);	/* set bitmap */
 
-	if (!rds_bm_cmp(&bm_old, thiz)) {
+	if (!rds_bm_cmp(&bm_old, thiz))
 		thiz->cnt++;	/* multi get a segment */
-	} else if (thiz->cnt > 0) {
+	else if (thiz->cnt > 0)
 		thiz->cnt--;
-	}
 
 	return 0;
 }
-
 
 /*
  * rds_g2_rt_addr_get
@@ -766,8 +760,7 @@ static fm_s32 rds_g2_txtAB_get(fm_u16 blk, fm_u8 *txtAB, fm_bool *dirty)
 	return ret;
 }
 
-static fm_s32 rds_g2_rt_get(fm_u16 crc, fm_u8 subtype, fm_u16 blkC, fm_u16 blkD, fm_u8 addr,
-			    fm_u8 *buf)
+static fm_s32 rds_g2_rt_get(fm_u16 crc, fm_u8 subtype, fm_u16 blkC, fm_u16 blkD, fm_u8 addr, fm_u8 *buf)
 {
 	fm_s32 ret = 0;
 	fm_bool valid = fm_false;
@@ -826,11 +819,10 @@ static fm_s32 rds_g2_rt_get_len(fm_u8 subtype, fm_s32 pos, fm_s32 *len)
 
 	FMR_ASSERT(len);
 
-	if (subtype == RDS_GRP_VER_A) {
+	if (subtype == RDS_GRP_VER_A)
 		*len = 4 * (pos + 1);
-	} else {
+	else
 		*len = 2 * (pos + 1);
-	}
 
 	return ret;
 }
@@ -845,8 +837,7 @@ static fm_s32 rds_g2_rt_get_len(fm_u8 subtype, fm_s32 pos, fm_s32 *len)
  * If success return 0, else return error code
 */
 static fm_s32 rds_g2_rt_cmp(fm_u8 addr, fm_u16 cbc, fm_u8 subtype, fm_u8 *fresh,
-			    fm_u8 *once, fm_u8 *twice,
-			    fm_bool *valid /*, fm_bool *end, fm_s32 *len */)
+			    fm_u8 *once, fm_u8 *twice, fm_bool *valid)
 {
 	fm_s32 ret = 0;
 	fm_s32 i = 0;
@@ -864,27 +855,24 @@ static fm_s32 rds_g2_rt_cmp(fm_u8 addr, fm_u16 cbc, fm_u8 subtype, fm_u8 *fresh,
 	if (subtype == RDS_GRP_VER_A) {
 		/* if (rds_cbc_get(cbc, RDS_BLK_C) == 0) */
 #ifdef RDS_CBC_DEPENDENCY
-		if (cbc == 0)
+		if (cbc == 0) {
 #endif
-		{
 			once[j * addr + 0] = fresh[j * addr + 0];
 			once[j * addr + 1] = fresh[j * addr + 1];
-			/* } */
-
-			/* if (rds_cbc_get(cbc, RDS_BLK_D) == 0) */
-			/* { */
 			once[j * addr + 2] = fresh[j * addr + 2];
 			once[j * addr + 3] = fresh[j * addr + 3];
-		}
-	} else if (subtype == RDS_GRP_VER_B) {
-		/* if (rds_cbc_get(cbc, RDS_BLK_D) == 0) */
 #ifdef RDS_CBC_DEPENDENCY
-		if (cbc == 0)
+		}
 #endif
-		{
+	} else if (subtype == RDS_GRP_VER_B) {
+#ifdef RDS_CBC_DEPENDENCY
+		if (cbc == 0) {
+#endif
 			once[j * addr + 0] = fresh[j * addr + 0];
 			once[j * addr + 1] = fresh[j * addr + 1];
+#ifdef RDS_CBC_DEPENDENCY
 		}
+#endif
 	}
 #ifdef RDS_CBC_DEPENDENCY
 	for (i = 0; i < j; i++) {
@@ -910,11 +898,10 @@ static fm_s32 rds_g2_rt_cmp(fm_u8 addr, fm_u16 cbc, fm_u8 subtype, fm_u8 *fresh,
 #endif
 
 	/* check if we got a valid segment 4bytes for typeA, 2bytes for typeB */
-	if (cnt == j) {
+	if (cnt == j)
 		*valid = fm_true;
-	} else {
+	else
 		*valid = fm_false;
-	}
 
 	WCN_DBG(FM_INF | RDSC, "RT seg=%s\n", *valid == fm_true ? "fm_true" : "fm_false");
 /* WCN_DBG(FM_INF | RDSC, "RT end=%s\n", *end == fm_true ? "fm_true" : "fm_false"); */
@@ -986,221 +973,174 @@ static fm_s32 rds_retrieve_g0_af(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRD
 		ret = rds_flag_set(flag, RDS_FLAG_IS_MUSIC);
 	}
 
-	if ((pstRDSData->Switch_TP) && (pstRDSData->RDSFlag.TP) && !(pstRDSData->RDSFlag.TA)) {
+	if ((pstRDSData->Switch_TP) && (pstRDSData->RDSFlag.TP) && !(pstRDSData->RDSFlag.TA))
 		ret = rds_event_set(event, RDS_EVENT_TAON_OFF);
+
+	if (SubType)	/* Type B no AF information */
+		goto out;
+
+	/* Type A */
+
+	ret = rds_checksum_check(block_data[4], FM_RDS_GDBK_IND_C, &valid);
+
+	if (valid == fm_false) {
+		WCN_DBG(FM_WAR | RDSC, "Group0 BlockC crc err\n");
+		return -FM_ECRC;
 	}
 
-	if (!SubType) {
-		/* Type A */
-		ret = rds_checksum_check(block_data[4], FM_RDS_GDBK_IND_C, &valid);
+	AF_H = (block_data[2] & 0xFF00) >> 8;
+	AF_L = block_data[2] & 0x00FF;
 
-		if (valid == fm_false) {
-			WCN_DBG(FM_WAR | RDSC, "Group0 BlockC crc err\n");
-			return -FM_ECRC;
+	if ((AF_H > 224) && (AF_H < 250)) {
+		/* Followed AF Number, see RDS spec Table 11, valid(224-249) */
+		WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 AF_H:%d, AF_L:%d\n", AF_H, AF_L);
+		preAF_Num = AF_H - 224;	/* AF Number */
+
+		if (preAF_Num != pstRDSData->AF_Data.AF_Num) {
+			pstRDSData->AF_Data.AF_Num = preAF_Num;
+			pstRDSData->AF_Data.isAFNum_Get = 0;
 		} else {
-			AF_H = (block_data[2] & 0xFF00) >> 8;
-			AF_L = block_data[2] & 0x00FF;
+			/* Get the same AFNum two times */
+			pstRDSData->AF_Data.isAFNum_Get = 1;
+		}
 
-			if ((AF_H > 224) && (AF_H < 250)) {
-				/* Followed AF Number, see RDS spec Table 11, valid(224-249) */
-				WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 AF_H:%d, AF_L:%d\n", AF_H,
-					AF_L);
-				preAF_Num = AF_H - 224;	/* AF Number */
-
-				if (preAF_Num != pstRDSData->AF_Data.AF_Num) {
-					pstRDSData->AF_Data.AF_Num = preAF_Num;
-					pstRDSData->AF_Data.isAFNum_Get = 0;
-				} else {
-					/* Get the same AFNum two times */
-					pstRDSData->AF_Data.isAFNum_Get = 1;
-				}
-
-				if ((AF_L < 205) && (AF_L > 0)) {
-					/* See RDS Spec table 10, valid VHF */
-					pstRDSData->AF_Data.AF[0][0] = AF_L + 875;	/* convert to 100KHz */
+		if ((AF_L < 205) && (AF_L > 0)) {
+			/* See RDS Spec table 10, valid VHF */
+			pstRDSData->AF_Data.AF[0][0] = AF_L + 875;	/* convert to 100KHz */
 #ifdef CONFIG_MTK_FM_50KHZ_SUPPORT
-					pstRDSData->AF_Data.AF[0][0] *= 10;
+			pstRDSData->AF_Data.AF[0][0] *= 10;
 #endif
-					WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 AF[0][0]:%d\n",
-						pstRDSData->AF_Data.AF[0][0]);
+			WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 AF[0][0]:%d\n",
+				pstRDSData->AF_Data.AF[0][0]);
 
-					if ((pstRDSData->AF_Data.AF[0][0]) !=
-					    (pstRDSData->AF_Data.AF[1][0])) {
-						pstRDSData->AF_Data.AF[1][0] =
-						    pstRDSData->AF_Data.AF[0][0];
-					} else {
-						if (pstRDSData->AF_Data.AF[1][0] != rds_get_freq())
-							pstRDSData->AF_Data.isMethod_A = 1;
-						else
-							pstRDSData->AF_Data.isMethod_A = 0;
-					}
+			if ((pstRDSData->AF_Data.AF[0][0]) != (pstRDSData->AF_Data.AF[1][0])) {
+				pstRDSData->AF_Data.AF[1][0] = pstRDSData->AF_Data.AF[0][0];
+			} else {
+				if (pstRDSData->AF_Data.AF[1][0] != rds_get_freq())
+					pstRDSData->AF_Data.isMethod_A = 1;
+				else
+					pstRDSData->AF_Data.isMethod_A = 0;
+			}
 
-					WCN_DBG(FM_NTC | RDSC,
-						"RetrieveGroup0 isAFNum_Get:%d, isMethod_A:%d\n",
-						pstRDSData->AF_Data.isAFNum_Get,
-						pstRDSData->AF_Data.isMethod_A);
+			WCN_DBG(FM_NTC | RDSC,
+				"RetrieveGroup0 isAFNum_Get:%d, isMethod_A:%d\n",
+				pstRDSData->AF_Data.isAFNum_Get, pstRDSData->AF_Data.isMethod_A);
 
-					/* only one AF handle */
-					if ((pstRDSData->AF_Data.isAFNum_Get)
-					    && (pstRDSData->AF_Data.AF_Num == 1)) {
-						pstRDSData->AF_Data.Addr_Cnt = 0xFF;
-						pstRDSData->event_status |= RDS_EVENT_AF_LIST;
-						WCN_DBG(FM_NTC | RDSC,
-							"RetrieveGroup0 RDS_EVENT_AF_LIST update\n");
-					}
-				}
-			} else if ((pstRDSData->AF_Data.isAFNum_Get)
-				   && (pstRDSData->AF_Data.Addr_Cnt != 0xFF)) {
-				/* AF Num correct */
-				num = pstRDSData->AF_Data.AF_Num;
-				num = num >> 1;
-				WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 +num:%d\n", num);
+			/* only one AF handle */
+			if ((pstRDSData->AF_Data.isAFNum_Get)
+			    && (pstRDSData->AF_Data.AF_Num == 1)) {
+				pstRDSData->AF_Data.Addr_Cnt = 0xFF;
+				pstRDSData->event_status |= RDS_EVENT_AF_LIST;
+				WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 RDS_EVENT_AF_LIST update\n");
+			}
+		}
+	} else if ((pstRDSData->AF_Data.isAFNum_Get)
+		   && (pstRDSData->AF_Data.Addr_Cnt != 0xFF)) {
+		/* AF Num correct */
+		num = pstRDSData->AF_Data.AF_Num;
+		num = (num > 25) ? 25 : num;
+		num = num >> 1;
+		WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 +num:%d\n", num);
 
-				/* Put AF freq fm_s32o buffer and check if AF freq is repeat again */
-				for (indx = 1; indx < (num + 1); indx++) {
-					if ((AF_H == (pstRDSData->AF_Data.AF[0][2 * indx - 1]))
-					    && (AF_L == (pstRDSData->AF_Data.AF[0][2 * indx]))) {
-						WCN_DBG(FM_ERR | RDSC,
-							"RetrieveGroup0 AF same as indx:%d\n",
-							indx);
-						break;
-					} else if (!(pstRDSData->AF_Data.AF[0][2 * indx - 1])) {
-						/* null buffer */
-						pstRDSData->AF_Data.AF[0][2 * indx - 1] = AF_H + 875;	/* convert to 100KHz */
-						pstRDSData->AF_Data.AF[0][2 * indx] = AF_L + 875;
+		/* Put AF freq fm_s32o buffer and check if AF freq is repeat again */
+		for (indx = 1; indx < (num + 1); indx++) {
+			if ((AF_H == (pstRDSData->AF_Data.AF[0][2 * indx - 1]))
+			    && (AF_L == (pstRDSData->AF_Data.AF[0][2 * indx]))) {
+				WCN_DBG(FM_ERR | RDSC, "RetrieveGroup0 AF same as indx:%d\n", indx);
+				break;
+			} else if (!(pstRDSData->AF_Data.AF[0][2 * indx - 1])) {
+				/* null buffer */
+				/* convert to 100KHz */
+				pstRDSData->AF_Data.AF[0][2 * indx - 1] = AF_H + 875;
+				pstRDSData->AF_Data.AF[0][2 * indx] = AF_L + 875;
 
 #ifdef CONFIG_MTK_FM_50KHZ_SUPPORT
-						pstRDSData->AF_Data.AF[0][2 * indx - 1] *= 10;
-						pstRDSData->AF_Data.AF[0][2 * indx] *= 10;
+				pstRDSData->AF_Data.AF[0][2 * indx - 1] *= 10;
+				pstRDSData->AF_Data.AF[0][2 * indx] *= 10;
 #endif
-						WCN_DBG(FM_NTC | RDSC,
-							"RetrieveGroup0 AF[0][%d]:%d, AF[0][%d]:%d\n",
-							2 * indx - 1,
-							pstRDSData->AF_Data.AF[0][2 * indx - 1],
-							2 * indx,
-							pstRDSData->AF_Data.AF[0][2 * indx]);
-						break;
-					}
-				}
+				WCN_DBG(FM_NTC | RDSC,
+					"RetrieveGroup0 AF[0][%d]:%d, AF[0][%d]:%d\n",
+					2 * indx - 1,
+					pstRDSData->AF_Data.AF[0][2 * indx - 1],
+					2 * indx, pstRDSData->AF_Data.AF[0][2 * indx]);
+				break;
+			}
+		}
 
-				num = pstRDSData->AF_Data.AF_Num;
-				WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 ++num:%d\n", num);
+		num = pstRDSData->AF_Data.AF_Num;
+		num = (num > 25) ? 25 : num;
+		WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 ++num:%d\n", num);
 
-				if (num > 0) {
-					if ((pstRDSData->AF_Data.AF[0][num - 1]) != 0) {
-						num = num >> 1;
-						WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 +++num:%d\n",
-							num);
+		if (num <= 0)
+			goto out;
 
-						/* arrange frequency from low to high:start */
-						for (indx = 1; indx < num; indx++) {
-							for (indx2 = indx + 1; indx2 < (num + 1);
-							     indx2++) {
-								AF_H =
-								    pstRDSData->AF_Data.AF[0][2 *
-											      indx -
-											      1];
-								AF_L =
-								    pstRDSData->AF_Data.AF[0][2 *
-											      indx];
+		if ((pstRDSData->AF_Data.AF[0][num - 1]) == 0)
+			goto out;
 
-								if (AF_H >
-								    (pstRDSData->AF_Data.
-								     AF[0][2 * indx2 - 1])) {
-									pstRDSData->AF_Data.
-									    AF[0][2 * indx - 1] =
-									    pstRDSData->AF_Data.
-									    AF[0][2 * indx2 - 1];
-									pstRDSData->AF_Data.
-									    AF[0][2 * indx] =
-									    pstRDSData->AF_Data.
-									    AF[0][2 * indx2];
-									pstRDSData->AF_Data.
-									    AF[0][2 * indx2 - 1] =
-									    AF_H;
-									pstRDSData->AF_Data.
-									    AF[0][2 * indx2] = AF_L;
-								} else if (AF_H ==
-									   (pstRDSData->AF_Data.
-									    AF[0][2 * indx2 - 1])) {
-									if (AF_L >
-									    (pstRDSData->AF_Data.
-									     AF[0][2 * indx2])) {
-										pstRDSData->AF_Data.
-										    AF[0][2 * indx -
-											  1] =
-										    pstRDSData->
-										    AF_Data.
-										    AF[0][2 *
-											  indx2 -
-											  1];
-										pstRDSData->AF_Data.
-										    AF[0][2 *
-											  indx] =
-										    pstRDSData->
-										    AF_Data.
-										    AF[0][2 *
-											  indx2];
-										pstRDSData->AF_Data.
-										    AF[0][2 *
-											  indx2 -
-											  1] = AF_H;
-										pstRDSData->AF_Data.
-										    AF[0][2 *
-											  indx2] =
-										    AF_L;
-									}
-								}
-							}
-						}
+		num = num >> 1;
+		WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 +++num:%d\n", num);
 
-						/* arrange frequency from low to high:end */
-						/* compare AF buff0 and buff1 data:start */
-						num = pstRDSData->AF_Data.AF_Num;
-						indx2 = 0;
+		/* arrange frequency from low to high:start */
+		for (indx = 1; indx < num; indx++) {
+			for (indx2 = indx + 1; indx2 < (num + 1); indx2++) {
+				AF_H = pstRDSData->AF_Data.AF[0][2 * indx - 1];
+				AF_L = pstRDSData->AF_Data.AF[0][2 * indx];
 
-						for (indx = 0; indx < num; indx++) {
-							if ((pstRDSData->AF_Data.AF[1][indx]) ==
-							    (pstRDSData->AF_Data.AF[0][indx])) {
-								if (pstRDSData->AF_Data.
-								    AF[1][indx] != 0)
-									indx2++;
-							} else
-								pstRDSData->AF_Data.AF[1][indx] =
-								    pstRDSData->AF_Data.AF[0][indx];
-						}
-
-						WCN_DBG(FM_NTC | RDSC,
-							"RetrieveGroup0 indx2:%d, num:%d\n", indx2,
-							num);
-
-						/* compare AF buff0 and buff1 data:end */
-						if (indx2 == num) {
-							pstRDSData->AF_Data.Addr_Cnt = 0xFF;
-							pstRDSData->event_status |=
-							    RDS_EVENT_AF_LIST;
-							WCN_DBG(FM_NTC | RDSC,
-								"RetrieveGroup0 AF_Num:%d\n",
-								pstRDSData->AF_Data.AF_Num);
-
-							for (indx = 0; indx < num; indx++) {
-								if ((pstRDSData->AF_Data.
-								     AF[1][indx]) == 0) {
-									pstRDSData->AF_Data.
-									    Addr_Cnt = 0x0F;
-									pstRDSData->event_status &=
-									    (~RDS_EVENT_AF_LIST);
-								}
-							}
-						} else
-							pstRDSData->AF_Data.Addr_Cnt = 0x0F;
+				if (AF_H > (pstRDSData->AF_Data.AF[0][2 * indx2 - 1])) {
+					pstRDSData->AF_Data.AF[0][2 * indx - 1] =
+					    pstRDSData->AF_Data.AF[0][2 * indx2 - 1];
+					pstRDSData->AF_Data.AF[0][2 * indx] =
+					    pstRDSData->AF_Data.AF[0][2 * indx2];
+					pstRDSData->AF_Data.AF[0][2 * indx2 - 1] = AF_H;
+					pstRDSData->AF_Data.AF[0][2 * indx2] = AF_L;
+				} else if (AF_H == (pstRDSData->AF_Data.AF[0][2 * indx2 - 1])) {
+					if (AF_L > (pstRDSData->AF_Data.AF[0][2 * indx2])) {
+						pstRDSData->AF_Data.AF[0][2 * indx - 1] =
+						    pstRDSData->AF_Data.AF[0][2 * indx2 - 1];
+						pstRDSData->AF_Data.AF[0][2 * indx] =
+						    pstRDSData->AF_Data.AF[0][2 * indx2];
+						pstRDSData->AF_Data.AF[0][2 * indx2 - 1] = AF_H;
+						pstRDSData->AF_Data.AF[0][2 * indx2] = AF_L;
 					}
 				}
 			}
 		}
+
+		/* arrange frequency from low to high:end */
+		/* compare AF buff0 and buff1 data:start */
+		num = pstRDSData->AF_Data.AF_Num;
+		num = (num > 25) ? 25 : num;
+		indx2 = 0;
+
+		for (indx = 0; indx < num; indx++) {
+			if ((pstRDSData->AF_Data.AF[1][indx]) == (pstRDSData->AF_Data.AF[0][indx])) {
+				if (pstRDSData->AF_Data.AF[1][indx] != 0)
+					indx2++;
+			} else
+				pstRDSData->AF_Data.AF[1][indx] = pstRDSData->AF_Data.AF[0][indx];
+		}
+
+		WCN_DBG(FM_NTC | RDSC, "RetrieveGroup0 indx2:%d, num:%d\n", indx2, num);
+
+		/* compare AF buff0 and buff1 data:end */
+		if (indx2 == num) {
+			pstRDSData->AF_Data.Addr_Cnt = 0xFF;
+			pstRDSData->event_status |= RDS_EVENT_AF_LIST;
+			WCN_DBG(FM_NTC | RDSC,
+				"RetrieveGroup0 AF_Num:%d\n",
+				pstRDSData->AF_Data.AF_Num);
+
+			for (indx = 0; indx < num; indx++) {
+				if ((pstRDSData->AF_Data.AF[1][indx]) == 0) {
+					pstRDSData->AF_Data.Addr_Cnt = 0x0F;
+					pstRDSData->event_status &= (~RDS_EVENT_AF_LIST);
+				}
+			}
+		} else
+			pstRDSData->AF_Data.Addr_Cnt = 0x0F;
 	}
 
-	return ret;
+out:	return ret;
 }
 
 static fm_s32 rds_retrieve_g0_di(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRDSData)
@@ -1307,9 +1247,7 @@ static fm_s32 rds_retrieve_g0_ps(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRD
 	while (1) {
 		switch (STATE_GET(&ps_sm)) {
 		case RDS_PS_START:
-
-			if (rds_g0_ps_get
-			    (block_data[4], block_data[3], ps_addr, pstRDSData->PS_Data.PS[0])) {
+			if (rds_g0_ps_get(block_data[4], block_data[3], ps_addr, pstRDSData->PS_Data.PS[0])) {
 				STATE_SET(&ps_sm, RDS_PS_FINISH);	/* if CRC error, we should not do parsing */
 				break;
 			}
@@ -1326,11 +1264,7 @@ static fm_s32 rds_retrieve_g0_ps(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRD
 			break;
 		case RDS_PS_DECISION:
 
-			if (pstRDSData->PS_Data.Addr_Cnt == 0x000F)	/* get max  8 chars */
-				/* ps shouldn't check bm_cnt */
-				/* || (ps_bm.bm_cnt_get(&ps_bm) > RDS_RT_MULTI_REV_TH)) { //repeate many times, but no end char get */
-			{
-				/* pos = ps_bm.bm_get_pos(&ps_bm); */
+			if (pstRDSData->PS_Data.Addr_Cnt == 0x000F) {	/* get max  8 chars */
 				STATE_SET(&ps_sm, RDS_PS_GETLEN);
 			} else {
 				STATE_SET(&ps_sm, RDS_PS_FINISH);
@@ -1338,52 +1272,44 @@ static fm_s32 rds_retrieve_g0_ps(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRD
 
 			break;
 		case RDS_PS_GETLEN:
-
-			/* if (pos == ps_bm.max_addr) */
-			{
+		{
+			num = 0;
+			WCN_DBG(FM_NTC | RDSC, "PS[3]=%x %x %x %x %x %x %x %x\n",
+				pstRDSData->PS_Data.PS[3][0],
+				pstRDSData->PS_Data.PS[3][1],
+				pstRDSData->PS_Data.PS[3][2],
+				pstRDSData->PS_Data.PS[3][3],
+				pstRDSData->PS_Data.PS[3][4],
+				pstRDSData->PS_Data.PS[3][5],
+				pstRDSData->PS_Data.PS[3][6], pstRDSData->PS_Data.PS[3][7]);
+			for (i = 0; i < 8; i++) {	/* compare with last PS. */
+				if (pstRDSData->PS_Data.PS[3][i] == pstRDSData->PS_Data.PS[2][i])
+					num++;
+			}
+			if (num != 8) {
 				num = 0;
-				WCN_DBG(FM_NTC | RDSC, "PS[3]=%x %x %x %x %x %x %x %x\n",
-					pstRDSData->PS_Data.PS[3][0],
-					pstRDSData->PS_Data.PS[3][1],
-					pstRDSData->PS_Data.PS[3][2],
-					pstRDSData->PS_Data.PS[3][3],
-					pstRDSData->PS_Data.PS[3][4],
-					pstRDSData->PS_Data.PS[3][5],
-					pstRDSData->PS_Data.PS[3][6], pstRDSData->PS_Data.PS[3][7]);
-				for (i = 0; i < 8; i++)	/* compare with last PS. */
-				{
-					if (pstRDSData->PS_Data.PS[3][i] ==
-					    pstRDSData->PS_Data.PS[2][i]) {
+				for (i = 0; i < 8; i++) {
+					/* even ps=0x20 and bitmap=0xF, send event to host to cover last ps. */
+					if ((pstRDSData->PS_Data.PS[2][i] == 0x0))
 						num++;
-					}
 				}
 				if (num != 8) {
-					num = 0;
-					for (i = 0; i < 8; i++) {
-						/* even ps=0x20 and bitmap=0xF, send event to host to cover last ps. */
-						if (/*(pstRDSData->PS_Data.PS[2][i]==0x20)|| */
-						    (pstRDSData->PS_Data.PS[2][i] == 0x0)) {
-							num++;
-						}
-					}
-					if (num != 8) {
-						fm_memcpy(pstRDSData->PS_Data.PS[3],
-							  pstRDSData->PS_Data.PS[2], 8);
-						rds_event_set(event, RDS_EVENT_PROGRAMNAME);	/* yes we got a new PS */
-						WCN_DBG(FM_NTC | RDSC, "Yes, get an PS!\n");
-					} else {
-						/* clear bitmap */
-						pstRDSData->PS_Data.Addr_Cnt = 0;
-					}
+					fm_memcpy(pstRDSData->PS_Data.PS[3], pstRDSData->PS_Data.PS[2], 8);
+					rds_event_set(event, RDS_EVENT_PROGRAMNAME);
+					WCN_DBG(FM_NTC | RDSC, "Yes, get an PS!\n");
 				} else {
-					/* if px3==ps2,clear bitmap */
+					/* clear bitmap */
 					pstRDSData->PS_Data.Addr_Cnt = 0;
-					/* clear buf */
-					fm_memset(pstRDSData->PS_Data.PS[0], 0x00, 8);
-					fm_memset(pstRDSData->PS_Data.PS[1], 0x00, 8);
-					fm_memset(pstRDSData->PS_Data.PS[2], 0x00, 8);
 				}
+			} else {
+				/* if px3==ps2,clear bitmap */
+				pstRDSData->PS_Data.Addr_Cnt = 0;
+				/* clear buf */
+				fm_memset(pstRDSData->PS_Data.PS[0], 0x00, 8);
+				fm_memset(pstRDSData->PS_Data.PS[1], 0x00, 8);
+				fm_memset(pstRDSData->PS_Data.PS[2], 0x00, 8);
 			}
+		}
 #if 0
 			ps_bm.bm_clr(&ps_bm);
 			/* clear buf */
@@ -1402,7 +1328,7 @@ static fm_s32 rds_retrieve_g0_ps(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRD
 		}
 	}
 
- out:
+out:
 	return ret;
 }
 
@@ -1412,21 +1338,18 @@ static fm_s32 rds_retrieve_g0(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRDSDa
 
 	ret = rds_retrieve_g0_af(block_data, SubType, pstRDSData);
 
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	ret = rds_retrieve_g0_di(block_data, SubType, pstRDSData);
 
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	ret = rds_retrieve_g0_ps(block_data, SubType, pstRDSData);
 
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	return ret;
 }
@@ -1519,72 +1442,60 @@ static fm_s32 rds_retrieve_g2(fm_u16 *source, fm_u8 subtype, rds_t *target)
 	while (1) {
 		switch (STATE_GET(&rt_sm)) {
 		case RDS_RT_START:
-			{
+		{
 #if 0
-				if (txtAB_change == fm_true) {
-					STATE_SET(&rt_sm, RDS_RT_DECISION);
-				} else
+			if (txtAB_change == fm_true) {
+				STATE_SET(&rt_sm, RDS_RT_DECISION);
+			} else
 #endif
-				{
-					if (rds_g2_rt_get(crc, subtype, blkC, blkD, rt_addr, fresh)
-					    == 0) {
-						/* STATE_SET(&rt_sm, RDS_RT_FINISH); //if CRC error, we should not do parsing */
-						/* break; */
-						rds_g2_rt_cmp(rt_addr, cbc, subtype, fresh, once,
-							      twice,
-							      &seg_ok /*, &txt_end, &rt_len */);
-
-						if (seg_ok == fm_true) {
-							rt_bm.bm_set(&rt_bm, rt_addr);
-						} else	/* clear bitmap of rt_addr */
-						{
-							rt_bm.bm &= ~(1 << rt_addr);
-						}
-					}
-					WCN_DBG(FM_NTC | RDSC, "bitmap=0x%04x, bmcnt=%d\n",
-						rt_bm.bm, rt_bm.cnt);
-					rds_g2_rt_check_end(rt_addr, subtype, twice, &txt_end);
-
-					STATE_SET(&rt_sm, RDS_RT_DECISION);
-				}
-				break;
-			}
-		case RDS_RT_DECISION:
 			{
-				if ((txt_end == fm_true)
-				    || (rt_bm.bm_get(&rt_bm) == 0xFFFF)	/* get max  64 chars */
-				    || (rt_bm.bm_cnt_get(&rt_bm) > RDS_RT_MULTI_REV_TH))	/* repeate many times, but no end char get */
-				{
-					pos = rt_bm.bm_get_pos(&rt_bm);
-					rds_g2_rt_get_len(subtype, pos, &rt_len);
+				if (rds_g2_rt_get(crc, subtype, blkC, blkD, rt_addr, fresh) == 0) {
+					rds_g2_rt_cmp(rt_addr, cbc, subtype, fresh, once, twice, &seg_ok);
 
-					if (pos == -1) {
-						STATE_SET(&rt_sm, RDS_RT_FINISH);
-					} else {
-						if (rt_addr == pos) {
-							STATE_SET(&rt_sm, RDS_RT_GETLEN);
-						} else if (pos > rt_addr) {
-							rt_bm.bm &= ~(1 << (rt_addr + 1));
-							STATE_SET(&rt_sm, RDS_RT_FINISH);
-						} else
-							STATE_SET(&rt_sm, RDS_RT_FINISH);
-					}
+					if (seg_ok == fm_true)
+						rt_bm.bm_set(&rt_bm, rt_addr);
+					else
+						rt_bm.bm &= ~(1 << rt_addr);
+				}
+				WCN_DBG(FM_NTC | RDSC, "bitmap=0x%04x, bmcnt=%d\n", rt_bm.bm, rt_bm.cnt);
+				rds_g2_rt_check_end(rt_addr, subtype, twice, &txt_end);
 
-					if (txt_end == fm_true) {
-						for (i = rt_addr + 1; i < rt_bm.max_addr; i++) {
-							rt_bm.bm &= ~(1 << i);
-						}
-					}
-				} else {
+				STATE_SET(&rt_sm, RDS_RT_DECISION);
+			}
+			break;
+		}
+		case RDS_RT_DECISION:
+		{
+			if ((txt_end == fm_true) || (rt_bm.bm_get(&rt_bm) == 0xFFFF) /* get max  64 chars */
+			    || (rt_bm.bm_cnt_get(&rt_bm) > RDS_RT_MULTI_REV_TH)) {
+				/* repeate many times, but no end char get */
+				pos = rt_bm.bm_get_pos(&rt_bm);
+				rds_g2_rt_get_len(subtype, pos, &rt_len);
+
+				if (pos == -1) {
 					STATE_SET(&rt_sm, RDS_RT_FINISH);
+				} else {
+					if (rt_addr == pos) {
+						STATE_SET(&rt_sm, RDS_RT_GETLEN);
+					} else if (pos > rt_addr) {
+						rt_bm.bm &= ~(1 << (rt_addr + 1));
+						STATE_SET(&rt_sm, RDS_RT_FINISH);
+					} else
+						STATE_SET(&rt_sm, RDS_RT_FINISH);
 				}
 
-				break;
+				if (txt_end == fm_true) {
+					for (i = rt_addr + 1; i < rt_bm.max_addr; i++)
+						rt_bm.bm &= ~(1 << i);
+				}
+			} else {
+				STATE_SET(&rt_sm, RDS_RT_FINISH);
 			}
-		case RDS_RT_GETLEN:
 
-			if (rt_len >
-			    0 /*&& ((txt_end == fm_true) || (rt_bm.bm_get(&rt_bm) == 0xFFFF)) */) {
+			break;
+		}
+		case RDS_RT_GETLEN:
+			if (rt_len > 0) {
 				for (indx = 0; indx < rt_len; indx++) {
 					if (twice[indx] == 0x20)
 						invalid_cnt++;
@@ -1593,9 +1504,9 @@ static fm_s32 rds_retrieve_g2(fm_u16 *source, fm_u8 subtype, rds_t *target)
 					if (memcmp(display, twice, bufsize) != 0) {
 						fm_memcpy(display, twice, bufsize);
 						target->RT_Data.TextLength = rt_len;
-						rds_event_set(event, RDS_EVENT_LAST_RADIOTEXT);	/* yes we got a new RT */
-						WCN_DBG(FM_NTC | RDSC, "Yes, get an RT! [len=%d]\n",
-							rt_len);
+						rds_event_set(event, RDS_EVENT_LAST_RADIOTEXT);
+						/* yes we got a new RT */
+						WCN_DBG(FM_NTC | RDSC, "Yes, get an RT! [len=%d]\n", rt_len);
 					}
 					rt_bm.bm_clr(&rt_bm);
 					/* clear buf */
@@ -1625,7 +1536,7 @@ static fm_s32 rds_retrieve_g2(fm_u16 *source, fm_u8 subtype, rds_t *target)
 		}
 	}
 
- out:
+out:
 	target->RT_Data.Addr_Cnt = rt_bm.bm;
 	return ret;
 }
@@ -1640,9 +1551,7 @@ static fm_s32 rds_retrieve_g4(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRDSDa
 	if (!SubType) {
 		/* Type A */
 		if ((block_data[4] & FM_RDS_GDBK_IND_C) && (block_data[4] & FM_RDS_GDBK_IND_D)) {
-			MJD =
-			    (fm_u32) (((block_data[1] & 0x0003) << 15) +
-				      ((block_data[2] & 0xFFFE) >> 1));
+			MJD = (fm_u32) (((block_data[1] & 0x0003) << 15) + ((block_data[2] & 0xFFFE) >> 1));
 			year = (MJD * 100 - 1507820) / 36525;
 			month = (MJD * 10000 - 149561000 - 3652500 * year) / 306001;
 
@@ -1654,13 +1563,11 @@ static fm_s32 rds_retrieve_g4(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRDSDa
 			pstRDSData->CT.Year = 1900 + year + k;
 			pstRDSData->CT.Month = month - 1 - k * 12;
 			pstRDSData->CT.Day = (fm_u16) (MJD - 14956 - D1 - D2);
-			pstRDSData->CT.Hour =
-			    ((block_data[2] & 0x0001) << 4) + ((block_data[3] & 0xF000) >> 12);
+			pstRDSData->CT.Hour = ((block_data[2] & 0x0001) << 4) + ((block_data[3] & 0xF000) >> 12);
 			minute = (block_data[3] & 0x0FC0) >> 6;
 
-			if (block_data[3] & 0x0020) {
+			if (block_data[3] & 0x0020)
 				pstRDSData->CT.Local_Time_offset_signbit = 1;	/* 0=+, 1=- */
-			}
 
 			pstRDSData->CT.Local_Time_offset_half_hour = block_data[3] & 0x001F;
 
@@ -1686,172 +1593,130 @@ static fm_s32 rds_retrieve_g14(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRDSD
 
 	if ((!SubType) && (block_data[4] & FM_RDS_GDBK_IND_C)) {
 		/* Type A */
-		PS_Num = block_data[1] & 0x000F;
+		PS_Num = block_data[1] & 0x000F; /* variant code */
 
-		if (PS_Num < 4) {
+		if (PS_Num < 4) { /* variant code = 0~3 represent PS */
 			for (indx = 0; indx < 2; indx++) {
 				pstRDSData->PS_ON[2 * PS_Num] = block_data[2] >> 8;
 				pstRDSData->PS_ON[2 * PS_Num + 1] = block_data[2] & 0xFF;
 			}
-		} else if (PS_Num == 4) {
-			AF_H = (block_data[2] & 0xFF00) >> 8;
-			AF_L = block_data[2] & 0x00FF;
 
-			if ((AF_H > 224) && (AF_H < 250)) {
-				/* Followed AF Number */
-				pstRDSData->AFON_Data.isAFNum_Get = 0;
-				preAFON_Num = AF_H - 224;
+			goto out;
+		} else if (PS_Num > 4)	/* variant code > 4 */
+			goto out;
 
-				if (pstRDSData->AFON_Data.AF_Num != preAFON_Num) {
-					pstRDSData->AFON_Data.AF_Num = preAFON_Num;
-				} else
-					pstRDSData->AFON_Data.isAFNum_Get = 1;
+		/* variant code = 4 represent AF(ON) */
 
-				if (AF_L < 205) {
-					pstRDSData->AFON_Data.AF[0][0] = AF_L + 875;
+		AF_H = (block_data[2] & 0xFF00) >> 8;
+		AF_L = block_data[2] & 0x00FF;
 
-					if ((pstRDSData->AFON_Data.AF[0][0]) !=
-					    (pstRDSData->AFON_Data.AF[1][0])) {
-						pstRDSData->AFON_Data.AF[1][0] =
-						    pstRDSData->AFON_Data.AF[0][0];
-					} else {
-						pstRDSData->AFON_Data.isMethod_A = 1;
-					}
-				}
-			} else if ((pstRDSData->AFON_Data.isAFNum_Get)
-				   && ((pstRDSData->AFON_Data.Addr_Cnt) != 0xFF)) {
-				/* AF Num correct */
-				num = pstRDSData->AFON_Data.AF_Num;
-				num = num >> 1;
+		if ((AF_H > 224) && (AF_H < 250)) {
+			/* Followed AF Number */
+			pstRDSData->AFON_Data.isAFNum_Get = 0;
+			preAFON_Num = AF_H - 224;
 
-				/* Put AF freq fm_s32o buffer and check if AF freq is repeat again */
-				for (indx = 1; indx < (num + 1); indx++) {
-					if ((AF_H == (pstRDSData->AFON_Data.AF[0][2 * indx - 1]))
-					    && (AF_L == (pstRDSData->AFON_Data.AF[0][2 * indx]))) {
-						WCN_DBG(FM_NTC | RDSC,
-							"RetrieveGroup14 AFON same as indx:%d\n",
-							indx);
-						break;
-					} else if (!(pstRDSData->AFON_Data.AF[0][2 * indx - 1])) {
-						/* null buffer */
+			if (pstRDSData->AFON_Data.AF_Num != preAFON_Num)
+				pstRDSData->AFON_Data.AF_Num = preAFON_Num;
+			else
+				pstRDSData->AFON_Data.isAFNum_Get = 1;
+
+			if (AF_L < 205) {
+				pstRDSData->AFON_Data.AF[0][0] = AF_L + 875;
+
+				if ((pstRDSData->AFON_Data.AF[0][0]) != (pstRDSData->AFON_Data.AF[1][0]))
+					pstRDSData->AFON_Data.AF[1][0] = pstRDSData->AFON_Data.AF[0][0];
+				else
+					pstRDSData->AFON_Data.isMethod_A = 1;
+			}
+
+			goto out;
+		}
+
+		if (!(pstRDSData->AFON_Data.isAFNum_Get) || ((pstRDSData->AFON_Data.Addr_Cnt) == 0xFF))
+			goto out;
+
+		/* AF Num correct */
+		num = pstRDSData->AFON_Data.AF_Num;
+		num = (num > 25) ? 25 : num;
+		num = num >> 1;
+
+		/* Put AF freq fm_s32o buffer and check if AF freq is repeat again */
+		for (indx = 1; indx < (num + 1); indx++) {
+			if ((AF_H == (pstRDSData->AFON_Data.AF[0][2 * indx - 1]))
+			    && (AF_L == (pstRDSData->AFON_Data.AF[0][2 * indx]))) {
+				WCN_DBG(FM_NTC | RDSC, "RetrieveGroup14 AFON same as indx:%d\n", indx);
+				break;
+			} else if (!(pstRDSData->AFON_Data.AF[0][2 * indx - 1])) {
+				/* null buffer */
+				pstRDSData->AFON_Data.AF[0][2 * indx - 1] = AF_H + 875;
+				pstRDSData->AFON_Data.AF[0][2 * indx] = AF_L + 875;
+				break;
+			}
+		}
+
+		num = pstRDSData->AFON_Data.AF_Num;
+		num = (num > 25) ? 25 : num;
+		if (num <= 0)
+			goto out;
+
+		if ((pstRDSData->AFON_Data.AF[0][num - 1]) == 0)
+			goto out;
+
+		num = num >> 1;
+		/* arrange frequency from low to high:start */
+		for (indx = 1; indx < num; indx++) {
+			for (indx2 = indx + 1; indx2 < (num + 1); indx2++) {
+				AF_H = pstRDSData->AFON_Data.AF[0][2 * indx - 1];
+				AF_L = pstRDSData->AFON_Data.AF[0][2 * indx];
+
+				if (AF_H > (pstRDSData->AFON_Data.AF[0][2 * indx2 - 1])) {
+					pstRDSData->AFON_Data.AF[0][2 * indx - 1] =
+					    pstRDSData->AFON_Data.AF[0][2 * indx2 - 1];
+					pstRDSData->AFON_Data.AF[0][2 * indx] =
+					    pstRDSData->AFON_Data.AF[0][2 * indx2];
+					pstRDSData->AFON_Data.AF[0][2 * indx2 - 1] =
+					    AF_H;
+					pstRDSData->AFON_Data.AF[0][2 * indx2] = AF_L;
+				} else if (AF_H == (pstRDSData->AFON_Data.AF[0][2 * indx2 - 1])) {
+					if (AF_L > (pstRDSData->AFON_Data.AF[0][2 * indx2])) {
 						pstRDSData->AFON_Data.AF[0][2 * indx - 1] =
-						    AF_H + 875;
-						pstRDSData->AFON_Data.AF[0][2 * indx] = AF_L + 875;
-						break;
-					}
-				}
-
-				num = pstRDSData->AFON_Data.AF_Num;
-
-				if (num > 0) {
-					if ((pstRDSData->AFON_Data.AF[0][num - 1]) != 0) {
-						num = num >> 1;
-
-						/* arrange frequency from low to high:start */
-						for (indx = 1; indx < num; indx++) {
-							for (indx2 = indx + 1; indx2 < (num + 1);
-							     indx2++) {
-								AF_H =
-								    pstRDSData->AFON_Data.AF[0][2 *
-												indx
-												-
-												1];
-								AF_L =
-								    pstRDSData->AFON_Data.AF[0][2 *
-												indx];
-
-								if (AF_H >
-								    (pstRDSData->AFON_Data.
-								     AF[0][2 * indx2 - 1])) {
-									pstRDSData->AFON_Data.
-									    AF[0][2 * indx - 1] =
-									    pstRDSData->AFON_Data.
-									    AF[0][2 * indx2 - 1];
-									pstRDSData->AFON_Data.
-									    AF[0][2 * indx] =
-									    pstRDSData->AFON_Data.
-									    AF[0][2 * indx2];
-									pstRDSData->AFON_Data.
-									    AF[0][2 * indx2 - 1] =
-									    AF_H;
-									pstRDSData->AFON_Data.
-									    AF[0][2 * indx2] = AF_L;
-								} else if (AF_H ==
-									   (pstRDSData->AFON_Data.
-									    AF[0][2 * indx2 - 1])) {
-									if (AF_L >
-									    (pstRDSData->AFON_Data.
-									     AF[0][2 * indx2])) {
-										pstRDSData->
-										    AFON_Data.
-										    AF[0][2 * indx -
-											  1] =
-										    pstRDSData->
-										    AFON_Data.
-										    AF[0][2 *
-											  indx2 -
-											  1];
-										pstRDSData->
-										    AFON_Data.
-										    AF[0][2 *
-											  indx] =
-										    pstRDSData->
-										    AFON_Data.
-										    AF[0][2 *
-											  indx2];
-										pstRDSData->
-										    AFON_Data.
-										    AF[0][2 *
-											  indx2 -
-											  1] = AF_H;
-										pstRDSData->
-										    AFON_Data.
-										    AF[0][2 *
-											  indx2] =
-										    AF_L;
-									}
-								}
-							}
-						}
-
-						/* arrange frequency from low to high:end */
-						/* compare AF buff0 and buff1 data:start */
-						num = pstRDSData->AFON_Data.AF_Num;
-						indx2 = 0;
-
-						for (indx = 0; indx < num; indx++) {
-							if ((pstRDSData->AFON_Data.AF[1][indx]) ==
-							    (pstRDSData->AFON_Data.AF[0][indx])) {
-								if (pstRDSData->AFON_Data.
-								    AF[1][indx] != 0)
-									indx2++;
-							} else
-								pstRDSData->AFON_Data.AF[1][indx] =
-								    pstRDSData->AFON_Data.
-								    AF[0][indx];
-						}
-
-						/* compare AF buff0 and buff1 data:end */
-						if (indx2 == num) {
-							pstRDSData->AFON_Data.Addr_Cnt = 0xFF;
-							pstRDSData->event_status |=
-							    RDS_EVENT_AFON_LIST;
-
-							for (indx = 0; indx < num; indx++) {
-								if ((pstRDSData->AFON_Data.
-								     AF[1][indx]) == 0) {
-									pstRDSData->AFON_Data.
-									    Addr_Cnt = 0x0F;
-									pstRDSData->event_status &=
-									    (~RDS_EVENT_AFON_LIST);
-								}
-							}
-						} else
-							pstRDSData->AFON_Data.Addr_Cnt = 0x0F;
+						    pstRDSData->AFON_Data.AF[0][2 * indx2 - 1];
+						pstRDSData->AFON_Data.AF[0][2 * indx] =
+						    pstRDSData->AFON_Data.AF[0][2 * indx2];
+						pstRDSData->AFON_Data.AF[0][2 * indx2 - 1] = AF_H;
+						pstRDSData->AFON_Data.AF[0][2 * indx2] = AF_L;
 					}
 				}
 			}
 		}
+
+		/* arrange frequency from low to high:end */
+		/* compare AF buff0 and buff1 data:start */
+		num = pstRDSData->AFON_Data.AF_Num;
+		num = (num > 25) ? 25 : num;
+		indx2 = 0;
+
+		for (indx = 0; indx < num; indx++) {
+			if ((pstRDSData->AFON_Data.AF[1][indx]) == (pstRDSData->AFON_Data.AF[0][indx])) {
+				if (pstRDSData->AFON_Data.AF[1][indx] != 0)
+					indx2++;
+			} else
+				pstRDSData->AFON_Data.AF[1][indx] = pstRDSData->AFON_Data.AF[0][indx];
+		}
+
+		/* compare AF buff0 and buff1 data:end */
+		if (indx2 == num) {
+			pstRDSData->AFON_Data.Addr_Cnt = 0xFF;
+			pstRDSData->event_status |= RDS_EVENT_AFON_LIST;
+
+			for (indx = 0; indx < num; indx++) {
+				if ((pstRDSData->AFON_Data.AF[1][indx]) == 0) {
+					pstRDSData->AFON_Data.Addr_Cnt = 0x0F;
+					pstRDSData->event_status &= (~RDS_EVENT_AFON_LIST);
+				}
+			}
+		} else
+			pstRDSData->AFON_Data.Addr_Cnt = 0x0F;
 	} else {
 		/* Type B */
 		TA_ON = block_data[1] & 0x0008;
@@ -1863,22 +1728,20 @@ static fm_s32 rds_retrieve_g14(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRDSD
 			fm_s32 TA_num = 0;
 
 			for (num = 0; num < 25; num++) {
-				if (pstRDSData->AFON_Data.AF[1][num] != 0) {
+				if (pstRDSData->AFON_Data.AF[1][num] != 0)
 					TA_num++;
-				} else {
+				else
 					break;
-				}
 			}
 
 			WCN_DBG(FM_NTC | RDSC, "TA set RDS_EVENT_TAON");
 
-			if (TA_num == pstRDSData->AFON_Data.AF_Num) {
+			if (TA_num == pstRDSData->AFON_Data.AF_Num)
 				pstRDSData->event_status |= RDS_EVENT_TAON;
-			}
 		}
 	}
 
-	return ret;
+out:	return ret;
 }
 
 /*
@@ -1893,8 +1756,7 @@ static fm_s32 rds_retrieve_g14(fm_u16 *block_data, fm_u8 SubType, rds_t *pstRDSD
  *  @rds_size - size of rds raw data
  *  @getfreq - function pointer, AF need get current freq
  */
-fm_s32 rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size,
-		  fm_u16(*getfreq) (void))
+fm_s32 rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size, fm_u16(*getfreq) (void))
 {
 	fm_s32 ret = 0;
 	/* block_data[0] = blockA,   block_data[1] = blockB, block_data[2] = blockC,   block_data[3] = blockD, */
@@ -1965,32 +1827,32 @@ fm_s32 rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size,
 
 		switch (GroupType) {
 		case 0:
-
-			if ((ret = rds_retrieve_g0(&block_data[0], SubType, rds_dst)))
+			ret = rds_retrieve_g0(&block_data[0], SubType, rds_dst);
+			if (ret)
 				goto do_next;
 
 			break;
 		case 1:
-
-			if ((ret = rds_retrieve_g1(&block_data[0], SubType, rds_dst)))
+			ret = rds_retrieve_g1(&block_data[0], SubType, rds_dst);
+			if (ret)
 				goto do_next;
 
 			break;
 		case 2:
-
-			if ((ret = rds_retrieve_g2(&block_data[0], SubType, rds_dst)))
+			ret = rds_retrieve_g2(&block_data[0], SubType, rds_dst);
+			if (ret)
 				goto do_next;
 
 			break;
 		case 4:
-
-			if ((ret = rds_retrieve_g4(&block_data[0], SubType, rds_dst)))
+			ret = rds_retrieve_g4(&block_data[0], SubType, rds_dst);
+			if (ret)
 				goto do_next;
 
 			break;
 		case 14:
-
-			if ((ret = rds_retrieve_g14(&block_data[0], SubType, rds_dst)))
+			ret = rds_retrieve_g14(&block_data[0], SubType, rds_dst);
+			if (ret)
 				goto do_next;
 
 			break;
@@ -1998,7 +1860,7 @@ fm_s32 rds_parser(rds_t *rds_dst, struct rds_rx_t *rds_raw, fm_s32 rds_size,
 			break;
 		}
 
- do_next:
+do_next:
 
 		if (ret && (ret != -FM_ECRC)) {
 			WCN_DBG(FM_ERR | RDSC, "parsing err[ret=%d]\n", ret);

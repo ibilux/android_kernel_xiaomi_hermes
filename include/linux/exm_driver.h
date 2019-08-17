@@ -16,6 +16,7 @@
 
 #include <linux/fs.h>
 #include <linux/interrupt.h>
+#include <linux/vmalloc.h>
 
 struct module;
 struct exm_map;
@@ -90,11 +91,11 @@ struct exm_info {
 	long irq;
 	unsigned long irq_flags;
 	void *priv;
-	 irqreturn_t(*handler) (int irq, struct exm_info *dev_info);
-	int (*mmap) (struct exm_info *info, struct vm_area_struct *vma);
-	int (*open) (struct exm_info *info, struct inode *inode);
-	int (*release) (struct exm_info *info, struct inode *inode);
-	int (*irqcontrol) (struct exm_info *info, s32 irq_on);
+	irqreturn_t (*handler)(int irq, struct exm_info *dev_info);
+	int (*mmap)(struct exm_info *info, struct vm_area_struct *vma);
+	int (*open)(struct exm_info *info, struct inode *inode);
+	int (*release)(struct exm_info *info, struct inode *inode);
+	int (*irqcontrol)(struct exm_info *info, s32 irq_on);
 };
 
 extern int __must_check
@@ -122,5 +123,12 @@ extern void exm_event_notify(struct exm_info *info);
 #define EXM_PORT_X86	1
 #define EXM_PORT_GPIO	2
 #define EXM_PORT_OTHER	3
+
+extern bool extmem_in_mspace(struct vm_area_struct *vma);
+extern unsigned long get_virt_from_mspace(unsigned long pa);
+extern void *extmem_malloc_page_align(size_t bytes);
+extern size_t extmem_get_mem_size(unsigned long pgoff);
+extern void extmem_free(void *mem);
+extern void init_debug_alloc_pool_aligned(void);
 
 #endif				/* _LINUX_EXM_DRIVER_H_ */

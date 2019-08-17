@@ -22,6 +22,7 @@
  *
  * Please read Documentation/workqueue.txt for details.
  */
+#define DEBUG 1
 
 #include <linux/export.h>
 #include <linux/kernel.h>

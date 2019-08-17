@@ -8,7 +8,7 @@
 #include <mach/mt_dramc.h>
 #include <mach/mt_clkmgr.h>
 #include <mach/mtk_ccci_helper.h>
-#include <mach/mt_freqhopping.h>
+#include "mt_freqhopping.h"
 #include <mach/mt_idle.h>
 #include <mach/mt_spm_idle.h>
 

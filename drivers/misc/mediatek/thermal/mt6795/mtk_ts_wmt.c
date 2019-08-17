@@ -1,6 +1,5 @@
 #include <linux/version.h>
 #include <linux/thermal.h>
-#include <linux/xlog.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <asm/uaccess.h>
@@ -18,18 +17,18 @@ static int wmt_tm_debug_log = 0;
 #define wmt_tm_dprintk(fmt, args...)   \
 do {                                    \
     if (wmt_tm_debug_log) {                \
-        xlog_printk(ANDROID_LOG_DEBUG, "Power/WMT_Thermal", fmt, ##args); \
+        pr_notice("Power/WMT_Thermal" fmt, ##args); \
     }                                   \
 } while(0)
 
 #define wmt_tm_printk(fmt, args...)   \
 do {                                    \
-    xlog_printk(ANDROID_LOG_DEBUG, "Power/WMT_Thermal", fmt, ##args); \
+    pr_notice("Power/WMT_Thermal" fmt, ##args); \
 } while(0)
 
 #define wmt_tm_info(fmt, args...)   \
 do {                                    \
-    xlog_printk(ANDROID_LOG_INFO, "Power/WMT_Thermal", fmt, ##args); \
+    pr_notice("Power/WMT_Thermal" fmt, ##args); \
 } while(0)
 
 struct linux_thermal_ctrl_if {
@@ -487,7 +486,7 @@ static int wmt_cl_get_max_state(struct thermal_cooling_device *cool_dev,
              unsigned long *pv)
 {
     *pv = 1;
-    wmt_tm_dprintk("[%s] %d\n", __func__, *pv);
+    wmt_tm_dprintk("[%s] %lu\n", __func__, *pv);
 	return 0;
 }
 
@@ -495,14 +494,14 @@ static int wmt_cl_get_cur_state(struct thermal_cooling_device *cool_dev,
              unsigned long *pv)
 {
     *pv = cl_dev_state;
-    wmt_tm_dprintk("[%s] %d\n", __func__, *pv);
+    wmt_tm_dprintk("[%s] %lu\n", __func__, *pv);
 	return 0;
 }
 
 static int wmt_cl_set_cur_state(struct thermal_cooling_device *cool_dev,
              unsigned long v)
 {
-    wmt_tm_dprintk("[%s] %d\n", __func__, v);
+    wmt_tm_dprintk("[%s] %lu\n", __func__, v);
     cl_dev_state = v;
 
     if (cl_dev_state == 1) {
@@ -620,7 +619,8 @@ static int wmt_judge_throttling(int index, int is_on, int interval)
 
 					wmt_tm_printk("LOW/MID-->HIGH:%lu <- (%d / %d) %lu", thro_constraint, up_numerator, up_denominator, cur_thro);
 
-					wmt_send_signal( thro_constraint / 1000);
+					//wmt_send_signal( thro_constraint / 1000);
+                    wmt_send_signal( thro_constraint );//unit : Kbytes
 					throttling_pre_stat = HIGH_STAT;
 					over_up_time = 0;
 				} else if (throttling_pre_stat == HIGH_STAT) {
@@ -633,11 +633,12 @@ static int wmt_judge_throttling(int index, int is_on, int interval)
 
 						wmt_tm_printk("HIGH-->HIGH:%lu <- (%d / %d) %lu", thro_constraint, up_numerator, up_denominator, cur_thro);
 
-						wmt_send_signal( thro_constraint / 1000);
+						//wmt_send_signal( thro_constraint / 1000);
+                        wmt_send_signal( thro_constraint );//unit : Kbytes
 						over_up_time = 0;
 					}
 				} else {
-					wmt_tm_info("[%s] Error state1!!\n", __func__, throttling_pre_stat);
+					wmt_tm_info("[%s] Error state1=%d!!\n", __func__, throttling_pre_stat);
 				}
 				wmt_tm_printk("case2 time=%d\n", over_up_time);
 			break;
@@ -671,7 +672,8 @@ static int wmt_judge_throttling(int index, int is_on, int interval)
 					}
 
 					wmt_tm_printk("MID/HIGH-->LOW:%lu <- (%d / %d) %lu", thro_constraint, low_numerator, low_denominator, cur_thro);
-					wmt_send_signal( thro_constraint / 1000);
+					//wmt_send_signal( thro_constraint / 1000);
+                    wmt_send_signal( thro_constraint );//unit : Kbytes
 					throttling_pre_stat = LOW_STAT;
 					below_low_time = 0;
 					low_rst_time = 0;
@@ -698,7 +700,8 @@ static int wmt_judge_throttling(int index, int is_on, int interval)
 
 							wmt_tm_printk("LOW-->LOW:%lu <-(%d / %d) %lu", thro_constraint, low_numerator, low_denominator, cur_thro);
 
-							wmt_send_signal( thro_constraint / 1000);
+							//wmt_send_signal( thro_constraint / 1000);
+							wmt_send_signal( thro_constraint );//unit : Kbytes
 							below_low_time = 0;
 						} else {
 							wmt_tm_dprintk("Have reset, no control!!");
@@ -728,7 +731,7 @@ static int wmt_cl_pa1_get_max_state(struct thermal_cooling_device *cool_dev,
              unsigned long *pv)
 {
     *pv = 1;
-    wmt_tm_dprintk("[%s] %d\n", __func__, *pv);
+    wmt_tm_dprintk("[%s] %lu\n", __func__, *pv);
     return 0;
 }
 
@@ -736,7 +739,7 @@ static int wmt_cl_pa1_get_cur_state(struct thermal_cooling_device *cool_dev,
              unsigned long *pv)
 {
     *pv = cl_pa1_dev_state;
-    wmt_tm_dprintk("[%s] %d\n", __func__, *pv);
+    wmt_tm_dprintk("[%s] %lu\n", __func__, *pv);
     return 0;
 }
 
@@ -746,7 +749,7 @@ static int wmt_cl_pa1_set_cur_state(struct thermal_cooling_device *cool_dev,
 	struct linux_thermal_ctrl_if *p_linux_if = 0;
 	int ret = 0;
 
-	wmt_tm_dprintk("[%s] %d\n", __func__, v);
+	wmt_tm_dprintk("[%s] %lu\n", __func__, v);
 
 	if (pg_wmt_tm) {
 		p_linux_if = &pg_wmt_tm->linux_if;
@@ -771,7 +774,7 @@ static int wmt_cl_pa2_get_max_state(struct thermal_cooling_device *cool_dev,
              unsigned long *pv)
 {
     *pv = 1;
-    wmt_tm_dprintk("[%s] %d\n", __func__, *pv);
+    wmt_tm_dprintk("[%s] %lu\n", __func__, *pv);
     return 0;
 }
 
@@ -779,7 +782,7 @@ static int wmt_cl_pa2_get_cur_state(struct thermal_cooling_device *cool_dev,
              unsigned long *pv)
 {
     *pv = cl_pa2_dev_state;
-    wmt_tm_dprintk("[%s] %d\n", __func__, *pv);
+    wmt_tm_dprintk("[%s] %lu\n", __func__, *pv);
     return 0;
 }
 
@@ -789,7 +792,7 @@ static int wmt_cl_pa2_set_cur_state(struct thermal_cooling_device *cool_dev,
 	struct linux_thermal_ctrl_if *p_linux_if = 0;
 	int ret = 0;
 
-	wmt_tm_dprintk("[%s] %d\n", __func__, v);
+	wmt_tm_dprintk("[%s] %lu\n", __func__, v);
 
 	if (pg_wmt_tm) {
 		p_linux_if = &pg_wmt_tm->linux_if;
@@ -970,7 +973,8 @@ ssize_t wmt_tm_wfd_write(struct file *filp, const char __user *buf, size_t len, 
 
 	ret = sscanf(tmp, "%d", &tm_wfd_stat);
 
-	wmt_tm_printk("[%s] %s = %d, len=%d, ret=%d\n", __func__, tmp, tm_wfd_stat, len, ret);
+	//Have a risk to open it, because the size_t is differnet size in 32 and 64bits
+	//wmt_tm_printk("[%s] %s = %d, len=%d, ret=%d\n", __func__, tmp, tm_wfd_stat, len, ret);
 
 	return len;
 }
@@ -1196,11 +1200,11 @@ static ssize_t wmt_tm_write(struct file *filp, const char __user *buf, size_t co
 
         //thermal_zone_device_update(p_linux_if->thz_dev);
 
-        // register
-        if (NULL == p_linux_if->thz_dev) { 
-            p_linux_if->thz_dev = mtk_thermal_zone_device_register("mtktswmt", g_num_trip, NULL,
-                                                                   &wmt_thz_dev_ops, 0, 0, 0, p_linux_if->interval);
-        }
+		/* register */
+		if (NULL == p_linux_if->thz_dev) {
+			p_linux_if->thz_dev = mtk_thermal_zone_device_register("mtktswmt", g_num_trip, NULL,
+				&wmt_thz_dev_ops, 0, 0, 0, p_linux_if->interval);
+		}
 
         wmt_tm_dprintk("[wmt_tm_write] time_ms=%d\n", p_linux_if->interval);
 
@@ -1354,11 +1358,11 @@ static int wmt_tm_thz_cl_register(void)
 
 	p_linux_if->interval = DEFAULT_POLL_TIME;
 
-    /* trips */
-    if (NULL == p_linux_if->thz_dev) {
-        p_linux_if->thz_dev = mtk_thermal_zone_device_register("mtktswmt", g_num_trip, NULL,
-                                                               &wmt_thz_dev_ops, 0, 0, 0, p_linux_if->interval);
-    }
+	/* trips */
+	if (NULL == p_linux_if->thz_dev) {
+		p_linux_if->thz_dev = mtk_thermal_zone_device_register("mtktswmt", g_num_trip, NULL,
+								&wmt_thz_dev_ops, 0, 0, 0, p_linux_if->interval);
+	}
 
     return 0;
 }

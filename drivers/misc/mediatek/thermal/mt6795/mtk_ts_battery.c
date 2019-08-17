@@ -6,7 +6,6 @@
 #include <linux/thermal.h>
 #include <linux/platform_device.h>
 #include <linux/aee.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/delay.h>
 #include <linux/proc_fs.h>
@@ -62,7 +61,7 @@ extern int read_tbat_value(void);
 #define mtktsbattery_dprintk(fmt, args...)   \
 do {                                    \
 	if (mtktsbattery_debug_log) {                \
-		xlog_printk(ANDROID_LOG_INFO, "Power/Battery_Thermal", fmt, ##args); \
+		pr_notice("Power/Battery_Thermal" fmt, ##args); \
 	}                                   \
 } while(0)
 
@@ -553,13 +552,13 @@ int  mtktsbattery_register_cooler(void)
 
 int mtktsbattery_register_thermal(void)
 {
-	mtktsbattery_dprintk("[mtktsbattery_register_thermal] \n");
+	mtktsbattery_dprintk("[mtktsbattery_register_thermal]\n");
 
 	/* trips : trip 0~1 */
-    if (NULL == thz_dev) {
-        thz_dev = mtk_thermal_zone_device_register("mtktsbattery", num_trip, NULL,
-                                                   &mtktsbattery_dev_ops, 0, 0, 0, interval*1000);
-    }
+	if (NULL == thz_dev) {
+		thz_dev = mtk_thermal_zone_device_register("mtktsbattery", num_trip, NULL,
+					&mtktsbattery_dev_ops, 0, 0, 0, interval*1000);
+	}
 
 	return 0;
 }

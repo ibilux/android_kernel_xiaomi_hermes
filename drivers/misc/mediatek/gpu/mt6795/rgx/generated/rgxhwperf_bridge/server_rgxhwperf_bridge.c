@@ -65,9 +65,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <linux/slab.h>
 
-/* ***************************************************************************
- * Bridge proxy functions
- */
 
 
 
@@ -76,14 +73,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
  
 static IMG_INT
-PVRSRVBridgeRGXCtrlHWPerf(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RGXCTRLHWPERF *psRGXCtrlHWPerfIN,
-					 PVRSRV_BRIDGE_OUT_RGXCTRLHWPERF *psRGXCtrlHWPerfOUT,
+PVRSRVBridgeRGXCtrlHWPerf(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RGXCTRLHWPERF *psRGXCtrlHWPerfIN,
+					  PVRSRV_BRIDGE_OUT_RGXCTRLHWPERF *psRGXCtrlHWPerfOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_HANDLE hDevNodeInt = IMG_NULL;
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RGXHWPERF_RGXCTRLHWPERF);
+
 
 
 
@@ -93,15 +90,15 @@ PVRSRVBridgeRGXCtrlHWPerf(IMG_UINT32 ui32BridgeID,
 					/* Look up the address from the handle */
 					psRGXCtrlHWPerfOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hDevNodeInt,
+											(IMG_VOID **) &hDevNodeInt,
 											psRGXCtrlHWPerfIN->hDevNode,
 											PVRSRV_HANDLE_TYPE_DEV_NODE);
 					if(psRGXCtrlHWPerfOUT->eError != PVRSRV_OK)
 					{
 						goto RGXCtrlHWPerf_exit;
 					}
-
 				}
+
 
 	psRGXCtrlHWPerfOUT->eError =
 		PVRSRVRGXCtrlHWPerfKM(
@@ -111,21 +108,20 @@ PVRSRVBridgeRGXCtrlHWPerf(IMG_UINT32 ui32BridgeID,
 
 
 
+
 RGXCtrlHWPerf_exit:
 
 	return 0;
 }
 
 static IMG_INT
-PVRSRVBridgeRGXConfigEnableHWPerfCounters(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RGXCONFIGENABLEHWPERFCOUNTERS *psRGXConfigEnableHWPerfCountersIN,
-					 PVRSRV_BRIDGE_OUT_RGXCONFIGENABLEHWPERFCOUNTERS *psRGXConfigEnableHWPerfCountersOUT,
+PVRSRVBridgeRGXConfigEnableHWPerfCounters(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RGXCONFIGENABLEHWPERFCOUNTERS *psRGXConfigEnableHWPerfCountersIN,
+					  PVRSRV_BRIDGE_OUT_RGXCONFIGENABLEHWPERFCOUNTERS *psRGXConfigEnableHWPerfCountersOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_HANDLE hDevNodeInt = IMG_NULL;
 	RGX_HWPERF_CONFIG_CNTBLK *psBlockConfigsInt = IMG_NULL;
-
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RGXHWPERF_RGXCONFIGENABLEHWPERFCOUNTERS);
 
 
 
@@ -151,25 +147,28 @@ PVRSRVBridgeRGXConfigEnableHWPerfCounters(IMG_UINT32 ui32BridgeID,
 				goto RGXConfigEnableHWPerfCounters_exit;
 			}
 
+
+
 				{
 					/* Look up the address from the handle */
 					psRGXConfigEnableHWPerfCountersOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hDevNodeInt,
+											(IMG_VOID **) &hDevNodeInt,
 											psRGXConfigEnableHWPerfCountersIN->hDevNode,
 											PVRSRV_HANDLE_TYPE_DEV_NODE);
 					if(psRGXConfigEnableHWPerfCountersOUT->eError != PVRSRV_OK)
 					{
 						goto RGXConfigEnableHWPerfCounters_exit;
 					}
-
 				}
+
 
 	psRGXConfigEnableHWPerfCountersOUT->eError =
 		PVRSRVRGXConfigEnableHWPerfCountersKM(
 					hDevNodeInt,
 					psRGXConfigEnableHWPerfCountersIN->ui32ArrayLen,
 					psBlockConfigsInt);
+
 
 
 
@@ -181,23 +180,21 @@ RGXConfigEnableHWPerfCounters_exit:
 }
 
 static IMG_INT
-PVRSRVBridgeRGXCtrlHWPerfCounters(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RGXCTRLHWPERFCOUNTERS *psRGXCtrlHWPerfCountersIN,
-					 PVRSRV_BRIDGE_OUT_RGXCTRLHWPERFCOUNTERS *psRGXCtrlHWPerfCountersOUT,
+PVRSRVBridgeRGXCtrlHWPerfCounters(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RGXCTRLHWPERFCOUNTERS *psRGXCtrlHWPerfCountersIN,
+					  PVRSRV_BRIDGE_OUT_RGXCTRLHWPERFCOUNTERS *psRGXCtrlHWPerfCountersOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_HANDLE hDevNodeInt = IMG_NULL;
-	IMG_UINT8 *ui8BlockIDsInt = IMG_NULL;
-
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RGXHWPERF_RGXCTRLHWPERFCOUNTERS);
+	IMG_UINT16 *ui16BlockIDsInt = IMG_NULL;
 
 
 
 
 	if (psRGXCtrlHWPerfCountersIN->ui32ArrayLen != 0)
 	{
-		ui8BlockIDsInt = OSAllocMem(psRGXCtrlHWPerfCountersIN->ui32ArrayLen * sizeof(IMG_UINT8));
-		if (!ui8BlockIDsInt)
+		ui16BlockIDsInt = OSAllocMem(psRGXCtrlHWPerfCountersIN->ui32ArrayLen * sizeof(IMG_UINT16));
+		if (!ui16BlockIDsInt)
 		{
 			psRGXCtrlHWPerfCountersOUT->eError = PVRSRV_ERROR_OUT_OF_MEMORY;
 	
@@ -206,55 +203,56 @@ PVRSRVBridgeRGXCtrlHWPerfCounters(IMG_UINT32 ui32BridgeID,
 	}
 
 			/* Copy the data over */
-			if ( !OSAccessOK(PVR_VERIFY_READ, (IMG_VOID*) psRGXCtrlHWPerfCountersIN->pui8BlockIDs, psRGXCtrlHWPerfCountersIN->ui32ArrayLen * sizeof(IMG_UINT8))
-				|| (OSCopyFromUser(NULL, ui8BlockIDsInt, psRGXCtrlHWPerfCountersIN->pui8BlockIDs,
-				psRGXCtrlHWPerfCountersIN->ui32ArrayLen * sizeof(IMG_UINT8)) != PVRSRV_OK) )
+			if ( !OSAccessOK(PVR_VERIFY_READ, (IMG_VOID*) psRGXCtrlHWPerfCountersIN->pui16BlockIDs, psRGXCtrlHWPerfCountersIN->ui32ArrayLen * sizeof(IMG_UINT16))
+				|| (OSCopyFromUser(NULL, ui16BlockIDsInt, psRGXCtrlHWPerfCountersIN->pui16BlockIDs,
+				psRGXCtrlHWPerfCountersIN->ui32ArrayLen * sizeof(IMG_UINT16)) != PVRSRV_OK) )
 			{
 				psRGXCtrlHWPerfCountersOUT->eError = PVRSRV_ERROR_INVALID_PARAMS;
 
 				goto RGXCtrlHWPerfCounters_exit;
 			}
 
+
+
 				{
 					/* Look up the address from the handle */
 					psRGXCtrlHWPerfCountersOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hDevNodeInt,
+											(IMG_VOID **) &hDevNodeInt,
 											psRGXCtrlHWPerfCountersIN->hDevNode,
 											PVRSRV_HANDLE_TYPE_DEV_NODE);
 					if(psRGXCtrlHWPerfCountersOUT->eError != PVRSRV_OK)
 					{
 						goto RGXCtrlHWPerfCounters_exit;
 					}
-
 				}
+
 
 	psRGXCtrlHWPerfCountersOUT->eError =
 		PVRSRVRGXCtrlHWPerfCountersKM(
 					hDevNodeInt,
 					psRGXCtrlHWPerfCountersIN->bEnable,
 					psRGXCtrlHWPerfCountersIN->ui32ArrayLen,
-					ui8BlockIDsInt);
+					ui16BlockIDsInt);
+
 
 
 
 RGXCtrlHWPerfCounters_exit:
-	if (ui8BlockIDsInt)
-		OSFreeMem(ui8BlockIDsInt);
+	if (ui16BlockIDsInt)
+		OSFreeMem(ui16BlockIDsInt);
 
 	return 0;
 }
 
 static IMG_INT
-PVRSRVBridgeRGXConfigCustomCounters(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RGXCONFIGCUSTOMCOUNTERS *psRGXConfigCustomCountersIN,
-					 PVRSRV_BRIDGE_OUT_RGXCONFIGCUSTOMCOUNTERS *psRGXConfigCustomCountersOUT,
+PVRSRVBridgeRGXConfigCustomCounters(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RGXCONFIGCUSTOMCOUNTERS *psRGXConfigCustomCountersIN,
+					  PVRSRV_BRIDGE_OUT_RGXCONFIGCUSTOMCOUNTERS *psRGXConfigCustomCountersOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_HANDLE hDevNodeInt = IMG_NULL;
 	IMG_UINT32 *ui32CustomCounterIDsInt = IMG_NULL;
-
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_RGXHWPERF_RGXCONFIGCUSTOMCOUNTERS);
 
 
 
@@ -280,19 +278,21 @@ PVRSRVBridgeRGXConfigCustomCounters(IMG_UINT32 ui32BridgeID,
 				goto RGXConfigCustomCounters_exit;
 			}
 
+
+
 				{
 					/* Look up the address from the handle */
 					psRGXConfigCustomCountersOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hDevNodeInt,
+											(IMG_VOID **) &hDevNodeInt,
 											psRGXConfigCustomCountersIN->hDevNode,
 											PVRSRV_HANDLE_TYPE_DEV_NODE);
 					if(psRGXConfigCustomCountersOUT->eError != PVRSRV_OK)
 					{
 						goto RGXConfigCustomCounters_exit;
 					}
-
 				}
+
 
 	psRGXConfigCustomCountersOUT->eError =
 		PVRSRVRGXConfigCustomCountersKM(
@@ -300,6 +300,7 @@ PVRSRVBridgeRGXConfigCustomCounters(IMG_UINT32 ui32BridgeID,
 					psRGXConfigCustomCountersIN->ui16CustomBlockID,
 					psRGXConfigCustomCountersIN->ui16NumCustomCounters,
 					ui32CustomCounterIDsInt);
+
 
 
 
@@ -315,19 +316,33 @@ RGXConfigCustomCounters_exit:
 /* *************************************************************************** 
  * Server bridge dispatch related glue 
  */
- 
-PVRSRV_ERROR RegisterRGXHWPERFFunctions(IMG_VOID);
-IMG_VOID UnregisterRGXHWPERFFunctions(IMG_VOID);
+
+
+PVRSRV_ERROR InitRGXHWPERFBridge(IMG_VOID);
+PVRSRV_ERROR DeinitRGXHWPERFBridge(IMG_VOID);
 
 /*
  * Register all RGXHWPERF functions with services
  */
-PVRSRV_ERROR RegisterRGXHWPERFFunctions(IMG_VOID)
+PVRSRV_ERROR InitRGXHWPERFBridge(IMG_VOID)
 {
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXHWPERF_RGXCTRLHWPERF, PVRSRVBridgeRGXCtrlHWPerf);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXHWPERF_RGXCONFIGENABLEHWPERFCOUNTERS, PVRSRVBridgeRGXConfigEnableHWPerfCounters);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXHWPERF_RGXCTRLHWPERFCOUNTERS, PVRSRVBridgeRGXCtrlHWPerfCounters);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXHWPERF_RGXCONFIGCUSTOMCOUNTERS, PVRSRVBridgeRGXConfigCustomCounters);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXHWPERF, PVRSRV_BRIDGE_RGXHWPERF_RGXCTRLHWPERF, PVRSRVBridgeRGXCtrlHWPerf,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXHWPERF, PVRSRV_BRIDGE_RGXHWPERF_RGXCONFIGENABLEHWPERFCOUNTERS, PVRSRVBridgeRGXConfigEnableHWPerfCounters,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXHWPERF, PVRSRV_BRIDGE_RGXHWPERF_RGXCTRLHWPERFCOUNTERS, PVRSRVBridgeRGXCtrlHWPerfCounters,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_RGXHWPERF, PVRSRV_BRIDGE_RGXHWPERF_RGXCONFIGCUSTOMCOUNTERS, PVRSRVBridgeRGXConfigCustomCounters,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
 
 	return PVRSRV_OK;
 }
@@ -335,6 +350,8 @@ PVRSRV_ERROR RegisterRGXHWPERFFunctions(IMG_VOID)
 /*
  * Unregister all rgxhwperf functions with services
  */
-IMG_VOID UnregisterRGXHWPERFFunctions(IMG_VOID)
+PVRSRV_ERROR DeinitRGXHWPERFBridge(IMG_VOID)
 {
+	return PVRSRV_OK;
 }
+

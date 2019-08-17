@@ -45,6 +45,11 @@ enum psci_function {
 
 static u32 psci_function_id[PSCI_FN_MAX];
 
+#define PSCI_RET_SUCCESS		0
+#define PSCI_RET_EOPNOTSUPP		-1
+#define PSCI_RET_EINVAL			-2
+#define PSCI_RET_EPERM			-3
+
 static int psci_to_linux_errno(int errno)
 {
 	switch (errno) {
@@ -60,6 +65,13 @@ static int psci_to_linux_errno(int errno)
 
 	return -EINVAL;
 }
+
+#define PSCI_POWER_STATE_ID_MASK	0xffff
+#define PSCI_POWER_STATE_ID_SHIFT	0
+#define PSCI_POWER_STATE_TYPE_MASK	0x1
+#define PSCI_POWER_STATE_TYPE_SHIFT	16
+#define PSCI_POWER_STATE_AFFL_MASK	0x3
+#define PSCI_POWER_STATE_AFFL_SHIFT	24
 
 static u32 psci_power_state_pack(struct psci_power_state state)
 {

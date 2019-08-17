@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/hem_mbox.h#3 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/hem_mbox.h#3
 */
 
 /*! \file   hem_mbox.h
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: hem_mbox.h $
+** Log: hem_mbox.h
 **
 ** 08 09 2013 cp.wu
 ** [BORA00002253] [MT6630 Wi-Fi][Driver][Firmware] Add NLO and timeout mechanism to SCN module
@@ -44,11 +42,14 @@
  * Sync CFG80211 modification from branch 2,2.
  *
  * 07 18 2011 cp.wu
- * [WCXRP00000858] [MT5931][Driver][Firmware] Add support for scan to search for more than one SSID in a single scanning request
- * add framework in driver domain for supporting new SCAN_REQ_V2 for more than 1 SSID support as well as uProbeDelay in NDIS 6.x driver model
+ * [WCXRP00000858] [MT5931][Driver][Firmware] Add support for scan to search for
+ * more than one SSID in a single scanning request
+ * add framework in driver domain for supporting new SCAN_REQ_V2 for more than 1 SSID
+ * support as well as uProbeDelay in NDIS 6.x driver model
  *
  * 06 07 2011 yuche.tsai
- * [WCXRP00000696] [Volunteer Patch][MT6620][Driver] Infinite loop issue when RX invitation response.[WCXRP00000763] [Volunteer Patch][MT6620][Driver] RX Service Discovery Frame under AP mode Issue
+ * [WCXRP00000696] [Volunteer Patch][MT6620][Driver] Infinite loop issue when RX invitation response.
+ * cnm_timer[WCXRP00000763] [Volunteer Patch][MT6620][Driver] RX Service Discovery Frame under AP mode Issue
  * Add invitation support.
  *
  * 06 02 2011 cp.wu
@@ -360,7 +361,6 @@ typedef enum _EUNM_MSG_SEND_METHOD_T {
 				   in the same context of the sender */
 } EUNM_MSG_SEND_METHOD_T, *P_EUNM_MSG_SEND_METHOD_T;
 
-
 typedef enum _ENUM_MBOX_ID_T {
 	MBOX_ID_0 = 0,
 	MBOX_ID_TOTAL_NUM
@@ -423,7 +423,6 @@ typedef MSG_SAA_FSM_START_T MSG_JOIN_REQ_T, *P_MSG_JOIN_REQ_T;
 typedef MSG_SAA_FSM_COMP_T MSG_JOIN_COMP_T, *P_MSG_JOIN_COMP_T;
 typedef MSG_SAA_FSM_ABORT_T MSG_JOIN_ABORT_T, *P_MSG_JOIN_ABORT_T;
 
-
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -445,7 +444,6 @@ typedef MSG_SAA_FSM_ABORT_T MSG_JOIN_ABORT_T, *P_MSG_JOIN_ABORT_T;
 */
 VOID mboxSetup(IN P_ADAPTER_T prAdapter, IN ENUM_MBOX_ID_T eMboxId);
 
-
 VOID
 mboxSendMsg(IN P_ADAPTER_T prAdapter,
 	    IN ENUM_MBOX_ID_T eMboxId, IN P_MSG_HDR_T prMsg, IN EUNM_MSG_SEND_METHOD_T eMethod);
@@ -463,4 +461,4 @@ VOID mboxDummy(IN P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr);
 ********************************************************************************
 */
 
-#endif				/* _HEM_MBOX_H */
+#endif /* _HEM_MBOX_H */

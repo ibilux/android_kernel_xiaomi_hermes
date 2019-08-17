@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_wext_priv.h#3 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_wext_priv.h#3
 */
 
 /*! \file   gl_wext_priv.h
     \brief  This file includes private ioctl support.
 */
 
-
-
 /*
-** $Log: gl_wext_priv.h $
+** Log: gl_wext_priv.h
  *
  * 01 16 2012 wh.su
  * [WCXRP00001170] [MT6620 Wi-Fi][Driver] Adding the related code for set/get band ioctl
@@ -24,7 +22,8 @@
  * Adding the proto type function for set_int set_tx_power and get int get_ch_list.
  *
  * 11 08 2011 yuche.tsai
- * [WCXRP00001094] [Volunteer Patch][Driver] Driver version & supplicant version query & set support for service discovery version check.
+ * [WCXRP00001094] [Volunteer Patch][Driver] Driver version & supplicant version query & set support for service
+ * discovery version check.
  * Add a CMD ID for P2P driver version query.
  *
  * 03 17 2011 chinglan.wang
@@ -56,7 +55,8 @@
  * add the message check code from mt5921.
  *
  * 10 18 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver]
+ * The mac address is all zero at android
  * complete implementation of Android NVRAM access
  *
  * 09 23 2010 cp.wu
@@ -130,6 +130,22 @@
 ********************************************************************************
 */
 
+#if CFG_ENABLE_WIFI_DIRECT
+extern int set_p2p_mode_handler(struct net_device *netdev, PARAM_CUSTOM_P2P_SET_STRUC_T p2pmode);
+#if 0
+extern BOOLEAN fgIsResetting;
+extern BOOLEAN g_u4HaltFlag;
+extern spinlock_t g_p2p_lock;
+extern int g_u4P2PEnding;
+extern int g_u4P2POnOffing;
+#endif
+#endif
+
+
+#if (CFG_SUPPORT_TXR_ENC == 1)
+extern VOID rlmCmd(P_GLUE_INFO_T prGlueInfo, UINT_8 *prInBuf, UINT_32 u4InBufLen);
+#endif		/* CFG_SUPPORT_TXR_ENC */
+
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
@@ -158,7 +174,7 @@
 #define PRIV_CMD_ADHOC_MODE             2
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
-    #define PRIV_CMD_CSUM_OFFLOAD       3
+#define PRIV_CMD_CSUM_OFFLOAD       3
 #endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
 
 #define PRIV_CMD_ROAMING                4
@@ -169,11 +185,11 @@
 #define PRIV_CMD_BT_COEXIST             8
 #define PRIV_GPIO2_MODE                 9
 
-#define PRIV_CUSTOM_SET_PTA        		10
+#define PRIV_CUSTOM_SET_PTA			10
 #define PRIV_CUSTOM_CONTINUOUS_POLL     11
 #define PRIV_CUSTOM_SINGLE_ANTENNA		12
 #define PRIV_CUSTOM_BWCS_CMD			13
-#define PRIV_CUSTOM_DISABLE_BEACON_DETECTION	14//later
+#define PRIV_CUSTOM_DISABLE_BEACON_DETECTION	14	/* later */
 #define PRIV_CMD_OID                    15
 #define PRIV_SEC_MSG_OID                16
 
@@ -182,7 +198,7 @@
 #define PRIV_CMD_ACCESS_MCR             19
 #define PRIV_CMD_SW_CTRL                20
 
-#if 1 /* ANTI_PRIVCY */
+#if 1				/* ANTI_PRIVCY */
 #define PRIV_SEC_CHECK_OID              21
 #endif
 
@@ -210,11 +226,9 @@
 
 #define PRIV_CMD_MET_PROFILING			33
 
-#define PRIV_CMD_SET_TX_ERR_REPORT		34
-
-
 /* other string command ID */
 #define PRIV_CMD_OTHER_TDLS				0x00
+#define PRIV_CMD_OTHER_TAR				0x01 /* TX auto rate */
 
 /* 802.3 Objects (Ethernet) */
 #define OID_802_3_CURRENT_ADDRESS           0x01010102
@@ -254,7 +268,6 @@
 #define OID_CUSTOM_SW_CTRL                              0xFFA0C805
 #define OID_CUSTOM_MEM_DUMP                             0xFFA0C807
 
-
 /* RF Test specific OIDs */
 #define OID_CUSTOM_TEST_MODE                            0xFFA0C901
 #define OID_CUSTOM_TEST_RX_STATUS                       0xFFA0C903
@@ -272,7 +285,6 @@
 #define OID_CUSTOM_CFG_SRC_TYPE                         0xFFA0C942
 #define OID_CUSTOM_EEPROM_TYPE                          0xFFA0C943
 
-
 #if CFG_SUPPORT_WAPI
 #define OID_802_11_WAPI_MODE                            0xFFA0CA00
 #define OID_802_11_WAPI_ASSOC_INFO                      0xFFA0CA01
@@ -283,7 +295,6 @@
 #define OID_802_11_WSC_ASSOC_INFO                       0xFFA0CB00
 #endif
 
-
 /* Define magic key of test mode (Don't change it for future compatibity) */
 #define PRIV_CMD_TEST_MAGIC_KEY                         2011
 
@@ -293,40 +304,36 @@
 */
 /* NIC BBCR configuration entry structure */
 typedef struct _PRIV_CONFIG_ENTRY {
-    UINT_8      ucOffset;
-    UINT_8      ucValue;
+	UINT_8 ucOffset;
+	UINT_8 ucValue;
 } PRIV_CONFIG_ENTRY, *PPRIV_CONFIG_ENTRY;
 
-typedef WLAN_STATUS (*PFN_OID_HANDLER_FUNC_REQ) (
-    IN  PVOID       prAdapter,
-    IN OUT PVOID    pvBuf,
-    IN  UINT_32     u4BufLen,
-    OUT PUINT_32    pu4OutInfoLen
-    );
+typedef WLAN_STATUS(*PFN_OID_HANDLER_FUNC_REQ) (IN PVOID prAdapter,
+						IN OUT PVOID pvBuf, IN UINT_32 u4BufLen, OUT PUINT_32 pu4OutInfoLen);
 
 typedef enum _ENUM_OID_METHOD_T {
-    ENUM_OID_GLUE_ONLY,
-    ENUM_OID_GLUE_EXTENSION,
-    ENUM_OID_DRIVER_CORE
+	ENUM_OID_GLUE_ONLY,
+	ENUM_OID_GLUE_EXTENSION,
+	ENUM_OID_DRIVER_CORE
 } ENUM_OID_METHOD_T, *P_ENUM_OID_METHOD_T;
 
 /* OID set/query processing entry */
 typedef struct _WLAN_REQ_ENTRY {
-    UINT_32            rOid;            /* OID */
-    PUINT_8             pucOidName;      /* OID name text */
-    BOOLEAN             fgQryBufLenChecking;
-    BOOLEAN             fgSetBufLenChecking;
-    ENUM_OID_METHOD_T   eOidMethod;
-    UINT_32             u4InfoBufLen;
-    PFN_OID_HANDLER_FUNC_REQ    pfOidQueryHandler; /*  PFN_OID_HANDLER_FUNC*/
-    PFN_OID_HANDLER_FUNC_REQ    pfOidSetHandler; /* PFN_OID_HANDLER_FUNC */
+	UINT_32 rOid;		/* OID */
+	PUINT_8 pucOidName;	/* OID name text */
+	BOOLEAN fgQryBufLenChecking;
+	BOOLEAN fgSetBufLenChecking;
+	ENUM_OID_METHOD_T eOidMethod;
+	UINT_32 u4InfoBufLen;
+	PFN_OID_HANDLER_FUNC_REQ pfOidQueryHandler;	/*  PFN_OID_HANDLER_FUNC */
+	PFN_OID_HANDLER_FUNC_REQ pfOidSetHandler;	/* PFN_OID_HANDLER_FUNC */
 } WLAN_REQ_ENTRY, *P_WLAN_REQ_ENTRY;
 
 typedef struct _NDIS_TRANSPORT_STRUCT {
-    UINT_32 ndisOidCmd;
-    UINT_32 inNdisOidlength;
-    UINT_32 outNdisOidLength;
-    UINT_8 ndisOidContent[16];
+	UINT_32 ndisOidCmd;
+	UINT_32 inNdisOidlength;
+	UINT_32 outNdisOidLength;
+	UINT_8 ndisOidContent[16];
 } NDIS_TRANSPORT_STRUCT, *P_NDIS_TRANSPORT_STRUCT;
 
 /*******************************************************************************
@@ -350,93 +357,42 @@ typedef struct _NDIS_TRANSPORT_STRUCT {
 */
 
 int
-priv_set_int(
-    IN struct net_device *prNetDev,
-    IN struct iw_request_info *prIwReqInfo,
-    IN union iwreq_data *prIwReqData,
-    IN char *pcExtra
-    );
+priv_set_int(IN struct net_device *prNetDev,
+	     IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN char *pcExtra);
 
 int
-priv_get_int(
-    IN struct net_device *prNetDev,
-    IN struct iw_request_info *prIwReqInfo,
-    IN union iwreq_data *prIwReqData,
-    IN OUT char *pcExtra
-    );
+priv_get_int(IN struct net_device *prNetDev,
+	     IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
 
 int
-priv_set_ints(
-    IN struct net_device *prNetDev,
-    IN struct iw_request_info *prIwReqInfo,
-    IN union iwreq_data *prIwReqData,
-    IN char *pcExtra
-    );
+priv_set_ints(IN struct net_device *prNetDev,
+	      IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN char *pcExtra);
 
 int
-priv_get_ints(
-    IN struct net_device *prNetDev,
-    IN struct iw_request_info *prIwReqInfo,
-    IN union iwreq_data *prIwReqData,
-    IN OUT char *pcExtra
-    );
+priv_get_ints(IN struct net_device *prNetDev,
+	      IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
 
 int
-priv_set_struct(
-    IN struct net_device *prNetDev,
-    IN struct iw_request_info *prIwReqInfo,
-    IN union iwreq_data *prIwReqData,
-    IN char *pcExtra
-    );
+priv_set_struct(IN struct net_device *prNetDev,
+		IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN char *pcExtra);
 
 int
-priv_get_struct (
-    IN struct net_device *prNetDev,
-    IN struct iw_request_info *prIwReqInfo,
-    IN union iwreq_data *prIwReqData,
-    IN OUT char *pcExtra
-    );
+priv_get_struct(IN struct net_device *prNetDev,
+		IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
 
-UINT_32
-CmdStringDecParse(
-    IN UINT_8 *InStr,
-    OUT UINT_8 **OutStr,
-    OUT UINT_32 *OutLen
-    );
+UINT_32 CmdStringDecParse(IN UINT_8 *InStr, OUT UINT_8 **OutStr, OUT UINT_32 *OutLen);
 
-
-UINT_32
-CmdStringMacParse(
-    IN UINT_8 *InStr,
-    OUT UINT_8 **OutStr,
-    OUT UINT_32 *OutLen,
-	OUT UINT_8 *OutMac
-    );
+UINT_32 CmdStringMacParse(IN UINT_8 *InStr, OUT UINT_8 **OutStr, OUT UINT_32 *OutLen, OUT UINT_8 *OutMac);
 
 int
-priv_set_string(
-    IN struct net_device *prNetDev,
-    IN struct iw_request_info *prIwReqInfo,
-    IN union iwreq_data *prIwReqData,
-    IN char *pcExtra
-    );
+priv_set_string(IN struct net_device *prNetDev,
+		IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN char *pcExtra);
 
-int
-priv_support_ioctl (
-    IN struct net_device *prDev,
-    IN OUT struct ifreq *prReq,
-    IN int i4Cmd
-    );
+int priv_support_ioctl(IN struct net_device *prDev, IN OUT struct ifreq *prReq, IN int i4Cmd);
 
-int priv_support_driver_cmd(
-	IN struct net_device *prDev,
-	IN OUT struct ifreq *prReq,
-	IN int i4Cmd);
+int priv_support_driver_cmd(IN struct net_device *prDev, IN OUT struct ifreq *prReq, IN int i4Cmd);
 
-INT_32 priv_driver_cmds(
-	IN struct net_device *prNetDev,
-	IN PCHAR pcCommand,
-	IN INT_32 i4TotalLen);
+INT_32 priv_driver_cmds(IN struct net_device *prNetDev, IN PCHAR pcCommand, IN INT_32 i4TotalLen);
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -444,4 +400,3 @@ INT_32 priv_driver_cmds(
 */
 
 #endif /* _GL_WEXT_PRIV_H */
-

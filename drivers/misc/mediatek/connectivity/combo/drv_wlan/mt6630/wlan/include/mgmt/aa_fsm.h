@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/aa_fsm.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/aa_fsm.h#1
 */
 
 /*! \file   aa_fsm.h
@@ -8,10 +8,8 @@
     Declaration of functions and finite state machine for SAA/AAA Module.
 */
 
-
-
 /*
-** $Log: aa_fsm.h $
+** Log: aa_fsm.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -70,7 +68,6 @@
  * [BORA00000018] Integrate WIFI part into BORA for the 1st time
  *
 */
-
 
 #ifndef _AA_FSM_H
 #define _AA_FSM_H
@@ -158,8 +155,7 @@ typedef enum _ENUM_AA_FRM_TYPE_T {
 /*----------------------------------------------------------------------------*/
 VOID
 saaFsmSteps(IN P_ADAPTER_T prAdapter,
-	    IN P_STA_RECORD_T prStaRec,
-	    IN ENUM_AA_STATE_T eNextState, IN P_SW_RFB_T prRetainedSwRfb);
+	    IN P_STA_RECORD_T prStaRec, IN ENUM_AA_STATE_T eNextState, IN P_SW_RFB_T prRetainedSwRfb);
 
 WLAN_STATUS
 saaFsmSendEventJoinComplete(IN P_ADAPTER_T prAdapter,
@@ -168,8 +164,7 @@ saaFsmSendEventJoinComplete(IN P_ADAPTER_T prAdapter,
 VOID saaFsmRunEventStart(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr);
 
 WLAN_STATUS
-saaFsmRunEventTxDone(IN P_ADAPTER_T prAdapter,
-		     IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
+saaFsmRunEventTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
 
 VOID saaFsmRunEventTxReqTimeOut(IN P_ADAPTER_T prAdapter, IN ULONG plParamPtr);
 
@@ -185,16 +180,16 @@ WLAN_STATUS saaFsmRunEventRxDisassoc(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prS
 
 VOID saaFsmRunEventAbort(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr);
 
-VOID
-saaChkDeauthfrmParamHandler(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, IN P_STA_RECORD_T prStaRec);
+VOID saaChkDeauthfrmParamHandler(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, IN P_STA_RECORD_T prStaRec);
 
 VOID
 saaChkDisassocfrmParamHandler(IN P_ADAPTER_T prAdapter,
-		IN P_WLAN_DISASSOC_FRAME_T prDisassocFrame, IN P_STA_RECORD_T prStaRec, IN P_SW_RFB_T prSwRfb);
+			      IN P_WLAN_DISASSOC_FRAME_T prDisassocFrame, IN P_STA_RECORD_T prStaRec,
+			      IN P_SW_RFB_T prSwRfb);
 
 VOID
-saaSendDisconnectMsgHandler(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN P_BSS_INFO_T prAisBssInfo, IN ENUM_AA_FRM_TYPE_T eFrmType);
-
+saaSendDisconnectMsgHandler(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaRec, IN P_BSS_INFO_T prAisBssInfo,
+			    IN ENUM_AA_FRM_TYPE_T eFrmType);
 
 /*----------------------------------------------------------------------------*/
 /* Routines in aaa_fsm.c                                                      */
@@ -204,12 +199,11 @@ VOID aaaFsmRunEventRxAuth(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 WLAN_STATUS aaaFsmRunEventRxAssoc(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb);
 
 WLAN_STATUS
-aaaFsmRunEventTxDone(IN P_ADAPTER_T prAdapter,
-		     IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
+aaaFsmRunEventTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus);
 
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
 */
 
-#endif				/* _AA_FSM_H */
+#endif /* _AA_FSM_H */

@@ -31,7 +31,7 @@ static const unsigned max_num_devices = 32;
 /* Default zram disk size: 50% of total RAM */
 static const unsigned default_disksize_perc_ram = 50;	/* 25 */
 /* Let disk size be DISKSIZE_ALIGNMENT */
-#define	DISKSIZE_ALIGNMENT	0x2000000		/* 32MB */
+#define	DISKSIZE_ALIGNMENT	0x800000		/* 8MB */
 /* Is totalram_pages less than SUPPOSED_TOTALRAM? */
 #define SUPPOSED_TOTALRAM	0x20000			/* 512MB */
 /* Allowable max size */

@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/cnm.c#2 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/cnm.c#2
 */
 
 /*! \file   "cnm.c"
@@ -8,10 +8,8 @@
     Module of Concurrent Network Management
 */
 
-
-
 /*
-** $Log: cnm.c $
+** Log: cnm.c
 **
 ** 06 26 2013 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -333,17 +331,17 @@ VOID cnmChMngrRequestPrivilege(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr)
 
 	/* To do: exception handle */
 	if (!prCmdBody) {
-		DBGLOG(CNM, ERROR, ("ChReq: fail to get buf (net=%d, token=%d)\n",
-				    prMsgChReq->ucBssIndex, prMsgChReq->ucTokenID));
+		DBGLOG(CNM, ERROR, "ChReq: fail to get buf (net=%d, token=%d)\n",
+				    prMsgChReq->ucBssIndex, prMsgChReq->ucTokenID);
 
 		cnmMemFree(prAdapter, prMsgHdr);
 		return;
 	}
 
-	DBGLOG(CNM, INFO, ("ChReq net=%d token=%d b=%d c=%d s=%d w=%d\n",
+	DBGLOG(CNM, INFO, "ChReq net=%d token=%d b=%d c=%d s=%d w=%d\n",
 			   prMsgChReq->ucBssIndex, prMsgChReq->ucTokenID,
-			   prMsgChReq->eRfBand, prMsgChReq->ucPrimaryChannel, 
-			   prMsgChReq->eRfSco, prMsgChReq->eRfChannelWidth));
+			   prMsgChReq->eRfBand, prMsgChReq->ucPrimaryChannel,
+			   prMsgChReq->eRfSco, prMsgChReq->eRfChannelWidth);
 
 	prCmdBody->ucBssIndex = prMsgChReq->ucBssIndex;
 	prCmdBody->ucTokenID = prMsgChReq->ucTokenID;
@@ -362,9 +360,8 @@ VOID cnmChMngrRequestPrivilege(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr)
 	ASSERT(prCmdBody->ucBssIndex <= MAX_BSS_INDEX);
 
 	/* For monkey testing 20110901 */
-	if (prCmdBody->ucBssIndex > MAX_BSS_INDEX) {
-		DBGLOG(CNM, ERROR, ("CNM: ChReq with wrong netIdx=%d\n\n", prCmdBody->ucBssIndex));
-	}
+	if (prCmdBody->ucBssIndex > MAX_BSS_INDEX)
+		DBGLOG(CNM, ERROR, "CNM: ChReq with wrong netIdx=%d\n\n", prCmdBody->ucBssIndex);
 
 	rStatus = wlanSendSetQueryCmd(prAdapter,	/* prAdapter */
 				      CMD_ID_CH_PRIVILEGE,	/* ucCID */
@@ -412,8 +409,7 @@ VOID cnmChMngrAbortPrivilege(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr)
 	/* Check if being granted channel privilege is aborted */
 	prCnmInfo = &prAdapter->rCnmInfo;
 	if (prCnmInfo->fgChGranted &&
-	    prCnmInfo->ucBssIndex == prMsgChAbort->ucBssIndex &&
-	    prCnmInfo->ucTokenID == prMsgChAbort->ucTokenID) {
+	    prCnmInfo->ucBssIndex == prMsgChAbort->ucBssIndex && prCnmInfo->ucTokenID == prMsgChAbort->ucTokenID) {
 
 		prCnmInfo->fgChGranted = FALSE;
 	}
@@ -424,8 +420,8 @@ VOID cnmChMngrAbortPrivilege(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr)
 
 	/* To do: exception handle */
 	if (!prCmdBody) {
-		DBGLOG(CNM, ERROR, ("ChAbort: fail to get buf (net=%d, token=%d)\n",
-				    prMsgChAbort->ucBssIndex, prMsgChAbort->ucTokenID));
+		DBGLOG(CNM, ERROR, "ChAbort: fail to get buf (net=%d, token=%d)\n",
+				    prMsgChAbort->ucBssIndex, prMsgChAbort->ucTokenID);
 
 		cnmMemFree(prAdapter, prMsgHdr);
 		return;
@@ -435,16 +431,13 @@ VOID cnmChMngrAbortPrivilege(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr)
 	prCmdBody->ucTokenID = prMsgChAbort->ucTokenID;
 	prCmdBody->ucAction = CMD_CH_ACTION_ABORT;	/* Abort */
 
-	DBGLOG(CNM, INFO, ("ChAbort net=%d token=%d\n",
-			   prCmdBody->ucBssIndex, prCmdBody->ucTokenID));
+	DBGLOG(CNM, INFO, "ChAbort net=%d token=%d\n", prCmdBody->ucBssIndex, prCmdBody->ucTokenID);
 
 	ASSERT(prCmdBody->ucBssIndex <= MAX_BSS_INDEX);
 
 	/* For monkey testing 20110901 */
-	if (prCmdBody->ucBssIndex > MAX_BSS_INDEX) {
-		DBGLOG(CNM, ERROR, ("CNM: ChAbort with wrong netIdx=%d\n\n",
-				    prCmdBody->ucBssIndex));
-	}
+	if (prCmdBody->ucBssIndex > MAX_BSS_INDEX)
+		DBGLOG(CNM, ERROR, "CNM: ChAbort with wrong netIdx=%d\n\n", prCmdBody->ucBssIndex);
 
 	rStatus = wlanSendSetQueryCmd(prAdapter,	/* prAdapter */
 				      CMD_ID_CH_PRIVILEGE,	/* ucCID */
@@ -493,15 +486,15 @@ VOID cnmChMngrHandleChEvent(P_ADAPTER_T prAdapter, P_WIFI_EVENT_T prEvent)
 
 	/* To do: exception handle */
 	if (!prChResp) {
-		DBGLOG(CNM, ERROR, ("ChGrant: fail to get buf (net=%d, token=%d)\n",
-				    prEventBody->ucBssIndex, prEventBody->ucTokenID));
+		DBGLOG(CNM, ERROR, "ChGrant: fail to get buf (net=%d, token=%d)\n",
+				    prEventBody->ucBssIndex, prEventBody->ucTokenID);
 
 		return;
 	}
 
-	DBGLOG(CNM, INFO, ("ChGrant net=%d token=%d ch=%d sco=%d\n",
+	DBGLOG(CNM, INFO, "ChGrant net=%d token=%d ch=%d sco=%d\n",
 			   prEventBody->ucBssIndex, prEventBody->ucTokenID,
-			   prEventBody->ucPrimaryChannel, prEventBody->ucRfSco));
+			   prEventBody->ucPrimaryChannel, prEventBody->ucRfSco);
 
 	ASSERT(prEventBody->ucBssIndex <= MAX_BSS_INDEX);
 	ASSERT(prEventBody->ucStatus == EVENT_CH_STATUS_GRANT);
@@ -509,18 +502,15 @@ VOID cnmChMngrHandleChEvent(P_ADAPTER_T prAdapter, P_WIFI_EVENT_T prEvent)
 	prBssInfo = prAdapter->aprBssInfo[prEventBody->ucBssIndex];
 
 	/* Decide message ID based on network and response status */
-	if (IS_BSS_AIS(prBssInfo)) {
+	if (IS_BSS_AIS(prBssInfo))
 		prChResp->rMsgHdr.eMsgId = MID_CNM_AIS_CH_GRANT;
-	}
 #if CFG_ENABLE_WIFI_DIRECT
-	else if (prAdapter->fgIsP2PRegistered && IS_BSS_P2P(prBssInfo)) {
+	else if (prAdapter->fgIsP2PRegistered && IS_BSS_P2P(prBssInfo))
 		prChResp->rMsgHdr.eMsgId = MID_CNM_P2P_CH_GRANT;
-	}
 #endif
 #if CFG_ENABLE_BT_OVER_WIFI
-	else if (IS_BSS_BOW(prBssInfo)) {
+	else if (IS_BSS_BOW(prBssInfo))
 		prChResp->rMsgHdr.eMsgId = MID_CNM_BOW_CH_GRANT;
-	}
 #endif
 	else {
 		cnmMemFree(prAdapter, prChResp);
@@ -558,8 +548,7 @@ VOID cnmChMngrHandleChEvent(P_ADAPTER_T prAdapter, P_WIFI_EVENT_T prEvent)
 */
 /*----------------------------------------------------------------------------*/
 BOOLEAN
-cnmPreferredChannel(P_ADAPTER_T prAdapter,
-		    P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel, P_ENUM_CHNL_EXT_T prBssSCO)
+cnmPreferredChannel(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel, P_ENUM_CHNL_EXT_T prBssSCO)
 {
 	P_BSS_INFO_T prBssInfo;
 	UINT_8 i;
@@ -596,76 +585,67 @@ cnmPreferredChannel(P_ADAPTER_T prAdapter,
 *         FALSE: no limited
 */
 /*----------------------------------------------------------------------------*/
-BOOLEAN
-cnmAisInfraChannelFixed(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel)
+BOOLEAN cnmAisInfraChannelFixed(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel)
 {
 	P_BSS_INFO_T prBssInfo;
-    UINT_8 i;
+	UINT_8 i;
 
 	ASSERT(prAdapter);
-    
-    for (i = 0; i < BSS_INFO_NUM; i++) {
-        prBssInfo = prAdapter->aprBssInfo[i];
+
+	for (i = 0; i < BSS_INFO_NUM; i++) {
+		prBssInfo = prAdapter->aprBssInfo[i];
 
 #if 0
-        DBGLOG(INIT, INFO, ("%s BSS[%u] active[%u] netType[%u]\n", 
-            __func__, i, prBssInfo->fgIsNetActive, prBssInfo->eNetworkType));
+		DBGLOG(INIT, INFO, "%s BSS[%u] active[%u] netType[%u]\n",
+				    __func__, i, prBssInfo->fgIsNetActive, prBssInfo->eNetworkType;
 #endif
 
-        if(!IS_NET_ACTIVE(prAdapter, i))
-            continue;
-        
+		if (!IS_NET_ACTIVE(prAdapter, i))
+			continue;
+
 #if CFG_ENABLE_WIFI_DIRECT
-        if (prBssInfo->eNetworkType == NETWORK_TYPE_P2P) {
-            BOOLEAN fgFixedChannel = 
-                p2pFuncIsAPMode(prAdapter->rWifiVar.prP2PConnSettings);        
-            if(fgFixedChannel) {
+		if (prBssInfo->eNetworkType == NETWORK_TYPE_P2P) {
+			BOOLEAN fgFixedChannel = p2pFuncIsAPMode(prAdapter->rWifiVar.prP2PConnSettings);
+			if (fgFixedChannel) {
 
-                *prBand = prBssInfo->eBand;
-                *pucPrimaryChannel = prBssInfo->ucPrimaryChannel;
+				*prBand = prBssInfo->eBand;
+				*pucPrimaryChannel = prBssInfo->ucPrimaryChannel;
 
-                return TRUE;
+				return TRUE;
 
-            }
-        }
-#endif        
-        
+			}
+		}
+#endif
+
 #if CFG_ENABLE_BT_OVER_WIFI && CFG_BOW_LIMIT_AIS_CHNL
-        if (prBssInfo->eNetworkType == NETWORK_TYPE_BOW) {
-            *prBand = prBssInfo->eBand;
-            *pucPrimaryChannel = prBssInfo->ucPrimaryChannel;
+		if (prBssInfo->eNetworkType == NETWORK_TYPE_BOW) {
+			*prBand = prBssInfo->eBand;
+			*pucPrimaryChannel = prBssInfo->ucPrimaryChannel;
 
-            return TRUE;
-        }
-#endif        
-        
-    }    
+			return TRUE;
+		}
+#endif
+
+	}
 
 	return FALSE;
 }
 
 #if CFG_SUPPORT_CHNL_CONFLICT_REVISE
-BOOLEAN
-cnmAisDetectP2PChannel (
-    P_ADAPTER_T         prAdapter,
-    P_ENUM_BAND_T       prBand,
-    PUINT_8             pucPrimaryChannel
-    )
+BOOLEAN cnmAisDetectP2PChannel(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel)
 {
 	UINT_8 i = 0;
 	P_BSS_INFO_T prBssInfo;
-	P_WIFI_VAR_T prWifiVar = &prAdapter->rWifiVar;
 #if CFG_ENABLE_WIFI_DIRECT
 	for (; i < BSS_INFO_NUM; i++) {
-        prBssInfo = prAdapter->aprBssInfo[i];	
+		prBssInfo = prAdapter->aprBssInfo[i];
 		if (prBssInfo->eNetworkType != NETWORK_TYPE_P2P)
 			continue;
 		if (prBssInfo->eConnectionState == PARAM_MEDIA_STATE_CONNECTED ||
-			(prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT && 
-			 prBssInfo->eIntendOPMode == OP_MODE_NUM)) {
+		    (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT && prBssInfo->eIntendOPMode == OP_MODE_NUM)) {
 			*prBand = prBssInfo->eBand;
-	        *pucPrimaryChannel = prBssInfo->ucPrimaryChannel;
-	        return TRUE;
+			*pucPrimaryChannel = prBssInfo->ucPrimaryChannel;
+			return TRUE;
 		}
 	}
 #endif
@@ -697,16 +677,14 @@ VOID cnmAisInfraConnectNotify(P_ADAPTER_T prAdapter)
 		prBssInfo = prAdapter->aprBssInfo[i];
 
 		if (prBssInfo && IS_BSS_ACTIVE(prBssInfo)) {
-			if (IS_BSS_AIS(prBssInfo)) {
+			if (IS_BSS_AIS(prBssInfo))
 				prAisBssInfo = prBssInfo;
-			} else if (IS_BSS_BOW(prBssInfo)) {
+			else if (IS_BSS_BOW(prBssInfo))
 				prBowBssInfo = prBssInfo;
-			}
 		}
 	}
 
-	if (prAisBssInfo && prBowBssInfo && RLM_NET_PARAM_VALID(prAisBssInfo) &&
-	    RLM_NET_PARAM_VALID(prBowBssInfo)) {
+	if (prAisBssInfo && prBowBssInfo && RLM_NET_PARAM_VALID(prAisBssInfo) && RLM_NET_PARAM_VALID(prBowBssInfo)) {
 		if (prAisBssInfo->eBand != prBowBssInfo->eBand ||
 		    prAisBssInfo->ucPrimaryChannel != prBowBssInfo->ucPrimaryChannel) {
 
@@ -738,9 +716,8 @@ BOOLEAN cnmAisIbssIsPermitted(P_ADAPTER_T prAdapter)
 	for (i = 0; i <= BSS_INFO_NUM; i++) {
 		prBssInfo = prAdapter->aprBssInfo[i];
 
-		if (prBssInfo && IS_BSS_ACTIVE(prBssInfo) && !IS_BSS_AIS(prBssInfo)) {
+		if (prBssInfo && IS_BSS_ACTIVE(prBssInfo) && !IS_BSS_AIS(prBssInfo))
 			return FALSE;
-		}
 	}
 
 	return TRUE;
@@ -770,11 +747,10 @@ BOOLEAN cnmP2PIsPermitted(P_ADAPTER_T prAdapter)
 		prBssInfo = prAdapter->aprBssInfo[i];
 
 		if (prBssInfo && IS_BSS_ACTIVE(prBssInfo)) {
-			if (prBssInfo->eCurrentOPMode == OP_MODE_IBSS) {
+			if (prBssInfo->eCurrentOPMode == OP_MODE_IBSS)
 				return FALSE;
-			} else if (IS_BSS_BOW(prBssInfo)) {
+			else if (IS_BSS_BOW(prBssInfo))
 				fgBowIsActive = TRUE;
-			}
 		}
 	}
 
@@ -838,7 +814,7 @@ static UINT_8 cnmGetAPBwPermitted(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 				prBssDesc = prP2pRoleFsmInfo->rJoinInfo.prTargetBssDesc;
 		}
 	}
-	
+
 	if (prBssDesc) {
 		if (prBssDesc->eChannelWidth == CW_20_40MHZ) {
 			if ((prBssDesc->eSco == CHNL_EXT_SCA) || (prBssDesc->eSco == CHNL_EXT_SCB))
@@ -854,6 +830,7 @@ static UINT_8 cnmGetAPBwPermitted(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 
 	return ucAPBandwidth;
 }
+
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief
@@ -866,10 +843,7 @@ static UINT_8 cnmGetAPBwPermitted(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 /*----------------------------------------------------------------------------*/
 BOOLEAN cnmBss40mBwPermitted(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 {
-	P_BSS_INFO_T prBssInfo;
-	UINT_8 i;
 	UINT_8 ucAPBandwidth;
-
 	ASSERT(prAdapter);
 
 	/* Note: To support real-time decision instead of current activated-time,
@@ -892,9 +866,8 @@ BOOLEAN cnmBss40mBwPermitted(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 			prBssInfo = prAdapter->aprBssInfo[i];
 
 			if (prBssInfo && IS_BSS_ACTIVE(prBssInfo) &&
-			    (prBssInfo->fg40mBwAllowed || prBssInfo->fgAssoc40mBwAllowed)) {
+			    (prBssInfo->fg40mBwAllowed || prBssInfo->fgAssoc40mBwAllowed))
 				return FALSE;
-			}
 		}
 	}
 #endif
@@ -926,9 +899,8 @@ BOOLEAN cnmBss40mBwPermittedForJoin(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 			ucMaxBandwidth = prAdapter->rWifiVar.ucStaBandwidth;
 	} else if (IS_BSS_P2P(prBssInfo)) {
 		/* AP mode */
-		if (p2pFuncIsAPMode(prAdapter->rWifiVar.prP2PConnSettings)) {
+		if (p2pFuncIsAPMode(prAdapter->rWifiVar.prP2PConnSettings))
 			ucMaxBandwidth = prAdapter->rWifiVar.ucApBandwidth;
-		}
 		/* P2P mode */
 		else {
 			if (prBssInfo->eBand == BAND_2G4)
@@ -958,7 +930,6 @@ BOOLEAN cnmBss40mBwPermittedForJoin(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 BOOLEAN cnmBss80mBwPermitted(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 {
 	UINT_8 ucAPBandwidth;
-
 	ASSERT(prAdapter);
 
 	/* Note: To support real-time decision instead of current activated-time,
@@ -968,10 +939,10 @@ BOOLEAN cnmBss80mBwPermitted(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 	 */
 
 	ucAPBandwidth = cnmGetAPBwPermitted(prAdapter, ucBssIndex);
+
 	/* Decide max bandwidth by feature option */
-	if ((cnmGetBssMaxBw(prAdapter, ucBssIndex) < MAX_BW_80MHZ) || (ucAPBandwidth < MAX_BW_80MHZ)) {
+	if ((cnmGetBssMaxBw(prAdapter, ucBssIndex) < MAX_BW_80MHZ) || (ucAPBandwidth < MAX_BW_80MHZ))
 		return FALSE;
-	}
 
 	return TRUE;
 }
@@ -985,28 +956,23 @@ UINT_8 cnmGetBssMaxBw(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 
 	if (IS_BSS_AIS(prBssInfo)) {
 		/* STA mode */
-		if(prBssInfo->eBand == BAND_2G4) {
+		if (prBssInfo->eBand == BAND_2G4)
 			ucMaxBandwidth = prAdapter->rWifiVar.ucSta2gBandwidth;
-		}
-		else {
+		else
 			ucMaxBandwidth = prAdapter->rWifiVar.ucSta5gBandwidth;
-		}
 
-		if(ucMaxBandwidth > prAdapter->rWifiVar.ucStaBandwidth) {
+		if (ucMaxBandwidth > prAdapter->rWifiVar.ucStaBandwidth)
 			ucMaxBandwidth = prAdapter->rWifiVar.ucStaBandwidth;
-		}
 	} else if (IS_BSS_P2P(prBssInfo)) {
 		/* AP mode */
-		if (p2pFuncIsAPMode(prAdapter->rWifiVar.prP2PConnSettings)) {
+		if (p2pFuncIsAPMode(prAdapter->rWifiVar.prP2PConnSettings))
 			ucMaxBandwidth = prAdapter->rWifiVar.ucApBandwidth;
-		}
 		/* P2P mode */
 		else {
-			if (prBssInfo->eBand == BAND_2G4) {
+			if (prBssInfo->eBand == BAND_2G4)
 				ucMaxBandwidth = prAdapter->rWifiVar.ucP2p2gBandwidth;
-			} else {
+			else
 				ucMaxBandwidth = prAdapter->rWifiVar.ucP2p5gBandwidth;
-			}
 		}
 	}
 
@@ -1024,8 +990,7 @@ UINT_8 cnmGetBssMaxBw(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex)
 * @return
 */
 /*----------------------------------------------------------------------------*/
-P_BSS_INFO_T
-cnmGetBssInfoAndInit(P_ADAPTER_T prAdapter, ENUM_NETWORK_TYPE_T eNetworkType, BOOLEAN fgIsP2pDevice)
+P_BSS_INFO_T cnmGetBssInfoAndInit(P_ADAPTER_T prAdapter, ENUM_NETWORK_TYPE_T eNetworkType, BOOLEAN fgIsP2pDevice)
 {
 	P_BSS_INFO_T prBssInfo;
 	UINT_8 ucBssIndex, ucOwnMacIdx;
@@ -1040,32 +1005,28 @@ cnmGetBssInfoAndInit(P_ADAPTER_T prAdapter, ENUM_NETWORK_TYPE_T eNetworkType, BO
 		prBssInfo->eNetworkType = eNetworkType;
 		prBssInfo->ucOwnMacIndex = HW_BSSID_NUM;
 #if CFG_SUPPORT_PNO
-                prBssInfo->fgIsPNOEnable = FALSE;
-                prBssInfo->fgIsNetRequestInActive = FALSE;
-#endif	
+		prBssInfo->fgIsPNOEnable = FALSE;
+		prBssInfo->fgIsNetRequestInActive = FALSE;
+#endif
 		return prBssInfo;
 	}
 
-	if (wlanGetEcoVersion(prAdapter) == 1) {
+	if (wlanGetEcoVersion(prAdapter) == 1)
 		ucOwnMacIdx = 0;
-	} else {
+	else
 		ucOwnMacIdx = (eNetworkType == NETWORK_TYPE_MBSS) ? 0 : 1;
-	}
 
 	/* Find available HW set */
 	do {
 		for (ucBssIndex = 0; ucBssIndex < BSS_INFO_NUM; ucBssIndex++) {
 			prBssInfo = prAdapter->aprBssInfo[ucBssIndex];
 
-			if (prBssInfo && prBssInfo->fgIsInUse &&
-			    ucOwnMacIdx == prBssInfo->ucOwnMacIndex) {
+			if (prBssInfo && prBssInfo->fgIsInUse && ucOwnMacIdx == prBssInfo->ucOwnMacIndex)
 				break;
-			}
 		}
 
-		if (ucBssIndex >= BSS_INFO_NUM) {
+		if (ucBssIndex >= BSS_INFO_NUM)
 			break;	/* No hit */
-		}
 	} while (++ucOwnMacIdx < HW_BSSID_NUM);
 
 	/* Find available BSS_INFO */
@@ -1081,15 +1042,14 @@ cnmGetBssInfoAndInit(P_ADAPTER_T prAdapter, ENUM_NETWORK_TYPE_T eNetworkType, BO
 		}
 	}
 
-	if (ucOwnMacIdx >= HW_BSSID_NUM || ucBssIndex >= BSS_INFO_NUM) {
+	if (ucOwnMacIdx >= HW_BSSID_NUM || ucBssIndex >= BSS_INFO_NUM)
 		prBssInfo = NULL;
+#if CFG_SUPPORT_PNO
+	if (prBssInfo) {
+		prBssInfo->fgIsPNOEnable = FALSE;
+		prBssInfo->fgIsNetRequestInActive = FALSE;
 	}
-#if CFG_SUPPORT_PNO    
-    if(prBssInfo) {
-        prBssInfo->fgIsPNOEnable = FALSE;
-        prBssInfo->fgIsNetRequestInActive = FALSE;
-    }
-#endif  
+#endif
 	return prBssInfo;
 }
 

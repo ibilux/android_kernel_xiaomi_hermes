@@ -2,7 +2,6 @@
  * fbsysfs.c - framebuffer device class and attributes
  *
  * Copyright (c) 2004 James Simmons <jsimmons@infradead.org>
- * Copyright (C) 2018 XiaoMi, Inc.
  * 
  *	This program is free software you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -501,7 +500,7 @@ static ssize_t store_mtk_lcm_enable_cabc(struct device *device, struct device_at
 {
 	char ** last = NULL;
 	unsigned long value = simple_strtoul(buf, last, 0);
-	
+
 	printk("mtk_cabc, buf=%s\n", buf);
 	primary_display_enable_cabc((unsigned int)value);
 

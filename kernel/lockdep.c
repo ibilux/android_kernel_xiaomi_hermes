@@ -1166,8 +1166,9 @@ print_circular_bug_header(struct lock_list *entry, unsigned int depth,
 	if (debug_locks_silent)
 		return 0;
     //Add by Mtk
-    lockdep_aee();
-
+    if(depth < 5){
+    	lockdep_aee();
+    }
 	printk("\n");
 	printk("======================================================\n");
 	printk("[ ProveLock INFO: possible circular locking dependency detected ]\n");

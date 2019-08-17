@@ -68,9 +68,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <linux/slab.h>
 
-/* ***************************************************************************
- * Bridge proxy functions
- */
 
 
 
@@ -79,14 +76,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
  
 static IMG_INT
-PVRSRVBridgeDebugMiscSLCSetBypassState(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_DEBUGMISCSLCSETBYPASSSTATE *psDebugMiscSLCSetBypassStateIN,
-					 PVRSRV_BRIDGE_OUT_DEBUGMISCSLCSETBYPASSSTATE *psDebugMiscSLCSetBypassStateOUT,
+PVRSRVBridgeDebugMiscSLCSetBypassState(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_DEBUGMISCSLCSETBYPASSSTATE *psDebugMiscSLCSetBypassStateIN,
+					  PVRSRV_BRIDGE_OUT_DEBUGMISCSLCSETBYPASSSTATE *psDebugMiscSLCSetBypassStateOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_HANDLE hDevNodeInt = IMG_NULL;
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_DEBUGMISC_DEBUGMISCSLCSETBYPASSSTATE);
+
 
 
 
@@ -96,15 +93,15 @@ PVRSRVBridgeDebugMiscSLCSetBypassState(IMG_UINT32 ui32BridgeID,
 					/* Look up the address from the handle */
 					psDebugMiscSLCSetBypassStateOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hDevNodeInt,
+											(IMG_VOID **) &hDevNodeInt,
 											psDebugMiscSLCSetBypassStateIN->hDevNode,
 											PVRSRV_HANDLE_TYPE_DEV_NODE);
 					if(psDebugMiscSLCSetBypassStateOUT->eError != PVRSRV_OK)
 					{
 						goto DebugMiscSLCSetBypassState_exit;
 					}
-
 				}
+
 
 	psDebugMiscSLCSetBypassStateOUT->eError =
 		PVRSRVDebugMiscSLCSetBypassStateKM(
@@ -114,20 +111,21 @@ PVRSRVBridgeDebugMiscSLCSetBypassState(IMG_UINT32 ui32BridgeID,
 
 
 
+
 DebugMiscSLCSetBypassState_exit:
 
 	return 0;
 }
 
 static IMG_INT
-PVRSRVBridgeRGXDebugMiscSetFWLog(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RGXDEBUGMISCSETFWLOG *psRGXDebugMiscSetFWLogIN,
-					 PVRSRV_BRIDGE_OUT_RGXDEBUGMISCSETFWLOG *psRGXDebugMiscSetFWLogOUT,
+PVRSRVBridgeRGXDebugMiscSetFWLog(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RGXDEBUGMISCSETFWLOG *psRGXDebugMiscSetFWLogIN,
+					  PVRSRV_BRIDGE_OUT_RGXDEBUGMISCSETFWLOG *psRGXDebugMiscSetFWLogOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_HANDLE hDevNodeInt = IMG_NULL;
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_DEBUGMISC_RGXDEBUGMISCSETFWLOG);
+
 
 
 
@@ -137,20 +135,21 @@ PVRSRVBridgeRGXDebugMiscSetFWLog(IMG_UINT32 ui32BridgeID,
 					/* Look up the address from the handle */
 					psRGXDebugMiscSetFWLogOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hDevNodeInt,
+											(IMG_VOID **) &hDevNodeInt,
 											psRGXDebugMiscSetFWLogIN->hDevNode,
 											PVRSRV_HANDLE_TYPE_DEV_NODE);
 					if(psRGXDebugMiscSetFWLogOUT->eError != PVRSRV_OK)
 					{
 						goto RGXDebugMiscSetFWLog_exit;
 					}
-
 				}
+
 
 	psRGXDebugMiscSetFWLogOUT->eError =
 		PVRSRVRGXDebugMiscSetFWLogKM(
 					hDevNodeInt,
 					psRGXDebugMiscSetFWLogIN->ui32RGXFWLogType);
+
 
 
 
@@ -160,14 +159,14 @@ RGXDebugMiscSetFWLog_exit:
 }
 
 static IMG_INT
-PVRSRVBridgeRGXDebugMiscDumpFreelistPageList(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_RGXDEBUGMISCDUMPFREELISTPAGELIST *psRGXDebugMiscDumpFreelistPageListIN,
-					 PVRSRV_BRIDGE_OUT_RGXDEBUGMISCDUMPFREELISTPAGELIST *psRGXDebugMiscDumpFreelistPageListOUT,
+PVRSRVBridgeRGXDebugMiscDumpFreelistPageList(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_RGXDEBUGMISCDUMPFREELISTPAGELIST *psRGXDebugMiscDumpFreelistPageListIN,
+					  PVRSRV_BRIDGE_OUT_RGXDEBUGMISCDUMPFREELISTPAGELIST *psRGXDebugMiscDumpFreelistPageListOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_HANDLE hDevNodeInt = IMG_NULL;
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_DEBUGMISC_RGXDEBUGMISCDUMPFREELISTPAGELIST);
+
 
 
 
@@ -177,19 +176,20 @@ PVRSRVBridgeRGXDebugMiscDumpFreelistPageList(IMG_UINT32 ui32BridgeID,
 					/* Look up the address from the handle */
 					psRGXDebugMiscDumpFreelistPageListOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hDevNodeInt,
+											(IMG_VOID **) &hDevNodeInt,
 											psRGXDebugMiscDumpFreelistPageListIN->hDevNode,
 											PVRSRV_HANDLE_TYPE_DEV_NODE);
 					if(psRGXDebugMiscDumpFreelistPageListOUT->eError != PVRSRV_OK)
 					{
 						goto RGXDebugMiscDumpFreelistPageList_exit;
 					}
-
 				}
+
 
 	psRGXDebugMiscDumpFreelistPageListOUT->eError =
 		PVRSRVRGXDebugMiscDumpFreelistPageListKM(
 					hDevNodeInt);
+
 
 
 
@@ -199,16 +199,15 @@ RGXDebugMiscDumpFreelistPageList_exit:
 }
 
 static IMG_INT
-PVRSRVBridgePhysmemImportSecBuf(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_PHYSMEMIMPORTSECBUF *psPhysmemImportSecBufIN,
-					 PVRSRV_BRIDGE_OUT_PHYSMEMIMPORTSECBUF *psPhysmemImportSecBufOUT,
+PVRSRVBridgePhysmemImportSecBuf(IMG_UINT32 ui32DispatchTableEntry,
+					  PVRSRV_BRIDGE_IN_PHYSMEMIMPORTSECBUF *psPhysmemImportSecBufIN,
+					  PVRSRV_BRIDGE_OUT_PHYSMEMIMPORTSECBUF *psPhysmemImportSecBufOUT,
 					 CONNECTION_DATA *psConnection)
 {
 	IMG_HANDLE hDevNodeInt = IMG_NULL;
 	PMR * psPMRPtrInt = IMG_NULL;
-	IMG_HANDLE hPMRPtrInt2 = IMG_NULL;
 
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_DEBUGMISC_PHYSMEMIMPORTSECBUF);
+
 
 
 
@@ -218,15 +217,15 @@ PVRSRVBridgePhysmemImportSecBuf(IMG_UINT32 ui32BridgeID,
 					/* Look up the address from the handle */
 					psPhysmemImportSecBufOUT->eError =
 						PVRSRVLookupHandle(psConnection->psHandleBase,
-											(IMG_HANDLE *) &hDevNodeInt,
+											(IMG_VOID **) &hDevNodeInt,
 											psPhysmemImportSecBufIN->hDevNode,
 											PVRSRV_HANDLE_TYPE_DEV_NODE);
 					if(psPhysmemImportSecBufOUT->eError != PVRSRV_OK)
 					{
 						goto PhysmemImportSecBuf_exit;
 					}
-
 				}
+
 
 	psPhysmemImportSecBufOUT->eError =
 		PhysmemNewTDSecureBufPMR(
@@ -241,72 +240,29 @@ PVRSRVBridgePhysmemImportSecBuf(IMG_UINT32 ui32BridgeID,
 		goto PhysmemImportSecBuf_exit;
 	}
 
-	/* Create a resman item and overwrite the handle with it */
-	hPMRPtrInt2 = ResManRegisterRes(psConnection->hResManContext,
-												RESMAN_TYPE_PMR,
-												psPMRPtrInt,
-												(RESMAN_FREE_FN)&PMRUnrefPMR);
-	if (hPMRPtrInt2 == IMG_NULL)
-	{
-		psPhysmemImportSecBufOUT->eError = PVRSRV_ERROR_UNABLE_TO_REGISTER_RESOURCE;
-		goto PhysmemImportSecBuf_exit;
-	}
+
 	psPhysmemImportSecBufOUT->eError = PVRSRVAllocHandle(psConnection->psHandleBase,
 							&psPhysmemImportSecBufOUT->hPMRPtr,
-							(IMG_HANDLE) hPMRPtrInt2,
+							(IMG_VOID *) psPMRPtrInt,
 							PVRSRV_HANDLE_TYPE_PHYSMEM_PMR,
-							PVRSRV_HANDLE_ALLOC_FLAG_NONE
-							);
+							PVRSRV_HANDLE_ALLOC_FLAG_MULTI
+							,(PFN_HANDLE_RELEASE)&PMRUnrefPMR);
 	if (psPhysmemImportSecBufOUT->eError != PVRSRV_OK)
 	{
 		goto PhysmemImportSecBuf_exit;
 	}
+
+
 
 
 PhysmemImportSecBuf_exit:
 	if (psPhysmemImportSecBufOUT->eError != PVRSRV_OK)
 	{
-		/* If we have a valid resman item we should undo the bridge function by freeing the resman item */
-		if (hPMRPtrInt2)
-		{
-			PVRSRV_ERROR eError = ResManFreeResByPtr(hPMRPtrInt2);
-
-			/* Freeing a resource should never fail... */
-			PVR_ASSERT((eError == PVRSRV_OK) || (eError == PVRSRV_ERROR_RETRY));
-		}
-		else if (psPMRPtrInt)
+		if (psPMRPtrInt)
 		{
 			PMRUnrefPMR(psPMRPtrInt);
 		}
 	}
-
-
-	return 0;
-}
-
-static IMG_INT
-PVRSRVBridgePowMonTestIoctl(IMG_UINT32 ui32BridgeID,
-					 PVRSRV_BRIDGE_IN_POWMONTESTIOCTL *psPowMonTestIoctlIN,
-					 PVRSRV_BRIDGE_OUT_POWMONTESTIOCTL *psPowMonTestIoctlOUT,
-					 CONNECTION_DATA *psConnection)
-{
-
-	PVRSRV_BRIDGE_ASSERT_CMD(ui32BridgeID, PVRSRV_BRIDGE_DEBUGMISC_POWMONTESTIOCTL);
-
-	PVR_UNREFERENCED_PARAMETER(psConnection);
-
-
-
-
-	psPowMonTestIoctlOUT->eError =
-		PowMonTestIoctlKM(
-					psPowMonTestIoctlIN->ui32Cmd,
-					psPowMonTestIoctlIN->ui32In1,
-					psPowMonTestIoctlIN->ui32In2,
-					&psPowMonTestIoctlOUT->ui32Out1,
-					&psPowMonTestIoctlOUT->ui32Out2);
-
-
 
 
 	return 0;
@@ -317,20 +273,33 @@ PVRSRVBridgePowMonTestIoctl(IMG_UINT32 ui32BridgeID,
 /* *************************************************************************** 
  * Server bridge dispatch related glue 
  */
- 
-PVRSRV_ERROR RegisterDEBUGMISCFunctions(IMG_VOID);
-IMG_VOID UnregisterDEBUGMISCFunctions(IMG_VOID);
+
+
+PVRSRV_ERROR InitDEBUGMISCBridge(IMG_VOID);
+PVRSRV_ERROR DeinitDEBUGMISCBridge(IMG_VOID);
 
 /*
  * Register all DEBUGMISC functions with services
  */
-PVRSRV_ERROR RegisterDEBUGMISCFunctions(IMG_VOID)
+PVRSRV_ERROR InitDEBUGMISCBridge(IMG_VOID)
 {
-	SetDispatchTableEntry(PVRSRV_BRIDGE_DEBUGMISC_DEBUGMISCSLCSETBYPASSSTATE, PVRSRVBridgeDebugMiscSLCSetBypassState);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_DEBUGMISC_RGXDEBUGMISCSETFWLOG, PVRSRVBridgeRGXDebugMiscSetFWLog);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_DEBUGMISC_RGXDEBUGMISCDUMPFREELISTPAGELIST, PVRSRVBridgeRGXDebugMiscDumpFreelistPageList);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_DEBUGMISC_PHYSMEMIMPORTSECBUF, PVRSRVBridgePhysmemImportSecBuf);
-	SetDispatchTableEntry(PVRSRV_BRIDGE_DEBUGMISC_POWMONTESTIOCTL, PVRSRVBridgePowMonTestIoctl);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_DEBUGMISC, PVRSRV_BRIDGE_DEBUGMISC_DEBUGMISCSLCSETBYPASSSTATE, PVRSRVBridgeDebugMiscSLCSetBypassState,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_DEBUGMISC, PVRSRV_BRIDGE_DEBUGMISC_RGXDEBUGMISCSETFWLOG, PVRSRVBridgeRGXDebugMiscSetFWLog,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_DEBUGMISC, PVRSRV_BRIDGE_DEBUGMISC_RGXDEBUGMISCDUMPFREELISTPAGELIST, PVRSRVBridgeRGXDebugMiscDumpFreelistPageList,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
+	SetDispatchTableEntry(PVRSRV_BRIDGE_DEBUGMISC, PVRSRV_BRIDGE_DEBUGMISC_PHYSMEMIMPORTSECBUF, PVRSRVBridgePhysmemImportSecBuf,
+					IMG_NULL, IMG_NULL,
+					0, 0);
+
 
 	return PVRSRV_OK;
 }
@@ -338,6 +307,8 @@ PVRSRV_ERROR RegisterDEBUGMISCFunctions(IMG_VOID)
 /*
  * Unregister all debugmisc functions with services
  */
-IMG_VOID UnregisterDEBUGMISCFunctions(IMG_VOID)
+PVRSRV_ERROR DeinitDEBUGMISCBridge(IMG_VOID)
 {
+	return PVRSRV_OK;
 }
+

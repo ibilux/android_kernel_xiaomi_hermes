@@ -36,6 +36,7 @@
 #define SENSOR_TYPE_GRAVITY             9
 #define SENSOR_TYPE_LINEAR_ACCELERATION 10
 #define SENSOR_TYPE_ROTATION_VECTOR     11
+#define SENSOR_TYPE_GAME_ROTATION_VECTOR 15
 #define SENSOR_TYPE_SIGNIFICANT_MOTION  17
 #define SENSOR_TYPE_STEP_DETECTOR       18
 #define SENSOR_TYPE_STEP_COUNTER        19
@@ -48,11 +49,18 @@
 #define SENSOR_TYPE_GLANCE_GESTURE      24
 #define SENSOR_TYPE_PICK_UP_GESTURE     25
 
-#define SENSOR_TYPE_PEDOMETER           26
-#define SENSOR_TYPE_IN_POCKET           27
-#define SENSOR_TYPE_ACTIVITY            28
-#define SENSOR_TYPE_FACE_DOWN           29
-#define SENSOR_TYPE_SHAKE               30
+#define SENSOR_TYPE_PEDOMETER           (26)
+#define SENSOR_STRING_TYPE_PEDOMETER                 "android.sensor.pedometer"
+#define SENSOR_TYPE_IN_POCKET           (27)
+#define SENSOR_STRING_TYPE_IN_POCKET                 "android.sensor.in_pocket"
+#define SENSOR_TYPE_ACTIVITY            (28)
+#define SENSOR_STRING_TYPE_ACTIVITY                  "android.sensor.activity"
+#define SENSOR_TYPE_FACE_DOWN           (29)
+#define SENSOR_STRING_TYPE_FACE_DOWN                 "android.sensor.face_down"
+#define SENSOR_TYPE_SHAKE               (30)
+#define SENSOR_STRING_TYPE_SHAKE                     "android.sensor.shake"
+#define SENSOR_TYPE_BRINGTOSEE          (31)
+#define SENSOR_STRING_TYPE_BRINGTOSEE                "android.sensor.bring_to_see"
 
 /*---------------------------------------------------------------------------*/
 #define ID_BASE							0
@@ -61,6 +69,7 @@
 #define ID_ACCELEROMETER				(ID_BASE+SENSOR_TYPE_ACCELEROMETER-1)
 #define ID_LINEAR_ACCELERATION			(ID_BASE+SENSOR_TYPE_LINEAR_ACCELERATION-1)
 #define ID_ROTATION_VECTOR				(ID_BASE+SENSOR_TYPE_ROTATION_VECTOR-1)
+#define ID_GAME_ROTATION_VECTOR   (ID_BASE+SENSOR_TYPE_GAME_ROTATION_VECTOR-1)
 #define ID_GRAVITY						(ID_BASE+SENSOR_TYPE_GRAVITY-1)
 #define ID_GYROSCOPE					(ID_BASE+SENSOR_TYPE_GYROSCOPE-1)
 #define ID_PROXIMITY					(ID_BASE+SENSOR_TYPE_PROXIMITY-1)
@@ -81,8 +90,9 @@
 #define ID_IN_POCKET                                     (ID_BASE+SENSOR_TYPE_IN_POCKET-1)
 #define ID_FACE_DOWN                                    (ID_BASE+SENSOR_TYPE_FACE_DOWN-1)
 #define ID_SHAKE                                        (ID_BASE+SENSOR_TYPE_SHAKE-1)
-#define ID_SENSOR_MAX_HANDLE	  (ID_BASE+30)
-#define ID_NONE							    (ID_BASE+31)
+#define ID_BRINGTOSEE                                   (ID_BASE+SENSOR_TYPE_BRINGTOSEE-1)
+#define ID_SENSOR_MAX_HANDLE	  (ID_BASE+31)
+#define ID_NONE							    (ID_BASE+32)
 
 #define ID_OFFSET                           (1)
 
@@ -121,6 +131,7 @@
 #define SENSOR_ACTIVITY                     (1 << ID_ACTIVITY) 
 #define SENSOR_FACE_DOWN                    (1 << ID_FACE_DOWN) 
 #define SENSOR_SHAKE                        (1 << ID_SHAKE) 
+#define SENSOR_BRINGTOSEE                   (1 << ID_BRINGTOSEE) 
 
 /*----------------------------------------------------------------------------*/
 #define HWM_INPUTDEV_NAME               "hwmdata"
@@ -196,7 +207,32 @@
 #define BATCH_INPUTDEV_NAME             	"m_batch_input"
 #define BATCH_MISC_DEV_NAME             	"m_batch_misc"
 
+#define BTS_PL_DEV_NAME               	"m_bts_pl"
+#define BTS_INPUTDEV_NAME             	"m_bts_input"
+#define BTS_MISC_DEV_NAME             	"m_bts_misc"
+
+#define GRV_PL_DEV_NAME               	"m_grv_pl"
+#define GRV_INPUTDEV_NAME             	"m_grv_input"
+#define GRV_MISC_DEV_NAME             	"m_grv_misc"
+
+#define GMRV_PL_DEV_NAME               	"m_gmrv_pl"
+#define GMRV_INPUTDEV_NAME             	"m_gmrv_input"
+#define GMRV_MISC_DEV_NAME             	"m_gmrv_misc"
+
+#define GRAV_PL_DEV_NAME               	"m_grav_pl"
+#define GRAV_INPUTDEV_NAME             	"m_grav_input"
+#define GRAV_MISC_DEV_NAME             	"m_grav_misc"
+
+#define LA_PL_DEV_NAME               	"m_la_pl"
+#define LA_INPUTDEV_NAME             	"m_la_input"
+#define LA_MISC_DEV_NAME             	"m_la_misc"
+
+#define RV_PL_DEV_NAME               	"m_rv_pl"
+#define RV_INPUTDEV_NAME             	"m_rv_input"
+#define RV_MISC_DEV_NAME             	"m_rv_misc"
+
 #define EVENT_TYPE_SENSOR				0x01
+#define EVENT_TYPE_SENSOR_EXT				0x02
 #define EVENT_SENSOR_ACCELERATION		SENSOR_ACCELEROMETER
 #define EVENT_SENSOR_MAGNETIC			SENSOR_MAGNETIC
 #define EVENT_SENSOR_ORIENTATION		SENSOR_ORIENTATION

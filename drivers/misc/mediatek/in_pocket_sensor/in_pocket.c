@@ -1,5 +1,7 @@
 #include "in_pocket.h"
 
+#define USE_EARLY_SUSPEND
+
 static struct inpk_context *inpk_context_obj = NULL;
 
 static struct inpk_init_info* in_pocket_init= {0}; //modified
@@ -470,7 +472,7 @@ static int inpk_probe(struct platform_device *pdev)
 		goto exit_alloc_input_dev_failed;
 	}
 
-#if defined(CONFIG_HAS_EARLYSUSPEND) && defined(CONFIG_EARLYSUSPEND)
+#if defined(CONFIG_HAS_EARLYSUSPEND) && defined(CONFIG_EARLYSUSPEND) && defined(USE_EARLY_SUSPEND)
     	atomic_set(&(inpk_context_obj->early_suspend), 0);
 	inpk_context_obj->early_drv.level    = EARLY_SUSPEND_LEVEL_STOP_DRAWING - 1,
 	inpk_context_obj->early_drv.suspend  = inpk_early_suspend,
@@ -514,22 +516,14 @@ static int inpk_remove(struct platform_device *pdev)
 static void inpk_early_suspend(struct early_suspend *h) 
 {
 	atomic_set(&(inpk_context_obj->early_suspend), 1);
-	if(!atomic_read(&inpk_context_obj->wake)) //not wake up, disable in early suspend
-	{
-		inpk_real_enable(INPK_SUSPEND);
-	}
-	INPK_LOG(" inpk_early_suspend ok------->hwm_obj->early_suspend=%d \n",atomic_read(&(inpk_context_obj->early_suspend)));
+	INPK_LOG(" inpk_early_suspend ok------->hwm_obj->early_suspend=%d !\n",atomic_read(&(inpk_context_obj->early_suspend)));
 	return ;
 }
 /*----------------------------------------------------------------------------*/
 static void inpk_late_resume(struct early_suspend *h)
 {
 	atomic_set(&(inpk_context_obj->early_suspend), 0);
-	if(!atomic_read(&inpk_context_obj->wake) && resume_enable_status) //not wake up, disable in early suspend
-	{
-		inpk_real_enable(INPK_RESUME);
-	}
-	INPK_LOG(" inpk_late_resume ok------->hwm_obj->early_suspend=%d \n",atomic_read(&(inpk_context_obj->early_suspend)));
+	INPK_LOG(" inpk_late_resume ok------->hwm_obj->early_suspend=%d !\n",atomic_read(&(inpk_context_obj->early_suspend)));
 	return ;
 }
 
@@ -537,10 +531,6 @@ static void inpk_late_resume(struct early_suspend *h)
 static int inpk_suspend(struct platform_device *dev, pm_message_t state) 
 {
 	atomic_set(&(inpk_context_obj->suspend), 1);
-	if(!atomic_read(&inpk_context_obj->wake)) //not wake up, disable in early suspend
-	{
-		inpk_real_enable(INPK_SUSPEND);
-	}
 	INPK_LOG(" inpk_suspend ok------->hwm_obj->suspend=%d \n",atomic_read(&(inpk_context_obj->suspend)));
 	return 0;
 }
@@ -548,10 +538,6 @@ static int inpk_suspend(struct platform_device *dev, pm_message_t state)
 static int inpk_resume(struct platform_device *dev)
 {
 	atomic_set(&(inpk_context_obj->suspend), 0);
-	if(!atomic_read(&inpk_context_obj->wake) && resume_enable_status) //not wake up, disable in early suspend
-	{
-		inpk_real_enable(INPK_RESUME);
-	}
 	INPK_LOG(" inpk_resume ok------->hwm_obj->suspend=%d \n",atomic_read(&(inpk_context_obj->suspend)));
 	return 0;
 }

@@ -396,7 +396,6 @@ void mt_set_pwm_buf0_size_hal( U32 pwm_no, U16 size)                    //add by
         OUTREG32 ( reg_buff0_size, size );
 }
 
-
 void mt_pwm_dump_regs_hal(void)
 {
 	int i;

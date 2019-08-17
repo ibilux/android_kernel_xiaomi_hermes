@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm_obss.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/rlm_obss.h#1
 */
 
 /*! \file   "rlm_obss.h"
     \brief
 */
 
-
-
 /*
-** $Log: rlm_obss.h $
+** Log: rlm_obss.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -17,7 +15,8 @@
 ** (Davinci label: MT6620_WIFI_Driver_V2_3_120913_1942_As_MT6630_Base)
  *
  * 01 24 2011 cm.chang
- * [WCXRP00000384] [MT6620 Wi-Fi][Driver][FW] Handle 20/40 action frame in AP mode and stop ampdu timer when sta_rec is freed
+ * [WCXRP00000384] [MT6620 Wi-Fi][Driver][FW] Handle 20/40 action frame in AP mode and stop
+ * ampdu timer when sta_rec is freed
  * Process received 20/40 coexistence action frame for AP mode
  *
  * 01 13 2011 cm.chang
@@ -89,14 +88,13 @@
 #define CHNL_LIST_SZ_2G         14
 #define CHNL_LIST_SZ_5G         14
 
-
 #define CHNL_LEVEL0             0
 #define CHNL_LEVEL1             1
 #define CHNL_LEVEL2             2
 
 #define AFFECTED_CHNL_OFFSET    5
 
-#define OBSS_SCAN_MIN_INTERVAL  10	/* In unit of sec */
+/*#define OBSS_SCAN_MIN_INTERVAL  10 *//* In unit of sec */
 
 #define PUBLIC_ACTION_MAX_LEN   200	/* In unit of byte */
 
@@ -154,4 +152,4 @@ VOID rlmObssTriggerScan(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
 ********************************************************************************
 */
 
-#endif				/* _RLM_OBSS_H */
+#endif /* _RLM_OBSS_H */

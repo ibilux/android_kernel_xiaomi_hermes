@@ -5,7 +5,7 @@ ifeq ($(CONFIG_USB_DEBUG),y)
 endif
 
 #For USB HQA Driving Tuning Mode 1 Settings //liuchao for usb yantu
-EXTRA_CFLAGS += -DMTK_USB_MODE1
+#EXTRA_CFLAGS += -DMTK_USB_MODE1
 
 obj-$(CONFIG_MU3_PHY) := mu3phy.o
 

@@ -6,7 +6,6 @@
 #include <linux/thermal.h>
 #include <linux/platform_device.h>
 #include <linux/aee.h>
-#include <linux/xlog.h>
 #include <linux/types.h>
 #include <linux/delay.h>
 #include <linux/proc_fs.h>
@@ -72,7 +71,7 @@ extern int mtktsxtal_get_xtal_temp(void);
 #define mtkts_AP_dprintk(fmt, args...)   \
 do {                                    \
 	if (mtkts_AP_debug_log) {                \
-		xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", fmt, ##args); \
+		pr_notice("Power/AP_Thermal" fmt, ##args); \
 	}                                   \
 } while(0)
 
@@ -420,7 +419,7 @@ static INT16 APtThermistorConverTemp(INT32 Res)
     INT32 TAP_Value=-200,TMP1=0,TMP2=0;
 
 	asize=(sizeof(AP_Temperature_Table)/sizeof(AP_TEMPERATURE));
-	//xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "APtThermistorConverTemp() : asize = %d, Res = %d\n",asize,Res);
+	//mtkts_AP_dprintk("APtThermistorConverTemp() : asize = %d, Res = %d\n",asize,Res);
     if(Res>=AP_Temperature_Table[0].TemperatureR)
     {
         TAP_Value = -40;//min
@@ -433,7 +432,7 @@ static INT16 APtThermistorConverTemp(INT32 Res)
     {
         RES1=AP_Temperature_Table[0].TemperatureR;
         TMP1=AP_Temperature_Table[0].APTemp;
-		//xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "%d : RES1 = %d,TMP1 = %d\n",__LINE__,RES1,TMP1);
+		//mtkts_AP_dprintk("%d : RES1 = %d,TMP1 = %d\n",__LINE__,RES1,TMP1);
 
         for(i=0;i < asize;i++)
         {
@@ -441,14 +440,14 @@ static INT16 APtThermistorConverTemp(INT32 Res)
             {
                 RES2=AP_Temperature_Table[i].TemperatureR;
                 TMP2=AP_Temperature_Table[i].APTemp;
-                //xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "%d :i=%d, RES2 = %d,TMP2 = %d\n",__LINE__,i,RES2,TMP2);
+                //mtkts_AP_dprintk("%d :i=%d, RES2 = %d,TMP2 = %d\n",__LINE__,i,RES2,TMP2);
                 break;
             }
             else
             {
                 RES1=AP_Temperature_Table[i].TemperatureR;
                 TMP1=AP_Temperature_Table[i].APTemp;
-                //xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "%d :i=%d, RES1 = %d,TMP1 = %d\n",__LINE__,i,RES1,TMP1);
+                //mtkts_AP_dprintk("%d :i=%d, RES1 = %d,TMP1 = %d\n",__LINE__,i,RES1,TMP1);
             }
         }
 
@@ -456,12 +455,12 @@ static INT16 APtThermistorConverTemp(INT32 Res)
     }
 
     #if 0
-    xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "APtThermistorConverTemp() : TAP_Value = %d\n",TAP_Value);
-    xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "APtThermistorConverTemp() : Res = %d\n",Res);
-    xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "APtThermistorConverTemp() : RES1 = %d\n",RES1);
-    xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "APtThermistorConverTemp() : RES2 = %d\n",RES2);
-    xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "APtThermistorConverTemp() : TMP1 = %d\n",TMP1);
-    xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "APtThermistorConverTemp() : TMP2 = %d\n",TMP2);
+    mtkts_AP_dprintk("APtThermistorConverTemp() : TAP_Value = %d\n",TAP_Value);
+    mtkts_AP_dprintk("APtThermistorConverTemp() : Res = %d\n",Res);
+    mtkts_AP_dprintk("APtThermistorConverTemp() : RES1 = %d\n",RES1);
+    mtkts_AP_dprintk("APtThermistorConverTemp() : RES2 = %d\n",RES2);
+    mtkts_AP_dprintk("APtThermistorConverTemp() : TMP1 = %d\n",TMP1);
+    mtkts_AP_dprintk("APtThermistorConverTemp() : TMP2 = %d\n",TMP2);
     #endif
 
     return TAP_Value;
@@ -585,7 +584,7 @@ static int mtkts_AP_get_temp(struct thermal_zone_device *thermal,
 	*t = mtkts_AP_get_hw_temp();
 
 	//if ((int) *t > 52000)
-	//    xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "T=%d\n", (int) *t);
+	//    mtkts_AP_dprintk("T=%d\n", (int) *t);
 
     if ((int) *t >= polling_trip_temp1)
         thermal->polling_delay = interval*1000;
@@ -923,7 +922,7 @@ void mtkts_AP_copy_table(AP_TEMPERATURE *des,AP_TEMPERATURE *src)
     int j=0;
 
     j = (sizeof(AP_Temperature_Table)/sizeof(AP_TEMPERATURE));
-	//xlog_printk(ANDROID_LOG_INFO, "Power/AP_Thermal", "mtkts_AP_copy_table() : j = %d\n",j);
+	//mtkts_AP_dprintk("mtkts_AP_copy_table() : j = %d\n",j);
     for(i=0;i<j;i++)
 	{
 		des[i] = src[i];
@@ -1086,14 +1085,14 @@ static ssize_t mtkts_AP_param_write(struct file *file, const char __user *buffer
 
 int mtkts_AP_register_thermal(void)
 {
-	mtkts_AP_dprintk("[mtkts_AP_register_thermal] \n");
+	mtkts_AP_dprintk("[mtkts_AP_register_thermal]\n");
 
-    /* trips : trip 0~1 */
-    if (NULL == thz_dev) {
-        thz_dev = mtk_thermal_zone_device_register("mtktsAP", num_trip, NULL,
-                                                   &mtkts_AP_dev_ops, 0, 0, 0, interval*1000);
-    }
-    
+	/* trips : trip 0~1 */
+	if (NULL == thz_dev) {
+		thz_dev = mtk_thermal_zone_device_register("mtktsAP", num_trip, NULL,
+					&mtkts_AP_dev_ops, 0, 0, 0, interval*1000);
+	}
+
 	return 0;
 }
 

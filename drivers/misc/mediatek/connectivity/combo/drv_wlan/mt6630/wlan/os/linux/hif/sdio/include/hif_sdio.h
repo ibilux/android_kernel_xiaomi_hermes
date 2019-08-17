@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/sdio/include/hif_sdio.h#2 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/hif/sdio/include/hif_sdio.h#2
 */
 
 /*! \file   "hif_sdio.h"
@@ -9,7 +9,7 @@
 */
 
 /*
-** $Log: $
+** Log:
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -46,7 +46,8 @@
  * 07 23 2010 george.kuo
  *
  * Add MT6620 driver source tree
- * , including char device driver (wmt, bt, gps), stp driver, interface driver (tty ldisc and hif_sdio), and bt hci driver.
+ * , including char device driver (wmt, bt, gps), stp driver,
+ * interface driver (tty ldisc and hif_sdio), and bt hci driver.
 **
 **
 */
@@ -86,14 +87,14 @@ typedef struct _MTK_WCN_HIF_SDIO_FUNCINFO MTK_WCN_HIF_SDIO_FUNCINFO;
 typedef ULONG MTK_WCN_HIF_SDIO_CLTCTX;
 
 /* Callback functions provided by client driver */
-typedef INT_32(*MTK_WCN_HIF_SDIO_PROBE) (MTK_WCN_HIF_SDIO_CLTCTX, const MTK_WCN_HIF_SDIO_FUNCINFO*);
-typedef INT_32(*MTK_WCN_HIF_SDIO_REMOVE) (MTK_WCN_HIF_SDIO_CLTCTX);
-typedef INT_32(*MTK_WCN_HIF_SDIO_IRQ) (MTK_WCN_HIF_SDIO_CLTCTX);
+typedef INT_32(*MTK_WCN_HIF_SDIO_PROBE)(MTK_WCN_HIF_SDIO_CLTCTX, const MTK_WCN_HIF_SDIO_FUNCINFO * prFuncInfo);
+typedef INT_32(*MTK_WCN_HIF_SDIO_REMOVE)(MTK_WCN_HIF_SDIO_CLTCTX);
+typedef INT_32(*MTK_WCN_HIF_SDIO_IRQ)(MTK_WCN_HIF_SDIO_CLTCTX);
 
 /* Function info provided by client driver */
 struct _MTK_WCN_HIF_SDIO_FUNCINFO {
-	UINT_16 manf_id;		/* TPLMID_MANF: manufacturer ID */
-	UINT_16 card_id;		/* TPLMID_CARD: card ID */
+	UINT_16 manf_id;	/* TPLMID_MANF: manufacturer ID */
+	UINT_16 card_id;	/* TPLMID_CARD: card ID */
 	UINT_16 func_num;	/* Function Number */
 	UINT_16 blk_sz;		/* Function block size */
 };
@@ -125,7 +126,7 @@ typedef struct _MTK_WCN_HIF_SDIO_PROBEINFO {
 typedef struct _MTK_WCN_HIF_SDIO_CLT_PROBE_WORKERINFO {
 	struct work_struct probe_work;	/* work queue structure */
 	MTK_WCN_HIF_SDIO_REGISTINFO *registinfo_p;	/* MTK_WCN_HIF_SDIO_REGISTINFO pointer of the client */
-	INT_8 probe_idx;		/* probed function table info element number (initial value is -1) */
+	INT_8 probe_idx;	/* probed function table info element number (initial value is -1) */
 } MTK_WCN_HIF_SDIO_CLT_PROBE_WORKERINFO;
 
 /* error code returned by hif_sdio driver (use NEGATIVE number) */
@@ -183,11 +184,14 @@ typedef enum {
  *
  */
 #if HIF_SDIO_DEBUG
-#define ASSERT(expr)    if (!(expr)) { \
-			    printk("assertion failed! %s[%d]: %s\n",\
+#define ASSERT(expr) \
+	{ \
+		if (!(expr)) { \
+			LOG_FUNC("assertion failed! %s[%d]: %s\n",\
 				__func__, __LINE__, #expr); \
-			    BUG_ON(!(expr));\
-			}
+			BUG_ON(!(expr));\
+		} \
+	}
 #else
 #define ASSERT(expr)    do {} while (0)
 #endif
@@ -219,11 +223,9 @@ extern INT_32 mtk_wcn_hif_sdio_readl(MTK_WCN_HIF_SDIO_CLTCTX ctx, UINT_32 offset
 
 extern INT_32 mtk_wcn_hif_sdio_writel(MTK_WCN_HIF_SDIO_CLTCTX ctx, UINT_32 offset, UINT_32 vl);
 
-extern INT_32 mtk_wcn_hif_sdio_read_buf(MTK_WCN_HIF_SDIO_CLTCTX ctx,
-				       UINT_32 offset, PUINT_32 pbuf, UINT_32 len);
+extern INT_32 mtk_wcn_hif_sdio_read_buf(MTK_WCN_HIF_SDIO_CLTCTX ctx, UINT_32 offset, PUINT_32 pbuf, UINT_32 len);
 
-extern INT_32 mtk_wcn_hif_sdio_write_buf(MTK_WCN_HIF_SDIO_CLTCTX ctx,
-					UINT_32 offset, PUINT_32 pbuf, UINT_32 len);
+extern INT_32 mtk_wcn_hif_sdio_write_buf(MTK_WCN_HIF_SDIO_CLTCTX ctx, UINT_32 offset, PUINT_32 pbuf, UINT_32 len);
 
 extern void mtk_wcn_hif_sdio_set_drvdata(MTK_WCN_HIF_SDIO_CLTCTX ctx, void *private_data_p);
 
@@ -237,4 +239,4 @@ extern void mtk_wcn_hif_sdio_enable_irq(MTK_WCN_HIF_SDIO_CLTCTX ctx, MTK_WCN_BOO
 *                              F U N C T I O N S
 ********************************************************************************
 */
-#endif				/* _HIF_SDIO_H */
+#endif /* _HIF_SDIO_H */

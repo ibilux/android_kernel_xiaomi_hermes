@@ -405,6 +405,10 @@ extern void get_swap_range_of_type(int type, swp_entry_t *start,
 #ifdef CONFIG_MEMCG_ZNDSWAP
 extern bool memcg_is_root(struct page *page);
 extern swp_entry_t get_swap_page_by_memcg(struct page *page);
+extern int dt_swapcache;
+extern int dt_writeback;
+extern int dt_filecache;
+/*extern int dt_free;*/
 #endif
 extern void
 mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent, bool swapout);

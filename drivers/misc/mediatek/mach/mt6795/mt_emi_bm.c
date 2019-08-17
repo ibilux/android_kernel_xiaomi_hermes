@@ -214,7 +214,13 @@ int BM_GetTransCount(const unsigned int counter_num)
 
 int BM_GetWordAllCount(void)
 {
-    return BM_IsOverrun() ? BM_ERR_OVERRUN : readl(IOMEM(EMI_WACT));
+    unsigned int word_all_count;
+    
+    word_all_count = readl(IOMEM(EMI_WACT));
+    if(BM_IsOverrun() && (word_all_count == 0xFFFFFFFF))
+        return BM_ERR_OVERRUN;
+    else 
+        return word_all_count;
 }
 
 int BM_GetWordCount(const unsigned int counter_num)
@@ -432,7 +438,8 @@ int BM_GetLatencyCycle(const unsigned int counter_num)
 
 int BM_GetEmiDcm(void)
 {
-    return ((readl(IOMEM(EMI_CONM)) >> 24) ? 1 : 0);
+    //return ((readl(IOMEM(EMI_CONM)) >> 24) ? 1 : 0);
+    return (readl(IOMEM(EMI_CONM)) >> 24);
 }
 
 int BM_SetEmiDcm(const unsigned int setting)

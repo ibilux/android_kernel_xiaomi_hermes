@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_wext_priv.h#3 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_wext_priv.h#3
 */
 
 /*! \file   gl_wext_priv.h
     \brief  This file includes private ioctl support.
 */
 
-
-
 /*
-** $Log: gl_wext_priv.h $
+** Log: gl_wext_priv.h
 **
 ** 08 09 2013 eason.tsai
 ** [BORA00002255] [MT6630 Wi-Fi][Driver] develop
@@ -33,7 +31,8 @@
  * Adding the proto type function for set_int set_tx_power and get int get_ch_list.
  *
  * 11 08 2011 yuche.tsai
- * [WCXRP00001094] [Volunteer Patch][Driver] Driver version & supplicant version query & set support for service discovery version check.
+ * [WCXRP00001094] [Volunteer Patch][Driver] Driver version & supplicant
+ * version query & set support for service discovery version check.
  * Add a CMD ID for P2P driver version query.
  *
  * 03 17 2011 chinglan.wang
@@ -65,7 +64,8 @@
  * add the message check code from mt5921.
  *
  * 10 18 2010 cp.wu
- * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
+ * [WCXRP00000056] [MT6620 Wi-Fi][Driver] NVRAM implementation with
+ * Version Check[WCXRP00000086] [MT6620 Wi-Fi][Driver] The mac address is all zero at android
  * complete implementation of Android NVRAM access
  *
  * 09 23 2010 cp.wu
@@ -169,7 +169,7 @@
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
 #define PRIV_CMD_CSUM_OFFLOAD       3
-#endif				/* CFG_TCP_IP_CHKSUM_OFFLOAD */
+#endif /* CFG_TCP_IP_CHKSUM_OFFLOAD */
 
 #define PRIV_CMD_ROAMING                4
 #define PRIV_CMD_VOIP_DELAY             5
@@ -249,7 +249,6 @@
 #define OID_CUSTOM_SW_CTRL                              0xFFA0C805
 #define OID_CUSTOM_MEM_DUMP                             0xFFA0C807
 
-
 /* RF Test specific OIDs */
 #define OID_CUSTOM_TEST_MODE                            0xFFA0C901
 #define OID_CUSTOM_TEST_RX_STATUS                       0xFFA0C903
@@ -268,7 +267,6 @@
 #define OID_CUSTOM_CFG_SRC_TYPE                         0xFFA0C942
 #define OID_CUSTOM_EEPROM_TYPE                          0xFFA0C943
 
-
 #if CFG_SUPPORT_WAPI
 #define OID_802_11_WAPI_MODE                            0xFFA0CA00
 #define OID_802_11_WAPI_ASSOC_INFO                      0xFFA0CA01
@@ -278,7 +276,6 @@
 #if CFG_SUPPORT_WPS2
 #define OID_802_11_WSC_ASSOC_INFO                       0xFFA0CB00
 #endif
-
 
 /* Define magic key of test mode (Don't change it for future compatibity) */
 #define PRIV_CMD_TEST_MAGIC_KEY                         2011
@@ -294,8 +291,7 @@ typedef struct _PRIV_CONFIG_ENTRY {
 } PRIV_CONFIG_ENTRY, *PPRIV_CONFIG_ENTRY;
 
 typedef WLAN_STATUS(*PFN_OID_HANDLER_FUNC_REQ) (IN PVOID prAdapter,
-						IN OUT PVOID pvBuf,
-						IN UINT_32 u4BufLen, OUT PUINT_32 pu4OutInfoLen);
+						IN OUT PVOID pvBuf, IN UINT_32 u4BufLen, OUT PUINT_32 pu4OutInfoLen);
 
 typedef enum _ENUM_OID_METHOD_T {
 	ENUM_OID_GLUE_ONLY,
@@ -344,42 +340,33 @@ typedef struct _NDIS_TRANSPORT_STRUCT {
 
 int
 priv_set_int(IN struct net_device *prNetDev,
-	     IN struct iw_request_info *prIwReqInfo,
-	     IN union iwreq_data *prIwReqData, IN char *pcExtra);
+	     IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN char *pcExtra);
 
 int
 priv_get_int(IN struct net_device *prNetDev,
-	     IN struct iw_request_info *prIwReqInfo,
-	     IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
+	     IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
 
 int
 priv_set_ints(IN struct net_device *prNetDev,
-	      IN struct iw_request_info *prIwReqInfo,
-	      IN union iwreq_data *prIwReqData, IN char *pcExtra);
+	      IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN char *pcExtra);
 
 int
 priv_get_ints(IN struct net_device *prNetDev,
-	      IN struct iw_request_info *prIwReqInfo,
-	      IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
+	      IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
 
 int
 priv_set_struct(IN struct net_device *prNetDev,
-		IN struct iw_request_info *prIwReqInfo,
-		IN union iwreq_data *prIwReqData, IN char *pcExtra);
+		IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN char *pcExtra);
 
 int
 priv_get_struct(IN struct net_device *prNetDev,
-		IN struct iw_request_info *prIwReqInfo,
-		IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
+		IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
 
 int
 priv_set_driver(IN struct net_device *prNetDev,
-		IN struct iw_request_info *prIwReqInfo,
-		IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
+		IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN OUT char *pcExtra);
 
 int priv_support_ioctl(IN struct net_device *prDev, IN OUT struct ifreq *prReq, IN int i4Cmd);
-
-
 
 int priv_support_driver_cmd(IN struct net_device *prDev, IN OUT struct ifreq *prReq, IN int i4Cmd);
 
@@ -389,4 +376,4 @@ INT_32 priv_driver_cmds(IN struct net_device *prNetDev, IN PCHAR pcCommand, IN I
 ********************************************************************************
 */
 
-#endif				/* _GL_WEXT_PRIV_H */
+#endif /* _GL_WEXT_PRIV_H */

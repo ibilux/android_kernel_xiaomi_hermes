@@ -160,14 +160,12 @@ static int send_eemcs_system_ch_msg(int md_id, unsigned int msg_id, unsigned int
     skb_reserve(new_skb, sizeof(SDIO_H));
     #endif
     ccci_header = (CCCI_BUFF_T *)skb_put(new_skb, sizeof(CCCI_BUFF_T)) ;
-
-    
+   
     ccci_header->data[0] = 0xFFFFFFFF;
     ccci_header->data[1] = msg_id;
     ccci_header->channel = CH_SYS_TX;
     ccci_header->reserved = data;
-
-    
+  
     DBGLOG(SMSG, DBG, "send_sys_msg: 0x%08X, 0x%08X, 0x%02d, 0x%08X", 
             ccci_header->data[0],ccci_header->data[1] ,ccci_header->channel, ccci_header->reserved);  
 

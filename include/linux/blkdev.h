@@ -39,7 +39,7 @@ struct blkcg_gq;
 #define BLKDEV_MAX_RQ	128	/* Default maximum */
 
 //enable storage pid log in user load
-#if !defined(FEATURE_STORAGE_PERF_INDEX) && !defined(USER_BUILD_KERNEL)
+#if !defined(FEATURE_STORAGE_PERF_INDEX) && defined(CONFIG_MT_ENG_BUILD)
 //#if !defined(FEATURE_STORAGE_PERF_INDEX)
 enum METADATA_OPERATION_MODE {
 	WAIT_READ_CNT	= 0,
@@ -85,10 +85,11 @@ static inline void clear_metadata_rw_status(int mmc_index)
 
 
 //enable storage pid log in user load
-#if !defined(FEATURE_STORAGE_PID_LOGGER) && !defined(USER_BUILD_KERNEL)
+#if !defined(FEATURE_STORAGE_PID_LOGGER) && defined(CONFIG_MT_ENG_BUILD)
 //#if !defined(FEATURE_STORAGE_PID_LOGGER)
 //#if !defined(CONFIG_MTK_LM_MODE)
 #define FEATURE_STORAGE_PID_LOGGER
+/*#define CONFIG_MTK_MORE_PID_LOGGER_COUNT*/
 //#endif
 struct page_pid_logger {
         unsigned short pid1;
@@ -100,8 +101,10 @@ struct page_pid_locker {
 
 #if defined(CONFIG_MTK_MORE_PID_LOGGER_COUNT)
 #define PID_LOGGER_COUNT	50
+#define PID_BUFFER_SIZE	2048
 #else
 #define PID_LOGGER_COUNT	20
+#define PID_BUFFER_SIZE	1024
 #endif
 struct struct_pid_logger {
 	unsigned short current_pid;
@@ -111,14 +114,30 @@ struct struct_pid_logger {
 	unsigned int pid_logger_length[PID_LOGGER_COUNT];
 	unsigned short pid_logger_r_counter[PID_LOGGER_COUNT];
 	unsigned int pid_logger_r_length[PID_LOGGER_COUNT];
-	char pid_buffer [1024];
+	char pid_buffer [PID_BUFFER_SIZE];
 };
 
 #define PAGE_LOCKER_SHIFT	0
 #define PID_ID_CNT 		10
-
+#define WORKLOAD_OFFSET 0
+#define WORKLOAD_LOG_LENGTH 64
+#define WRITE_DIVERSITY_OFFSET (WORKLOAD_OFFSET+WORKLOAD_LOG_LENGTH)
+#define WRITE_DIVERSITY_LOG_LENGTH 54
+#define READ_DIVERSITY_OFFSET (WRITE_DIVERSITY_OFFSET+WRITE_DIVERSITY_LOG_LENGTH)
+#define READ_DIVERSITY_LOG_LENGTH 54
+#define WRITE_THROUGHPUT_OFFSET (READ_DIVERSITY_OFFSET+READ_DIVERSITY_LOG_LENGTH)
+#define WRITE_THROUGHPUT_LOG_LENGTH 44
+#define READ_THROUGHPUT_OFFSET (WRITE_THROUGHPUT_OFFSET+WRITE_THROUGHPUT_LOG_LENGTH)
+#define READ_THROUGHPUT_LOG_LENGTH 44
+#define VMSTAT_OFFSET (READ_THROUGHPUT_OFFSET+READ_THROUGHPUT_LOG_LENGTH)
+#define VMSTAT_LOG_LENGTH 54
+#define CPUSTAT_LOG_LENGTH 145
+#define PID_OFFSET (VMSTAT_OFFSET+VMSTAT_LOG_LENGTH)
+#define PID_LOG_LENGTH (PID_BUFFER_SIZE + 8)
+/*log size+header size 18*/
+#define BLOCK_IO_BUFFER_SIZE (64 + 54 + 54 + 44 + 44 + 54 + 145 + PID_LOG_LENGTH + 18)
+extern unsigned long long system_dram_size;
 #endif /* FEATURE_STORAGE_PID_LOGGER */
-//#endif /* USER_BUILD_KERNEL */
 /*
  * Maximum number of blkcg policies allowed to be registered concurrently.
  * Defined here to simplify include dependency.

@@ -1,5 +1,5 @@
 /*
-** $Id: @(#) p2p_assoc.c@@
+** Id: @(#) p2p_assoc.c@@
 */
 
 /*! \file   "p2p_assoc.c"
@@ -7,9 +7,6 @@
  *
  *  This file includes the association-related functions.
  */
-
-
-
 
 /*******************************************************************************
  *                         C O M P I L E R   F L A G S
@@ -68,11 +65,9 @@
  * @return (none)
  */
 /*----------------------------------------------------------------------------*/
-PUINT_8
-p2pBuildReAssocReqFrameCommonIEs(IN P_ADAPTER_T prAdapter,
-				 IN P_MSDU_INFO_T prMsduInfo, IN PUINT_8 pucBuffer)
+PUINT_8 p2pBuildReAssocReqFrameCommonIEs(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN PUINT_8 pucBuffer)
 {
-	P_BSS_INFO_T prP2pBssInfo = (P_BSS_INFO_T)NULL;
+	P_BSS_INFO_T prP2pBssInfo = (P_BSS_INFO_T) NULL;
 
 	prP2pBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, prMsduInfo->ucBssIndex);
 

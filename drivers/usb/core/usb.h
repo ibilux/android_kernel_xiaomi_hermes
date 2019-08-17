@@ -122,6 +122,10 @@ static inline int usb_set_usb2_hardware_lpm(struct usb_device *udev, int enable)
 }
 #endif
 
+#ifdef CONFIG_USB_MTK_OTG
+extern void usb_hnp_polling_work(struct work_struct *work);
+#endif
+
 extern struct bus_type usb_bus_type;
 extern struct device_type usb_device_type;
 extern struct device_type usb_if_device_type;
@@ -208,12 +212,10 @@ enum my_print_levels {
 
 #define my_print_level_avail(level) (level >= my_print_level ? 1:0)
 
-#define MYDBG(fmt, args...) do {if(my_print_level_avail(MY_PRINT_DBG)){printk(KERN_WARNING "MTK_ICUSB [DBG], <%s(), %d> " fmt, __func__, __LINE__, ## args); }}while(0)
-#define MYINFO(fmt, args...) do {if(my_print_level_avail(MY_PRINT_INFO)){printk(KERN_WARNING "MTK_ICUSB [INFO], <%s(), %d> " fmt, __func__, __LINE__, ## args); }}while(0)
-#define MYWARN(fmt, args...) do {if(my_print_level_avail(MY_PRINT_WARN)){printk(KERN_WARNING "MTK_ICUSB [WARN], <%s(), %d> " fmt, __func__, __LINE__, ## args); }}while(0)
-#define MYERR(fmt, args...) do {if(my_print_level_avail(MY_PRINT_ERR)){printk(KERN_WARNING "MTK_ICUSB [ERR], <%s(), %d> " fmt, __func__, __LINE__, ## args); }}while(0)
-
-
+#define MYDBG(fmt, args...) do {if(my_print_level_avail(MY_PRINT_DBG)){pr_warning("MTK_ICUSB [DBG], <%s(), %d> " fmt, __func__, __LINE__, ## args); }}while(0)
+#define MYINFO(fmt, args...) do {if(my_print_level_avail(MY_PRINT_INFO)){pr_warning("MTK_ICUSB [INFO], <%s(), %d> " fmt, __func__, __LINE__, ## args); }}while(0)
+#define MYWARN(fmt, args...) do {if(my_print_level_avail(MY_PRINT_WARN)){pr_warning("MTK_ICUSB [WARN], <%s(), %d> " fmt, __func__, __LINE__, ## args); }}while(0)
+#define MYERR(fmt, args...) do {if(my_print_level_avail(MY_PRINT_ERR)){pr_warning("MTK_ICUSB [ERR], <%s(), %d> " fmt, __func__, __LINE__, ## args); }}while(0)
 
 #ifdef CONFIG_MTK_DT_USB_SUPPORT
 #ifdef	CONFIG_PM_RUNTIME

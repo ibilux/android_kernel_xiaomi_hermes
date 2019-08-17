@@ -24,43 +24,49 @@
 #include "btm_core.h"
 
 #define PFX_STP_DBG                      "[STPDbg]"
-#define STP_DBG_LOG_LOUD                 4
-#define STP_DBG_LOG_DBG                  3
-#define STP_DBG_LOG_INFO                 2
-#define STP_DBG_LOG_WARN                 1
-#define STP_DBG_LOG_ERR                  0
+#define STP_DBG_LOG_LOUD	4
+#define STP_DBG_LOG_DBG	3
+#define STP_DBG_LOG_INFO	2
+#define STP_DBG_LOG_WARN	1
+#define STP_DBG_LOG_ERR	0
 
 UINT32 gStpDbgDbgLevel = STP_DBG_LOG_INFO;
 UINT32 gStpDbgLogOut = 0;
 UINT32 gStpDbgDumpType = STP_DBG_PKT;
 #define STP_DBG_LOUD_FUNC(fmt, arg...)	\
 do {	\
-	pr_debug(PFX_STP_DBG "%s: "  fmt, __func__ , ##arg);	\
+	if (gStpDbgDbgLevel >= STP_DBG_LOG_LOUD) \
+		pr_warn(PFX_STP_DBG "%s: "  fmt, __func__ , ##arg);	\
 } while (0)
 
 #define STP_DBG_DBG_FUNC(fmt, arg...)	\
 do {	\
-	pr_debug(PFX_STP_DBG "%s: "  fmt, __func__ , ##arg);	\
+	if (gStpDbgDbgLevel >= STP_DBG_LOG_DBG) \
+		pr_warn(PFX_STP_DBG "%s: "  fmt, __func__ , ##arg);	\
 } while (0)
 
 #define STP_DBG_INFO_FUNC(fmt, arg...)	\
 do {	\
-	pr_warn(PFX_STP_DBG fmt, ##arg);	\
+	if (gStpDbgDbgLevel >= STP_DBG_LOG_INFO) \
+		pr_warn(PFX_STP_DBG fmt, ##arg);	\
 } while (0)
 
 #define STP_DBG_WARN_FUNC(fmt, arg...)	\
 do {	\
-	pr_err(PFX_STP_DBG "%s: "  fmt, __func__ , ##arg);	\
+	if (gStpDbgDbgLevel >= STP_DBG_LOG_WARN) \
+		pr_err(PFX_STP_DBG "%s: "  fmt, __func__ , ##arg);	\
 } while (0)
 
 #define STP_DBG_ERR_FUNC(fmt, arg...)	\
 do {	\
-	pr_err(PFX_STP_DBG "%s: "   fmt, __func__ , ##arg);	\
+	if (gStpDbgDbgLevel >= STP_DBG_LOG_ERR) \
+		pr_err(PFX_STP_DBG "%s: "   fmt, __func__ , ##arg);	\
 } while (0)
 
 #define STP_DBG_TRC_FUNC(f)	\
 do {	\
-	pr_debug(PFX_STP_DBG "<%s> <%d>\n", __func__, __LINE__);	\
+	if (gStpDbgDbgLevel >= STP_DBG_LOG_LOUD) \
+		pr_warn(PFX_STP_DBG "<%s> <%d>\n", __func__, __LINE__);	\
 } while (0)
 
 
@@ -963,7 +969,6 @@ INT32 wcn_core_dump_nl(P_WCN_CORE_DUMP_T dmp, PUINT8 buf, INT32 len)
 	return ret;
 }
 
-
 static VOID stp_dbg_dump_data(PUINT8 pBuf, PINT8 title, INT32 len)
 {
 	INT32 k = 0;
@@ -1410,7 +1415,7 @@ INT32 stp_dbg_nl_send(PINT8 aucMsg, UINT8 cmd, INT32 len)
 				return -1;
 			}
 
-			//rc = nla_put_string(skb, STP_DBG_ATTR_MSG, aucMsg);
+			/* rc = nla_put_string(skb, STP_DBG_ATTR_MSG, aucMsg); */
 			rc = nla_put(skb, STP_DBG_ATTR_MSG, len, aucMsg);
 			if (rc != 0) {
 				nlmsg_free(skb);

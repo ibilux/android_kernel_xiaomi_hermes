@@ -48,13 +48,13 @@ enum {
 };
 
 #define TOI_MAP(type, addr) \
- (type == TOI_PAGE ? kmap(addr) : addr)
+	(type == TOI_PAGE ? kmap(addr) : addr)
 
 #define TOI_UNMAP(type, addr) \
- do { \
-   if (type == TOI_PAGE) \
-     kunmap(addr); \
- } while (0)
+	do { \
+		if (type == TOI_PAGE) \
+			kunmap(addr); \
+	} while (0)
 
 struct toi_module_ops {
 	/* Functions common to all modules */
@@ -81,7 +81,7 @@ struct toi_module_ops {
 
 	int (*expected_compression) (void);
 #ifdef CONFIG_TOI_ENHANCE
-    int (*actual_compression) (void);
+	int (*actual_compression) (void);
 #endif
 
 	/*

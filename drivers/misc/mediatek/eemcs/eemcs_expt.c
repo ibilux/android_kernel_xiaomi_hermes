@@ -45,6 +45,12 @@ static ccci_expt_port_cfg ccci_expt_port_info[CCCI_PORT_NUM_MAX] = {
     {HIF_SDIO, TR_Q_INVALID, TR_Q_INVALID},  /*CCCI_PORT_IOCTL*/
     {HIF_SDIO, TR_Q_INVALID, TR_Q_INVALID},  /*CCCI_PORT_RILD*/
     {HIF_SDIO, TR_Q_INVALID, TR_Q_INVALID},  /*CCCI_PORT_IT*/
+#if defined (DBG_FEATURE_POLL_MD_STA)
+    {HIF_SDIO, TR_Q_INVALID, TR_Q_INVALID},  /*CCCI_PORT_POLL*/
+#endif
+#if defined (DBG_FEATURE_CCCI_LB_IT)
+    {HIF_SDIO, TR_Q_INVALID, TR_Q_INVALID},  /*CCCI_PORT_LB_IT*/
+#endif
     {HIF_SDIO, TR_Q_INVALID, TR_Q_INVALID},  /*CCCI_PORT_NET1*/
     {HIF_SDIO, TR_Q_INVALID, TR_Q_INVALID},  /*CCCI_PORT_NET2*/
     {HIF_SDIO, TR_Q_INVALID, TR_Q_INVALID},  /*CCCI_PORT_NET3*/   
@@ -77,6 +83,7 @@ static KAL_CHAR *port_name[CCCI_CDEV_NUM] = {
     "NET3",
 };
 
+volatile KAL_UINT8 md_wdt_timeout_isr = 0;
 
 /****************************************************************************/
 /* API about Exception state handling                                       */
@@ -325,7 +332,7 @@ void eemcs_expt_ccci_rx_drop(KAL_UINT32 port_id)
 /* API about dump memory information                                        */
 /*                                                                          */
 /****************************************************************************/
-static void eemcs_mem_dump(void *start_addr, int len)
+void eemcs_mem_dump(void *start_addr, int len)
 {
 	unsigned int *curr_p = (unsigned int *)start_addr;
 	unsigned char *curr_ch_p;
@@ -669,6 +676,11 @@ void eemcs_aed(unsigned int dump_flag, char *aed_str)
 
 	snprintf(buff, AED_STR_LEN, "\n%s%s\n", aed_str, img_inf);
 
+#ifdef DEBUG_SDIO
+	DBGLOG(EXPT, DBG, "Dump SDIO TX history");
+	DumpKthreadBuffer();
+#endif
+
 	if(dump_flag & CCCI_AED_DUMP_EX_MEM){
 		ex_log_addr = (int *)g_except_inst.expt_info_mem;
 		ex_log_len = MD_EX_MEM_SIZE;
@@ -821,10 +833,13 @@ KAL_INT32 eemcs_bootup_trace(struct sk_buff *skb){
 static void eemcs_wdt_reset_work_func(struct work_struct *work){
     DBGLOG(EXPT, DBG, "eemcs_wdt_reset_work_func modem reset");
     eemcs_md_reset();
+    md_wdt_timeout_isr = 0;
 }
 
 KAL_INT32 eemcs_wdt_reset_callback(void){
     static DECLARE_WORK(eemcs_wdt_reset_work, eemcs_wdt_reset_work_func);
+    md_wdt_timeout_isr = 1;
+	
     DBGLOG(EXPT, DBG, "eemcs_wdt_reset_callback");
     schedule_work(&eemcs_wdt_reset_work);
     return 0;
@@ -1048,6 +1063,27 @@ void eemcs_exec_expt_callback(KAL_UINT32 msg_id)
     }
     DEBUG_LOG_FUNCTION_LEAVE;
 }
+
+#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+int eemcs_seq_err_callback(unsigned int data)
+{
+	KAL_UINT32 mbx_data[2] = {0};
+	KAL_UINT8 ex_info[EE_BUF_LEN]="";
+	KAL_INT32 ret;
+	
+	ret = hif_expt_mbx_read(mbx_data, 2*sizeof(KAL_UINT32));
+	if (ret != KAL_SUCCESS) {
+		DBGLOG(EXPT, ERR, "[AP_SEQ_ERR]read mbx fail: %d", ret);
+	} else {
+		DBGLOG(EXPT, INF, "[AP_SEQ_ERR]Mailbox: 0x%08X, 0x%08X", mbx_data[0], mbx_data[1]);
+	}
+	snprintf(ex_info, EE_BUF_LEN,"\n[Others] UL Packet Sequence Num Mis-match(%d->%d)\n", \
+		mbx_data[1], mbx_data[1]);
+	eemcs_aed(0, ex_info);
+	return KAL_SUCCESS;
+}
+#endif
+
 
 /*
  * @brief Display information about dropped packets statistics of exception mode
@@ -1317,6 +1353,7 @@ void ccci_df_to_ccci_exception_callback(KAL_UINT32 msg_id)
             //2. indicate state change to upper layer
             eemcs_exec_expt_callback(EEMCS_EX_DHL_DL_RDY);
             break;
+			
         case EX_INIT_DONE:
             //1. update eemcs_exception state : EEMCS_EX_DHL_DL_RDY -> EEMCS_EX_INIT_DONE
             set_exception_mode(EEMCS_EX_INIT_DONE);
@@ -1329,6 +1366,11 @@ void ccci_df_to_ccci_exception_callback(KAL_UINT32 msg_id)
             
             //4. indicate state change to upper layer
             eemcs_exec_expt_callback(EEMCS_EX_INIT_DONE);
+
+            //5. reset tx/rx sequence number
+            #if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+            eemcs_ccci_reset_seq_no();
+            #endif
             break;
         default:
             DBGLOG(EXPT, ERR, "Unknown exception callback id %d", msg_id);
@@ -1387,7 +1429,10 @@ KAL_INT32 eemcs_expt_mod_init(void)
 
     ret = hif_reg_expt_cb(ccci_df_to_ccci_exception_callback);
     KAL_ASSERT(ret == KAL_SUCCESS);
-    
+
+#if defined (DBG_FEATURE_ADD_CCCI_SEQNO)
+    ret = hif_reg_seq_err_cb(eemcs_seq_err_callback);
+#endif	
     DBGLOG(EXPT, TRA, "nonstop_txq=%d, nonstop_rxq=%d, exp_txq=%d, exp_rxq=%d", \
 		0, nonstop_rxq, except_txq, except_rxq);
 

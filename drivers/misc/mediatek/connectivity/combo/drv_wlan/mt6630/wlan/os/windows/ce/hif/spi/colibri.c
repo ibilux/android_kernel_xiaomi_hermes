@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/spi/colibri.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/windows/ce/hif/spi/colibri.c#1
 */
 
 /*! \file   "colibri.c"
@@ -7,10 +7,8 @@
 
 */
 
-
-
 /*
-** $Log: colibri.c $
+** Log: colibri.c
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -42,7 +40,7 @@
 #include "gl_os.h"
 LINT_EXT_HEADER_BEGIN 
 #include <ceddk.h>
-    LINT_EXT_HEADER_END
+LINT_EXT_HEADER_END
 #include "hif.h"
 #include "colibri.h"
 /******************************************************************************
@@ -120,9 +118,8 @@ VOID SpiSendCmd32(UINT_32 u4Cmd, UINT_32 u4Offset, UINT_32 *pU4Value)
 		WAIT_BUS_READY_TX();
 		pVSsp->ssdr = pucBuff[i++];	/* for write cmd */
 		WAIT_BUS_READY_RX(u4Value);
-		if (u4Value != 0) {
+		if (u4Value != 0)
 			(void)pVSsp->ssdr;
-		}
 	}
 
 	if (u4Cmd & BIT(31)) {	/* write */
@@ -158,6 +155,7 @@ VOID SpiSendCmd32(UINT_32 u4Cmd, UINT_32 u4Offset, UINT_32 *pU4Value)
 	if (u4Value != 0) {
 		(void)pVSsp->ssdr;
 	} else {
+		/* ASSERT */
 		ASSERT(FALSE);
 	}
 
@@ -171,6 +169,7 @@ VOID SpiSendCmd32(UINT_32 u4Cmd, UINT_32 u4Offset, UINT_32 *pU4Value)
 		if (u4Value != 0) {
 			u4CmdRespBuff = pVSsp->ssdr;
 		} else {
+			/* ASSERT */
 			ASSERT(FALSE);
 		}
 
@@ -180,6 +179,7 @@ VOID SpiSendCmd32(UINT_32 u4Cmd, UINT_32 u4Offset, UINT_32 *pU4Value)
 		if (u4Value != 0) {
 			pU4Value[0] = pVSsp->ssdr;
 		} else {
+			/* ASSERT */
 			ASSERT(FALSE);
 		}
 	}
@@ -188,7 +188,6 @@ VOID SpiSendCmd32(UINT_32 u4Cmd, UINT_32 u4Offset, UINT_32 *pU4Value)
 	WAIT_BUS_DONE();
 
 }
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -457,7 +456,7 @@ void SpiReadWriteData32(UINT_32 u4Cmd, UINT_32 u4Offset, UINT_8 *pucDataBuff, UI
 		}
 	}
 
-#else				/* 32-bit mode */
+#else /* 32-bit mode */
 	WAIT_BUS_READY_TX();
 	pVSsp->ssdr = u4CmdRespBuff;	/* write cmd */
 
@@ -706,7 +705,6 @@ static INT_32 SpiSetBusWidth(UINT_32 u4BusSize)
 	return 0;
 }				/* SpiSetBusWidth */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This routine is used to set operation mode to n-bit mode and Endian.
@@ -728,13 +726,13 @@ static VOID SpiSetOpMode(VOID)
 		ASSERT(FALSE);
 		return;
 	}
-	DBGLOG(INIT, TRACE, ("Set bus to 8-bit mode\n"));
+	DBGLOG1(INIT, TRACE, "Set bus to 8-bit mode\n");
 #else
 	if (SpiSetBusWidth(32) != 0) {
 		ASSERT(FALSE);
 		return;
 	}
-	DBGLOG(INIT, TRACE, ("Set bus to 32-bit mode\n"));
+	DBGLOG1(INIT, TRACE, "Set bus to 32-bit mode\n");
 #endif
 
 #if !CONFIG_SPI_8_BIT_MODE
@@ -746,6 +744,7 @@ static VOID SpiSetOpMode(VOID)
 	if (u4Value != 0) {
 		(void)pVSsp->ssdr;
 	} else {
+		/* ASSERT */
 		ASSERT(FALSE);
 	}
 
@@ -755,12 +754,12 @@ static VOID SpiSetOpMode(VOID)
 	if (u4Value != 0) {
 		(void)pVSsp->ssdr;
 	} else {
+		/* ASSERT */
 		ASSERT(FALSE);
 	}
 #endif
 
 }				/* SpiSetOpMode */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -773,8 +772,7 @@ static VOID SpiSetOpMode(VOID)
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-static VOID GpioSetDirectionIn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]
-    )
+static VOID GpioSetDirectionIn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[])
 {
 	UINT_32 u4GpioPinMask;
 	UINT_32 u4SizeArray;
@@ -808,20 +806,15 @@ static VOID GpioSetDirectionIn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]
 
 	}
 
-	if (fgSet3) {
+	if (fgSet3)
 		prGPIO->GPDR3 = ((prGPIO->GPDR3 & ~u4Mask3) & ~GPIO_PIN_RESERVED_BITS);
-	}
-	if (fgSet2) {
+	if (fgSet2)
 		prGPIO->GPDR2 = ((prGPIO->GPDR2) & ~u4Mask2);
-	}
-	if (fgSet1) {
+	if (fgSet1)
 		prGPIO->GPDR1 = ((prGPIO->GPDR1) & ~u4Mask1);
-	}
-	if (fgSet0) {
+	if (fgSet0)
 		prGPIO->GPDR0 = ((prGPIO->GPDR0) & ~u4Mask0);
-	}
 }				/* GpioSetDirectionIn */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -834,8 +827,7 @@ static VOID GpioSetDirectionIn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-static VOID GpioSetDirectionOut(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]
-    )
+static VOID GpioSetDirectionOut(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[])
 {
 	UINT_32 u4GpioPinMask;
 	UINT_32 u4SizeArray;
@@ -867,20 +859,15 @@ static VOID GpioSetDirectionOut(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]
 			fgSet0 = TRUE;
 		}
 	}
-	if (fgSet3) {
+	if (fgSet3)
 		prGPIO->GPDR3 = ((prGPIO->GPDR3 | u4Mask3) & ~GPIO_PIN_RESERVED_BITS);
-	}
-	if (fgSet2) {
+	if (fgSet2)
 		prGPIO->GPDR2 = ((prGPIO->GPDR2) | u4Mask2);
-	}
-	if (fgSet1) {
+	if (fgSet1)
 		prGPIO->GPDR1 = ((prGPIO->GPDR1) | u4Mask1);
-	}
-	if (fgSet0) {
+	if (fgSet0)
 		prGPIO->GPDR0 = ((prGPIO->GPDR0) | u4Mask0);
-	}
 }				/* GpioSetDirectionOut */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -897,8 +884,7 @@ static VOID GpioSetDirectionOut(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]
 * \note: IMPORTANT:THE ORDER OF aAfValueArray[] HAS TO MATCH THE ORDER OF aGpioPinArray[]
 */
 /*----------------------------------------------------------------------------*/
-static VOID GpioSetAlternateFn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[], UINT_32 aAfValueArray[]
-    )
+static VOID GpioSetAlternateFn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[], UINT_32 aAfValueArray[])
 {
 	UINT_32 u4GpioPinAFMask;
 	UINT_32 u4GpioPinAFValue;
@@ -961,33 +947,23 @@ static VOID GpioSetAlternateFn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[], UIN
 			fgSet0_L = TRUE;
 		}
 	}
-	if (fgSet3_U) {
-		prGPIO->GAFR3_U =
-		    (((prGPIO->GAFR3_U & ~u4Mask3_U) | u4AFnV3_U) & ~GPIO_ALT_RESERVED_BITS);
-	}
-	if (fgSet3_L) {
+	if (fgSet3_U)
+		prGPIO->GAFR3_U = (((prGPIO->GAFR3_U & ~u4Mask3_U) | u4AFnV3_U) & ~GPIO_ALT_RESERVED_BITS);
+	if (fgSet3_L)
 		prGPIO->GAFR3_L = ((prGPIO->GAFR3_L & ~u4Mask3_L) | u4AFnV3_L);
-	}
-	if (fgSet2_U) {
+	if (fgSet2_U)
 		prGPIO->GAFR2_U = ((prGPIO->GAFR2_U & ~u4Mask2_U) | u4AFnV2_U);
-	}
-	if (fgSet2_L) {
+	if (fgSet2_L)
 		prGPIO->GAFR2_L = ((prGPIO->GAFR2_L & ~u4Mask2_L) | u4AFnV2_L);
-	}
-	if (fgSet1_U) {
+	if (fgSet1_U)
 		prGPIO->GAFR1_U = ((prGPIO->GAFR1_U & ~u4Mask1_U) | u4AFnV1_U);
-	}
-	if (fgSet1_L) {
+	if (fgSet1_L)
 		prGPIO->GAFR1_L = ((prGPIO->GAFR1_L & ~u4Mask1_L) | u4AFnV1_L);
-	}
-	if (fgSet0_U) {
+	if (fgSet0_U)
 		prGPIO->GAFR0_U = ((prGPIO->GAFR0_U & ~u4Mask0_U) | u4AFnV0_U);
-	}
-	if (fgSet0_L) {
+	if (fgSet0_L)
 		prGPIO->GAFR0_L = ((prGPIO->GAFR0_L & ~u4Mask0_L) | u4AFnV0_L);
-	}
 }				/* GpioSetAlternateFn */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -999,8 +975,7 @@ static VOID GpioSetAlternateFn(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[], UIN
 * \return none
 */
 /*----------------------------------------------------------------------------*/
-static VOID GpioSetFallingEdgeDetectEnable(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[]
-    )
+static VOID GpioSetFallingEdgeDetectEnable(P_GPIO_REG prGPIO, UINT_32 au4GpioPinArray[])
 {
 	UINT_32 u4GpioPinMask;
 	UINT_32 u4SizeArray;
@@ -1032,20 +1007,15 @@ static VOID GpioSetFallingEdgeDetectEnable(P_GPIO_REG prGPIO, UINT_32 au4GpioPin
 			fgSet0 = TRUE;
 		}
 	}
-	if (fgSet3) {
+	if (fgSet3)
 		prGPIO->GFER3 = ((prGPIO->GFER3 | u4Mask3) & ~GPIO_PIN_RESERVED_BITS);
-	}
-	if (fgSet2) {
+	if (fgSet2)
 		prGPIO->GFER2 = ((prGPIO->GFER2) | u4Mask2);
-	}
-	if (fgSet1) {
+	if (fgSet1)
 		prGPIO->GFER1 = ((prGPIO->GFER1) | u4Mask1);
-	}
-	if (fgSet0) {
+	if (fgSet0)
 		prGPIO->GFER0 = ((prGPIO->GFER0) | u4Mask0);
-	}
 }				/* GpioSetFallingEdgeDetectEnable */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1069,8 +1039,7 @@ void platformBusInit(IN P_GLUE_INFO_T prGlueInfo)
 	/* Set GPIO mode */
 	UINT_32 GpioDirOutList[] = { 3, GPIO23_SCLK, GPIO24_SFRM, GPIO25_STXD };
 	UINT_32 GpioDirInList[] = { 2, GPIO26_SRXD, GPIO_INTR };
-	UINT_32 GpioAltFnPinList[] =
-	    { 5, GPIO23_SCLK, GPIO24_SFRM, GPIO25_STXD, GPIO26_SRXD, GPIO_INTR };
+	UINT_32 GpioAltFnPinList[] = { 5, GPIO23_SCLK, GPIO24_SFRM, GPIO25_STXD, GPIO26_SRXD, GPIO_INTR };
 	UINT_32 GpioAltFnValList[] = { 5, 2, 2, 2, 1, 1 };
 	UINT_32 GpioAltFnIntPinList[] = { 1, GPIO_INTR };	/* interrupt */
 
@@ -1130,7 +1099,6 @@ void platformBusInit(IN P_GLUE_INFO_T prGlueInfo)
 
 }				/* platformBusInit */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief The PROC function for backup GPIO configuration.
@@ -1146,7 +1114,6 @@ VOID GPIOConfigBackup(VOID)
 	IO_GPDR0 = pVMem->GPDR0 & (BITS(23, 26) | IO_MASK_INTR);	/* 23,24,25,26,intr */
 	Fun_GAFR0_U = pVMem->GAFR0_U & (BITS(14, 21) | FUN_MASK_INTR);	/* 23,24,25,26,intr */
 }				/* BackupGPIOConfig */
-
 
 /*----------------------------------------------------------------------------*/
 /*!

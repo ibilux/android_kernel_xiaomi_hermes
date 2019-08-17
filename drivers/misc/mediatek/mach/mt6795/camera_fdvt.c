@@ -64,12 +64,13 @@
 #endif
 */
 
-#define LOG_VRB(format, args...)    xlog_printk(ANDROID_LOG_VERBOSE, "FDVT", "[%s] " format, __FUNCTION__, ##args)
-#define LOG_DBG(format, args...)    xlog_printk(ANDROID_LOG_DEBUG  , "FDVT", "[%s] " format, __FUNCTION__, ##args)
-#define LOG_INF(format, args...)    xlog_printk(ANDROID_LOG_INFO   , "FDVT", "[%s] " format, __FUNCTION__, ##args)
-#define LOG_WRN(format, args...)    xlog_printk(ANDROID_LOG_WARN   , "FDVT", "[%s] WARNING: " format, __FUNCTION__, ##args)
-#define LOG_ERR(format, args...)    xlog_printk(ANDROID_LOG_ERROR  , "FDVT", "[%s, line%04d] ERROR: " format, __FUNCTION__, __LINE__, ##args)
-#define LOG_AST(format, args...)    xlog_printk(ANDROID_LOG_ASSERT , "FDVT", "[%s, line%04d] ASSERT: " format, __FUNCTION__, __LINE__, ##args)
+#define LOG_VRB(format, args...)	pr_debug("FDVT" "[%s] " format, __func__, ##args)
+#define LOG_DBG(format, args...)	pr_debug("FDVT" "[%s] " format, __func__, ##args)
+#define LOG_INF(format, args...)	pr_debug("FDVT" "[%s] " format, __func__, ##args)
+/* pr_info has been forbidden after kernel standard */
+#define LOG_WRN(format, args...)	pr_warn("FDVT" "[%s] WARNING: " format, __func__, ##args)
+#define LOG_ERR(format, args...)	pr_err("FDVT" "[%s, line%04d] ERROR: " format, __func__, __LINE__, ##args)
+#define LOG_AST(format, args...)	pr_err("FDVT" "[%s, line%04d] ASSERT: " format, __func__, __LINE__, ##args)
 
 
 static dev_t FDVT_devno;
@@ -448,12 +449,12 @@ static int MT6573FDVT_SetRegHW(MT6573FDVTRegIO * a_pstCfg)
         {
             if(illegalWRLogTimes < 10)
             {
-                LOG_DBG("Error: Writing Memory(0x%8x) Excess FDVT Range!\n", (unsigned int)(FDVT_ADDR + pMT6573FDVTWRBuff.u4Addr[i]));
+		/* LOG_DBG("Error: Writing Memory(0x%8x) Excess FDVT Range!\n", (unsigned int)(FDVT_ADDR + pMT6573FDVTWRBuff.u4Addr[i])); */
                 illegalWRLogTimes ++;
             }
             else if(illegalWRLogTimes == 10)
             {
-                LOG_DBG("Error: Writing Memory Excess FDVT Range - Log Too Much, Stop Same Logs");
+		/* LOG_DBG("Error: Writing Memory Excess FDVT Range - Log Too Much, Stop Same Logs"); */
                 illegalWRLogTimes ++;
             }
             else{}
@@ -493,12 +494,12 @@ static int MT6573FDVT_ReadRegHW(MT6573FDVTRegIO * a_pstCfg)
         {
             if(illegalRDLogTimes < 10)
             {
-                LOG_DBG("Error: Reading Memory(0x%8x) Excess FDVT Range!\n", (unsigned int)(FDVT_ADDR + pMT6573FDVTRDBuff.u4Addr[i]));
+		/* LOG_DBG("Error: Reading Memory(0x%8x) Excess FDVT Range!\n", (unsigned int)(FDVT_ADDR + pMT6573FDVTRDBuff.u4Addr[i])); */
                 illegalRDLogTimes ++;
             }
             else if(illegalRDLogTimes == 10)
             {
-                LOG_DBG("Error: Reading Memory Excess FDVT Range - Log Too Much, Stop Same Logs");
+		/* LOG_DBG("Error: Reading Memory Excess FDVT Range - Log Too Much, Stop Same Logs"); */
                 illegalRDLogTimes ++;
             }
             else{}
@@ -578,11 +579,11 @@ static long FDVT_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
     switch(cmd)
     {  
         case MT6573FDVT_INIT_SETPARA_CMD:
-            LOG_DBG("[FDVT] FDVT_INIT_CMD\n");
+	/* LOG_DBG("[FDVT] FDVT_INIT_CMD\n"); */
             FDVT_basic_config();            
             break;
-        case MT6573FDVTIOC_STARTFD_CMD:   
-            LOG_DBG("[FDVT] MT6573FDVTIOC_STARTFD_CMD \n");   
+	case MT6573FDVTIOC_STARTFD_CMD:
+	/* LOG_DBG("[FDVT] MT6573FDVTIOC_STARTFD_CMD \n"); */
             FDVT_WR32(0x00000001, FDVT_INT_EN);
             FDVT_WR32(0x00000000, FDVT_START);
             FDVT_WR32(0x00000001, FDVT_START);
@@ -608,8 +609,8 @@ static long FDVT_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
             //LOG_DBG("[FDVT] MT6573FDVT read FD config \n");  
             MT6573FDVT_ReadRegHW((MT6573FDVTRegIO*)pBuff);
             break;                 
-        case MT6573FDVTIOC_T_DUMPREG :
-            LOG_DBG("[FDVT] FDVT_DUMPREG \n");
+	case MT6573FDVTIOC_T_DUMPREG:
+	/* LOG_DBG("[FDVT] FDVT_DUMPREG \n"); */
             MT6573FDVT_DUMPREG();
             break;
         default:
@@ -658,8 +659,8 @@ static int compat_FD_put_register_data(
             MT6573FDVTRegIO __user *data)
 {
     compat_uint_t count;
-    compat_uptr_t uptr_Addr;
-    compat_uptr_t uptr_Data;
+    //compat_uptr_t uptr_Addr;
+    //compat_uptr_t uptr_Data;
     int err;
 
     //Assume data pointer is unchanged.
@@ -683,12 +684,12 @@ static long compat_FD_ioctl(struct file *file, unsigned int cmd, unsigned long a
     switch (cmd) {
     case COMPAT_MT6573FDVT_INIT_SETPARA_CMD:
     {
-        LOG_DBG("COMPAT_FD_IOCTL ====> CMD: COMPAT_MT6573FDVT_INIT_SETPARA_CMD \n");
+	/* LOG_DBG("COMPAT_FD_IOCTL ====> CMD: COMPAT_MT6573FDVT_INIT_SETPARA_CMD \n"); */
         return file->f_op->unlocked_ioctl(file, cmd, (unsigned long)compat_ptr(arg));
     }
     case COMPAT_MT6573FDVTIOC_STARTFD_CMD:
     {
-        LOG_DBG("COMPAT_FD_IOCTL ====> CMD: COMPAT_MT6573FDVTIOC_STARTFD_CMD \n");
+	/* LOG_DBG("COMPAT_FD_IOCTL ====> CMD: COMPAT_MT6573FDVTIOC_STARTFD_CMD \n"); */
         return file->f_op->unlocked_ioctl(file, cmd, (unsigned long)compat_ptr(arg));
     }
     case COMPAT_MT6573FDVTIOC_G_WAITIRQ:
@@ -768,7 +769,7 @@ static long compat_FD_ioctl(struct file *file, unsigned int cmd, unsigned long a
     }
     case COMPAT_MT6573FDVTIOC_T_DUMPREG:
     {
-        LOG_DBG("COMPAT_FD_IOCTL ====> CMD: COMPAT_MT6573FDVTIOC_T_DUMPREG \n");
+	/* LOG_DBG("COMPAT_FD_IOCTL ====> CMD: COMPAT_MT6573FDVTIOC_T_DUMPREG \n"); */
         return file->f_op->unlocked_ioctl(file, cmd, (unsigned long)compat_ptr(arg));
     }
     default:
@@ -786,13 +787,13 @@ static int FDVT_open(struct inode *inode, struct file *file)
     //VAL_BOOL_T flag;
     INT32 ret=0;
     
-    LOG_DBG("[FDVT_DEBUG] FDVT_open\n");
+    /* LOG_DBG("[FDVT_DEBUG] FDVT_open\n"); */
     mt_fdvt_clk_ctrl(1); //ISP help enable
     if (pBuff != NULL) {
-        LOG_DBG("pBuff is not null \n");
+	/* LOG_DBG("pBuff is not null \n"); */
     }
     if (pread_buf != NULL) {
-        LOG_DBG("pread_buf is not null \n");
+	/* LOG_DBG("pread_buf is not null \n"); */
     }
     
     pBuff = kmalloc(buf_size,GFP_KERNEL);
@@ -801,16 +802,12 @@ static int FDVT_open(struct inode *inode, struct file *file)
         LOG_DBG(" ioctl allocate mem failed\n");
         ret = -ENOMEM;
     }
-    else
-        LOG_DBG(" ioctl allocate mem ok\n");
 
     pread_buf = (u8 *) kmalloc(buf_size, GFP_KERNEL);
     if (pread_buf == NULL) {    
         LOG_DBG(" ioctl allocate mem failed\n");
         ret = -ENOMEM;
     }
-    else
-        LOG_DBG(" ioctl allocate mem ok\n");
     
     if (ret < 0) {
         if (pBuff) {
@@ -835,7 +832,7 @@ static int FDVT_flush(struct file *file, fl_owner_t id)
 */
 static int FDVT_release(struct inode *inode, struct file *file)
 {
-    LOG_DBG("[FDVT_DEBUG] FDVT_release\n");
+    /* LOG_DBG("[FDVT_DEBUG] FDVT_release\n"); */
     if (pBuff) {
         kfree(pBuff);
         pBuff = NULL;

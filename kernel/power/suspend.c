@@ -30,6 +30,13 @@
 
 #include "power.h"
 
+#define MTK_SOLUTION 1
+
+#ifdef CONFIG_MTK_LEGACY 
+#define CONFIG_EARLYSUSPEND_LEGACY
+#endif
+
+#ifdef CONFIG_EARLYSUSPEND_LEGACY
 struct pm_sleep_state pm_states[PM_SUSPEND_MAX] = {
 //<20130327> <marc.huang> merge from android kernel 3.0 - add [PM_SUSPEND_ON] into pm_states
 #ifdef CONFIG_EARLYSUSPEND
@@ -39,6 +46,13 @@ struct pm_sleep_state pm_states[PM_SUSPEND_MAX] = {
 	[PM_SUSPEND_STANDBY] = { .label = "standby", },
 	[PM_SUSPEND_MEM] = { .label = "mem", },
 };
+#else
+const char *const pm_states[PM_SUSPEND_MAX] = {
+	[PM_SUSPEND_FREEZE]	= "freeze",
+	[PM_SUSPEND_STANDBY]	= "standby",
+	[PM_SUSPEND_MEM]	= "mem",
+};
+#endif
 
 static const struct platform_suspend_ops *suspend_ops;
 
@@ -67,6 +81,7 @@ void freeze_wake(void)
 }
 EXPORT_SYMBOL_GPL(freeze_wake);
 
+#ifdef CONFIG_EARLYSUSPEND_LEGACY
 static bool valid_state(suspend_state_t state)
 {
 	/*
@@ -94,6 +109,43 @@ void suspend_set_ops(const struct platform_suspend_ops *ops)
 	unlock_system_sleep();
 }
 EXPORT_SYMBOL_GPL(suspend_set_ops);
+#else
+/**
+ * suspend_set_ops - Set the global suspend method table.
+ * @ops: Suspend operations to use.
+ */
+void suspend_set_ops(const struct platform_suspend_ops *ops)
+{
+	lock_system_sleep();
+	suspend_ops = ops;
+	unlock_system_sleep();
+}
+EXPORT_SYMBOL_GPL(suspend_set_ops);
+
+bool valid_state(suspend_state_t state)
+{
+	if (state == PM_SUSPEND_FREEZE) {
+#ifdef CONFIG_PM_DEBUG
+		if (pm_test_level != TEST_NONE &&
+		    pm_test_level != TEST_FREEZER &&
+		    pm_test_level != TEST_DEVICES &&
+		    pm_test_level != TEST_PLATFORM) {
+			printk(KERN_WARNING "Unsupported pm_test mode for "
+					"freeze state, please choose "
+					"none/freezer/devices/platform.\n");
+			return false;
+		}
+#endif
+			return true;
+	}
+	/*
+	 * PM_SUSPEND_STANDBY and PM_SUSPEND_MEMORY states need lowlevel
+	 * support and need to be valid to the lowlevel
+	 * implementation, no valid callback implies that none are valid.
+	 */
+	return suspend_ops && suspend_ops->valid && suspend_ops->valid(state);
+}
+#endif
 
 /**
  * suspend_valid_only_mem - Generic memory-only valid callback.
@@ -313,6 +365,60 @@ static void suspend_finish(void)
 	pm_notifier_call_chain(PM_POST_SUSPEND);
 	pm_restore_console();
 }
+    
+#if MTK_SOLUTION
+
+#define SYS_SYNC_TIMEOUT 2000
+
+static int sys_sync_ongoing = 0;
+
+static void suspend_sys_sync(struct work_struct *work);
+static struct workqueue_struct *suspend_sys_sync_work_queue = NULL;
+DECLARE_WORK(suspend_sys_sync_work, suspend_sys_sync);
+
+static void suspend_sys_sync(struct work_struct *work)
+{
+	printk("++\n");
+	sys_sync();
+	sys_sync_ongoing = 0;
+	printk("--\n");
+}
+
+int suspend_syssync_enqueue(void)
+{
+	int timeout = 0;
+
+	if (suspend_sys_sync_work_queue == NULL) {
+		suspend_sys_sync_work_queue = create_singlethread_workqueue("fs_suspend_syssync");
+		if (suspend_sys_sync_work_queue == NULL) {
+			pr_err("fs_suspend_syssync workqueue create failed\n");
+		}
+	}
+
+	while (timeout < SYS_SYNC_TIMEOUT) {
+		if (!sys_sync_ongoing) {
+			break;
+		}
+		msleep(100);
+		timeout += 100;
+	}
+
+	if (!sys_sync_ongoing) {
+		sys_sync_ongoing = 1;
+		queue_work(suspend_sys_sync_work_queue, &suspend_sys_sync_work);
+		while (timeout < SYS_SYNC_TIMEOUT) {
+			if (!sys_sync_ongoing) {
+				return 0;
+			}
+			msleep(100);
+			timeout += 100;
+		}
+	}
+
+	return -EBUSY;
+}
+
+#endif
 
 /**
  * enter_state - Do common work needed to enter system sleep state.
@@ -346,13 +452,23 @@ int enter_state(suspend_state_t state)
 		freeze_begin();
 
 	printk(KERN_INFO "PM: Syncing filesystems ... ");
+#if MTK_SOLUTION
+	error = suspend_syssync_enqueue();
+	if (error) {
+		printk("sys_sync timeout.\n");
+		goto Unlock;
+	}
+#else
 	sys_sync();
-    //[MTK]
-    //suspend_syssync_enqueue();
-    //suspend_check_sys_sync_done();
+#endif
 	printk("done.\n");
 
+
+#ifdef CONFIG_EARLYSUSPEND_LEGACY
 	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state].label);
+#else
+	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
+#endif
 	error = suspend_prepare(state);
 	if (error)
 		goto Unlock;
@@ -360,7 +476,11 @@ int enter_state(suspend_state_t state)
 	if (suspend_test(TEST_FREEZER))
 		goto Finish;
 
+#ifdef CONFIG_EARLYSUSPEND_LEGACY
 	pr_debug("PM: Entering %s sleep\n", pm_states[state].label);
+#else
+	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
+#endif
 	pm_restrict_gfp_mask();
 	error = suspend_devices_and_enter(state);
 	pm_restore_gfp_mask();

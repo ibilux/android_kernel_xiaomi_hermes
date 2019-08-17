@@ -49,8 +49,7 @@ static fm_s32 MT6630fm_cust_config_print(fm_cust_cfg *cfg)
 	WCN_DBG(FM_NTC | MAIN, "osc_freq:\t%d\n", cfg->rx_cfg.osc_freq);
 
 	WCN_DBG(FM_NTC | MAIN, "aud path[%d]I2S state[%d]mode[%d]rate[%d]\n", cfg->aud_cfg.aud_path,
-		cfg->aud_cfg.i2s_info.status, cfg->aud_cfg.i2s_info.mode,
-		cfg->aud_cfg.i2s_info.rate);
+		cfg->aud_cfg.i2s_info.status, cfg->aud_cfg.i2s_info.mode, cfg->aud_cfg.i2s_info.rate);
 	return 0;
 }
 
@@ -59,45 +58,50 @@ static fm_s32 MT6630cfg_item_handler(fm_s8 *grp, fm_s8 *key, fm_s8 *val, fm_cust
 	fm_s32 ret = 0;
 	struct fm_rx_cust_cfg *rx_cfg = &cfg->rx_cfg;
 
-	if (0 <= (ret = cfg_item_match(key, val, "FM_RX_RSSI_TH_LONG_MT6630", &rx_cfg->long_ana_rssi_th))) {	/* FMR_RSSI_TH_L = 0x0301 */
+	ret = cfg_item_match(key, val, "FM_RX_RSSI_TH_LONG_MT6630", &rx_cfg->long_ana_rssi_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FM_RX_RSSI_TH_SHORT_MT6630",
-				   &rx_cfg->short_ana_rssi_th))) {
+
+	ret = cfg_item_match(key, val, "FM_RX_RSSI_TH_SHORT_MT6630", &rx_cfg->short_ana_rssi_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FM_RX_DESENSE_RSSI_MT6630",
-				   &rx_cfg->desene_rssi_th))) {
+
+	ret = cfg_item_match(key, val, "FM_RX_DESENSE_RSSI_MT6630", &rx_cfg->desene_rssi_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_PAMD_TH_MT6630", &rx_cfg->pamd_th))) {
+
+	ret = cfg_item_match(key, val, "FM_RX_PAMD_TH_MT6630", &rx_cfg->pamd_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_MR_TH_MT6630", &rx_cfg->mr_th))) {
+
+	ret = cfg_item_match(key, val, "FM_RX_MR_TH_MT6630", &rx_cfg->mr_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_ATDC_TH_MT6630", &rx_cfg->atdc_th))) {
+
+	ret = cfg_item_match(key, val, "FM_RX_ATDC_TH_MT6630", &rx_cfg->atdc_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_PRX_TH_MT6630", &rx_cfg->prx_th))) {
+
+	ret = cfg_item_match(key, val, "FM_RX_PRX_TH_MT6630", &rx_cfg->prx_th);
+	if (0 <= ret)
 		return ret;
-	}
-	/*else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_ATDEV_TH_MT6630", &rx_cfg->atdev_th)))
-	   {
-	   return ret;
-	   } */
-	else if (0 <= (ret = cfg_item_match(key, val, "FM_RX_SMG_TH_MT6630", &rx_cfg->smg_th))) {
+
+	ret = cfg_item_match(key, val, "FM_RX_SMG_TH_MT6630", &rx_cfg->smg_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <=
-		   (ret =
-		    cfg_item_match(key, val, "FM_RX_DEEMPHASIS_MT6630", &rx_cfg->deemphasis))) {
+
+	ret = cfg_item_match(key, val, "FM_RX_DEEMPHASIS_MT6630", &rx_cfg->deemphasis);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <=
-		   (ret = cfg_item_match(key, val, "FM_RX_OSC_FREQ_MT6630", &rx_cfg->osc_freq))) {
+
+	ret = cfg_item_match(key, val, "FM_RX_OSC_FREQ_MT6630", &rx_cfg->osc_freq);
+	if (0 <= ret)
 		return ret;
-	} else {
-		WCN_DBG(FM_WAR | MAIN, "MT6630 invalid key\n");
-		return -1;
-	}
+
+	WCN_DBG(FM_WAR | MAIN, "MT6630 invalid key\n");
+	return -1;
 }
+
 
 static fm_s32 MT6630fm_cust_config_default(fm_cust_cfg *cfg)
 {
@@ -153,7 +157,8 @@ static fm_s32 MT6630fm_cust_config_file(const fm_s8 *filename, fm_cust_cfg *cfg)
 	fm_s8 *buf = NULL;
 	fm_s32 file_len = 0;
 
-	if (!(buf = fm_zalloc(4096))) {
+	buf = fm_zalloc(4096);
+	if (!buf) {
 		WCN_DBG(FM_ALT | MAIN, "-ENOMEM\n");
 		return -ENOMEM;
 	}
@@ -168,11 +173,10 @@ static fm_s32 MT6630fm_cust_config_file(const fm_s8 *filename, fm_cust_cfg *cfg)
 
 	ret = cfg_parser(buf, MT6630cfg_item_handler, cfg);
 
- out:
+out:
 
-	if (buf) {
+	if (buf)
 		fm_free(buf);
-	}
 
 	return ret;
 }

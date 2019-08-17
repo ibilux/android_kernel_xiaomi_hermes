@@ -30,7 +30,7 @@
 #include "fm_stdlib.h"
 #include "fm_patch.h"
 #include "fm_config.h"
-#if (!defined(MT6628_FM) && !defined(MT6620_FM) && !defined(MT6627_FM) && !defined(MT6630_FM))
+#if (!defined(MT6628_FM) && !defined(MT6620_FM) && !defined(MT6627_FM) && !defined(MT6580_FM) && !defined(MT6630_FM))
 #include "fm_cust_cfg.h"
 #endif
 static fm_cust_cfg fm_config;
@@ -42,9 +42,8 @@ static fm_s32 to_upper(fm_s8 *str)
 	fm_s32 i = 0;
 
 	for (i = 0; i < (int)strlen(str); i++) {
-		if (('a' <= str[i]) && (str[i] <= 'z')) {
+		if (('a' <= str[i]) && (str[i] <= 'z'))
 			str[i] = str[i] - ('a' - 'A');
-		}
 	}
 
 	return 0;
@@ -56,9 +55,8 @@ fm_s32 to_upper_n(fm_s8 *str, fm_s32 len)
 	fm_s32 i = 0;
 
 	for (i = 0; i < len; i++) {
-		if (('a' <= str[i]) && (str[i] <= 'z')) {
+		if (('a' <= str[i]) && (str[i] <= 'z'))
 			str[i] = str[i] - ('a' - 'A');
-		}
 	}
 
 	return 0;
@@ -85,11 +83,10 @@ fm_s32 check_dec_str(fm_s8 *str, fm_s32 len)
 	fm_s32 i = 0;
 
 	for (i = 0; i < len; i++) {
-		if (('0' <= str[i]) && (str[i] <= '9')) {
+		if (('0' <= str[i]) && (str[i] <= '9'))
 			;
-		} else {
+		else
 			return -1;
-		}
 	}
 
 	return 0;
@@ -103,9 +100,8 @@ fm_s32 ascii_to_hex(fm_s8 *in_ascii, fm_u16 *out_hex)
 
 	len = (len > 4) ? 4 : len;
 
-	if (check_hex_str(in_ascii, len)) {
+	if (check_hex_str(in_ascii, len))
 		return -1;
-	}
 
 	to_upper_n(in_ascii, len);
 	*out_hex = 0;
@@ -140,9 +136,8 @@ fm_s32 ascii_to_dec(fm_s8 *in_ascii, fm_s32 *out_dec)
 		flag = 1;
 	}
 
-	if (check_dec_str(in_ascii, len)) {
+	if (check_dec_str(in_ascii, len))
 		return -1;
-	}
 
 	*out_dec = 0;
 	multi = 1;
@@ -161,14 +156,12 @@ fm_s32 trim_string(fm_s8 **start)
 	fm_s8 *end = *start;
 
 	/* Advance to non-space character */
-	while (*(*start) == ' ') {
+	while (*(*start) == ' ')
 		(*start)++;
-	}
 
 	/* Move to end of string */
-	while (*end != '\0') {
+	while (*end != '\0')
 		(end)++;
-	}
 
 	/* Backup to non-space character */
 	do {
@@ -177,27 +170,25 @@ fm_s32 trim_string(fm_s8 **start)
 
 	/* Terminate string after last non-space character */
 	*(++end) = '\0';
-	return (end - *start);
+	return end - *start;
 }
 
 fm_s32 trim_path(fm_s8 **start)
 {
 	fm_s8 *end = *start;
 
-	while (*(*start) == ' ') {
+	while (*(*start) == ' ')
 		(*start)++;
-	}
 
-	while (*end != '\0') {
+	while (*end != '\0')
 		(end)++;
-	}
 
 	do {
 		end--;
 	} while ((end >= *start) && ((*end == ' ') || (*end == '\n') || (*end == '\r')));
 
 	*(++end) = '\0';
-	return (end - *start);
+	return end - *start;
 }
 
 fm_s32 cfg_parser(fm_s8 *buffer, CFG_HANDLER handler, fm_cust_cfg *cfg)
@@ -274,11 +265,8 @@ fm_s32 cfg_parser(fm_s8 *buffer, CFG_HANDLER handler, fm_cust_cfg *cfg)
 					trim_string(&value_start);
 					/* WCN_DBG(FM_NTC|MAIN, "v=%s\n", value_start); */
 
-					if (handler) {
-						ret =
-						    handler(group_start, key_start, value_start,
-							    cfg);
-					}
+					if (handler)
+						ret = handler(group_start, key_start, value_start, cfg);
 
 					state = FM_CFG_STAT_NONE;
 				}
@@ -342,58 +330,89 @@ static fm_s32 cfg_item_handler(fm_s8 *grp, fm_s8 *key, fm_s8 *val, fm_cust_cfg *
 	struct fm_rx_cust_cfg *rx_cfg = &cfg->rx_cfg;
 	struct fm_tx_cust_cfg *tx_cfg = &cfg->tx_cfg;
 
-	if (0 <= (ret = cfg_item_match(key, val, "FMR_RSSI_TH_L", &rx_cfg->long_ana_rssi_th))) {	/* FMR_RSSI_TH_L = 0x0301 */
+	ret = cfg_item_match(key, val, "FMR_RSSI_TH_L", &rx_cfg->long_ana_rssi_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <=
-		   (ret = cfg_item_match(key, val, "FMR_RSSI_TH_S", &rx_cfg->short_ana_rssi_th))) {
+
+	ret = cfg_item_match(key, val, "FMR_RSSI_TH_S", &rx_cfg->short_ana_rssi_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_CQI_TH", &rx_cfg->cqi_th))) {
+
+	ret = cfg_item_match(key, val, "FMR_CQI_TH", &rx_cfg->cqi_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_MR_TH", &rx_cfg->mr_th))) {
+
+	ret = cfg_item_match(key, val, "FMR_MR_TH", &rx_cfg->mr_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_SMG_TH", &rx_cfg->smg_th))) {
+
+	ret = cfg_item_match(key, val, "FMR_SMG_TH", &rx_cfg->smg_th);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_SCAN_CH_SIZE", &rx_cfg->scan_ch_size))) {
+
+	ret = cfg_item_match(key, val, "FMR_SCAN_CH_SIZE", &rx_cfg->scan_ch_size);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_SCAN_SORT", &rx_cfg->scan_sort))) {
+
+	ret = cfg_item_match(key, val, "FMR_SCAN_SORT", &rx_cfg->scan_sort);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_SEEK_SPACE", &rx_cfg->seek_space))) {
+
+	ret = cfg_item_match(key, val, "FMR_SEEK_SPACE", &rx_cfg->seek_space);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_BAND", &rx_cfg->band))) {
+
+	ret = cfg_item_match(key, val, "FMR_BAND", &rx_cfg->band);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_BAND_FREQ_L", &rx_cfg->band_freq_l))) {
+
+	ret = cfg_item_match(key, val, "FMR_BAND_FREQ_L", &rx_cfg->band_freq_l);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_BAND_FREQ_H", &rx_cfg->band_freq_h))) {
+
+	ret = cfg_item_match(key, val, "FMR_BAND_FREQ_H", &rx_cfg->band_freq_h);
+	if (0 <= ret)
 		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_FAKE_CH", &rx_cfg->fake_ch[fm_index]))) {
+
+	ret = cfg_item_match(key, val, "FMR_FAKE_CH", &rx_cfg->fake_ch[fm_index]);
+	if (0 <= ret) {
 		fm_index += 1;
-		rx_cfg->fake_ch_num =
-		    (rx_cfg->fake_ch_num < fm_index) ? fm_index : rx_cfg->fake_ch_num;
+		rx_cfg->fake_ch_num = (rx_cfg->fake_ch_num < fm_index) ? fm_index : rx_cfg->fake_ch_num;
 		return ret;
-	} else if (0 <=
-		   (ret = cfg_item_match(key, val, "FMR_FAKE_CH_RSSI", &rx_cfg->fake_ch_rssi_th))) {
-		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_DEEMPHASIS", &rx_cfg->deemphasis))) {
-		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMR_OSC_FREQ", &rx_cfg->osc_freq))) {
-		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMT_SCAN_HOLE_L", &tx_cfg->scan_hole_low))) {
-		return ret;
-	} else if (0 <=
-		   (ret = cfg_item_match(key, val, "FMT_SCAN_HOLE_H", &tx_cfg->scan_hole_high))) {
-		return ret;
-	} else if (0 <= (ret = cfg_item_match(key, val, "FMT_PWR_LVL_MAX", &tx_cfg->power_level))) {
-		return ret;
-	} else {
-		WCN_DBG(FM_WAR | MAIN, "invalid key\n");
-		return -1;
 	}
+
+	ret = cfg_item_match(key, val, "FMR_FAKE_CH_RSSI", &rx_cfg->fake_ch_rssi_th);
+	if (0 <= ret)
+		return ret;
+
+	ret = cfg_item_match(key, val, "FMR_DEEMPHASIS", &rx_cfg->deemphasis);
+	if (0 <= ret)
+		return ret;
+
+	ret = cfg_item_match(key, val, "FMR_OSC_FREQ", &rx_cfg->osc_freq);
+	if (0 <= ret)
+		return ret;
+
+	ret = cfg_item_match(key, val, "FMT_SCAN_HOLE_L", &tx_cfg->scan_hole_low);
+	if (0 <= ret)
+		return ret;
+
+	ret = cfg_item_match(key, val, "FMT_SCAN_HOLE_H", &tx_cfg->scan_hole_high);
+	if (0 <= ret)
+		return ret;
+
+	ret = cfg_item_match(key, val, "FMT_PWR_LVL_MAX", &tx_cfg->power_level);
+	if (0 <= ret)
+		return ret;
+
+	WCN_DBG(FM_WAR | MAIN, "invalid key\n");
+	return -1;
 }
 
 static fm_s32 fm_cust_config_default(fm_cust_cfg *cfg)
 {
 	FMR_ASSERT(cfg);
-#if (!defined(MT6628_FM) && !defined(MT6620_FM) && !defined(MT6627_FM) && !defined(MT6630_FM))
+#if (!defined(MT6628_FM) && !defined(MT6620_FM) && !defined(MT6627_FM) && !defined(MT6580_FM) && !defined(MT6630_FM))
 
 	cfg->rx_cfg.long_ana_rssi_th = FM_RX_RSSI_TH_LONG;
 	cfg->rx_cfg.short_ana_rssi_th = FM_RX_RSSI_TH_SHORT;
@@ -428,7 +447,8 @@ static fm_s32 fm_cust_config_file(const fm_s8 *filename, fm_cust_cfg *cfg)
 	fm_s8 *buf = NULL;
 	fm_s32 file_len = 0;
 
-	if (!(buf = fm_zalloc(4096))) {
+	buf = fm_zalloc(4096);
+	if (!buf) {
 		WCN_DBG(FM_ALT | MAIN, "-ENOMEM\n");
 		return -ENOMEM;
 	}
@@ -444,11 +464,9 @@ static fm_s32 fm_cust_config_file(const fm_s8 *filename, fm_cust_cfg *cfg)
 
 	ret = cfg_parser(buf, cfg_item_handler, cfg);
 
- out:
-
-	if (buf) {
+out:
+	if (buf)
 		fm_free(buf);
-	}
 
 	return ret;
 }
@@ -471,9 +489,8 @@ static fm_s32 fm_cust_config_print(fm_cust_cfg *cfg)
 	WCN_DBG(FM_NTC | MAIN, "fake_ch_num:\t%d\n", cfg->rx_cfg.fake_ch_num);
 	WCN_DBG(FM_NTC | MAIN, "fake_ch_rssi_th:\t%d\n", cfg->rx_cfg.fake_ch_rssi_th);
 
-	for (i = 0; i < cfg->rx_cfg.fake_ch_num; i++) {
+	for (i = 0; i < cfg->rx_cfg.fake_ch_num; i++)
 		WCN_DBG(FM_NTC | MAIN, "fake_ch:\t%d\n", cfg->rx_cfg.fake_ch[i]);
-	}
 
 	WCN_DBG(FM_NTC | MAIN, "de_emphasis:\t%d\n", cfg->rx_cfg.deemphasis);
 	WCN_DBG(FM_NTC | MAIN, "osc_freq:\t%d\n", cfg->rx_cfg.osc_freq);
@@ -566,8 +583,7 @@ fm_u16 fm_cust_config_fetch(enum fm_cust_cfg_op op_code)
 		}
 	case FM_CFG_RX_FAKE_CH:{
 			tmp = fm_config.rx_cfg.fake_ch[fake_ch_idx];
-			i = (fm_config.rx_cfg.fake_ch_num >
-			     0) ? fm_config.rx_cfg.fake_ch_num : FAKE_CH_MAX;
+			i = (fm_config.rx_cfg.fake_ch_num > 0) ? fm_config.rx_cfg.fake_ch_num : FAKE_CH_MAX;
 			fake_ch_idx++;
 			fake_ch_idx = fake_ch_idx % i;
 			break;

@@ -287,7 +287,7 @@ static int psci_0_2_init(struct device_node *np)
 		PSCI_0_2_FN_MIGRATE_INFO_TYPE;
 	psci_ops.migrate_info_type = psci_migrate_info_type;
 
-	arm_pm_restart = psci_sys_reset;
+	arm_pm_restart = (void (*)(char , const char *))psci_sys_reset;
 
 	pm_power_off = psci_sys_poweroff;
 

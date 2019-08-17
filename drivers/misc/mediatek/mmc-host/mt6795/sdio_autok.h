@@ -143,7 +143,7 @@ typedef enum
 #define MSDC_WRITE     (1)
 #define LOG_SIZE (PAGE_SIZE*8)
 
-#define RE_AUTOK_MAX_CNT  (2)           //add by qinhai for ALPS02452060 SDIO CRC Error cause Arp Tx Req fail 20151206
+#define RE_AUTOK_MAX_CNT  (2)
 
 enum AUTOK_PARAM {
     CMD_EDGE,                       // command response sample selection (MSDC_SMPL_RISING, MSDC_SMPL_FALLING)
@@ -188,9 +188,7 @@ struct autok_predata{
 int msdc_autok_read(struct msdc_host *host, unsigned int u4Addr, unsigned int u4Func, void *pBuffer, unsigned int u4Len, unsigned int u4Cmd);
 int msdc_autok_write(struct msdc_host *host, unsigned int u4Addr, unsigned int u4Func, void *pBuffer, unsigned int u4Len, unsigned int u4Cmd);
 int msdc_autok_adjust_param(struct msdc_host *host, enum AUTOK_PARAM param, u32 *value, int rw);
-//Modify by qinhai for ALPS02452060 SDIO CRC Error cause Arp Tx Req fail 20151206 begin
 int msdc_autok_stg1_cal(struct msdc_host *host, unsigned int offset_restore, struct autok_predata *p_single_autok, unsigned char re_autok_cnt);
-//Modify by qinhai for ALPS02452060 SDIO CRC Error cause Arp Tx Req fail 20151206 end
 //int msdc_autok_stg1_data_get(void **ppData, int *pLen);
 int msdc_autok_stg2_cal(struct msdc_host *host, struct autok_predata *p_autok_data, unsigned int vcore_uv_off);
 int msdc_autok_apply_param(struct msdc_host *host, unsigned int vcore_uv_off);

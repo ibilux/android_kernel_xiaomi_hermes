@@ -20,6 +20,7 @@ LIBGCC 		:= $(shell $(CC) $(KBUILD_CFLAGS) -print-libgcc-file-name)
 KBUILD_DEFCONFIG := defconfig
 
 KBUILD_CFLAGS	+= -mgeneral-regs-only
+KBUILD_CFLAGS	+= -fno-pic
 KBUILD_CPPFLAGS	+= -mlittle-endian
 AS		+= -EL
 LD		+= -EL
@@ -50,13 +51,14 @@ endif
 
 KBUILD_DTBS	:= dtbs
 
+all:	$(KBUILD_IMAGE) $(KBUILD_DTBS)
+
 MTK_PLATFORM := $(CONFIG_MTK_PLATFORM:"%"=%)
 MTK_PROJECT := $(CONFIG_ARCH_MTK_PROJECT:"%"=%)
 export MTK_PLATFORM MTK_PROJECT MTK_TARGET_PROJECT
-
-all:	$(KBUILD_IMAGE) $(KBUILD_DTBS)
-
 -include $(srctree)/scripts/drvgen/drvgen.mk
+archprepare: $(DRVGEN_FILE_LIST)
+dtbs: $(DRVGEN_FILE_LIST)
 
 boot := arch/arm64/boot
 

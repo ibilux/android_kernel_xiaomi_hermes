@@ -50,8 +50,8 @@ struct ui_ops {
 extern struct ui_ops *toi_current_ui;
 
 #define toi_update_status(val, max, fmt, args...) \
- (toi_current_ui ? (toi_current_ui->update_status) (val, max, fmt, ##args) : \
-	max)
+	(toi_current_ui ? (toi_current_ui->update_status) (val, max, fmt, ##args) : \
+		max)
 
 #define toi_prepare_console(void) \
 	do { if (toi_current_ui) \
@@ -80,7 +80,7 @@ extern struct ui_ops *toi_current_ui;
 	do { if (toi_current_ui) \
 		(toi_current_ui->prepare_status)(clear, fmt, ##args); \
 	     else \
-		printk(KERN_INFO fmt "%s", ##args, "\n"); \
+		pr_info(fmt "%s", ##args, "\n"); \
 	} while (0)
 
 #define toi_message(sn, lev, log, fmt, a...) \

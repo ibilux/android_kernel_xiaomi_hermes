@@ -28,30 +28,30 @@
 #define TAG     "PTP2"
 
 #define ptp2_err(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_ERROR, TAG, fmt, ##args)
+    pr_err(ANDROID_LOG_ERROR, TAG, fmt, ##args)
 #define ptp2_warn(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_WARN, TAG, fmt, ##args)
+    pr_warn(ANDROID_LOG_WARN, TAG, fmt, ##args)
 #define ptp2_info(fmt, args...)      \
-    xlog_printk(ANDROID_LOG_INFO, TAG, fmt, ##args)
+    pr_info(ANDROID_LOG_INFO, TAG, fmt, ##args)
 #define ptp2_dbg(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_DEBUG, TAG, fmt, ##args)
+    pr_debug(ANDROID_LOG_DEBUG, TAG, fmt, ##args)
 #define ptp2_ver(fmt, args...)       \
-    xlog_printk(ANDROID_LOG_VERBOSE, TAG, fmt, ##args)
+    pr_notice(ANDROID_LOG_VERBOSE, TAG, fmt, ##args)
 
 #else   /* USING_XLOG */
 
 #define TAG     "[PTP2] "
 
 #define ptp2_err(fmt, args...)       \
-    printk(KERN_ERR TAG KERN_CONT fmt, ##args)
+    pr_err(KERN_ERR TAG KERN_CONT fmt, ##args)
 #define ptp2_warn(fmt, args...)      \
-    printk(KERN_WARNING TAG KERN_CONT fmt, ##args)
+    pr_warn(KERN_WARNING TAG KERN_CONT fmt, ##args)
 #define ptp2_info(fmt, args...)      \
-    printk(KERN_NOTICE TAG KERN_CONT fmt, ##args)
+    pr_info(KERN_NOTICE TAG KERN_CONT fmt, ##args)
 #define ptp2_dbg(fmt, args...)       \
-    printk(KERN_INFO TAG KERN_CONT fmt, ##args)
+    pr_debug(KERN_INFO TAG KERN_CONT fmt, ##args)
 #define ptp2_ver(fmt, args...)       \
-    printk(KERN_DEBUG TAG KERN_CONT fmt, ##args)
+    pr_notice(KERN_DEBUG TAG KERN_CONT fmt, ##args)
 
 #endif  /* USING_XLOG */
 
@@ -496,7 +496,7 @@ static int ptp2_resume(struct platform_device *pdev)
 	ptp2_thread = kthread_run(ptp2_thread_handler, 0, "ptp2 xxx");
 	if (IS_ERR(ptp2_thread))
 	{
-	    printk("[%s]: failed to create ptp2 xxx thread\n", __func__);
+	    pr_debug("[%s]: failed to create ptp2 xxx thread\n", __func__);
 	}
 	*/
 
@@ -774,7 +774,7 @@ static int __init ptp2_init(void)
     if(node){
 		/* Setup IO addresses */
 		ptp2_base = of_iomap(node, 0);
-		//printk("[PTP2] ptp2_base=0x%x\n",ptp2_base);
+		//pr_debug("[PTP2] ptp2_base=0x%x\n",ptp2_base);
     }
     
 	err = platform_driver_register(&ptp2_driver);

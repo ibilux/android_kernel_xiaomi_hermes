@@ -25,7 +25,7 @@ extern struct musb *mtk_musb;
 #else
 
 #include <mach/mt_reg_base.h>
-
+extern struct musb *mtk_musb;
 #define USBPHY_READ8(offset)          readb((void __iomem *)(USB_SIF_BASE+0x800+offset))
 #define USBPHY_WRITE8(offset, value)  writeb(value, (void __iomem *)(USB_SIF_BASE+0x800+offset))
 #define USBPHY_SET8(offset, mask)     USBPHY_WRITE8(offset, (USBPHY_READ8(offset)) | (mask))
@@ -42,7 +42,12 @@ extern struct musb *mtk_musb;
 #define USBPHY_CLR32(offset, mask)     USBPHY_WRITE32(offset, (USBPHY_READ32(offset)) & (~mask))
 
 #endif
+
+extern bool mtk_usb_power;
+
 struct musb;
+
+extern int musb_skip_charge_detect; /* BC1.2: CDP debug purpose */
 
 typedef enum {
 	USB_SUSPEND = 0,
@@ -70,7 +75,7 @@ extern void pmic_chrdet_int_en(int is_on);
 extern void musb_platform_reset(struct musb *musb);
 extern void musb_sync_with_bat(struct musb *musb, int usb_state);
 
-extern bool is_saving_mode();
+extern bool is_saving_mode(void);
 
 /* USB switch charger */
 extern bool is_switch_charger(void);

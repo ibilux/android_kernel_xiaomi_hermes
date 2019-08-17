@@ -136,6 +136,8 @@ static void arm64_memory_present(void)
 }
 #endif
 
+__attribute__((weak)) extern struct ion_platform_data ion_drv_platform_data;
+__attribute__((weak)) extern void __init ion_reserve(struct ion_platform_data *data);
 
 void __init arm64_memblock_init(void)
 {
@@ -187,6 +189,12 @@ void __init arm64_memblock_init(void)
         mrdump_mini_reserve_memory();
 	
 	early_init_fdt_scan_reserved_mem();
+
+       //reserve for ion_carveout_heap
+       if(ion_reserve && (&ion_drv_platform_data))
+           ion_reserve(&ion_drv_platform_data);
+
+	mrdump_rsvmem();
 	memblock_allow_resize();
 	memblock_dump_all();
 }

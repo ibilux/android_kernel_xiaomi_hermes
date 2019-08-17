@@ -27,6 +27,10 @@
 #include <linux/slab.h>
 #include "kdb_private.h"
 
+#ifdef CONFIG_MTK_EXTMEM
+#include <linux/exm_driver.h>
+#endif
+
 /*
  * kdbgetsymval - Return the address of the given symbol.
  *
@@ -706,19 +710,18 @@ struct debug_alloc_header {
 #define dah_overhead ALIGN(sizeof(struct debug_alloc_header), dah_align)
 
 #ifdef CONFIG_MTK_EXTMEM
-#define SIZEOF_DEBUG_ALLOC_POOL_ALIGNED   (sizeof(u64)*256*1024/dah_align)
-extern void* extmem_malloc_page_align(size_t bytes);
-static u64 * debug_alloc_pool_aligned = NULL;
-static char *debug_alloc_pool = NULL;
+#define SIZEOF_DEBUG_ALLOC_POOL_ALIGNED   (sizeof(u64) * 256 * 1024/dah_align)
+static u64 *debug_alloc_pool_aligned;
+static char *debug_alloc_pool;
 
 void init_debug_alloc_pool_aligned(void)
 {
-	debug_alloc_pool_aligned = extmem_malloc_page_align(SIZEOF_DEBUG_ALLOC_POOL_ALIGNED);
-	if(debug_alloc_pool_aligned == NULL) {
-		pr_warning("%s[%s] ext memory alloc failed!!!\n", __FILE__, __FUNCTION__);
-		debug_alloc_pool = (char *)vmalloc(SIZEOF_DEBUG_ALLOC_POOL_ALIGNED);
-	}
-	else {
+	debug_alloc_pool_aligned =
+		extmem_malloc_page_align(SIZEOF_DEBUG_ALLOC_POOL_ALIGNED);
+	if (debug_alloc_pool_aligned == NULL) {
+		pr_err("%s[%s] ext memory alloc failed!!!\n", __FILE__, __func__);
+		debug_alloc_pool = vmalloc(SIZEOF_DEBUG_ALLOC_POOL_ALIGNED);
+	} else {
 		debug_alloc_pool = (char *)debug_alloc_pool_aligned;
 	}
 }
@@ -835,7 +838,7 @@ void debug_kfree(void *p)
 	    (char *)p >= debug_alloc_pool + SIZEOF_DEBUG_ALLOC_POOL_ALIGNED) {
 #else
 	    (char *)p >= debug_alloc_pool + sizeof(debug_alloc_pool_aligned)) {
-#endif	
+#endif
 		kfree(p);
 		return;
 	}

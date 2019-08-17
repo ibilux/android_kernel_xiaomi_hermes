@@ -14,17 +14,13 @@
 #include "mt6627_fm_cmd.h"
 #include "mt6627_fm_cust_cfg.h"
 
-extern fm_cust_cfg mt6627_fm_config;
-
 static fm_s32 fm_bop_write(fm_u8 addr, fm_u16 value, fm_u8 *buf, fm_s32 size)
 {
-	if (size < (FM_WRITE_BASIC_OP_SIZE + 2)) {
-		return (-1);
-	}
+	if (size < (FM_WRITE_BASIC_OP_SIZE + 2))
+		return -1;
 
-	if (buf == NULL) {
-		return (-2);
-	}
+	if (buf == NULL)
+		return -2;
 
 	buf[0] = FM_WRITE_BASIC_OP;
 	buf[1] = FM_WRITE_BASIC_OP_SIZE;
@@ -32,22 +28,18 @@ static fm_s32 fm_bop_write(fm_u8 addr, fm_u16 value, fm_u8 *buf, fm_s32 size)
 	buf[3] = (fm_u8) ((value) & 0x00FF);
 	buf[4] = (fm_u8) ((value >> 8) & 0x00FF);
 
-	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3],
-		buf[4]);
+	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 
-	return (FM_WRITE_BASIC_OP_SIZE + 2);
+	return FM_WRITE_BASIC_OP_SIZE + 2;
 }
-
 
 static fm_s32 fm_bop_udelay(fm_u32 value, fm_u8 *buf, fm_s32 size)
 {
-	if (size < (FM_UDELAY_BASIC_OP_SIZE + 2)) {
-		return (-1);
-	}
+	if (size < (FM_UDELAY_BASIC_OP_SIZE + 2))
+		return -1;
 
-	if (buf == NULL) {
-		return (-2);
-	}
+	if (buf == NULL)
+		return -2;
 
 	buf[0] = FM_UDELAY_BASIC_OP;
 	buf[1] = FM_UDELAY_BASIC_OP_SIZE;
@@ -56,22 +48,18 @@ static fm_s32 fm_bop_udelay(fm_u32 value, fm_u8 *buf, fm_s32 size)
 	buf[4] = (fm_u8) ((value >> 16) & 0x000000FF);
 	buf[5] = (fm_u8) ((value >> 24) & 0x000000FF);
 
-	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3],
-		buf[4], buf[5]);
+	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
 
-	return (FM_UDELAY_BASIC_OP_SIZE + 2);
+	return FM_UDELAY_BASIC_OP_SIZE + 2;
 }
-
 
 static fm_s32 fm_bop_rd_until(fm_u8 addr, fm_u16 mask, fm_u16 value, fm_u8 *buf, fm_s32 size)
 {
-	if (size < (FM_RD_UNTIL_BASIC_OP_SIZE + 2)) {
-		return (-1);
-	}
+	if (size < (FM_RD_UNTIL_BASIC_OP_SIZE + 2))
+		return -1;
 
-	if (buf == NULL) {
-		return (-2);
-	}
+	if (buf == NULL)
+		return -2;
 
 	buf[0] = FM_RD_UNTIL_BASIC_OP;
 	buf[1] = FM_RD_UNTIL_BASIC_OP_SIZE;
@@ -84,19 +72,16 @@ static fm_s32 fm_bop_rd_until(fm_u8 addr, fm_u16 mask, fm_u16 value, fm_u8 *buf,
 	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2],
 		buf[3], buf[4], buf[5], buf[6]);
 
-	return (FM_RD_UNTIL_BASIC_OP_SIZE + 2);
+	return FM_RD_UNTIL_BASIC_OP_SIZE + 2;
 }
-
 
 static fm_s32 fm_bop_modify(fm_u8 addr, fm_u16 mask_and, fm_u16 mask_or, fm_u8 *buf, fm_s32 size)
 {
-	if (size < (FM_MODIFY_BASIC_OP_SIZE + 2)) {
-		return (-1);
-	}
+	if (size < (FM_MODIFY_BASIC_OP_SIZE + 2))
+		return -1;
 
-	if (buf == NULL) {
-		return (-2);
-	}
+	if (buf == NULL)
+		return -2;
 
 	buf[0] = FM_MODIFY_BASIC_OP;
 	buf[1] = FM_MODIFY_BASIC_OP_SIZE;
@@ -109,19 +94,16 @@ static fm_s32 fm_bop_modify(fm_u8 addr, fm_u16 mask_and, fm_u16 mask_or, fm_u8 *
 	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2],
 		buf[3], buf[4], buf[5], buf[6]);
 
-	return (FM_MODIFY_BASIC_OP_SIZE + 2);
+	return FM_MODIFY_BASIC_OP_SIZE + 2;
 }
-
 
 static fm_s32 fm_bop_top_write(fm_u16 addr, fm_u32 value, fm_u8 *buf, fm_s32 size)
 {
-	if (size < (FM_TOP_WRITE_BOP_SIZE + 2)) {
-		return (-1);
-	}
+	if (size < (FM_TOP_WRITE_BOP_SIZE + 2))
+		return -1;
 
-	if (buf == NULL) {
-		return (-2);
-	}
+	if (buf == NULL)
+		return -2;
 
 	buf[0] = FM_TOP_WRITE_BASIC_OP;
 	buf[1] = FM_TOP_WRITE_BOP_SIZE;
@@ -136,19 +118,16 @@ static fm_s32 fm_bop_top_write(fm_u16 addr, fm_u32 value, fm_u8 *buf, fm_s32 siz
 	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x %02x %02x %02x\n", buf[0], buf[1],
 		buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8]);
 
-	return (FM_TOP_WRITE_BOP_SIZE + 2);
+	return FM_TOP_WRITE_BOP_SIZE + 2;
 }
-
 
 static fm_s32 fm_bop_top_rd_until(fm_u16 addr, fm_u32 mask, fm_u32 value, fm_u8 *buf, fm_s32 size)
 {
-	if (size < (FM_TOP_RD_UNTIL_BOP_SIZE + 2)) {
-		return (-1);
-	}
+	if (size < (FM_TOP_RD_UNTIL_BOP_SIZE + 2))
+		return -1;
 
-	if (buf == NULL) {
-		return (-2);
-	}
+	if (buf == NULL)
+		return -2;
 
 	buf[0] = FM_TOP_RD_UNTIL_BASIC_OP;
 	buf[1] = FM_TOP_RD_UNTIL_BOP_SIZE;
@@ -168,7 +147,7 @@ static fm_s32 fm_bop_top_rd_until(fm_u16 addr, fm_u32 mask, fm_u32 value, fm_u8 
 		buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9],
 		buf[10], buf[11], buf[12]);
 
-	return (FM_TOP_RD_UNTIL_BOP_SIZE + 2);
+	return FM_TOP_RD_UNTIL_BOP_SIZE + 2;
 }
 
 /*
@@ -183,26 +162,22 @@ fm_s32 mt6627_pwrup_clock_on(fm_u8 *buf, fm_s32 buf_size)
 	fm_u16 de_emphasis;
 	/* fm_u16 osc_freq; */
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
-	de_emphasis = mt6627_fm_config.rx_cfg.deemphasis;	/* MT6627fm_cust_config_fetch(FM_CFG_RX_DEEMPHASIS); */
+	de_emphasis = mt6627_fm_config.rx_cfg.deemphasis;
 	de_emphasis &= 0x0001;	/* rang 0~1 */
-	/* osc_freq = mt6627_fm_config.rx_cfg.osc_freq;//MT6628fm_cust_config_fetch(FM_CFG_RX_OSC_FREQ); */
-	/* osc_freq &= 0x0007; //rang 0~5 */
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_ENABLE_OPCODE;
 	pkt_size = 4;
 
 	/* 2,turn on top clock */
-	pkt_size += fm_bop_top_write(0xC0, 0x38200000, &buf[pkt_size], buf_size - pkt_size);	/* enable bgldo */
 	pkt_size += fm_bop_top_write(0xA10, 0xFFFFFFFF, &buf[pkt_size], buf_size - pkt_size);	/* wr a10 ffffffff */
 	/* 3,enable MTCMOS */
 	pkt_size += fm_bop_top_write(0x60, 0x00000030, &buf[pkt_size], buf_size - pkt_size);	/* wr 60 30 */
 	pkt_size += fm_bop_top_write(0x60, 0x00000035, &buf[pkt_size], buf_size - pkt_size);	/* wr 60 35 */
-	pkt_size += fm_bop_top_rd_until(0x60, 0x0000000A, 0xA, &buf[pkt_size], buf_size - pkt_size);	/* Poll 60[1]=1,[3]= 1 */
+	pkt_size += fm_bop_top_rd_until(0x60, 0x0000000A, 0xA, &buf[pkt_size], buf_size - pkt_size);
 	pkt_size += fm_bop_top_write(0x60, 0x00000015, &buf[pkt_size], buf_size - pkt_size);	/* wr 60 15 */
 	pkt_size += fm_bop_top_write(0x60, 0x00000005, &buf[pkt_size], buf_size - pkt_size);	/* wr 60 5 */
 	pkt_size += fm_bop_udelay(10, &buf[pkt_size], buf_size - pkt_size);	/* delay 10us */
@@ -222,9 +197,7 @@ fm_s32 mt6627_pwrup_clock_on(fm_u8 *buf, fm_s32 buf_size)
 	/* a5 enable DSP auto clock gating */
 	pkt_size += fm_bop_write(0x70, 0x0040, &buf[pkt_size], buf_size - pkt_size);	/* wr 70 0040 */
 	/* a7 deemphasis setting */
-	pkt_size +=
-	    fm_bop_modify(0x61, ~DE_EMPHASIS, (de_emphasis << 12), &buf[pkt_size],
-			  buf_size - pkt_size);
+	pkt_size += fm_bop_modify(0x61, ~DE_EMPHASIS, (de_emphasis << 12), &buf[pkt_size], buf_size - pkt_size);
 
 	/* pkt_size += fm_bop_modify(0x60, OSC_FREQ_MASK, (osc_freq << 4), &buf[pkt_size], buf_size - pkt_size); */
 
@@ -233,7 +206,6 @@ fm_s32 mt6627_pwrup_clock_on(fm_u8 *buf, fm_s32 buf_size)
 
 	return pkt_size;
 }
-
 
 /*
  * mt6627_patch_download - Wholechip FM Power Up: step 3, download patch to f/w,
@@ -251,9 +223,8 @@ fm_s32 mt6627_patch_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8 s
 	fm_s32 pkt_size = 0;
 	fm_u8 *dst = NULL;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_PATCH_DOWNLOAD_OPCODE;
@@ -262,9 +233,8 @@ fm_s32 mt6627_patch_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8 s
 	buf[pkt_size++] = seg_num;
 	buf[pkt_size++] = seg_id;
 
-	if (seg_len > (buf_size - pkt_size)) {
+	if (seg_len > (buf_size - pkt_size))
 		return -1;
-	}
 
 	dst = &buf[pkt_size];
 	pkt_size += seg_len;
@@ -285,7 +255,6 @@ fm_s32 mt6627_patch_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8 s
 	return pkt_size;
 }
 
-
 /*
  * mt6627_coeff_download - Wholechip FM Power Up: step 3,download coeff to f/w,
  * @buf - target buf
@@ -302,9 +271,8 @@ fm_s32 mt6627_coeff_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8 s
 	fm_s32 pkt_size = 0;
 	fm_u8 *dst = NULL;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_COEFF_DOWNLOAD_OPCODE;
@@ -313,9 +281,8 @@ fm_s32 mt6627_coeff_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8 s
 	buf[pkt_size++] = seg_num;
 	buf[pkt_size++] = seg_id;
 
-	if (seg_len > (buf_size - pkt_size)) {
+	if (seg_len > (buf_size - pkt_size))
 		return -1;
-	}
 
 	dst = &buf[pkt_size];
 	pkt_size += seg_len;
@@ -353,9 +320,8 @@ fm_s32 mt6627_hwcoeff_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8
 	fm_s32 pkt_size = 0;
 	fm_u8 *dst = NULL;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_HWCOEFF_DOWNLOAD_OPCODE;
@@ -364,9 +330,8 @@ fm_s32 mt6627_hwcoeff_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8
 	buf[pkt_size++] = seg_num;
 	buf[pkt_size++] = seg_id;
 
-	if (seg_len > (buf_size - pkt_size)) {
+	if (seg_len > (buf_size - pkt_size))
 		return -1;
-	}
 
 	dst = &buf[pkt_size];
 	pkt_size += seg_len;
@@ -387,7 +352,6 @@ fm_s32 mt6627_hwcoeff_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8
 	return pkt_size;
 }
 
-
 /*
  * mt6627_rom_download - Wholechip FM Power Up: step 3,download rom to f/w,
  * @buf - target buf
@@ -398,15 +362,13 @@ fm_s32 mt6627_hwcoeff_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8
  * @seg_len - segment size: segment that will now be sent
  * return package size
  */
-fm_s32 mt6627_rom_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8 seg_id,
-			   const fm_u8 *src, fm_s32 seg_len)
+fm_s32 mt6627_rom_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8 seg_id, const fm_u8 *src, fm_s32 seg_len)
 {
 	fm_s32 pkt_size = 0;
 	fm_u8 *dst = NULL;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_ROM_DOWNLOAD_OPCODE;
@@ -415,9 +377,8 @@ fm_s32 mt6627_rom_download(fm_u8 *buf, fm_s32 buf_size, fm_u8 seg_num, fm_u8 seg
 	buf[pkt_size++] = seg_num;
 	buf[pkt_size++] = seg_id;
 
-	if (seg_len > (buf_size - pkt_size)) {
+	if (seg_len > (buf_size - pkt_size))
 		return -1;
-	}
 
 	dst = &buf[pkt_size];
 	pkt_size += seg_len;
@@ -449,9 +410,8 @@ fm_s32 mt6627_pwrup_digital_init(fm_u8 *buf, fm_s32 buf_size)
 {
 	fm_s32 pkt_size = 0;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_ENABLE_OPCODE;
@@ -504,33 +464,31 @@ fm_s32 mt6627_pwrup_fine_tune(fm_u8 *buf, fm_s32 buf_size)
 {
 	fm_s32 pkt_size = 0;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_ENABLE_OPCODE;
 	pkt_size = 4;
 
 	/* F1 set host control RF register */
-	pkt_size += fm_bop_top_write(0x50, 0x00000007, &buf[pkt_size], buf_size - pkt_size);	/* wr 50 7 */
+	pkt_size += fm_bop_top_write(0x50, 0x00000007, &buf[pkt_size], buf_size - pkt_size);
 	/* F2 fine tune RF setting */
-	pkt_size += fm_bop_write(0x01, 0xBEE8, &buf[pkt_size], buf_size - pkt_size);	/* wr 01 0xBEE8 */
-	pkt_size += fm_bop_write(0x03, 0xF6ED, &buf[pkt_size], buf_size - pkt_size);	/* wr 03 0xF6ED mdy 0315 version */
-	pkt_size += fm_bop_write(0x15, 0x0D80, &buf[pkt_size], buf_size - pkt_size);	/* wr 15 0x0D80 */
-	pkt_size += fm_bop_write(0x16, 0x0068, &buf[pkt_size], buf_size - pkt_size);	/* wr 16 0x0068 */
-	pkt_size += fm_bop_write(0x17, 0x092A, &buf[pkt_size], buf_size - pkt_size);	/* wr 17 0x092A */
-	pkt_size += fm_bop_write(0x34, 0x807F, &buf[pkt_size], buf_size - pkt_size);	/* wr 34 0x807F */
-	pkt_size += fm_bop_write(0x35, 0x311E, &buf[pkt_size], buf_size - pkt_size);	/* wr 35 0x311E */
+	pkt_size += fm_bop_write(0x01, 0xBEE8, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_write(0x03, 0xF6ED, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_write(0x15, 0x0D80, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_write(0x16, 0x0068, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_write(0x17, 0x092A, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_write(0x34, 0x807F, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_write(0x35, 0x311E, &buf[pkt_size], buf_size - pkt_size);
 	/* F1 set DSP control RF register */
-	pkt_size += fm_bop_top_write(0x50, 0x0000000F, &buf[pkt_size], buf_size - pkt_size);	/* wr 50 F */
+	pkt_size += fm_bop_top_write(0x50, 0x0000000F, &buf[pkt_size], buf_size - pkt_size);
 
 	buf[2] = (fm_u8) ((pkt_size - 4) & 0x00FF);
 	buf[3] = (fm_u8) (((pkt_size - 4) >> 8) & 0x00FF);
 
 	return pkt_size;
 }
-
 
 /*
  * mt6627_pwrdown - Wholechip FM Power down: Digital Modem Power Down
@@ -542,44 +500,42 @@ fm_s32 mt6627_pwrdown(fm_u8 *buf, fm_s32 buf_size)
 {
 	fm_s32 pkt_size = 0;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_ENABLE_OPCODE;
 	pkt_size = 4;
 	/* A1:set audio output I2S Tx mode: */
-	pkt_size += fm_bop_modify(0x9B, 0xFFF8, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* wr 9B[0~2] 0 */
+	pkt_size += fm_bop_modify(0x9B, 0xFFF8, 0x0000, &buf[pkt_size], buf_size - pkt_size);
 
 	/* B0:Disable HW clock control */
-	pkt_size += fm_bop_top_write(0x50, 0x330F, &buf[pkt_size], buf_size - pkt_size);	/* wr top50 330F */
+	pkt_size += fm_bop_top_write(0x50, 0x330F, &buf[pkt_size], buf_size - pkt_size);
 	/* B1:Reset ASIP */
-	pkt_size += fm_bop_write(0x61, 0x0001, &buf[pkt_size], buf_size - pkt_size);	/* wr 61 0001 */
+	pkt_size += fm_bop_write(0x61, 0x0001, &buf[pkt_size], buf_size - pkt_size);
 	/* B2:digital core + digital rgf reset */
-	pkt_size += fm_bop_modify(0x6E, 0xFFF8, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* wr 6E[0~2] 0 */
-	pkt_size += fm_bop_modify(0x6E, 0xFFF8, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* wr 6E[0~2] 0 */
-	pkt_size += fm_bop_modify(0x6E, 0xFFF8, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* wr 6E[0~2] 0 */
-	pkt_size += fm_bop_modify(0x6E, 0xFFF8, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* wr 6E[0~2] 0 */
+	pkt_size += fm_bop_modify(0x6E, 0xFFF8, 0x0000, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(0x6E, 0xFFF8, 0x0000, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(0x6E, 0xFFF8, 0x0000, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(0x6E, 0xFFF8, 0x0000, &buf[pkt_size], buf_size - pkt_size);
 	/* B3:Disable all clock */
-	pkt_size += fm_bop_top_write(0x50, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* wr top50 0000 */
+	pkt_size += fm_bop_top_write(0x50, 0x0000, &buf[pkt_size], buf_size - pkt_size);
 	/* B4:Reset rgfrf */
-	pkt_size += fm_bop_top_write(0x50, 0x4000, &buf[pkt_size], buf_size - pkt_size);	/* wr top50 4000 */
-	pkt_size += fm_bop_top_write(0x50, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* wr top50 0000 */
+	pkt_size += fm_bop_top_write(0x50, 0x4000, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_top_write(0x50, 0x0000, &buf[pkt_size], buf_size - pkt_size);
 	/* MTCMOS power off */
 	/* C0:disable MTCMOS */
-	pkt_size += fm_bop_top_write(0x60, 0x0005, &buf[pkt_size], buf_size - pkt_size);	/* wr top60 0005 */
-	pkt_size += fm_bop_top_write(0x60, 0x0015, &buf[pkt_size], buf_size - pkt_size);	/* wr top60 0015 */
-	pkt_size += fm_bop_top_write(0x60, 0x0035, &buf[pkt_size], buf_size - pkt_size);	/* wr top60 0035 */
-	pkt_size += fm_bop_top_write(0x60, 0x0030, &buf[pkt_size], buf_size - pkt_size);	/* wr top60 0030 */
-	pkt_size += fm_bop_top_rd_until(0x60, 0x0000000A, 0x0, &buf[pkt_size], buf_size - pkt_size);	/* Poll 60[1]=0,[3]= 0 */
+	pkt_size += fm_bop_top_write(0x60, 0x0005, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_top_write(0x60, 0x0015, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_top_write(0x60, 0x0035, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_top_write(0x60, 0x0030, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_top_rd_until(0x60, 0x0000000A, 0x0, &buf[pkt_size], buf_size - pkt_size);
 
 	buf[2] = (fm_u8) ((pkt_size - 4) & 0x00FF);
 	buf[3] = (fm_u8) (((pkt_size - 4) >> 8) & 0x00FF);
 
 	return pkt_size;
 }
-
 
 /*
  * mt6627_rampdown - f/w will wait for STC_DONE interrupt
@@ -591,31 +547,30 @@ fm_s32 mt6627_rampdown(fm_u8 *buf, fm_s32 buf_size)
 {
 	fm_s32 pkt_size = 0;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_RAMPDOWN_OPCODE;
 	pkt_size = 4;
 
 	/* Clear DSP state */
-	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFF0, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* wr 63[3:0] = 0 */
+	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFF0, 0x0000, &buf[pkt_size], buf_size - pkt_size);
 	/* Set DSP ramp down state */
-	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFFF, RAMP_DOWN, &buf[pkt_size], buf_size - pkt_size);	/* wr 63[8] = 1 */
+	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFFF, RAMP_DOWN, &buf[pkt_size], buf_size - pkt_size);
 	/* @Wait for STC_DONE interrupt@ */
-	pkt_size += fm_bop_rd_until(FM_MAIN_INTR, FM_INTR_STC_DONE, FM_INTR_STC_DONE, &buf[pkt_size], buf_size - pkt_size);	/* Poll 69[0] = b'1 */
+	pkt_size += fm_bop_rd_until(FM_MAIN_INTR, FM_INTR_STC_DONE, FM_INTR_STC_DONE, &buf[pkt_size],
+				    buf_size - pkt_size);
 	/* Clear DSP ramp down state */
-	pkt_size += fm_bop_modify(FM_MAIN_CTRL, (~RAMP_DOWN), 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* wr 63[8] = 0 */
+	pkt_size += fm_bop_modify(FM_MAIN_CTRL, (~RAMP_DOWN), 0x0000, &buf[pkt_size], buf_size - pkt_size);
 	/* Write 1 clear the STC_DONE interrupt status flag */
-	pkt_size += fm_bop_modify(FM_MAIN_INTR, 0xFFFF, FM_INTR_STC_DONE, &buf[pkt_size], buf_size - pkt_size);	/* wr 69[0] = 1 */
+	pkt_size += fm_bop_modify(FM_MAIN_INTR, 0xFFFF, FM_INTR_STC_DONE, &buf[pkt_size], buf_size - pkt_size);
 
 	buf[2] = (fm_u8) ((pkt_size - 4) & 0x00FF);
 	buf[3] = (fm_u8) (((pkt_size - 4) >> 8) & 0x00FF);
 
 	return pkt_size;
 }
-
 
 /*
  * mt6627_tune - execute tune action,
@@ -629,9 +584,8 @@ fm_s32 mt6627_tune(fm_u8 *buf, fm_s32 buf_size, fm_u16 freq, fm_u16 chan_para)
 	/* #define FM_TUNE_USE_POLL */
 	fm_s32 pkt_size = 0;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 /*
     if (0 == fm_get_channel_space(freq)) {
 	freq *= 10;
@@ -648,23 +602,19 @@ fm_s32 mt6627_tune(fm_u8 *buf, fm_s32 buf_size, fm_u16 freq, fm_u16 chan_para)
 	pkt_size += fm_bop_write(0x6A, 0x0000, &buf[pkt_size], buf_size - pkt_size);
 	pkt_size += fm_bop_write(0x6B, 0x0000, &buf[pkt_size], buf_size - pkt_size);
 #endif
-	/* pkt_size += fm_bop_modify(FM_CHANNEL_SET, 0xFC00, freq, &buf[pkt_size], buf_size - pkt_size);// set 0x65[9:0] = 0x029e, => ((97.5 - 64) * 20) */
-	/* channel para setting, D15~D12, D15: ATJ, D13: HL, D12: FA */
-	/* pkt_size += fm_bop_modify(FM_CHANNEL_SET, 0x0FFF, (chan_para << 12), &buf[pkt_size], buf_size - pkt_size); */
-	/* Enable hardware controlled tuning sequence */
-	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFF8, TUNE, &buf[pkt_size], buf_size - pkt_size);	/* set 0x63[0] = 1 */
+	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFF8, TUNE, &buf[pkt_size], buf_size - pkt_size);
 	/* Wait for STC_DONE interrupt */
 #ifdef FM_TUNE_USE_POLL
-	pkt_size += fm_bop_rd_until(FM_MAIN_INTR, FM_INTR_STC_DONE, FM_INTR_STC_DONE, &buf[pkt_size], buf_size - pkt_size);	/* Poll 69[0] = b'1 */
+	pkt_size += fm_bop_rd_until(FM_MAIN_INTR, FM_INTR_STC_DONE, FM_INTR_STC_DONE, &buf[pkt_size],
+				    buf_size - pkt_size);
 	/* Write 1 clear the STC_DONE interrupt status flag */
-	pkt_size += fm_bop_modify(FM_MAIN_INTR, 0xFFFF, FM_INTR_STC_DONE, &buf[pkt_size], buf_size - pkt_size);	/* wr 69[0] = 1 */
+	pkt_size += fm_bop_modify(FM_MAIN_INTR, 0xFFFF, FM_INTR_STC_DONE, &buf[pkt_size], buf_size - pkt_size);
 #endif
 	buf[2] = (fm_u8) ((pkt_size - 4) & 0x00FF);
 	buf[3] = (fm_u8) (((pkt_size - 4) >> 8) & 0x00FF);
 
 	return pkt_size;
 }
-
 
 /*
  * mt6627_full_cqi_req - execute request cqi info action,
@@ -680,9 +630,8 @@ fm_s32 mt6627_full_cqi_req(fm_u8 *buf, fm_s32 buf_size, fm_u16 *freq, fm_s32 cnt
 {
 	fm_s32 pkt_size = 0;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_SOFT_MUTE_TUNE_OPCODE;
@@ -721,7 +670,6 @@ fm_s32 mt6627_full_cqi_req(fm_u8 *buf, fm_s32 buf_size, fm_u16 *freq, fm_s32 cnt
 	return pkt_size;
 }
 
-
 /*
  * mt6627_seek - execute seek action,
  * @buf - target buf
@@ -732,69 +680,57 @@ fm_s32 mt6627_full_cqi_req(fm_u8 *buf, fm_s32 buf_size, fm_u16 *freq, fm_s32 cnt
  * @min_freq - lower bound
  * return package size
  */
-fm_s32 mt6627_seek(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq,
-		   fm_u16 min_freq)
+fm_s32 mt6627_seek(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq)
 {
 	fm_s32 pkt_size = 0;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
-	if (0 == fm_get_channel_space(max_freq)) {
+	if (0 == fm_get_channel_space(max_freq))
 		max_freq *= 10;
-	}
 
-	if (0 == fm_get_channel_space(min_freq)) {
+	if (0 == fm_get_channel_space(min_freq))
 		min_freq *= 10;
-	}
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_SEEK_OPCODE;
 	pkt_size = 4;
 
 	/* Program seek direction */
-	if (seekdir == 0) {
-		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFBFF, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* 0x66[10] = 0, seek up */
-	} else {
-		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFBFF, 0x0400, &buf[pkt_size], buf_size - pkt_size);	/* 0x66[10] = 1, seek down */
-	}
+	if (seekdir == 0)
+		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFBFF, 0x0000, &buf[pkt_size], buf_size - pkt_size);
+	else
+		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFBFF, 0x0400, &buf[pkt_size], buf_size - pkt_size);
 
 	/* Program scan channel spacing */
-	if (space == 1) {
-		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x1000, &buf[pkt_size], buf_size - pkt_size);	/* clear 0x66[14:12] then 0x66[14:12]=001 */
-	} else if (space == 2) {
-		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x2000, &buf[pkt_size], buf_size - pkt_size);	/* clear 0x66[14:12] then 0x66[14:12]=010 */
-	} else if (space == 4) {
-		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x4000, &buf[pkt_size], buf_size - pkt_size);	/* clear 0x66[14:12] then 0x66[14:12]=100 */
-	}
+	if (space == 1)
+		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x1000, &buf[pkt_size], buf_size - pkt_size);
+	else if (space == 2)
+		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x2000, &buf[pkt_size], buf_size - pkt_size);
+	else if (space == 4)
+		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x4000, &buf[pkt_size], buf_size - pkt_size);
+
 	/* enable wrap , if it is not auto scan function, 0x66[11] 0=no wrarp, 1=wrap */
-	pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xF7FF, 0x0800, &buf[pkt_size], buf_size - pkt_size);	/* 0x66[11] = 1, wrap */
+	pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xF7FF, 0x0800, &buf[pkt_size], buf_size - pkt_size);
 	/* 0x66[9:0] freq upper bound */
 
 	max_freq = (max_freq - 6400) * 2 / 10;
 
-	pkt_size +=
-	    fm_bop_modify(FM_MAIN_CFG1, 0xFC00, max_freq, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFC00, max_freq, &buf[pkt_size], buf_size - pkt_size);
 	/* 0x67[9:0] freq lower bound */
 
 	min_freq = (min_freq - 6400) * 2 / 10;
 
-	pkt_size +=
-	    fm_bop_modify(FM_MAIN_CFG2, 0xFC00, min_freq, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(FM_MAIN_CFG2, 0xFC00, min_freq, &buf[pkt_size], buf_size - pkt_size);
 	/* Enable hardware controlled seeking sequence */
-	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFF8, SEEK, &buf[pkt_size], buf_size - pkt_size);	/* 0x63[1] = 1 */
-	/* Wait for STC_DONE interrupt */
-	/* pkt_size += fm_bop_rd_until(FM_MAIN_INTR, FM_INTR_STC_DONE, FM_INTR_STC_DONE, &buf[pkt_size], buf_size - pkt_size);//Poll 69[0] = b'1 */
-	/* Write 1 clear the STC_DONE interrupt status flag */
-	/* pkt_size += fm_bop_modify(FM_MAIN_INTR, 0xFFFF, FM_INTR_STC_DONE, &buf[pkt_size], buf_size - pkt_size);//wr 69[0] = 1 */
+	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFF8, SEEK, &buf[pkt_size], buf_size - pkt_size);
 
 	buf[2] = (fm_u8) ((pkt_size - 4) & 0x00FF);
 	buf[3] = (fm_u8) (((pkt_size - 4) >> 8) & 0x00FF);
 
 	return pkt_size;
 }
-
 
 /*
  * mt6627_scan - execute scan action,
@@ -806,83 +742,80 @@ fm_s32 mt6627_seek(fm_u8 *buf, fm_s32 buf_size, fm_u16 seekdir, fm_u16 space, fm
  * @min_freq - lower bound
  * return package size
  */
-fm_s32 mt6627_scan(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq,
-		   fm_u16 min_freq)
+fm_s32 mt6627_scan(fm_u8 *buf, fm_s32 buf_size, fm_u16 scandir, fm_u16 space, fm_u16 max_freq, fm_u16 min_freq)
 {
 	fm_s32 pkt_size = 0;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
-	if (0 == fm_get_channel_space(max_freq)) {
+	if (0 == fm_get_channel_space(max_freq))
 		max_freq *= 10;
-	}
-	if (0 == fm_get_channel_space(min_freq)) {
+
+	if (0 == fm_get_channel_space(min_freq))
 		min_freq *= 10;
-	}
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_SCAN_OPCODE;
 	pkt_size = 4;
 
 	/* Program seek direction */
-	if (scandir == 0) {
-		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFBFF, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* 0x66[10] = 0, seek up */
-	} else {
-		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFFFF, 0x0400, &buf[pkt_size], buf_size - pkt_size);	/* 0x66[10] = 1, seek down */
-	}
+	if (scandir == 0)
+		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFBFF, 0x0000, &buf[pkt_size], buf_size - pkt_size);
+		/* 0x66[10] = 0, seek up */
+	else
+		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFFFF, 0x0400, &buf[pkt_size], buf_size - pkt_size);
+		/* 0x66[10] = 1, seek down */
 
 	/* Program scan channel spacing */
 	if (space == 1) {
-		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x1000, &buf[pkt_size], buf_size - pkt_size);	/* clear 0x66[14:12] then 0x66[14:12]=001 */
+		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x1000, &buf[pkt_size], buf_size - pkt_size);
+		/* clear 0x66[14:12] then 0x66[14:12]=001 */
 	} else if (space == 2) {
-		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x2000, &buf[pkt_size], buf_size - pkt_size);	/* clear 0x66[14:12] then 0x66[14:12]=010 */
+		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x2000, &buf[pkt_size], buf_size - pkt_size);
+		/* clear 0x66[14:12] then 0x66[14:12]=010 */
 	} else if (space == 4) {
-		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x4000, &buf[pkt_size], buf_size - pkt_size);	/* clear 0x66[14:12] then 0x66[14:12]=100 */
+		pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0x8FFF, 0x4000, &buf[pkt_size], buf_size - pkt_size);
+		/* clear 0x66[14:12] then 0x66[14:12]=100 */
 	}
 	/* disable wrap , if it is auto scan function, 0x66[11] 0=no wrarp, 1=wrap */
-	pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xF7FF, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* 0x66[11] = 0, no wrap */
+	pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xF7FF, 0x0000, &buf[pkt_size], buf_size - pkt_size);
+	/* 0x66[11] = 0, no wrap */
 	/* 0x66[9:0] freq upper bound */
 
 	max_freq = (max_freq - 6400) * 2 / 10;
 
-	pkt_size +=
-	    fm_bop_modify(FM_MAIN_CFG1, 0xFC00, max_freq, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(FM_MAIN_CFG1, 0xFC00, max_freq, &buf[pkt_size], buf_size - pkt_size);
 	/* 0x67[9:0] freq lower bound */
 
 	min_freq = (min_freq - 6400) * 2 / 10;
 
-	pkt_size +=
-	    fm_bop_modify(FM_MAIN_CFG2, 0xFC00, min_freq, &buf[pkt_size], buf_size - pkt_size);
+	pkt_size += fm_bop_modify(FM_MAIN_CFG2, 0xFC00, min_freq, &buf[pkt_size], buf_size - pkt_size);
 	/* Enable hardware controlled scanning sequence */
-	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFF8, SCAN, &buf[pkt_size], buf_size - pkt_size);	/* 0x63[1] = 1 */
-	/* Wait for STC_DONE interrupt */
-	/* pkt_size += fm_bop_rd_until(FM_MAIN_INTR, FM_INTR_STC_DONE, FM_INTR_STC_DONE, &buf[pkt_size], buf_size - pkt_size);//Poll 69[0] = b'1 */
-	/* Write 1 clear the STC_DONE interrupt status flag */
-	/* pkt_size += fm_bop_modify(FM_MAIN_INTR, 0xFFFF, FM_INTR_STC_DONE, &buf[pkt_size], buf_size - pkt_size);//wr 69[0] = 1 */
+	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFF8, SCAN, &buf[pkt_size], buf_size - pkt_size);
+	/* 0x63[1] = 1 */
 
 	buf[2] = (fm_u8) ((pkt_size - 4) & 0x00FF);
 	buf[3] = (fm_u8) (((pkt_size - 4) >> 8) & 0x00FF);
 
 	return pkt_size;
 }
-
 
 fm_s32 mt6627_cqi_get(fm_u8 *buf, fm_s32 buf_size)
 {
 	fm_s32 pkt_size = 0;
 
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_SCAN_OPCODE;
 	pkt_size = 4;
 
-	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFF0, 0x0000, &buf[pkt_size], buf_size - pkt_size);	/* wr 63 bit0~2 0 */
-	pkt_size += fm_bop_modify(FM_MAIN_CTRL, ~CQI_READ, CQI_READ, &buf[pkt_size], buf_size - pkt_size);	/* wr 63 bit3 1 */
+	pkt_size += fm_bop_modify(FM_MAIN_CTRL, 0xFFF0, 0x0000, &buf[pkt_size], buf_size - pkt_size);
+	/* wr 63 bit0~2 0 */
+	pkt_size += fm_bop_modify(FM_MAIN_CTRL, ~CQI_READ, CQI_READ, &buf[pkt_size], buf_size - pkt_size);
+	/* wr 63 bit3 1 */
 
 	buf[2] = (fm_u8) ((pkt_size - 4) & 0x00FF);
 	buf[3] = (fm_u8) (((pkt_size - 4) >> 8) & 0x00FF);
@@ -890,12 +823,10 @@ fm_s32 mt6627_cqi_get(fm_u8 *buf, fm_s32 buf_size)
 	return pkt_size;
 }
 
-
 fm_s32 mt6627_get_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr)
 {
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FSPI_READ_OPCODE;
@@ -903,17 +834,14 @@ fm_s32 mt6627_get_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr)
 	buf[3] = 0x00;
 	buf[4] = addr;
 
-	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3],
-		buf[4]);
+	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 	return 5;
 }
 
-
 fm_s32 mt6627_set_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr, fm_u16 value)
 {
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FSPI_WRITE_OPCODE;
@@ -928,13 +856,11 @@ fm_s32 mt6627_set_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr, fm_u16 value)
 	return 7;
 }
 
-
 fm_s32 mt6627_set_bits_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr, fm_u16 bits, fm_u16 mask)
 {
 	fm_s32 pkt_size = 0;
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = 0x11;		/* 0x11 this opcode won't be parsed as an opcode, so set here as spcial case. */
@@ -950,9 +876,8 @@ fm_s32 mt6627_set_bits_reg(fm_u8 *buf, fm_s32 buf_size, fm_u8 addr, fm_u16 bits,
 /*top register read*/
 fm_s32 mt6627_top_get_reg(fm_u8 *buf, fm_s32 buf_size, fm_u16 addr)
 {
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = CSPI_READ_OPCODE;
@@ -967,12 +892,10 @@ fm_s32 mt6627_top_get_reg(fm_u8 *buf, fm_s32 buf_size, fm_u16 addr)
 	return 7;
 }
 
-
 fm_s32 mt6627_top_set_reg(fm_u8 *buf, fm_s32 buf_size, fm_u16 addr, fm_u32 value)
 {
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = CSPI_WRITE_OPCODE;
@@ -994,9 +917,8 @@ fm_s32 mt6627_top_set_reg(fm_u8 *buf, fm_s32 buf_size, fm_u16 addr, fm_u32 value
 /*host register read*/
 fm_s32 mt6627_host_get_reg(fm_u8 *buf, fm_s32 buf_size, fm_u32 addr)
 {
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_HOST_READ_OPCODE;
@@ -1012,12 +934,10 @@ fm_s32 mt6627_host_get_reg(fm_u8 *buf, fm_s32 buf_size, fm_u32 addr)
 	return 8;
 }
 
-
 fm_s32 mt6627_host_set_reg(fm_u8 *buf, fm_s32 buf_size, fm_u32 addr, fm_u32 value)
 {
-	if (buf_size < TX_BUF_SIZE) {
-		return (-1);
-	}
+	if (buf_size < TX_BUF_SIZE)
+		return -1;
 
 	buf[0] = FM_TASK_COMMAND_PKT_TYPE;
 	buf[1] = FM_HOST_WRITE_OPCODE;
@@ -1033,7 +953,6 @@ fm_s32 mt6627_host_set_reg(fm_u8 *buf, fm_s32 buf_size, fm_u32 addr, fm_u32 valu
 	buf[11] = (fm_u8) ((value >> 24) & 0x00FF);
 
 	WCN_DBG(FM_DBG | CHIP, "%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
-		buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9],
-		buf[10], buf[11]);
+		buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9], buf[10], buf[11]);
 	return 12;
 }

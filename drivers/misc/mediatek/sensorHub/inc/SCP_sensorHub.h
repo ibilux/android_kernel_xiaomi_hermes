@@ -56,7 +56,7 @@ struct SCP_sensorData{
     uint8_t     reserve[2];
     uint32_t    timeStampH;
     uint32_t    timeStampL;
-    int16_t    data[0];
+    int16_t    data[8];
 };
 
 struct sensorFIFO {

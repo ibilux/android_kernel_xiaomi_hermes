@@ -30,7 +30,11 @@ static int toi_actual_compression;
 static struct toi_module_ops toi_compression_ops;
 static struct toi_module_ops *next_driver;
 
+#if defined(CONFIG_MTK_MTD_NAND) && defined(CONFIG_CRYPTO_LZ4K)
+static char toi_compressor_name[32] = "lz4k";
+#else
 static char toi_compressor_name[32] = "lzo";
+#endif
 
 static DEFINE_MUTEX(stats_lock);
 

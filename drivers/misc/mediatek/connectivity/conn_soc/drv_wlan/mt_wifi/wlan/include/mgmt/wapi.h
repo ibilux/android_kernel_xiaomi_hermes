@@ -1,18 +1,16 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/wapi.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/wapi.h#1
 */
 
 /*! \file  wapi.h
     \brief  The wapi related define, macro and structure are described here.
 */
 
-
-
 /*
-** $Log: wapi.h $
+** Log: wapi.h
  *
  * 07 20 2010 wh.su
- * 
+ *
  * .
  *
  * 01 27 2010 wh.su
@@ -73,43 +71,30 @@
 *                                 M A C R O S
 ********************************************************************************
 */
-#define WAPI_CIPHER_SUITE_WPI           0x01721400 /* WPI_SMS4 */
-#define WAPI_AKM_SUITE_802_1X           0x01721400 /* WAI */
-#define WAPI_AKM_SUITE_PSK              0x02721400 /* WAI_PSK */
+#define WAPI_CIPHER_SUITE_WPI           0x01721400	/* WPI_SMS4 */
+#define WAPI_AKM_SUITE_802_1X           0x01721400	/* WAI */
+#define WAPI_AKM_SUITE_PSK              0x02721400	/* WAI_PSK */
 
-#define ELEM_ID_WAPI                    68 /* WAPI IE */
+#define ELEM_ID_WAPI                    68	/* WAPI IE */
 
 #define WAPI_IE(fp)                     ((P_WAPI_INFO_ELEM_T) fp)
-
 
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
 
-VOID
-wapiGenerateWAPIIE(
-    IN P_ADAPTER_T          prAdapter,
-    IN P_MSDU_INFO_T        prMsduInfo
-    );
+VOID wapiGenerateWAPIIE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo);
 
-BOOLEAN
-wapiParseWapiIE (
-    IN  P_WAPI_INFO_ELEM_T  prInfoElem,
-    OUT P_WAPI_INFO_T       prWapiInfo
-    );
+BOOLEAN wapiParseWapiIE(IN P_WAPI_INFO_ELEM_T prInfoElem, OUT P_WAPI_INFO_T prWapiInfo);
 
-BOOLEAN
-wapiPerformPolicySelection(
-    IN P_ADAPTER_T          prAdapter,
-    IN P_BSS_DESC_T         prBss
-    );
+BOOLEAN wapiPerformPolicySelection(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBss);
 
-//BOOLEAN
-//wapiUpdateTxKeyIdx (
-//    IN  P_STA_RECORD_T     prStaRec,
-//    IN  UINT_8             ucWlanIdx
-//    );
+/* BOOLEAN */
+/* wapiUpdateTxKeyIdx ( */
+/* IN  P_STA_RECORD_T     prStaRec, */
+/* IN  UINT_8             ucWlanIdx */
+/* ); */
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -117,4 +102,3 @@ wapiPerformPolicySelection(
 */
 #endif
 #endif /* _WAPI_H */
-

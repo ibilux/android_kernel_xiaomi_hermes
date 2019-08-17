@@ -47,16 +47,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <linux/seq_file.h>
 
 #include "img_types.h"
+#include "osfunc.h"
 
 typedef ssize_t (PVRSRV_ENTRY_WRITE_FUNC)(const char __user *pszBuffer,
 					  size_t uiCount,
 					  loff_t uiPosition,
 					  void *pvData);
 
-typedef IMG_BOOL (PVRSRV_GET_NEXT_STAT_FUNC)(void *pvStatPtr,
-					     IMG_UINT32 uiStatNumber,
-					     IMG_INT32 *piStatData,
-					     IMG_CHAR **ppszStatFmtText);
 
 typedef IMG_UINT32 (PVRSRV_INC_STAT_MEM_REFCOUNT_FUNC)(void *pvStatPtr);
 typedef IMG_UINT32 (PVRSRV_DEC_STAT_MEM_REFCOUNT_FUNC)(void *pvStatPtr);
@@ -69,13 +66,13 @@ int PVRDebugFSInit(void);
 void PVRDebugFSDeInit(void);
 
 int PVRDebugFSCreateEntryDir(IMG_CHAR *pszName,
-							 PVR_DEBUGFS_DIR_DATA *psParentDir,
+				 	 	 	 PVR_DEBUGFS_DIR_DATA *psParentDir,
 							 PVR_DEBUGFS_DIR_DATA **ppsNewDir);
 
-void PVRDebugFSRemoveEntryDir(PVR_DEBUGFS_DIR_DATA **ppsDir);
+void PVRDebugFSRemoveEntryDir(PVR_DEBUGFS_DIR_DATA *psDir);
 
 int PVRDebugFSCreateEntry(const char *pszName,
-						  PVR_DEBUGFS_DIR_DATA *psParentDir,
+			  	  	  	  PVR_DEBUGFS_DIR_DATA *psParentDir,
 						  struct seq_operations *psReadOps,
 						  PVRSRV_ENTRY_WRITE_FUNC *pfnWrite,
 						  void *pvData,
@@ -84,10 +81,10 @@ int PVRDebugFSCreateEntry(const char *pszName,
 void PVRDebugFSRemoveEntry(PVR_DEBUGFS_ENTRY_DATA *psDebugFSEntry);
 
 PVR_DEBUGFS_DRIVER_STAT *PVRDebugFSCreateStatisticEntry(const char *pszName,
-														PVR_DEBUGFS_DIR_DATA *psDir,
-														PVRSRV_GET_NEXT_STAT_FUNC *pfnGetNextStat,
-														PVRSRV_INC_STAT_MEM_REFCOUNT_FUNC	*pfnIncStatMemRefCount,
-														PVRSRV_INC_STAT_MEM_REFCOUNT_FUNC	*pfnDecStatMemRefCount,
+					 	 	 	 	 	 	 	 	 	PVR_DEBUGFS_DIR_DATA *psDir,
+														OS_STATS_PRINT_FUNC *pfnStatsPrint,
+														PVRSRV_INC_STAT_MEM_REFCOUNT_FUNC *pfnIncStatMemRefCount,
+														PVRSRV_INC_STAT_MEM_REFCOUNT_FUNC *pfnDecStatMemRefCount,
 														void *pvData);
 void PVRDebugFSRemoveStatisticEntry(PVR_DEBUGFS_DRIVER_STAT *psStatEntry);
 

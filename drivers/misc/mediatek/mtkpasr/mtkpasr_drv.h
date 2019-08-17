@@ -70,9 +70,8 @@
 #endif
 
 #define MTKPASR_FLUSH() do {				\
-				local_irq_disable();	\
-				lru_add_drain();	\
-				drain_local_pages(NULL);\
+				lru_add_drain_all();	\
+				drain_all_pages();	\
 			} while (0)			\
 
 /* For every MTKPASR_CHECK_ABORTED loops, we will do a check on pending wakeup sources. */
@@ -100,13 +99,6 @@
 #else
 #define PAGE_EVICTABLE(page, vma)	page_evictable(page)
 #define ZS_CREATE_POOL(name, flags)	zs_create_pool(flags)
-#endif
-
-/* Page Migration API */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 8, 0)
-#define MIGRATE_PAGES(from, func, priv)	migrate_pages(from, func, priv, false, MIGRATE_ASYNC)
-#else
-#define MIGRATE_PAGES(from, func, priv)	migrate_pages(from, func, priv, MIGRATE_ASYNC, MR_COMPACTION)
 #endif
 
 /*-- Configurable parameters */
@@ -254,7 +246,7 @@ extern struct attribute_group mtkpasr_attr_group;
 
 /* MTKPASR switch */
 extern int mtkpasr_enable;
-extern unsigned long mtkpasr_enable_sr;
+extern int mtkpasr_enable_sr;
 
 /* Debug filter */
 extern int mtkpasr_debug_level;

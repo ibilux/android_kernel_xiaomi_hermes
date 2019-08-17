@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/rate.c#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/mgmt/rate.c#1
 */
 
 /*! \file   "rate.c"
@@ -10,10 +10,8 @@
     conversion between Rate Set and Data Rates.
 */
 
-
-
 /*
-** $Log: rate.c $
+** Log: rate.c
 **
 ** 08 05 2013 terry.wu
 ** [BORA00002207] [MT6630 Wi-Fi] TXM & MQM Implementation
@@ -209,7 +207,6 @@ rateGetRateSetFromIEs(IN P_IE_SUPPORTED_RATE_T prIeSupportedRate,
 	UINT_8 ucRate;
 	UINT_32 i, j;
 
-
 	ASSERT(pu2OperationalRateSet);
 	ASSERT(pu2BSSBasicRateSet);
 	ASSERT(pfgIsUnknownBSSBasicRate);
@@ -230,10 +227,8 @@ rateGetRateSetFromIEs(IN P_IE_SUPPORTED_RATE_T prIeSupportedRate,
 				if (ucRate == aucDataRate[j]) {
 					u2OperationalRateSet |= BIT(j);
 
-					if (prIeSupportedRate->
-					    aucSupportedRates[i] & RATE_BASIC_BIT) {
+					if (prIeSupportedRate->aucSupportedRates[i] & RATE_BASIC_BIT)
 						u2BSSBasicRateSet |= BIT(j);
-					}
 
 					break;
 				}
@@ -246,7 +241,6 @@ rateGetRateSetFromIEs(IN P_IE_SUPPORTED_RATE_T prIeSupportedRate,
 		}
 	}
 
-
 	if (prIeExtSupportedRate) {
 		/* ASSERT(prIeExtSupportedRate->ucLength <= ELEM_MAX_LEN_EXTENDED_SUP_RATES); */
 
@@ -258,10 +252,8 @@ rateGetRateSetFromIEs(IN P_IE_SUPPORTED_RATE_T prIeSupportedRate,
 				if (ucRate == aucDataRate[j]) {
 					u2OperationalRateSet |= BIT(j);
 
-					if (prIeExtSupportedRate->
-					    aucExtSupportedRates[i] & RATE_BASIC_BIT) {
+					if (prIeExtSupportedRate->aucExtSupportedRates[i] & RATE_BASIC_BIT)
 						u2BSSBasicRateSet |= BIT(j);
-					}
 
 					break;
 				}
@@ -282,7 +274,6 @@ rateGetRateSetFromIEs(IN P_IE_SUPPORTED_RATE_T prIeSupportedRate,
 
 }				/* end of rateGetRateSetFromIEs() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief Convert the given Operational Rate Set & Basic Rate Set to the Rate Code
@@ -298,11 +289,9 @@ rateGetRateSetFromIEs(IN P_IE_SUPPORTED_RATE_T prIeSupportedRate,
 /*----------------------------------------------------------------------------*/
 VOID
 rateGetDataRatesFromRateSet(IN UINT_16 u2OperationalRateSet,
-			    IN UINT_16 u2BSSBasicRateSet,
-			    OUT PUINT_8 pucDataRates, OUT PUINT_8 pucDataRatesLen)
+			    IN UINT_16 u2BSSBasicRateSet, OUT PUINT_8 pucDataRates, OUT PUINT_8 pucDataRatesLen)
 {
 	UINT_32 i, j;
-
 
 	ASSERT(pucDataRates);
 	ASSERT(pucDataRatesLen);
@@ -314,9 +303,8 @@ rateGetDataRatesFromRateSet(IN UINT_16 u2OperationalRateSet,
 
 			*(pucDataRates + j) = aucDataRate[i];
 
-			if (u2BSSBasicRateSet & BIT(i)) {
+			if (u2BSSBasicRateSet & BIT(i))
 				*(pucDataRates + j) |= RATE_BASIC_BIT;
-			}
 
 			j++;
 		}
@@ -327,7 +315,6 @@ rateGetDataRatesFromRateSet(IN UINT_16 u2OperationalRateSet,
 	return;
 
 }				/* end of rateGetDataRatesFromRateSet() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -344,7 +331,6 @@ BOOLEAN rateGetHighestRateIndexFromRateSet(IN UINT_16 u2RateSet, OUT PUINT_8 puc
 {
 	INT_32 i;
 
-
 	ASSERT(pucHighestRateIndex);
 
 	for (i = RATE_54M_SW_INDEX; i >= RATE_1M_SW_INDEX; i--) {
@@ -357,7 +343,6 @@ BOOLEAN rateGetHighestRateIndexFromRateSet(IN UINT_16 u2RateSet, OUT PUINT_8 puc
 	return FALSE;
 
 }				/* end of rateGetHighestRateIndexFromRateSet() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -399,14 +384,11 @@ BOOLEAN rateGetLowestRateIndexFromRateSet(IN UINT_16 u2RateSet, OUT PUINT_8 pucL
 * \return (none)
 */
 /*----------------------------------------------------------------------------*/
-VOID
-rateGetRateSetFromDataRates(IN PUINT_8 pucDataRates,
-			    IN UINT_8 ucDataRatesLen, OUT PUINT_16 pu2RateSet)
+VOID rateGetRateSetFromDataRates(IN PUINT_8 pucDataRates, IN UINT_8 ucDataRatesLen, OUT PUINT_16 pu2RateSet)
 {
 	UINT_16 u2RateSet = 0;
 	UINT_8 ucRate;
 	UINT_32 i, j;
-
 
 	ASSERT(pucDataRates);
 	ASSERT(pu2RateSet);
@@ -431,7 +413,6 @@ rateGetRateSetFromDataRates(IN PUINT_8 pucDataRates,
 
 }				/* end of rateGetRateSetFromDataRates() */
 
-
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Parse the Operational Rate Set and Basic Rate Set to get the corresponding
@@ -446,25 +427,23 @@ rateGetRateSetFromDataRates(IN PUINT_8 pucDataRates,
 /*----------------------------------------------------------------------------*/
 VOID
 rateSetAckCtsDataRatesFromRateSet(IN UINT_16 u2OperationalRateSet,
-				  IN UINT_16 u2BSSBasicRateSet, IN OUT UINT_8 aucAckCtsRateIndex[]
-    )
+				  IN UINT_16 u2BSSBasicRateSet, IN OUT UINT_8 aucAckCtsRateIndex[])
 {
 	INT_32 i, j;
-
 
 	ASSERT(aucAckCtsRateIndex);
 	ASSERT(u2BSSBasicRateSet == (u2OperationalRateSet & u2BSSBasicRateSet));
 
 	/* Setup default ACK/CTS response rate */
-	kalMemCopy(aucAckCtsRateIndex, (PVOID) aucDefaultAckCtsRateIndex,
-		   sizeof(aucDefaultAckCtsRateIndex));
-
+	kalMemCopy(aucAckCtsRateIndex, (PVOID) aucDefaultAckCtsRateIndex, sizeof(aucDefaultAckCtsRateIndex));
 
 	for (i = RATE_54M_INDEX; i >= RATE_1M_INDEX; i--) {
 		if (u2OperationalRateSet & BIT(i)) {
 			for (j = i; j >= RATE_1M_INDEX; j--) {
 				if (u2BSSBasicRateSet & BIT(j)) {
-					if ((afgIsOFDMRate[i] && afgIsOFDMRate[j]) || (!afgIsOFDMRate[i] && !afgIsOFDMRate[j]))	/* Reply ACK Frame at the same Modulation Scheme. */
+					/* Reply ACK Frame at the same Modulation Scheme. */
+					if ((afgIsOFDMRate[i] && afgIsOFDMRate[j]) ||
+						(!afgIsOFDMRate[i] && !afgIsOFDMRate[j]))
 						aucAckCtsRateIndex[i] = (UINT_8) j;
 					break;
 				}
@@ -479,9 +458,8 @@ rateSetAckCtsDataRatesFromRateSet(IN UINT_16 u2OperationalRateSet,
 			 * use highest mandatory rate as default.
 			 */
 			if (j < RATE_1M_INDEX) {	/* The ACK/CTS rate was not found in BasicRateSet */
-				if (!(BIT(aucAckCtsRateIndex[i]) & u2OperationalRateSet)) {
+				if (!(BIT(aucAckCtsRateIndex[i]) & u2OperationalRateSet))
 					aucAckCtsRateIndex[i] = (UINT_8) i;
-				}
 			}
 		}
 	}
@@ -489,7 +467,6 @@ rateSetAckCtsDataRatesFromRateSet(IN UINT_16 u2OperationalRateSet,
 	return;
 
 }				/* end of rateSetAckCtsDataRatesFromRateSet() */
-
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -503,16 +480,14 @@ rateSetAckCtsDataRatesFromRateSet(IN UINT_16 u2OperationalRateSet,
 * \retval FALSE Initial Rate Index was not found
 */
 /*----------------------------------------------------------------------------*/
-BOOLEAN
-rateGetBestInitialRateIndex(IN UINT_16 u2RateSet, IN RCPI rRcpi, OUT PUINT_8 pucInitialRateIndex)
+BOOLEAN rateGetBestInitialRateIndex(IN UINT_16 u2RateSet, IN RCPI rRcpi, OUT PUINT_8 pucInitialRateIndex)
 {
 	UINT_16 u2InitRateSet;
 	INT_32 i;
 
-
 	ASSERT(pucInitialRateIndex);
 
-	DBGLOG(MGT, TRACE, ("rRcpi = %d\n", rRcpi));
+	DBGLOG(MGT, TRACE, "rRcpi = %d\n", rRcpi);
 
 	if (rRcpi >= RCPI_100) {	/* Best Signal */
 		u2InitRateSet = INITIAL_RATE_SET(RCPI_100);

@@ -109,6 +109,10 @@ static void StopAudioDl1AWBHardware(struct snd_pcm_substream *substream)
     SetConnection(Soc_Aud_InterCon_DisConnect, Soc_Aud_InterConnectionInput_I05, Soc_Aud_InterConnectionOutput_O05);
     SetConnection(Soc_Aud_InterCon_DisConnect, Soc_Aud_InterConnectionInput_I06, Soc_Aud_InterConnectionOutput_O06);
 
+	/* for DL2 echoref*/
+	SetConnection(Soc_Aud_InterCon_DisConnect, Soc_Aud_InterConnectionInput_I07, Soc_Aud_InterConnectionOutput_O05);
+	SetConnection(Soc_Aud_InterCon_DisConnect, Soc_Aud_InterConnectionInput_I08, Soc_Aud_InterConnectionOutput_O06);
+
     EnableAfe(false);
 }
 
@@ -127,6 +131,10 @@ static void StartAudioDl1AWBHardware(struct snd_pcm_substream *substream)
     // here to turn off digital part
     SetConnection(Soc_Aud_InterCon_Connection, Soc_Aud_InterConnectionInput_I05, Soc_Aud_InterConnectionOutput_O05);
     SetConnection(Soc_Aud_InterCon_Connection, Soc_Aud_InterConnectionInput_I06, Soc_Aud_InterConnectionOutput_O06);
+
+	/* for DL2 echoref*/
+	SetConnection(Soc_Aud_InterCon_Connection, Soc_Aud_InterConnectionInput_I07, Soc_Aud_InterConnectionOutput_O05);
+	SetConnection(Soc_Aud_InterCon_Connection, Soc_Aud_InterConnectionInput_I08, Soc_Aud_InterConnectionOutput_O06);
 
     EnableAfe(true);
 }
@@ -218,6 +226,7 @@ static int mtk_dl1_awb_pcm_hw_params(struct snd_pcm_substream *substream,
         runtime->dma_bytes = params_buffer_bytes(hw_params);
         runtime->dma_area = Awb_Capture_dma_buf->area;
         runtime->dma_addr = Awb_Capture_dma_buf->addr;
+        SetHighAddr(Soc_Aud_Digital_Block_MEM_AWB,true);
     }
     else
     {
@@ -304,6 +313,7 @@ static int mtk_dl1_awb_pcm_open(struct snd_pcm_substream *substream)
 static int mtk_dl1_awb_pcm_close(struct snd_pcm_substream *substream)
 {
     AudDrv_Emi_Clk_Off();
+    AudDrv_Clk_Off();
     return 0;
 }
 
@@ -376,6 +386,8 @@ static int mtk_dl1_awb_pcm_copy(struct snd_pcm_substream *substream,
         printk("CheckNullPointer  pucVirtBufAddr = %p\n", Awb_Block->pucVirtBufAddr);
         return 0;
     }
+
+	AudDrv_checkDLISRStatus();
 
     spin_lock_irqsave(&auddrv_Dl1AWBInCtl_lock, flags);
     if (Awb_Block->u4DataRemained >  Awb_Block->u4BufferSize)

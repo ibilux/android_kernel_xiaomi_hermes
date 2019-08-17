@@ -1,15 +1,13 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/cnm.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/include/mgmt/cnm.h#1
 */
 
 /*! \file   "cnm.h"
     \brief
 */
 
-
-
 /*
-** $Log: cnm.h $
+** Log: cnm.h
 **
 ** 07 19 2013 yuche.tsai
 ** [BORA00002398] [MT6630][Volunteer Patch] P2P Driver Re-Design for Multiple BSS support
@@ -199,7 +197,6 @@ typedef struct _MSG_CH_REOCVER_T {
 	ENUM_CH_REQ_TYPE_T eReqType;
 } MSG_CH_RECOVER_T, *P_MSG_CH_RECOVER_T;
 
-
 typedef struct _CNM_INFO_T {
 	BOOLEAN fgChGranted;
 	UINT_8 ucBssIndex;
@@ -214,7 +211,6 @@ typedef struct _DEVICE_TYPE_T {
 	UINT_16 u2SubCategoryId;	/* Sub Category ID */
 } __KAL_ATTRIB_PACKED__ DEVICE_TYPE_T, *P_DEVICE_TYPE_T;
 #endif
-
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -249,11 +245,9 @@ VOID cnmChMngrAbortPrivilege(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr);
 VOID cnmChMngrHandleChEvent(P_ADAPTER_T prAdapter, P_WIFI_EVENT_T prEvent);
 
 BOOLEAN
-cnmPreferredChannel(P_ADAPTER_T prAdapter,
-		    P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel, P_ENUM_CHNL_EXT_T prBssSCO);
+cnmPreferredChannel(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel, P_ENUM_CHNL_EXT_T prBssSCO);
 
-BOOLEAN
-cnmAisInfraChannelFixed(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel);
+BOOLEAN cnmAisInfraChannelFixed(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel);
 
 VOID cnmAisInfraConnectNotify(P_ADAPTER_T prAdapter);
 
@@ -271,18 +265,11 @@ BOOLEAN cnmBss80mBwPermitted(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex);
 
 UINT_8 cnmGetBssMaxBw(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex);
 
-P_BSS_INFO_T
-cnmGetBssInfoAndInit(P_ADAPTER_T prAdapter,
-		     ENUM_NETWORK_TYPE_T eNetworkType, BOOLEAN fgIsP2pDevice);
+P_BSS_INFO_T cnmGetBssInfoAndInit(P_ADAPTER_T prAdapter, ENUM_NETWORK_TYPE_T eNetworkType, BOOLEAN fgIsP2pDevice);
 
 VOID cnmFreeBssInfo(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
 #if CFG_SUPPORT_CHNL_CONFLICT_REVISE
-BOOLEAN
-cnmAisDetectP2PChannel (
-    P_ADAPTER_T         prAdapter,
-    P_ENUM_BAND_T       prBand,
-    PUINT_8             pucPrimaryChannel
-    );
+BOOLEAN cnmAisDetectP2PChannel(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel);
 #endif
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -298,29 +285,23 @@ static __KAL_INLINE__ VOID cnmMsgDataTypeCheck(VOID)
 {
 	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, rMsgHdr) == 0);
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, rMsgHdr) ==
-				     OFFSET_OF(MSG_CH_RECOVER_T, rMsgHdr));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, rMsgHdr) == OFFSET_OF(MSG_CH_RECOVER_T, rMsgHdr));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, ucBssIndex) ==
-				     OFFSET_OF(MSG_CH_RECOVER_T, ucBssIndex));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, ucBssIndex) == OFFSET_OF(MSG_CH_RECOVER_T, ucBssIndex));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, ucTokenID) ==
-				     OFFSET_OF(MSG_CH_RECOVER_T, ucTokenID));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, ucTokenID) == OFFSET_OF(MSG_CH_RECOVER_T, ucTokenID));
 
 	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, ucPrimaryChannel) ==
 				     OFFSET_OF(MSG_CH_RECOVER_T, ucPrimaryChannel));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, eRfSco) ==
-				     OFFSET_OF(MSG_CH_RECOVER_T, eRfSco));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, eRfSco) == OFFSET_OF(MSG_CH_RECOVER_T, eRfSco));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, eRfBand) ==
-				     OFFSET_OF(MSG_CH_RECOVER_T, eRfBand));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, eRfBand) == OFFSET_OF(MSG_CH_RECOVER_T, eRfBand));
 
-	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, eReqType) ==
-				     OFFSET_OF(MSG_CH_RECOVER_T, eReqType));
+	DATA_STRUC_INSPECTING_ASSERT(OFFSET_OF(MSG_CH_GRANT_T, eReqType) == OFFSET_OF(MSG_CH_RECOVER_T, eReqType));
 
 	return;
 }
-#endif				/* _lint */
+#endif /* _lint */
 
-#endif				/* _CNM_H */
+#endif /* _CNM_H */

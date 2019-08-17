@@ -50,6 +50,9 @@
 #include <linux/version.h>
 #include <mach/mt_typedefs.h>
 
+#ifdef MUSB_QMU_SUPPORT
+#include "mtk_qmu.h"
+#endif
 
 #define SHARE_IRQ -1
 
@@ -164,7 +167,12 @@ enum musb_g_ep0_state {
 #define OTG_TIME_A_WAIT_VRISE	100	/* msec (max) */
 #define OTG_TIME_A_WAIT_BCON	1100	/* min 1 second */
 #define OTG_TIME_A_AIDL_BDIS	200	/* min 200 msec */
+#if defined(CONFIG_USBIF_COMPLIANCE)
+#define OTG_TIME_B_ASE0_BRST	155		/* min 3.125 ms */
+#else
 #define OTG_TIME_B_ASE0_BRST	100	/* min 3.125 ms */
+#endif
+
 
 
 /*************************** REGISTER ACCESS ********************************/
@@ -342,6 +350,9 @@ struct musb {
 	struct list_head out_bulk;	/* of musb_qh */
 
 	struct timer_list otg_timer;
+#if defined(CONFIG_USBIF_COMPLIANCE)
+	struct timer_list otg_vbus_polling_timer;
+#endif
 	struct notifier_block nb;
 
 	struct dma_controller *dma_controller;
@@ -354,6 +365,14 @@ struct musb {
 	u8 int_usb;
 	u16 int_rx;
 	u16 int_tx;
+
+#ifdef MUSB_QMU_SUPPORT
+	u32 int_queue;
+#ifdef QMU_TASKLET
+	u32 qmu_done_intr;
+	struct tasklet_struct qmu_done;
+#endif
+#endif
 
 	struct usb_phy *xceiv;
 	u8 xceiv_event;
@@ -449,6 +468,10 @@ struct musb {
 	bool is_ready:1;
 	bool usb_if;
 	u16 fifo_addr;
+#if defined(CONFIG_USBIF_COMPLIANCE)
+	bool srp_drvvbus;
+	enum usb_otg_event otg_event;
+#endif
 };
 
 static inline struct musb *gadget_to_musb(struct usb_gadget *g)

@@ -58,33 +58,52 @@ INT32 wmt_idc_msg_from_lte_handing(ipc_ilm_t *ilm)
 			WMT_ERR_FUNC("wmt handing idc msg fail\n");
 			return -2;
 		}
+		wmt_lib_notify_stp_sleep();
 	} else {
 		WMT_INFO_FUNC("Received LTE msg,but STP is not ready,drop it!\n");
 	}
 	return 0;
 }
 
-VOID wmt_idc_dump_debug_msg(PUINT8 str, PUINT8 p_buf, UINT32 buf_len)
+VOID wmt_idc_dump_debug_msg(PUINT8 str, PUINT8 p_buf, UINT32 buf_len, UINT32 err_flag)
 {
 	UINT32 idx = 0;
-	WMT_DBG_FUNC("%s:, length:%d\n", str, buf_len);
+	if (err_flag) {
+		WMT_ERR_FUNC("%s:, length:%d\n", str, buf_len);
+		WMT_ERR_FUNC("ASCII output:\n");
 
-	WMT_DBG_FUNC("ASCII output:\n");
+		for (idx = 0; idx < buf_len;) {
+			WMT_ERR_FUNC("%c", p_buf[idx]);
+			idx++;
+			if (0 == idx % 16)
+				WMT_ERR_FUNC("\n");
+		}
 
-	for (idx = 0; idx < buf_len;) {
-		WMT_DBG_FUNC("%c", p_buf[idx]);
-		idx++;
-		if (0 == idx % 16)
-			WMT_DBG_FUNC("\n");
-	}
+		WMT_ERR_FUNC("HEX output:\n");
+		for (idx = 0; idx < buf_len;) {
+			WMT_ERR_FUNC("%02x ", p_buf[idx]);
+			idx++;
+			if (0 == idx % 16)
+				WMT_ERR_FUNC("\n");
+		}
+	} else {
+		WMT_DBG_FUNC("%s:, length:%d\n", str, buf_len);
+		WMT_DBG_FUNC("ASCII output:\n");
 
-	WMT_DBG_FUNC("HEX output:\n");
+		for (idx = 0; idx < buf_len;) {
+			WMT_DBG_FUNC("%c", p_buf[idx]);
+			idx++;
+			if (0 == idx % 16)
+				WMT_DBG_FUNC("\n");
+		}
 
-	for (idx = 0; idx < buf_len;) {
-		WMT_DBG_FUNC("%02x ", p_buf[idx]);
-		idx++;
-		if (0 == idx % 16)
-			WMT_DBG_FUNC("\n");
+		WMT_DBG_FUNC("HEX output:\n");
+		for (idx = 0; idx < buf_len;) {
+			WMT_DBG_FUNC("%02x ", p_buf[idx]);
+			idx++;
+			if (0 == idx % 16)
+				WMT_DBG_FUNC("\n");
+		}
 	}
 }
 
@@ -111,7 +130,7 @@ INT32 wmt_idc_msg_to_lte_handing(VOID)
 
 	if (readlen > 0) {
 		WMT_DBG_FUNC("read data len from fw(%d)\n",readlen);
-		wmt_idc_dump_debug_msg("WMT->LTE from STP buffer", &gWmtIdcInfo.buffer[0], readlen);
+		wmt_idc_dump_debug_msg("WMT->LTE from STP buffer", &gWmtIdcInfo.buffer[0], readlen, 0);
 		p_data = &gWmtIdcInfo.buffer[0];
 
 		while (handle_len < readlen) {
@@ -130,7 +149,7 @@ INT32 wmt_idc_msg_to_lte_handing(VOID)
 			{
 				p_data += 1;	/*flag : 1 byte */
 				/*need to handle these debug message */
-				wmt_idc_dump_debug_msg("WIFI DEBUG MONITOR", p_data, msg_len);
+				wmt_idc_dump_debug_msg("WIFI DEBUG MONITOR", p_data, msg_len, 0);
 			} else
 				/*need to transfer to LTE */
 			{
@@ -194,6 +213,8 @@ INT32 wmt_idc_msg_to_lte_handing(VOID)
 					WMT_DBG_FUNC("wmt_idc_msg_to_lte: 0x%x !\n",gWmtIdcInfo.iit.msg_id);
 				} else {
 					WMT_ERR_FUNC("opcode(%d)from connsys fw is out of range,drop it!\n",opcode);
+					wmt_idc_dump_debug_msg("WMT->LTE from STP buffer", &gWmtIdcInfo.buffer[0],
+							readlen, 1);
 				}
 #endif
 				osal_free(p_lps);
@@ -245,7 +266,7 @@ UINT32 wmt_idc_msg_to_lte_handing_for_test(PUINT8 p_buf, UINT32 len)
 			{
 				p_data += 1;	/*flag : 1 byte */
 				/*need to handle these debug message */
-				wmt_idc_dump_debug_msg("WIFI DEBUG MONITOR", p_data, msg_len);
+				wmt_idc_dump_debug_msg("WIFI DEBUG MONITOR", p_data, msg_len, 0);
 			} else
 				/*need to transfer to LTE */
 			{

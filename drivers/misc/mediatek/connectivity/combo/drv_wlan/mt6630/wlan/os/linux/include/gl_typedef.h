@@ -1,5 +1,5 @@
 /*
-** $Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_typedef.h#1 $
+** Id: //Department/DaVinci/BRANCHES/MT6620_WIFI_DRIVER_V2_3/os/linux/include/gl_typedef.h#1
 */
 
 /*! \file   gl_typedef.h
@@ -8,10 +8,8 @@
     In this file we define the basic data type.
 */
 
-
-
 /*
-** $Log: gl_typedef.h $
+** Log: gl_typedef.h
 **
 ** 09 17 2012 cm.chang
 ** [BORA00002149] [MT6630 Wi-Fi] Initial software development
@@ -87,7 +85,7 @@
 #ifndef FALSE
 #define FALSE               ((BOOL) 0)
 #define TRUE                ((BOOL) 1)
-#endif				/* FALSE */
+#endif /* FALSE */
 
 #ifndef NULL
 #if defined(__cplusplus)
@@ -102,7 +100,6 @@ typedef void (*early_suspend_callback) (struct early_suspend *h);
 typedef void (*late_resume_callback) (struct early_suspend *h);
 #endif
 
-
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -114,23 +111,22 @@ typedef void VOID, *PVOID, **PPVOID;
 typedef unsigned char BOOL, *PBOOL, BOOLEAN, *PBOOLEAN;
 
 /* Type definition for signed integers */
-typedef signed char 	CHAR, *PCHAR, **PPCHAR;
-typedef signed char 	INT_8, *PINT_8, **PPINT_8;
-typedef signed short 	INT_16, *PINT_16, **PPINT_16;
-typedef signed int 	INT_32, *PINT_32, **PPINT_32;
-typedef	signed long 	LONG, *PLONG, **PPLONG;
+typedef signed char CHAR, *PCHAR, **PPCHAR;
+typedef signed char INT_8, *PINT_8, **PPINT_8;
+typedef signed short INT_16, *PINT_16, **PPINT_16;
+typedef signed int INT_32, *PINT_32, **PPINT_32;
+typedef signed long LONG, *PLONG, **PPLONG;
 typedef signed long long INT_64, *PINT_64, **PPINT_64;
 
 /* Type definition for unsigned integers */
-typedef unsigned char 	UCHAR, *PUCHAR, **PPUCHAR;
-typedef unsigned char 	UINT_8, *PUINT_8, **PPUINT_8, *P_UINT_8;
-typedef unsigned short 	UINT_16, *PUINT_16, **PPUINT_16;
-typedef unsigned int 	UINT_32, *PUINT_32, **PPUINT_32;
-typedef unsigned long 	ULONG, *PULONG, *PPULONG;
+typedef unsigned char UCHAR, *PUCHAR, **PPUCHAR;
+typedef unsigned char UINT_8, *PUINT_8, **PPUINT_8, *P_UINT_8;
+typedef unsigned short UINT_16, *PUINT_16, **PPUINT_16;
+typedef unsigned int UINT_32, *PUINT_32, **PPUINT_32;
+typedef unsigned long ULONG, *PULONG, *PPULONG;
 typedef unsigned long long UINT_64, *PUINT_64, **PPUINT_64;
 
-typedef unsigned int 	OS_SYSTIME, *POS_SYSTIME, **PPOS_SYSTIME;
-
+typedef unsigned int OS_SYSTIME, *POS_SYSTIME, **PPOS_SYSTIME;
 
 /* Type definition of large integer (64bits) union to be comptaible with
  * Windows definition, so we won't apply our own coding style to these data types.
@@ -152,7 +148,6 @@ typedef union _ULARGE_INTEGER {
 	} u;
 	UINT_64 QuadPart;
 } ULARGE_INTEGER, *PULARGE_INTEGER;
-
 
 typedef INT_32(*probe_card) (PVOID pvData);
 typedef VOID(*remove_card) (VOID);
@@ -176,12 +171,11 @@ typedef VOID(*remove_card) (VOID);
 
 #define __KAL_INLINE__                  inline
 #define __KAL_ATTRIB_PACKED__           __attribute__((__packed__))
-#define __KAL_ATTRIB_ALIGN_4__          __attribute__ ((aligned(4)))
-
+#define __KAL_ATTRIB_ALIGN_4__          __aligned(4)
 
 #ifndef BIT
 #define BIT(n)                          ((UINT_32) 1UL << (n))
-#endif				/* BIT */
+#endif /* BIT */
 
 #ifndef BITS
 /* bits range: for example BITS(16,23) = 0xFF0000
@@ -189,8 +183,7 @@ typedef VOID(*remove_card) (VOID);
  *   ==>  (BIT(n+1)-1) = 0x00FFFFFF
  */
 #define BITS(m, n)                       (~(BIT(m)-1) & ((BIT(n) - 1) | BIT(n)))
-#endif				/* BIT */
-
+#endif /* BIT */
 
 /* This macro returns the byte offset of a named field in a known structure
    type.
@@ -198,8 +191,7 @@ typedef VOID(*remove_card) (VOID);
    _field - field name of the structure */
 #ifndef OFFSET_OF
 #define OFFSET_OF(_type, _field)    ((unsigned long)&(((_type *)0)->_field))
-#endif				/* OFFSET_OF */
-
+#endif /* OFFSET_OF */
 
 /* This macro returns the base address of an instance of a structure
  * given the type of the structure and the address of a field within the
@@ -211,41 +203,39 @@ typedef VOID(*remove_card) (VOID);
 #ifndef ENTRY_OF
 #define ENTRY_OF(_addrOfField, _type, _field) \
 	((_type *)((PINT_8)(_addrOfField) - (PINT_8)OFFSET_OF(_type, _field)))
-#endif				/* ENTRY_OF */
-
+#endif /* ENTRY_OF */
 
 /* This macro align the input value to the DW boundary.
  * _value - value need to check
  */
 #ifndef ALIGN_4
 #define ALIGN_4(_value)             (((_value) + 3) & ~3u)
-#endif				/* ALIGN_4 */
+#endif /* ALIGN_4 */
 
 /* This macro check the DW alignment of the input value.
  * _value - value of address need to check
  */
 #ifndef IS_ALIGN_4
 #define IS_ALIGN_4(_value)          (((_value) & 0x3) ? FALSE : TRUE)
-#endif				/* IS_ALIGN_4 */
+#endif /* IS_ALIGN_4 */
 
 #ifndef IS_NOT_ALIGN_4
 #define IS_NOT_ALIGN_4(_value)      (((_value) & 0x3) ? TRUE : FALSE)
-#endif				/* IS_NOT_ALIGN_4 */
-
+#endif /* IS_NOT_ALIGN_4 */
 
 /* This macro evaluate the input length in unit of Double Word(4 Bytes).
  * _value - value in unit of Byte, output will round up to DW boundary.
  */
 #ifndef BYTE_TO_DWORD
 #define BYTE_TO_DWORD(_value)       ((_value + 3) >> 2)
-#endif				/* BYTE_TO_DWORD */
+#endif /* BYTE_TO_DWORD */
 
 /* This macro evaluate the input length in unit of Byte.
  * _value - value in unit of DW, output is in unit of Byte.
  */
 #ifndef DWORD_TO_BYTE
 #define DWORD_TO_BYTE(_value)       ((_value) << 2)
-#endif				/* DWORD_TO_BYTE */
+#endif /* DWORD_TO_BYTE */
 
 #if 1				/* Little-Endian */
 #define CONST_NTOHS(_x)     __constant_ntohs(_x)
@@ -260,7 +250,7 @@ typedef VOID(*remove_card) (VOID);
 
 #define HTONL(_x)           htonl(_x)
 
-#else				/* Big-Endian */
+#else /* Big-Endian */
 
 #define CONST_NTOHS(_x)
 
@@ -282,4 +272,4 @@ typedef VOID(*remove_card) (VOID);
 ********************************************************************************
 */
 
-#endif				/* _GL_TYPEDEF_H */
+#endif /* _GL_TYPEDEF_H */

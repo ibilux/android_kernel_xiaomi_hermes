@@ -4,6 +4,7 @@
 #include <mach/irqs.h>
 #include <emd_ctl.h>
 
+void update_ccci_port_ver(unsigned int new_ver);
 static int __init emd_ctl_init(void)
 {
     int ret=0;
@@ -38,7 +39,9 @@ EMD_MSG_INF("init","emd_ctl_init: module_init\n");
         EMD_MSG_INF("init","emd_ctl_init:emd_spm_init ret=%d\n",ret);
         goto __SPM_ERR;
     }
-    
+
+    update_ccci_port_ver(5);
+
 __ERR:
     return ret;
 __SPM_ERR:
