@@ -41,7 +41,7 @@ obj-y	+= mmp/
 obj-y	+= m4u/
 obj-y	+= flashlight/src/
 obj-$(CONFIG_MTK_LENS)   += lens/
-obj-$(CONFIG_CW2015_SUPPORT) += battery_fual/
+obj-$(CONFIG_MTK_CW2015_BATTERY) += battery_fual/
 obj-y	+= jpeg/
 obj-y   += rrc/
 
