@@ -271,8 +271,6 @@ obj-y		+= consumerir/
 
 obj-y		+= sltdevinfo/
 
-obj-$(CONFIG_MTK_HALL_AH1903)           += hall/
-
 obj-y	+= step_counter/
 
 obj-$(CONFIG_TRUSTONIC_TEE_SUPPORT) += gcpu/
