@@ -503,10 +503,6 @@ find_check_entry(struct arpt_entry *e, const char *name, unsigned int size)
 	struct xt_target *target;
 	int ret;
 
-	ret = check_entry(e, name);
-	if (ret)
-		return ret;
-
 	t = arpt_get_target(e);
 	target = xt_request_find_target(NFPROTO_ARP, t->u.user.name,
 					t->u.user.revision);
