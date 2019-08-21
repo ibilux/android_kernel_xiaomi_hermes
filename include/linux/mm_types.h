@@ -13,7 +13,6 @@
 #include <linux/page-debug-flags.h>
 #include <linux/uprobes.h>
 #include <linux/page-flags-layout.h>
-#include <linux/workqueue.h>
 #include <asm/page.h>
 #include <asm/mmu.h>
 
@@ -452,9 +451,6 @@ struct mm_struct {
 	bool tlb_flush_pending;
 #endif
 	struct uprobes_state uprobes_state;
-#ifdef CONFIG_MMU
-	struct work_struct async_put_work;
-#endif
 };
 
 /* first nid will either be a valid NID or one of these values */
