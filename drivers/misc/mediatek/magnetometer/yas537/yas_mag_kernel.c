@@ -965,7 +965,7 @@ static void yas_late_resume(struct early_suspend *h)
 }
 #endif
 
-//#include <linux/dev_info.h>
+#include <linux/dev_info.h>
 static int yas_probe(struct i2c_client *i2c,
 		const struct i2c_device_id *id)
 {
@@ -1069,7 +1069,7 @@ static int yas_probe(struct i2c_client *i2c,
 	mutex_init(&st->lock);
 	mutex_init(&yas537_i2c_mutex);
 	
-	#ifdef YAS537_I2C_USE_DMA
+#ifdef YAS537_I2C_USE_DMA
 /********try to alloc dma memory 3times************/
 	st->dma_va = (char *)dma_alloc_coherent(&(this_client->dev), 1024, &(st->dma_pa), GFP_KERNEL);
 	if(unlikely(NULL==st->dma_va))
