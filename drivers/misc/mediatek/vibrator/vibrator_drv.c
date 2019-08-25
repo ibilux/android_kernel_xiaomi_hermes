@@ -137,7 +137,6 @@ static void mt_vibrator_set_pwm(int force)
         {
            THRESH=1150;
         }
-              
     }
     pr_info("[vibrator]temp_force,THRESH=%d \n",THRESH);
     pwm_setting.PWM_MODE_OLD_REGS.THRESH = THRESH;
@@ -166,8 +165,9 @@ static void mt_vibrator_set_pwm(int force)
 static int vibr_Enable(void)
 {
 	if (!ldo_state) {
-		ldo_state = 1;
 		vibr_Enable_HW();
+		ldo_state = 1;
+		mt_vibrator_set_pwm(90); //120
 	}
 	return 0;
 }
