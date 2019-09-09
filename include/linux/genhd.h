@@ -631,6 +631,8 @@ extern void blk_unregister_region(dev_t devt, unsigned long range);
 
 extern ssize_t part_size_show(struct device *dev,
 			      struct device_attribute *attr, char *buf);
+extern ssize_t part_emmcsize_show(struct device *dev,
+			      struct device_attribute *attr, char *buf);
 extern ssize_t part_stat_show(struct device *dev,
 			      struct device_attribute *attr, char *buf);
 extern ssize_t part_inflight_show(struct device *dev,
