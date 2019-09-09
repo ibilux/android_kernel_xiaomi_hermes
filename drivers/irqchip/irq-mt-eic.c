@@ -27,11 +27,6 @@
 #define dbgmsg(...)
 #endif
 
-/* Check if NR_IRQS is enough */
-//#if (EINT_IRQ_BASE + EINT_MAX_CHANNEL) > (NR_IRQS)
-//#error NR_IRQS not enough.
-//#endif
-
 static unsigned int EINT_IRQ_BASE;
 
 #if 0
@@ -804,8 +799,6 @@ static unsigned int mt_can_en_debounce(unsigned int eint_num)
 		return 0;
 	}
 }
-
-unsigned int mt_gpio_to_irq(unsigned gpio);
 
 /*
  * mt_eint_set_hw_debounce: Set the de-bounce time for the specified EINT number.
@@ -2361,13 +2354,13 @@ void mt_eint_print_status(void)
 }
 arch_initcall(mt_eint_init);
 
-EXPORT_SYMBOL(mt_eint_dis_debounce);
+/*EXPORT_SYMBOL(mt_eint_dis_debounce);
 EXPORT_SYMBOL(mt_eint_registration);
 EXPORT_SYMBOL(mt_eint_set_hw_debounce);
 EXPORT_SYMBOL(mt_eint_set_polarity);
 EXPORT_SYMBOL(mt_eint_set_sens);
 EXPORT_SYMBOL(mt_eint_mask);
 EXPORT_SYMBOL(mt_eint_unmask);
-EXPORT_SYMBOL(mt_eint_print_status);
 EXPORT_SYMBOL(mt_gpio_set_debounce);
-EXPORT_SYMBOL(mt_gpio_to_irq);
+EXPORT_SYMBOL(mt_gpio_to_irq);*/
+EXPORT_SYMBOL(mt_eint_print_status);
