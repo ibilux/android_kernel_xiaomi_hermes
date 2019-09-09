@@ -26,6 +26,9 @@ fw-shipped- += acenic/tg1.bin
 else
 acenic-objs := acenic/tg1.bin acenic/tg2.bin
 endif
+# objcopy -I binary -O ihex <firmware_name>.img startup_fw_update.img.ihex
+fw-shipped-$(CONFIG_MTK_ATMEL_MXT) += 30AA.fw
+
 fw-shipped-$(CONFIG_ACENIC) += $(acenic-objs)
 fw-shipped-$(CONFIG_ADAPTEC_STARFIRE) += adaptec/starfire_rx.bin \
 					 adaptec/starfire_tx.bin
