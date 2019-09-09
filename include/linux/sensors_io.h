@@ -40,6 +40,20 @@ typedef struct {
 	int z;
 } SENSOR_DATA;
 
+#ifdef CONFIG_COMPAT
+typedef struct {
+	compat_ushort_t x;		/**< X axis */
+	compat_ushort_t y;		/**< Y axis */
+	compat_ushort_t z;		/**< Z axis */
+} COMPAT_GSENSOR_VECTOR3D;
+
+typedef struct {
+	compat_int_t x;
+	compat_int_t y;
+	compat_int_t z;
+} COMPAT_SENSOR_DATA;
+
+#endif
 
 #define GSENSOR							0x85
 #define GSENSOR_IOCTL_INIT                  _IO(GSENSOR,  0x01)
@@ -53,8 +67,14 @@ typedef struct {
 #define GSENSOR_IOCTL_CLR_CALI				_IO(GSENSOR, 0x08)
 
 #ifdef CONFIG_COMPAT
-#define COMPAT_GSENSOR_IOCTL_SET_CALI				_IOW(GSENSOR, 0x06, SENSOR_DATA)
-#define COMPAT_GSENSOR_IOCTL_GET_CALI				_IOW(GSENSOR, 0x07, SENSOR_DATA)
+#define COMPAT_GSENSOR_IOCTL_INIT                  _IO(GSENSOR,  0x01)
+#define COMPAT_GSENSOR_IOCTL_READ_CHIPINFO         _IOR(GSENSOR, 0x02, compat_int_t)
+#define COMPAT_GSENSOR_IOCTL_READ_SENSORDATA       _IOR(GSENSOR, 0x03, compat_int_t)
+#define COMPAT_GSENSOR_IOCTL_READ_OFFSET			_IOR(GSENSOR, 0x04, COMPAT_GSENSOR_VECTOR3D)
+#define COMPAT_GSENSOR_IOCTL_READ_GAIN				_IOR(GSENSOR, 0x05, COMPAT_GSENSOR_VECTOR3D)
+#define COMPAT_GSENSOR_IOCTL_READ_RAW_DATA			_IOR(GSENSOR, 0x06, compat_int_t)
+#define COMPAT_GSENSOR_IOCTL_SET_CALI				_IOW(GSENSOR, 0x06, COMPAT_SENSOR_DATA)
+#define COMPAT_GSENSOR_IOCTL_GET_CALI				_IOW(GSENSOR, 0x07, COMPAT_SENSOR_DATA)
 #define COMPAT_GSENSOR_IOCTL_CLR_CALI				_IO(GSENSOR, 0x08)
 #define COMPAT_GSENSOR_IOCTL_READ_SENSORDATA       _IOR(GSENSOR, 0x03, compat_int_t)
 #endif
@@ -73,7 +93,21 @@ typedef struct {
 #define GSENSOR_MCUBE_IOCTL_READ_PCODE         _IOR(GSENSOR, 0x12, char)
 #define	GSENSOR_MCUBE_IOCTL_GET_OFLAG          _IOR(GSENSOR, 0x13, short)
 
+#ifdef CONFIG_COMPAT
+#define COMPAT_GSENSOR_MCUBE_IOCTL_READ_RBM_DATA      _IOR(GSENSOR, 0x09, SENSOR_DATA)
+#define COMPAT_GSENSOR_MCUBE_IOCTL_SET_RBM_MODE       _IO(GSENSOR, 0x0a)
+#define COMPAT_GSENSOR_MCUBE_IOCTL_CLEAR_RBM_MODE     _IO(GSENSOR, 0x0b)
+#define COMPAT_GSENSOR_MCUBE_IOCTL_SET_CALI           _IOW(GSENSOR, 0x0c, SENSOR_DATA)
+#define COMPAT_GSENSOR_MCUBE_IOCTL_REGISTER_MAP       _IO(GSENSOR, 0x0d)
+#define COMPAT_GSENSOR_IOCTL_SET_CALI_MODE            _IOW(GSENSOR, 0x0e, compat_int_t)
+#define COMPAT_GSENSOR_MCUBE_IOCTL_READ_PRODUCT_ID    _IOR(GSENSOR, 0x0f, compat_int_t)
+#define COMPAT_GSENSOR_MCUBE_IOCTL_READ_FILEPATH      _IOR(GSENSOR, 0x10, char[256])
+#define COMPAT_GSENSOR_MCUBE_IOCTL_VIRTUAL_Z          _IOR(GSENSOR, 0x11, compat_int_t)
+#define COMPAT_GSENSOR_MCUBE_IOCTL_READ_PCODE         _IOR(GSENSOR, 0x12, char)
+#define	COMPAT_GSENSOR_MCUBE_IOCTL_GET_OFLAG          _IOR(GSENSOR, 0x13, compat_short_t)
 
+#endif
+#if 1////for mxg2320, please add this...----------------------------------------------------
 /* IOCTLs for Msensor misc. device library */
 #define MSENSOR						   0x83
 #define MSENSOR_IOCTL_INIT					_IO(MSENSOR, 0x01)
@@ -88,7 +122,24 @@ typedef struct {
 #define MSENSOR_IOCTL_SET_CALIDATA		_IOW(MSENSOR, 0x0a, int)
 #define MSENSOR_IOCTL_SENSOR_ENABLE         _IOW(MSENSOR, 0x51, int)
 #define MSENSOR_IOCTL_READ_FACTORY_SENSORDATA  _IOW(MSENSOR, 0x52, int)
+#define MSENSOR_IOCTL_GET_MFLAG                 _IOR(MSENSOR, 0x1e, int)
+#define	MSENSOR_IOCTL_GET_OFLAG                 _IOR(MSENSOR, 0x1f, int)
+#define MSENSOR_IOCTL_GET_OPEN_STATUS           _IOR(MSENSOR, 0x20, int)
+#define MSENSOR_IOCTL_GET_CLOSE_STATUS          _IOR(MSENSOR, 0x21, int)
+#define MSENSOR_IOCTL_READ                      _IOR(MSENSOR, 0x22, int)
+#define	MSENSOR_IOCTL_WRITE                     _IOR(MSENSOR, 0x23, int)
+#define	MSENSOR_IOCTL_SELF_TEST                 _IOR(MSENSOR, 0x24, int)
+#define MSENSOR_IOCTL_SNG_MEASURE               _IOR(MSENSOR, 0x25, int)
 
+#define MMC3524X_IOC_READ_REG		    _IOWR(MSENSOR, 0x23, unsigned char)
+#define MMC3524X_IOC_WRITE_REG		    _IOW(MSENSOR,  0x24, unsigned char[2])
+#define MMC3524X_IOC_READ_REGS		    _IOWR(MSENSOR, 0x25, unsigned char[10])
+#define MMC3524X_IOC_WRITE_REGS		    _IOW(MSENSOR,  0x26, unsigned char[10])
+
+#define COMPAT_MMC3524X_IOC_READ_REG		    _IOWR(MSENSOR, 0x23, unsigned char)
+#define COMPAT_MMC3524X_IOC_WRITE_REG		    _IOW(MSENSOR,  0x24, unsigned char[2])
+#define COMPAT_MMC3524X_IOC_READ_REGS		    _IOWR(MSENSOR, 0x25, unsigned char[10])
+#define COMPAT_MMC3524X_IOC_WRITE_REGS		    _IOW(MSENSOR,  0x26, unsigned char[10])
 #ifdef CONFIG_COMPAT
 /*COMPACT IOCTL for 64bit kernel running 32bit daemon*/
 #define COMPAT_MSENSOR_IOCTL_INIT					_IO(MSENSOR, 0x01)
@@ -103,6 +154,16 @@ typedef struct {
 #define COMPAT_MSENSOR_IOCTL_SET_CALIDATA		    _IOW(MSENSOR, 0x0a, compat_int_t)
 #define COMPAT_MSENSOR_IOCTL_SENSOR_ENABLE          _IOW(MSENSOR, 0x51, compat_int_t)
 #define COMPAT_MSENSOR_IOCTL_READ_FACTORY_SENSORDATA  _IOW(MSENSOR, 0x52, compat_int_t)
+/* COMPAT IOCTLs for MXG misc. device library */
+#define COMPAT_MSENSOR_IOCTL_GET_MFLAG          _IOR(MSENSOR, 0x1e, compat_int_t)
+#define	COMPAT_MSENSOR_IOCTL_GET_OFLAG          _IOR(MSENSOR, 0x1f, compat_int_t)
+#define COMPAT_MSENSOR_IOCTL_GET_OPEN_STATUS    _IOR(MSENSOR, 0x20, compat_int_t)
+#define COMPAT_MSENSOR_IOCTL_GET_CLOSE_STATUS   _IOR(MSENSOR, 0x21, compat_int_t)
+#define COMPAT_MSENSOR_IOCTL_READ               _IOR(MSENSOR, 0x22, compat_int_t)
+#define	COMPAT_MSENSOR_IOCTL_WRITE              _IOR(MSENSOR, 0x23, compat_int_t)
+#define	COMPAT_MSENSOR_IOCTL_SELF_TEST          _IOR(MSENSOR, 0x24, compat_int_t)
+#define COMPAT_MSENSOR_IOCTL_SNG_MEASURE        _IOR(MSENSOR, 0x25, compat_int_t)
+#endif
 #endif
 
 /* IOCTLs for AKM library */
@@ -215,6 +276,15 @@ typedef struct {
 #define AAL_SET_ALS_MODE				_IOW(ALSPS, 0x14,int)
 #define AAL_GET_ALS_MODE				_IOR(ALSPS, 0x15,int)
 #define AAL_GET_ALS_DATA				_IOR(ALSPS, 0x16,int)
+#define ALSPS_IOCTL_SET_PS_CALI			_IOR(ALSPS, 0x17,int)
+#define ALSPS_SET_GS_MODE				_IOW(ALSPS, 0x18, int)
+#define ALSPS_GET_GS_MODE				_IOR(ALSPS, 0x19, int)
+#define ALSPS_GET_GS_DATA				_IOR(ALSPS, 0x20, int)
+#define ALSPS_GET_GS_RAW_DATA			_IOR(ALSPS, 0x21, int)
+#define ALSPS_SET_CCT_MODE				_IOW(ALSPS, 0x22, int)
+#define ALSPS_GET_CCT_MODE				_IOR(ALSPS, 0x23, int)
+#define ALSPS_GET_CCT_DATA				_IOR(ALSPS, 0x24, int)
+#define ALSPS_GET_CCT_RAW_DATA			_IOR(ALSPS, 0x25, int)
 
 
 #define GYROSCOPE							0X86
