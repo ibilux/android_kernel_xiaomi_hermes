@@ -87,6 +87,27 @@ ssize_t part_size_show(struct device *dev,
 	return sprintf(buf, "%llu\n",(unsigned long long)part_nr_sects_read(p));
 }
 
+ssize_t part_emmcsize_show(struct device *dev,
+		       struct device_attribute *attr, char *buf)
+{
+    sector_t emmcsize;
+	struct hd_struct *p = dev_to_part(dev);
+	emmcsize = (unsigned long long)part_nr_sects_read(p)*512/1024/1024/1024;
+    if (emmcsize <= 8)
+		  emmcsize = 8;
+	else if (emmcsize <= 16)
+		  emmcsize = 16;
+	else if (emmcsize <= 32)
+		  emmcsize = 32;
+	else if (emmcsize <= 64)
+		  emmcsize = 64;
+	else 
+		  emmcsize = 128;
+	return sprintf(buf, "%dG\n", (int)emmcsize);
+	
+	//return sprintf(buf, "%llu\n",(unsigned long long)part_nr_sects_read(p));
+}
+
 static ssize_t part_ro_show(struct device *dev,
 			    struct device_attribute *attr, char *buf)
 {
@@ -170,6 +191,7 @@ ssize_t part_fail_store(struct device *dev,
 static DEVICE_ATTR(partition, S_IRUGO, part_partition_show, NULL);
 static DEVICE_ATTR(start, S_IRUGO, part_start_show, NULL);
 static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
+static DEVICE_ATTR(emmcsize, S_IRUGO, part_emmcsize_show, NULL);
 static DEVICE_ATTR(ro, S_IRUGO, part_ro_show, NULL);
 static DEVICE_ATTR(alignment_offset, S_IRUGO, part_alignment_offset_show, NULL);
 static DEVICE_ATTR(discard_alignment, S_IRUGO, part_discard_alignment_show,
@@ -185,6 +207,7 @@ static struct attribute *part_attrs[] = {
 	&dev_attr_partition.attr,
 	&dev_attr_start.attr,
 	&dev_attr_size.attr,
+	&dev_attr_emmcsize.attr,
 	&dev_attr_ro.attr,
 	&dev_attr_alignment_offset.attr,
 	&dev_attr_discard_alignment.attr,

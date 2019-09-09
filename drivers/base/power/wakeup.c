@@ -559,7 +559,7 @@ static void wakeup_source_deactivate(struct wakeup_source *ws)
  *
  * It is safe to call it from interrupt context.
  */
-static void print_active_wakeup_sources(void);// add by zhaofei - 2015-05-26-13-56
+//static void print_active_wakeup_sources(void);// add by zhaofei - 2015-05-26-13-56
 void __pm_relax(struct wakeup_source *ws)
 {
 	unsigned long flags;
