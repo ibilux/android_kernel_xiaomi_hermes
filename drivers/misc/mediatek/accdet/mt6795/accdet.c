@@ -421,11 +421,6 @@ static void accdet_eint_work_callback(struct work_struct *work)
     }
 #else
    //KE under fastly plug in and plug out
-#ifdef CONFIG_OF
-    disable_irq(accdet_irq);
-#else
-    mt_eint_mask(CUST_EINT_ACCDET_NUM);
-#endif
     if (cur_eint_state == EINT_PIN_PLUG_IN) {
 		ACCDET_DEBUG("[Accdet]EINT func :plug-in\n");
 		mutex_lock(&accdet_eint_irq_sync_mutex);
@@ -690,9 +685,7 @@ static int key_check(int b)
 	{
 		ACCDET_DEBUG("[accdet]adc_data: %d mv\n",b);
 		return UP_KEY;
-	}
-	else if ((b < UP_KEY_THR) && (b >= MD_KEY_THR))
-	{
+	} else if ((b < UP_KEY_THR) && (b >= MD_KEY_THR)) {/*add efuse maybe mid-key value is below zero*/
 		ACCDET_DEBUG("[accdet]adc_data: %d mv\n",b);
 		return MD_KEY;
 	}
@@ -701,7 +694,9 @@ static int key_check(int b)
 }
 static void send_key_event(int keycode,int flag)
 {
-
+#if 0
+    if(call_status == 0)
+    {
                 switch (keycode)
                 {
                 case DW_KEY:
@@ -720,14 +715,10 @@ static void send_key_event(int keycode,int flag)
 					ACCDET_DEBUG("[accdet]KEY_PLAYPAUSE %d\n",flag);
 		   	        break;
                 }
-#if 0
-    if(call_status == 0)
-    {
-
      }
 	else
 	{
-
+#endif
 	          switch (keycode)
               {
                 case DW_KEY:
@@ -747,7 +738,7 @@ static void send_key_event(int keycode,int flag)
 					break;
 	          }
 //	}
-#endif
+
 }
 static void multi_key_detection(int current_status)
 {
@@ -1362,9 +1353,9 @@ static ssize_t accdet_store_call_state(struct device_driver *ddri, const char *b
         case CALL_IDLE :
 			ACCDET_DEBUG("[Accdet]accdet call: Idle state!\n");
      		break;
-            
+
 		case CALL_RINGING :
-			
+
 			ACCDET_DEBUG("[Accdet]accdet call: ringing state!\n");
 			break;
 
@@ -1373,7 +1364,7 @@ static ssize_t accdet_store_call_state(struct device_driver *ddri, const char *b
 			ACCDET_DEBUG("[Accdet]accdet_ioctl : Button_Status=%d (state:%d)\n", button_status, accdet_data.state);	
 			//return button_status;
 			break;
-            
+
 		default:
    		    ACCDET_DEBUG("[Accdet]accdet call : Invalid values\n");
             break;
