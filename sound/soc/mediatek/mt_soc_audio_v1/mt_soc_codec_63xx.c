@@ -1778,26 +1778,26 @@ static void Speaker_Amp_Change(bool enable)
             TurnOnDacPower();
         }
         printk("turn on Speaker_Amp_Change \n");
-        mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT); // output
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // high
         msleep(10); 
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // low
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // low
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // low
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // low
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
         // here pmic analog control
         //Ana_Set_Reg(AUDNVREGGLB_CFG0  , 0x0000 , 0xffffffff);
         OpenClassAB();
@@ -1830,13 +1830,13 @@ static void Speaker_Amp_Change(bool enable)
         }
 #endif
         Apply_Speaker_Gain();
-        msleep(100);
+        msleep(100); //dengbing add
     }
     else
     {
         printk("turn off Speaker_Amp_Change \n");
-        mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT);  // output
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // high
 #ifdef CONFIG_MTK_SPEAKER
         if (Speaker_mode == AUDIO_SPEAKER_MODE_D)
         {
@@ -1900,26 +1900,29 @@ static void Headset_Speaker_Amp_Change(bool enable)
             TurnOnDacPower();
         }
         printk("turn on Speaker_Amp_Change \n");
-        mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
-        msleep(10);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        //add by dingyin 0714
+        //printk("turn on Speaker_Amp_Change \n");
+        mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT); // output
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // high
+        msleep(10); 
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // low
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // low
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // low
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO); // low
         udelay(2);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE);
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ONE); // high
+        //end by dingyin 0714
         // here pmic analog control
         //Ana_Set_Reg(AUDNVREGGLB_CFG0  , 0x0000 , 0xffffffff);
         OpenClassAB();
@@ -2006,8 +2009,8 @@ static void Headset_Speaker_Amp_Change(bool enable)
         Ana_Set_Reg(AUDLDO_NVREG_CFG0  , 0x0000 , 0xffff); // Disable cap-less LDOs (1.6V)
 
         printk("turn off Speaker_Amp_Change \n");
-        mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT);
-        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);
+        mt_set_gpio_dir(GPIO_SPEAKER_EN_PIN,GPIO_DIR_OUT); // output
+        mt_set_gpio_out(GPIO_SPEAKER_EN_PIN,GPIO_OUT_ZERO);// high
         if (GetDLStatus() == false)
         {
             Ana_Set_Reg(AFE_DL_SRC2_CON0_L , 0x1800 , 0xffff);
@@ -2085,7 +2088,7 @@ static const struct snd_kcontrol_new mt_ext_dev_controls[] =
 #ifdef CONFIG_MTK_SPEAKER
 static const char *speaker_amp_function[] = {"CALSSD", "CLASSAB", "RECEIVER"};
 static const char *const speaker_PGA_function[] = {
-	"Mute", "0Db", "4Db", "5Db", "6Db", "7Db", "8Db", "9Db", "10Db",
+	"MUTE", "0Db", "4Db", "5Db", "6Db", "7Db", "8Db", "9Db", "10Db",
 	"11Db", "12Db", "13Db", "14Db", "15Db", "16Db", "17Db"
 };
 static const char *speaker_OC_function[] = {"Off", "On"};
@@ -2109,9 +2112,9 @@ static int Audio_Speaker_Class_Get(struct snd_kcontrol *kcontrol,
 
 static int Audio_Speaker_Pga_Gain_Set(struct snd_kcontrol *kcontrol, struct snd_ctl_elem_value *ucontrol)
 {
-	Speaker_pga_gain = ucontrol->value.integer.value[0];
-	Ana_Set_Reg(SPK_CON9, Speaker_pga_gain << 8, 0xf << 8);
-	return 0;
+    Speaker_pga_gain = ucontrol->value.integer.value[0];
+    Ana_Set_Reg(SPK_CON9,  (Speaker_pga_gain +1)<< 8, 0xf << 8);
+    return 0;
 }
 
 static int Audio_Speaker_OcFlag_Get(struct snd_kcontrol *kcontrol,
@@ -2330,7 +2333,7 @@ int Audio_AuxAdcData_Get_ext(void)
             printk("WAITING FQMTR_CON0[3]\n");
             //Do nothing;
         }
-        //delay 1ms ，ensure Busy =1
+        //delay 1ms， ensure Busy =1
         // FQMTR_CON0[3] =1?b0 ,wait FQMTR busy bit become to 0
         //Use 32KHz to meter variable 12MHz
         freq_meter_data = Ana_Get_Reg(0x8CD2); // check if [3] becomes to 0
