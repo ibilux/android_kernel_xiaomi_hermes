@@ -1,0 +1,3 @@
+config MTK_LENS_DW9761BAF_SUPPORT
+	bool "DW9761BAF Lens Driver"
+	default n

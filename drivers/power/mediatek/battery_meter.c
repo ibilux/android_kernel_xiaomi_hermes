@@ -39,6 +39,9 @@
 
 #include <mach/upmu_common.h>
 
+#ifdef CONFIG_MTK_CW2015_BATTERY
+#include <mach/cw2015_battery.h>
+#endif
 
 /* ============================================================ // */
 /* define */
@@ -2549,6 +2552,9 @@ kal_int32 get_dynamic_period(int first_use, int first_wakeup_time, int battery_c
 /* ============================================================ // */
 kal_int32 battery_meter_get_battery_voltage(kal_bool update)
 {
+#if defined(CONFIG_MTK_CW2015_BATTERY)
+	return g_cw2015_vol;
+#else
 	int ret = 0;
 	int val = 5;
 	static int pre_val = -1;
@@ -2571,6 +2577,7 @@ kal_int32 battery_meter_get_battery_voltage(kal_bool update)
 #endif
 
 	return val;
+#endif
 }
 
 kal_int32 battery_meter_get_charging_current_imm(void)
@@ -2826,6 +2833,8 @@ kal_int32 battery_meter_get_battery_percentage(void)
 {
 #if defined(CONFIG_POWER_EXT)
 	return 50;
+#elif defined(CONFIG_MTK_CW2015_BATTERY)
+	return g_cw2015_capacity;
 #else
 
 	if (bat_is_charger_exist() == KAL_FALSE)
@@ -3649,11 +3658,13 @@ static int battery_meter_probe(struct platform_device *dev)
 #if defined(CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 	char *temp_strptr;
 #endif
-	battery_meter_ctrl = bm_ctrl_cmd;
-
 	bm_print(BM_LOG_CRTI, "[battery_meter_probe] probe\n");
 	/* select battery meter control method */
 	battery_meter_ctrl = bm_ctrl_cmd;
+	battery_meter_ctrl(BATTERY_METER_CMD_GET_HW_OCV, &gFG_voltage);
+#ifdef CONFIG_MTK_CW2015_BATTERY
+	g_mtk_init_vol = gFG_voltage;
+#endif
 #if defined(CONFIG_MTK_KERNEL_POWER_OFF_CHARGING)
 	if (g_boot_mode == LOW_POWER_OFF_CHARGING_BOOT || g_boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT) {
 		temp_strptr = kzalloc(strlen(saved_command_line)+strlen(" androidboot.mode=charger")+1, GFP_KERNEL);

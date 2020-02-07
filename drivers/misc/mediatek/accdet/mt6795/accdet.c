@@ -666,8 +666,8 @@ static DEFINE_MUTEX(accdet_multikey_mutex);
 */
 
 #define DW_KEY_HIGH_THR	 (500) //0.50v=500000uv
-#define DW_KEY_THR		 (240) //0.24v=240000uv
-#define UP_KEY_THR       (90) //0.09v=90000uv
+#define DW_KEY_THR		 (180) //0.24v=240000uv
+#define UP_KEY_THR       (60) //0.09v=90000uv
 #define MD_KEY_THR		 (0)
 
 static int key_check(int b)

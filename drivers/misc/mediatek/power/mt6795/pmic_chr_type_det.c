@@ -280,6 +280,7 @@ static void hw_bc12_done(void)
 
 }
 
+int FG_charging_type = CHARGER_UNKNOWN;
 int hw_charging_get_charger_type(void)
 {
 #if 0
@@ -333,6 +334,7 @@ int hw_charging_get_charger_type(void)
 
     /********* Finally setting *******************************/
     hw_bc12_done();
+    FG_charging_type = CHR_Type_num;
 
     return CHR_Type_num;
 #endif

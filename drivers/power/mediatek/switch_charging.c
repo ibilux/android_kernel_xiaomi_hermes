@@ -746,7 +746,7 @@ static void pchr_turn_on_charging(void)
 			/*Set CV Voltage */
 #if !defined(CONFIG_MTK_JEITA_STANDARD_SUPPORT)
 #ifdef HIGH_BATTERY_VOLTAGE_SUPPORT
-			cv_voltage = BATTERY_VOLT_04_340000_V;
+			cv_voltage = BATTERY_VOLT_04_387500_V;
 #else
 			cv_voltage = BATTERY_VOLT_04_200000_V;
 #endif

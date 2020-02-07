@@ -8,6 +8,7 @@ obj-$(CONFIG_MTK_SYSTRACKER)   += systracker/
  
 obj-$(CONFIG_MTK_LASTPC)	    += lastpc/
 obj-$(CONFIG_MTK_NFC) += nfc/
+obj-$(CONFIG_MTK_CONSUMERIR_SUPPORT) += consumerir/
 obj-$(CONFIG_ZRAM)	+= mlog/
 obj-$(CONFIG_MTK_ETM)	+= etm/
 

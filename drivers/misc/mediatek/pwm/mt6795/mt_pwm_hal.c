@@ -383,20 +383,16 @@ void mt_set_intr_ack_hal ( U32 pwm_intr_ack_bit )
 
 void mt_set_pwm_buf0_addr_hal (U32 pwm_no, U32 addr)
 {
-#if 0
 	unsigned long reg_buff0_addr;
         reg_buff0_addr = PWM_register[pwm_no] + 4 * PWM_BUF0_BASE_ADDR;
 	OUTREG32 ( reg_buff0_addr, addr );	
-#endif
 }
 
 void mt_set_pwm_buf0_size_hal( U32 pwm_no, U16 size)
 {
-#if 0
 	unsigned long reg_buff0_size;
         reg_buff0_size = PWM_register[pwm_no] + 4* PWM_BUF0_SIZE;
         OUTREG32 ( reg_buff0_size, size );
-#endif
 }
 
 void mt_pwm_dump_regs_hal(void)

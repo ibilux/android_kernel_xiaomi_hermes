@@ -985,11 +985,11 @@ uint32 SampleRateTransform(uint32 SampleRate)
             return Soc_Aud_I2S_SAMPLERATE_I2S_44K;
         case 48000:
             return Soc_Aud_I2S_SAMPLERATE_I2S_48K;
-        case 88000:
+        case 88200:
             return Soc_Aud_I2S_SAMPLERATE_I2S_88K;
         case 96000:
             return Soc_Aud_I2S_SAMPLERATE_I2S_96K;
-        case 174000:
+        case 176400:
             return Soc_Aud_I2S_SAMPLERATE_I2S_174K;
         case 192000:
             return Soc_Aud_I2S_SAMPLERATE_I2S_192K;

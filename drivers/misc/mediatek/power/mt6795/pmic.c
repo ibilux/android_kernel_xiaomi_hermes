@@ -495,7 +495,7 @@ extern kal_uint32 bat_get_ui_percentage(void);
 int g_battery_percent_level=0;
 int g_battery_percent_stop=0;
 
-#define BAT_PERCENT_LINIT 15
+#define BAT_PERCENT_LINIT 5
 
 struct battery_percent_callback_table
 {

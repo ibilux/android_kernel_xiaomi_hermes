@@ -10,3 +10,6 @@ obj-y   +=  tpd_default.o
 obj-y   +=  tpd_init.o
 obj-y   +=  tpd_misc.o
 obj-y   +=  tpd_setting.o
+
+obj-$(CONFIG_TOUCHSCREEN_MTK_ATMEL336T) += atmel336t/
+obj-$(CONFIG_TOUCHSCREEN_MTK_FT5346) += ft5346/

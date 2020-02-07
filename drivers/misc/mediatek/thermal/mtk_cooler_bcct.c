@@ -92,7 +92,7 @@ static void mtk_cl_bcct_set_bcct_limit(void)
 			set_bat_charging_current_limit(-1);
 			mtk_cooler_bcct_dprintk_always("%s limit=-1\n", __func__);
 		} else {
-			set_bat_charging_current_limit(cl_bcct_cur_limit);
+			set_bat_charging_current_limit(-1);
 			mtk_cooler_bcct_dprintk_always("%s limit=%d\n", __func__,
 						       cl_bcct_cur_limit);
 		}
