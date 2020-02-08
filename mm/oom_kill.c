@@ -652,11 +652,6 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask,
 	enum oom_constraint constraint = CONSTRAINT_NONE;
 	int killed = 0;
 
-#ifdef CONFIG_MT_ENG_BUILD
-	//void add_kmem_status_oom_counter(void);
-	//add_kmem_status_oom_counter();
-#endif
-
 	blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
 	if (freed > 0)
 		/* Got some memory back in the last second. */

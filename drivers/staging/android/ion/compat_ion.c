@@ -136,8 +136,9 @@ struct compat_ion_mm_data {
 #define COMPAT_ION_IOC_CUSTOM	_IOWR(ION_IOC_MAGIC, 6, \
 				      struct compat_ion_custom_data)
 
-static int compat_get_ion_allocation_data(struct compat_ion_allocation_data __user *data32,
-					  struct ion_allocation_data __user *data)
+static int compat_get_ion_allocation_data(
+			struct compat_ion_allocation_data __user *data32,
+			struct ion_allocation_data __user *data)
 {
 	compat_size_t s;
 	compat_uint_t u;
@@ -158,8 +159,9 @@ static int compat_get_ion_allocation_data(struct compat_ion_allocation_data __us
 	return err;
 }
 
-static int compat_get_ion_handle_data(struct compat_ion_handle_data __user *data32,
-				      struct ion_handle_data __user *data)
+static int compat_get_ion_handle_data(
+			struct compat_ion_handle_data __user *data32,
+			struct ion_handle_data __user *data)
 {
 	compat_int_t i;
 	int err;
@@ -170,8 +172,9 @@ static int compat_get_ion_handle_data(struct compat_ion_handle_data __user *data
 	return err;
 }
 
-static int compat_put_ion_allocation_data(struct compat_ion_allocation_data __user *data32,
-					  struct ion_allocation_data __user *data)
+static int compat_put_ion_allocation_data(
+			struct compat_ion_allocation_data __user *data32,
+			struct ion_allocation_data __user *data)
 {
 	compat_size_t s;
 	compat_uint_t u;
@@ -629,8 +632,9 @@ static int compat_put_ion_sys_data(struct compat_ion_sys_data __user *data32,
 	return err;
 }
 
-static int compat_get_ion_custom_data(struct compat_ion_custom_data __user *data32,
-				      struct ion_custom_data __user *data)
+static int compat_get_ion_custom_data(
+			struct compat_ion_custom_data __user *data32,
+			struct ion_custom_data __user *data)
 {
 	compat_uint_t cmd;
 	compat_ulong_t arg;
@@ -837,10 +841,9 @@ long compat_ion_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	case ION_IOC_MAP:
 	case ION_IOC_IMPORT:
 	case ION_IOC_SYNC:
-		return filp->f_op->unlocked_ioctl(filp, cmd, (unsigned long)compat_ptr(arg));
-	default:{
-			IONMSG("compat_ion_ioctl : No such command!! 0x%x\n", cmd);
-			return -ENOIOCTLCMD;
-		}
+		return filp->f_op->unlocked_ioctl(filp, cmd,
+						(unsigned long)compat_ptr(arg));
+	default:
+		return -ENOIOCTLCMD;
 	}
 }

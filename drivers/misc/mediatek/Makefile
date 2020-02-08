@@ -136,8 +136,6 @@ obj-$(CONFIG_MTK_CCCI_EXT)     +=  dual_ccci/
 obj-$(CONFIG_MTK_ECCCI_DRIVER) +=  eccci/
 obj-$(CONFIG_MTK_EEMCS_DRIVER) +=  eemcs/
 obj-$(CONFIG_MTK_NFC) += nfc/
-obj-$(CONFIG_ZRAM)	+= mlog/
-
 
 obj-$(CONFIG_MTK_LENS)   += lens/
 obj-$(CONFIG_MTK_IMGSENSOR)	+= imgsensor/src/
