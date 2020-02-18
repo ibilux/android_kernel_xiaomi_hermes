@@ -1797,6 +1797,154 @@ _priv_set_struct(IN struct net_device *prNetDev,
 #if 1
 		status = wlanoidSetBT(prGlueInfo->prAdapter, (PVOID) & aucOidBuf[0], u4CmdLen, &u4BufLen);
 #endif
+	case PRIV_CMD_OID:
+		if (copy_from_user(&aucOidBuf[0], prIwReqData->data.pointer, prIwReqData->data.length)) {
+			status = -EFAULT;
+			break;
+		}
+		if (!kalMemCmp(&aucOidBuf[0], pcExtra, prIwReqData->data.length))
+			DBGLOG(REQ, INFO, "pcExtra buffer is valid\n");
+		else
+			DBGLOG(REQ, INFO, "pcExtra 0x%p\n", pcExtra);
+		/* Execute this OID */
+		status = priv_set_ndis(prNetDev, (P_NDIS_TRANSPORT_STRUCT) &aucOidBuf[0], &u4BufLen);
+		/* Copy result to user space */
+		((P_NDIS_TRANSPORT_STRUCT) &aucOidBuf[0])->outNdisOidLength = u4BufLen;
+
+		if (copy_to_user(prIwReqData->data.pointer,
+				 &aucOidBuf[0], OFFSET_OF(NDIS_TRANSPORT_STRUCT, ndisOidContent))) {
+			DBGLOG(REQ, INFO, "copy_to_user oidBuf fail\n");
+			status = -EFAULT;
+		}
+
+		break;
+
+	case PRIV_CMD_SW_CTRL:
+		pu4IntBuf = (PUINT_32) prIwReqData->data.pointer;
+		prNdisReq = (P_NDIS_TRANSPORT_STRUCT) &aucOidBuf[0];
+
+		/* kalMemCopy(&prNdisReq->ndisOidContent[0], prIwReqData->data.pointer, 8); */
+		if (copy_from_user(&prNdisReq->ndisOidContent[0], prIwReqData->data.pointer,
+			prIwReqData->data.length)) {
+			status = -EFAULT;
+			break;
+		}
+		prNdisReq->ndisOidCmd = OID_CUSTOM_SW_CTRL;
+		prNdisReq->inNdisOidlength = 8;
+		prNdisReq->outNdisOidLength = 8;
+
+		/* Execute this OID */
+		status = priv_set_ndis(prNetDev, prNdisReq, &u4BufLen);
+		break;
+
+	default:
+		return -EOPNOTSUPP;
+	}
+
+	return status;
+}
+
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief Private ioctl get struct handler.
+*
+* \param[in] pDev Net device requested.
+* \param[out] pIwReq Pointer to iwreq structure.
+* \param[in] cmd Private sub-command.
+*
+* \retval 0 For success.
+* \retval -EFAULT If copy from user space buffer fail.
+* \retval -EOPNOTSUPP Parameter "cmd" not recognized.
+*
+*/
+/*----------------------------------------------------------------------------*/
+static int
+_priv_get_struct(IN struct net_device *prNetDev,
+		IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN OUT char *pcExtra)
+{
+	UINT_32 u4SubCmd = 0;
+	P_NDIS_TRANSPORT_STRUCT prNdisReq = NULL;
+
+	P_GLUE_INFO_T prGlueInfo = NULL;
+	UINT_32 u4BufLen = 0;
+	PUINT_32 pu4IntBuf = NULL;
+	int status = 0;
+	UINT_32 u4CopyDataMax = 0;
+
+	kalMemZero(&aucOidBuf[0], sizeof(aucOidBuf));
+
+	ASSERT(prNetDev);
+	ASSERT(prIwReqData);
+	if (!prNetDev || !prIwReqData) {
+		DBGLOG(REQ, INFO, "priv_get_struct(): invalid param(0x%p, 0x%p)\n", prNetDev, prIwReqData);
+		return -EINVAL;
+	}
+
+	u4SubCmd = (UINT_32) prIwReqData->data.flags;
+	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prNetDev));
+	ASSERT(prGlueInfo);
+	if (!prGlueInfo) {
+		DBGLOG(REQ, INFO, "priv_get_struct(): invalid prGlueInfo(0x%p, 0x%p)\n",
+				   prNetDev, *((P_GLUE_INFO_T *) netdev_priv(prNetDev)));
+		return -EINVAL;
+	}
+#if 0
+	DBGLOG(REQ, INFO, "priv_get_struct(): prIwReqInfo->cmd(0x%X), u4SubCmd(%ld)\n",
+	       prIwReqInfo->cmd, u4SubCmd);
+#endif
+	memset(aucOidBuf, 0, sizeof(aucOidBuf));
+
+	switch (u4SubCmd) {
+	case PRIV_CMD_OID:
+		if (copy_from_user(&aucOidBuf[0], prIwReqData->data.pointer, sizeof(NDIS_TRANSPORT_STRUCT))) {
+			DBGLOG(REQ, INFO, "priv_get_struct() copy_from_user oidBuf fail\n");
+			return -EFAULT;
+		}
+
+		prNdisReq = (P_NDIS_TRANSPORT_STRUCT) &aucOidBuf[0];
+#if 0
+		DBGLOG(REQ, INFO, "\n priv_get_struct cmd 0x%02x len:%d OID:0x%08x OID Len:%d\n",
+		       cmd, pIwReq->u.data.length, ndisReq->ndisOidCmd, ndisReq->inNdisOidlength);
+#endif
+		if (priv_get_ndis(prNetDev, prNdisReq, &u4BufLen) == 0) {
+			prNdisReq->outNdisOidLength = u4BufLen;
+			if (copy_to_user(prIwReqData->data.pointer,
+					 &aucOidBuf[0],
+					 u4BufLen + sizeof(NDIS_TRANSPORT_STRUCT) -
+					 sizeof(prNdisReq->ndisOidContent))) {
+				DBGLOG(REQ, INFO, "priv_get_struct() copy_to_user oidBuf fail(1)\n");
+				return -EFAULT;
+			}
+			return 0;
+		} else {
+			prNdisReq->outNdisOidLength = u4BufLen;
+			if (copy_to_user(prIwReqData->data.pointer,
+					 &aucOidBuf[0], OFFSET_OF(NDIS_TRANSPORT_STRUCT, ndisOidContent))) {
+				DBGLOG(REQ, INFO, "priv_get_struct() copy_to_user oidBuf fail(2)\n");
+			}
+			return -EFAULT;
+		}
+		break;
+
+	case PRIV_CMD_SW_CTRL:
+		pu4IntBuf = (PUINT_32) prIwReqData->data.pointer;
+		prNdisReq = (P_NDIS_TRANSPORT_STRUCT) &aucOidBuf[0];
+
+		if (prIwReqData->data.length > (sizeof(aucOidBuf) - OFFSET_OF(NDIS_TRANSPORT_STRUCT, ndisOidContent))) {
+			DBGLOG(REQ, INFO, "priv_get_struct() exceeds length limit\n");
+			return -EFAULT;
+		}
+
+		u4CopyDataMax = sizeof(aucOidBuf) - OFFSET_OF(NDIS_TRANSPORT_STRUCT, ndisOidContent);
+		if ((prIwReqData->data.length>u4CopyDataMax)
+		    || copy_from_user(&prNdisReq->ndisOidContent[0],
+		    prIwReqData->data.pointer,
+		    prIwReqData->data.length)) {
+				   prIwReqData->data.pointer,
+				   prIwReqData->data.length)) {
+			DBGLOG(REQ, INFO, "priv_get_struct() copy_from_user oidBuf fail\n");
+			return -EFAULT;
+		}
 
 		if (WLAN_STATUS_SUCCESS != status)
 			status = -EFAULT;
