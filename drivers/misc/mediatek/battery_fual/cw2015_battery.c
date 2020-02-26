@@ -133,16 +133,16 @@ static u8 config_info_scud[SIZE_BATINFO] = {//feimaotui Scud   900mV
 };
 #else
 static u8 config_info_cos[SIZE_BATINFO] = {
-0x17,0xF3,0x63,0x6A,0x6A,0x68,0x68,0x65,0x63,0x60,0x5B,0x59,0x65,0x5B,0x46,0x41,
-0x36,0x31,0x28,0x27,0x31,0x35,0x43,0x51,0x1C,0x3B,0x0B,0x85,0x22,0x42,0x5B,0x82,
-0x99,0x92,0x98,0x96,0x3D,0x1A,0x66,0x45,0x0B,0x29,0x52,0x87,0x8F,0x91,0x94,0x52,
-0x82,0x8C,0x92,0x96,0x54,0xC2,0xBA,0xCB,0x2F,0x7D,0x72,0xA5,0xB5,0xC1,0xA5,0x49
+0x17,0xF6,0x6A,0x6A,0x6D,0x66,0x67,0x63,0x5E,0x63,0x60,0x54,0x5B,0x5A,0x49,0x41,
+0x36,0x2E,0x2B,0x20,0x21,0x2E,0x41,0x4E,0x34,0x1D,0x0C,0xCD,0x2C,0x4C,0x4E,0x5D,
+0x69,0x65,0x67,0x68,0x3D,0x1A,0x6B,0x40,0x03,0x2B,0x38,0x71,0x84,0x95,0x9F,0x09,
+0x36,0x6D,0x96,0xA2,0x5E,0xB3,0xE0,0x70,0x2F,0x7D,0x72,0xA5,0xB5,0xC1,0x46,0xAE
 };
 static u8 config_info_des[SIZE_BATINFO] = { //desay
-0x17,0xF9,0x6D,0x6D,0x6B,0x67,0x65,0x64,0x58,0x6D,0x6D,0x48,0x57,0x5D,0x4A,0x43,
-0x37,0x31,0x2B,0x20,0x24,0x35,0x44,0x55,0x20,0x37,0x0B,0x85,0x2A,0x4A,0x56,0x68,
-0x74,0x6B,0x6D,0x6E,0x3C,0x1A,0x5C,0x45,0x0B,0x30,0x52,0x87,0x8F,0x91,0x94,0x52,
-0x82,0x8C,0x92,0x96,0x64,0xB4,0xDB,0xCB,0x2F,0x7D,0x72,0xA5,0xB5,0xC1,0xA5,0x42
+0x17,0xF6,0x6A,0x6A,0x6D,0x66,0x67,0x63,0x5E,0x63,0x60,0x54,0x5B,0x5A,0x49,0x41,
+0x36,0x2E,0x2B,0x20,0x21,0x2E,0x41,0x4E,0x34,0x1D,0x0C,0xCD,0x2C,0x4C,0x4E,0x5D,
+0x69,0x65,0x67,0x68,0x3D,0x1A,0x6B,0x40,0x03,0x2B,0x38,0x71,0x84,0x95,0x9F,0x09,
+0x36,0x6D,0x96,0xA2,0x5E,0xB3,0xE0,0x70,0x2F,0x7D,0x72,0xA5,0xB5,0xC1,0x46,0xAE
 };
 #endif
 
@@ -388,106 +388,108 @@ static int cw_algorithm(struct cw_battery *cw_bat,int real_capacity)
 	{
 		PowerResetFlag = -1;
 #ifdef USE_MTK_INIT_VOL
-		if(mtk_init_vol > 4372){
+		/*if(mtk_init_vol > 4372){
 			st.DetSOC = 100 - real_capacity;
-		}else if(mtk_init_vol > 4349){
-			st.DetSOC = 98 - real_capacity;
+		}else*/ if(mtk_init_vol > 4349){
+			st.DetSOC = 100 - real_capacity;
 		}else if(mtk_init_vol > 4325){
-			st.DetSOC = 96 - real_capacity;
+			st.DetSOC = 98 - real_capacity;
 		}else if(mtk_init_vol > 4302){
-			st.DetSOC = 94 - real_capacity;
+			st.DetSOC = 96 - real_capacity;
 		}else if(mtk_init_vol > 4278){
-			st.DetSOC = 92 - real_capacity;
+			st.DetSOC = 94 - real_capacity;
 		}else if(mtk_init_vol > 4255){
-			st.DetSOC = 90 - real_capacity;
+			st.DetSOC = 92 - real_capacity;
 		}else if(mtk_init_vol > 4233){
-			st.DetSOC = 88 - real_capacity;
+			st.DetSOC = 90 - real_capacity;
 		}else if(mtk_init_vol > 4211){
-			st.DetSOC = 86 - real_capacity;
+			st.DetSOC = 88 - real_capacity;
 		}else if(mtk_init_vol > 4189){
-			st.DetSOC = 84 - real_capacity;
+			st.DetSOC = 86 - real_capacity;
 		}else if(mtk_init_vol > 4168){
-			st.DetSOC = 82 - real_capacity;
+			st.DetSOC = 84 - real_capacity;
 		}else if(mtk_init_vol > 4147){
-			st.DetSOC = 80 - real_capacity;
+			st.DetSOC = 82 - real_capacity;
 		}else if(mtk_init_vol > 4126){
-			st.DetSOC = 78 - real_capacity;
+			st.DetSOC = 80 - real_capacity;
 		}else if(mtk_init_vol > 4106){
-			st.DetSOC = 76 - real_capacity;
+			st.DetSOC = 78 - real_capacity;
 		}else if(mtk_init_vol > 4089){
-			st.DetSOC = 74 - real_capacity;
+			st.DetSOC = 76 - real_capacity;
 		}else if(mtk_init_vol > 4071){
-			st.DetSOC = 72 - real_capacity;
+			st.DetSOC = 74 - real_capacity;
 		}else if(mtk_init_vol > 4048){
-			st.DetSOC = 70 - real_capacity;
+			st.DetSOC = 72 - real_capacity;
 		}else if(mtk_init_vol > 4024){
-			st.DetSOC = 68 - real_capacity;
+			st.DetSOC = 70 - real_capacity;
 		}else if(mtk_init_vol > 4001){
-			st.DetSOC = 66 - real_capacity;
+			st.DetSOC = 68 - real_capacity;
 		}else if(mtk_init_vol > 3977){
-			st.DetSOC = 64 - real_capacity;
+			st.DetSOC = 66 - real_capacity;
 		}else if(mtk_init_vol > 3965){
-			st.DetSOC = 62 - real_capacity;
+			st.DetSOC = 64 - real_capacity;
 		}else if(mtk_init_vol > 3953){
-			st.DetSOC = 60 - real_capacity;
+			st.DetSOC = 62 - real_capacity;
 		}else if(mtk_init_vol > 3936){
-			st.DetSOC = 58 - real_capacity;
+			st.DetSOC = 60 - real_capacity;
 		}else if(mtk_init_vol > 3919){
-			st.DetSOC = 56 - real_capacity;
+			st.DetSOC = 58 - real_capacity;
 		}else if(mtk_init_vol > 3901){
-			st.DetSOC = 54 - real_capacity;
+			st.DetSOC = 56 - real_capacity;
 		}else if(mtk_init_vol > 3882){
-			st.DetSOC = 52 - real_capacity;
+			st.DetSOC = 54 - real_capacity;
 		}else if(mtk_init_vol > 3869){
-			st.DetSOC = 50 - real_capacity;
+			st.DetSOC = 52 - real_capacity;
 		}else if(mtk_init_vol > 3857){
-			st.DetSOC = 48 - real_capacity;
+			st.DetSOC = 50 - real_capacity;
 		}else if(mtk_init_vol > 3846){
-			st.DetSOC = 46 - real_capacity;
+			st.DetSOC = 48 - real_capacity;
 		}else if(mtk_init_vol > 3835){
-			st.DetSOC = 44 - real_capacity;
+			st.DetSOC = 46 - real_capacity;
 		}else if(mtk_init_vol > 3827){
-			st.DetSOC = 42 - real_capacity;
+			st.DetSOC = 44 - real_capacity;
 		}else if(mtk_init_vol > 3818){
-			st.DetSOC = 40 - real_capacity;
+			st.DetSOC = 42 - real_capacity;
 		}else if(mtk_init_vol > 3811){
-			st.DetSOC = 38 - real_capacity;
+			st.DetSOC = 40 - real_capacity;
 		}else if(mtk_init_vol > 3804){
-			st.DetSOC = 36 - real_capacity;
+			st.DetSOC = 38 - real_capacity;
 		}else if(mtk_init_vol > 3797){
-			st.DetSOC = 34 - real_capacity;
+			st.DetSOC = 36 - real_capacity;
 		}else if(mtk_init_vol > 3790){
-			st.DetSOC = 32 - real_capacity;
+			st.DetSOC = 34 - real_capacity;
 		}else if(mtk_init_vol > 3786){
-			st.DetSOC = 30 - real_capacity;
+			st.DetSOC = 32 - real_capacity;
 		}else if(mtk_init_vol > 3781){
-			st.DetSOC = 28 - real_capacity;
+			st.DetSOC = 30 - real_capacity;
 		}else if(mtk_init_vol > 3775){
-			st.DetSOC = 26 - real_capacity;
+			st.DetSOC = 28 - real_capacity;
 		}else if(mtk_init_vol > 3770){
-			st.DetSOC = 24 - real_capacity;
+			st.DetSOC = 26 - real_capacity;
 		}else if(mtk_init_vol > 3762){
-			st.DetSOC = 22 - real_capacity;
+			st.DetSOC = 24 - real_capacity;
 		}else if(mtk_init_vol > 3753){
-			st.DetSOC = 20 - real_capacity;
+			st.DetSOC = 22 - real_capacity;
 		}else if(mtk_init_vol > 3742){
-			st.DetSOC = 18 - real_capacity;
+			st.DetSOC = 20 - real_capacity;
 		}else if(mtk_init_vol > 3731){
-			st.DetSOC = 16 - real_capacity;
+			st.DetSOC = 18 - real_capacity;
 		}else if(mtk_init_vol > 3715){
-			st.DetSOC = 14 - real_capacity;
+			st.DetSOC = 16 - real_capacity;
 		}else if(mtk_init_vol > 3699){
-			st.DetSOC = 12 - real_capacity;
+			st.DetSOC = 14 - real_capacity;
 		}else if(mtk_init_vol > 3694){
-			st.DetSOC = 10 - real_capacity;
+			st.DetSOC = 12 - real_capacity;
 		}else if(mtk_init_vol > 3689){
-			st.DetSOC = 8 - real_capacity;
+			st.DetSOC = 10 - real_capacity;
 		}else if(mtk_init_vol > 3681){
-			st.DetSOC = 6 - real_capacity;
+			st.DetSOC = 8 - real_capacity;
 		}else if(mtk_init_vol > 3673){
-			st.DetSOC = 4 - real_capacity;
+			st.DetSOC = 6 - real_capacity;
 		}else if(mtk_init_vol > 3660){
-			st.DetSOC = 3 - real_capacity;
+			st.DetSOC = 4 - real_capacity;
+		}else if(mtk_init_vol > 3652){
+			st.DetSOC = 2 - real_capacity;
 		}else{
 			st.DetSOC = 1;
 		}
