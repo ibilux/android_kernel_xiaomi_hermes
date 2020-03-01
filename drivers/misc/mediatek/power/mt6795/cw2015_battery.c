@@ -78,8 +78,8 @@ static struct i2c_client *cw2015_i2c_client;
 #define CW2015_TAG "[CW2015]"
 #ifdef CW2015_DEBUG
 #define CW2015_FUN(f) printk(KERN_INFO CW2015_TAG "%s\n", __FUNCTION__)
-#define CW2015_ERR(fmt, args...) printk(KERN_INFO CW2015_TAG "%s" fmt "\n", __FUNCTION__, ##args)
-#define CW2015_LOG(fmt, args...) printk(KERN_INFO CW2015_TAG "%s" fmt "\n", __FUNCTION__, ##args)
+#define CW2015_ERR(fmt, args...) printk(KERN_INFO CW2015_TAG "%s " fmt "\n", __FUNCTION__, ##args)
+#define CW2015_LOG(fmt, args...) printk(KERN_INFO CW2015_TAG "%s " fmt "\n", __FUNCTION__, ##args)
 #endif
 
 #define CW2015_DEV_NAME "CW2015"
