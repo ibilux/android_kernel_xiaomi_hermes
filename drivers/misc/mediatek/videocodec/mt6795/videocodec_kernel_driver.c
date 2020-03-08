@@ -60,22 +60,26 @@
 #ifdef ENABLE_MMDVFS_VDEC
 /* <--- MM DVFS related */
 #include <mt_smi.h>
-#define DROP_PERCENTAGE     55
-#define RAISE_PERCENTAGE    80
+#define DROP_PERCENTAGE     50
+#define RAISE_PERCENTAGE    90
 #define MONITOR_DURATION_MS 4000
 #define DVFS_LOW     MMDVFS_VOLTAGE_LOW
 #define DVFS_HIGH    MMDVFS_VOLTAGE_HIGH
 #define DVFS_DEFAULT MMDVFS_VOLTAGE_HIGH
 #define MONITOR_START_MINUS_1   0
 #define SW_OVERHEAD_MS 1
+#define PAUSE_DETECTION_GAP     200
+#define PAUSE_DETECTION_RATIO   2
 static VAL_BOOL_T gMMDFVFSMonitorStarts = VAL_FALSE;
 static VAL_BOOL_T gFirstDvfsLock = VAL_FALSE;
 static VAL_UINT32_T gMMDFVFSMonitorCounts = 0;
 static VAL_TIME_T gMMDFVFSMonitorStartTime;
 static VAL_TIME_T gMMDFVFSLastLockTime;
+static VAL_TIME_T gMMDFVFSLastUnlockTime;
 static VAL_TIME_T gMMDFVFSMonitorEndTime;
 static VAL_UINT32_T gHWLockInterval = 0;
 static VAL_INT32_T gHWLockMaxDuration = 0;
+static VAL_UINT32_T gHWLockPrevInterval;
 
 VAL_UINT32_T TimeDiffMs(VAL_TIME_T timeOld, VAL_TIME_T timeNew)
 {
@@ -170,6 +174,23 @@ void VdecDvfsAdjustment(void)
 
 void VdecDvfsMonitorStart(void)
 {
+	VAL_UINT32_T _diff = 0;
+	VAL_TIME_T   _now;
+
+	if (VAL_TRUE == gMMDFVFSMonitorStarts) {
+		eVideoGetTimeOfDay(&_now, sizeof(VAL_TIME_T));
+		_diff = TimeDiffMs(gMMDFVFSLastUnlockTime, _now);
+		/* MODULE_MFV_LOGD("[VCODEC][MMDVFS_VDEC] Pause handle prev_diff = %dms, diff = %dms\n",
+				gHWLockPrevInterval, _diff); */
+		if (_diff > PAUSE_DETECTION_GAP && _diff > gHWLockPrevInterval * PAUSE_DETECTION_RATIO) {
+			/* MODULE_MFV_LOGD("[VCODEC][MMDVFS_VDEC] Pause detected, reset\n"); */
+			/* Reset monitoring period if pause is detected */
+			SendDvfsRequest(DVFS_HIGH);
+			VdecDvfsBegin();
+		}
+		gHWLockPrevInterval = _diff;
+	}
+
 	if (VAL_FALSE == gMMDFVFSMonitorStarts) {
 		/* Continous monitoring */
 		VdecDvfsBegin();
@@ -742,7 +763,8 @@ static long vcodec_lockhw(unsigned long arg)
 	    rHWLock.eDriverType == VAL_DRIVER_TYPE_MP1_MP2_DEC ||
 	    rHWLock.eDriverType == VAL_DRIVER_TYPE_VC1_DEC ||
 	    rHWLock.eDriverType == VAL_DRIVER_TYPE_VC1_ADV_DEC ||
-	    rHWLock.eDriverType == VAL_DRIVER_TYPE_VP8_DEC) {
+	    rHWLock.eDriverType == VAL_DRIVER_TYPE_VP8_DEC ||
+	    rHWLock.eDriverType == VAL_DRIVER_TYPE_VP9_DEC) {
 		while (bLockedHW == VAL_FALSE) {
 			mutex_lock(&DecHWLockEventTimeoutLock);
 			if (DecHWLockEvent.u4TimeoutMs == 1) {
@@ -1054,7 +1076,8 @@ static long vcodec_unlockhw(unsigned long arg)
 		rHWLock.eDriverType == VAL_DRIVER_TYPE_MP1_MP2_DEC ||
 		rHWLock.eDriverType == VAL_DRIVER_TYPE_VC1_DEC ||
 		rHWLock.eDriverType == VAL_DRIVER_TYPE_VC1_ADV_DEC ||
-		rHWLock.eDriverType == VAL_DRIVER_TYPE_VP8_DEC) {
+		rHWLock.eDriverType == VAL_DRIVER_TYPE_VP8_DEC ||
+		rHWLock.eDriverType == VAL_DRIVER_TYPE_VP9_DEC) {
 		mutex_lock(&VdecHWLock);
 		 /* Current owner give up hw lock */
 		if (grVcodecDecHWLock.pvHandle ==
@@ -1138,7 +1161,8 @@ static long vcodec_waitisr(unsigned long arg)
 	    val_isr.eDriverType == VAL_DRIVER_TYPE_MP1_MP2_DEC ||
 	    val_isr.eDriverType == VAL_DRIVER_TYPE_VC1_DEC ||
 	    val_isr.eDriverType == VAL_DRIVER_TYPE_VC1_ADV_DEC ||
-	    val_isr.eDriverType == VAL_DRIVER_TYPE_VP8_DEC) {
+	    val_isr.eDriverType == VAL_DRIVER_TYPE_VP8_DEC ||
+	    val_isr.eDriverType == VAL_DRIVER_TYPE_VP9_DEC) {
 		mutex_lock(&VdecHWLock);
 		if (grVcodecDecHWLock.pvHandle ==
 		    (VAL_VOID_T *) pmem_user_v2p_video((VAL_ULONG_T) val_isr.pvHandle)) {
