@@ -469,6 +469,7 @@ void cpufreq_frequency_table_put_attr(unsigned int cpu);
 void cpufreq_task_stats_init(struct task_struct *p);
 void cpufreq_task_stats_remove_uids(uid_t uid_start, uid_t uid_end);
 int  proc_time_in_state_show(struct seq_file *m, struct pid *pid, struct task_struct *p);
+int  single_uid_time_in_state_open(struct inode *inode, struct file *file);
 #else
 static inline void cpufreq_task_stats_init(struct task_struct *p) {}
 static inline void cpufreq_task_stats_remove_uids(uid_t uid_start, uid_t uid_end) {}
