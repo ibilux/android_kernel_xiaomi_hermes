@@ -68,9 +68,8 @@ struct uid_entry {
 static struct uid_entry *find_uid_entry(uid_t uid)
 {
 	struct uid_entry *uid_entry;
-	struct hlist_node *node;
 
-	hash_for_each_possible(hash_table, uid_entry, node, hash, uid) {
+	hash_for_each_possible(hash_table, uid_entry, hash, uid) {
 		if (uid_entry->uid == uid)
 			return uid_entry;
 	}
@@ -100,14 +99,13 @@ static int uid_cputime_show(struct seq_file *m, void *v)
 {
 	struct uid_entry *uid_entry;
 	struct task_struct *task, *temp;
-	struct hlist_node *node;
 	cputime_t utime;
 	cputime_t stime;
 	unsigned long bkt;
 
 	rt_mutex_lock(&uid_lock);
 
-	hash_for_each(hash_table, bkt, node, uid_entry, hash) {
+	hash_for_each(hash_table, bkt, uid_entry, hash) {
 		uid_entry->active_stime = 0;
 		uid_entry->active_utime = 0;
 		uid_entry->active_power = 0;
@@ -129,7 +127,7 @@ static int uid_cputime_show(struct seq_file *m, void *v)
 		if (task->cpu_power == ULLONG_MAX)
 			continue;
 #endif
-		task_times(task, &utime, &stime);
+		task_cputime_adjusted(task, &utime, &stime);
 		uid_entry->active_utime += utime;
 		uid_entry->active_stime += stime;
 #if 0 /* 3.0 fix */
@@ -138,7 +136,7 @@ static int uid_cputime_show(struct seq_file *m, void *v)
 	} while_each_thread(temp, task);
 	read_unlock(&tasklist_lock);
 
-	hash_for_each(hash_table, bkt, node, uid_entry, hash) {
+	hash_for_each(hash_table, bkt, uid_entry, hash) {
 		cputime_t total_utime = uid_entry->utime +
 							uid_entry->active_utime;
 		cputime_t total_stime = uid_entry->stime +
@@ -159,7 +157,7 @@ static int uid_cputime_show(struct seq_file *m, void *v)
 
 static int uid_cputime_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, uid_cputime_show, PDE(inode)->data);
+	return single_open(file, uid_cputime_show, PDE_DATA(inode));
 }
 
 static const struct file_operations uid_cputime_fops = {
@@ -178,7 +176,7 @@ static ssize_t uid_remove_write(struct file *file,
 			const char __user *buffer, size_t count, loff_t *ppos)
 {
 	struct uid_entry *uid_entry;
-	struct hlist_node *node, *tmp;
+	struct hlist_node *tmp;
 	char uids[128];
 	char *start_uid, *end_uid = NULL;
 	long int uid_start = 0, uid_end = 0;
@@ -203,7 +201,7 @@ static ssize_t uid_remove_write(struct file *file,
 	rt_mutex_lock(&uid_lock);
 
 	for (; uid_start <= uid_end; uid_start++) {
-		hash_for_each_possible_safe(hash_table, uid_entry, node, tmp,
+		hash_for_each_possible_safe(hash_table, uid_entry, tmp,
 							hash, (uid_t)uid_start) {
 			if (uid_start == uid_entry->uid) {
 				hash_del(&uid_entry->hash);
@@ -272,7 +270,7 @@ static void update_io_stats_all_locked(void)
 	unsigned long bkt;
 	uid_t uid;
 
-	hash_for_each(hash_table, bkt, node, uid_entry, hash)
+	hash_for_each(hash_table, bkt, uid_entry, hash)
 		memset(&uid_entry->io[UID_STATE_TOTAL_CURR], 0,
 			sizeof(struct io_stats));
 
@@ -319,14 +317,13 @@ static void update_io_stats_uid_locked(struct uid_entry *uid_entry)
 static int uid_io_show(struct seq_file *m, void *v)
 {
 	struct uid_entry *uid_entry;
-	struct hlist_node *node;
 	unsigned long bkt;
 
 	rt_mutex_lock(&uid_lock);
 
 	update_io_stats_all_locked();
 
-	hash_for_each(hash_table, bkt, node, uid_entry, hash) {
+	hash_for_each(hash_table, bkt, uid_entry, hash) {
 		seq_printf(m, "%d %llu %llu %llu %llu %llu %llu %llu %llu %llu %llu\n",
 			uid_entry->uid,
 			uid_entry->io[UID_STATE_FOREGROUND].rchar,
@@ -348,7 +345,7 @@ static int uid_io_show(struct seq_file *m, void *v)
 
 static int uid_io_open(struct inode *inode, struct file *file)
 {
-	return single_open(file, uid_io_show, PDE(inode)->data);
+	return single_open(file, uid_io_show, PDE_DATA(inode));
 }
 
 static const struct file_operations uid_io_fops = {
@@ -433,7 +430,7 @@ static int process_notifier(struct notifier_block *self,
 		goto exit;
 	}
 
-	task_times(task, &utime, &stime);
+	task_cputime_adjusted(task, &utime, &stime);
 	uid_entry->utime += utime;
 	uid_entry->stime += stime;
 #if 0 /* 3.0 fix */
