@@ -38,6 +38,7 @@ DECLARE_HASHTABLE(uid_hash_table, UID_HASH_BITS);
 
 static spinlock_t cpufreq_stats_lock;
 
+static DEFINE_SPINLOCK(task_time_in_state_lock); /* task->time_in_state */
 static DEFINE_RT_MUTEX(uid_lock); /* uid_hash_table */
 
 struct uid_entry {
@@ -131,7 +132,7 @@ static int uid_time_in_state_show(struct seq_file *m, void *v)
 {
 	struct uid_entry *uid_entry;
 	struct task_struct *task, *temp;
-	unsigned long bkt;
+	unsigned long bkt, flags;
 	int i;
 
 	if (!all_freq_table || !cpufreq_all_freq_init)
@@ -146,11 +147,6 @@ static int uid_time_in_state_show(struct seq_file *m, void *v)
 
 	rcu_read_lock();
 	do_each_thread(temp, task) {
-		/* if this task has exited, we have already accounted for all
-		 * time in state
-		 */
-		if (!task->time_in_state)
-			continue;
 
 		uid_entry = find_or_register_uid(from_kuid_munged(
 			current_user_ns(), task_uid(task)));
@@ -171,10 +167,13 @@ static int uid_time_in_state_show(struct seq_file *m, void *v)
 			uid_entry->alive_max_states = task->max_states;
 		}
 
-		for (i = 0; i < task->max_states; ++i) {
-			uid_entry->alive_time_in_state[i] +=
-				atomic_read(&task->time_in_state[i]);
+		spin_lock_irqsave(&task_time_in_state_lock, flags);
+		if (task->time_in_state) {
+			for (i = 0; i < task->max_states; ++i) {
+				uid_entry->alive_time_in_state[i] += atomic_read(&task->time_in_state[i]);
+			}
 		}
+		spin_unlock_irqrestore(&task_time_in_state_lock, flags);
 	} while_each_thread(temp, task);
 	rcu_read_unlock();
 
@@ -243,8 +242,12 @@ static int cpufreq_stats_update(unsigned int cpu)
 void cpufreq_task_stats_init(struct task_struct *p)
 {
 	size_t alloc_size;
+	void *temp;
+	unsigned long flags;
 
-	WRITE_ONCE(p->time_in_state, NULL);
+	spin_lock_irqsave(&task_time_in_state_lock, flags);
+	p->time_in_state = NULL;
+	spin_unlock_irqrestore(&task_time_in_state_lock, flags);
 	WRITE_ONCE(p->max_states, 0);
 
 	if (!all_freq_table || !cpufreq_all_freq_init)
@@ -256,31 +259,43 @@ void cpufreq_task_stats_init(struct task_struct *p)
 	 * cpus
 	 */
 	alloc_size = p->max_states * sizeof(p->time_in_state[0]);
+	temp = kzalloc(alloc_size, GFP_KERNEL);
 
-	WRITE_ONCE(p->time_in_state, kzalloc(alloc_size, GFP_KERNEL));
+	spin_lock_irqsave(&task_time_in_state_lock, flags);
+	p->time_in_state = temp;
+	spin_unlock_irqrestore(&task_time_in_state_lock, flags);
 }
 
 void cpufreq_task_stats_exit(struct task_struct *p)
 {
-	void *temp = p->time_in_state;
+ 	unsigned long flags;
+	void *temp;
 
-	WRITE_ONCE(p->time_in_state, NULL);
-	mb(); /* p->time_in_state */
-	kfree(temp);
+	spin_lock_irqsave(&task_time_in_state_lock, flags);
+	temp = p->time_in_state;
+	p->time_in_state = NULL;
+	spin_unlock_irqrestore(&task_time_in_state_lock, flags);
+	kfree(temp); 
 }
 
 int proc_time_in_state_show(struct seq_file *m, struct pid *pid, struct task_struct *p)
 {
 	int i;
+	cputime_t cputime;
+	unsigned long flags;
 
 	if (!all_freq_table || !cpufreq_all_freq_init || !p->time_in_state)
 		return 0;
 
 	spin_lock(&cpufreq_stats_lock);
 	for (i = 0; i < p->max_states; ++i) {
+		cputime = 0;
+		spin_lock_irqsave(&task_time_in_state_lock, flags);
+		if (p->time_in_state)
+			cputime = atomic_read(&p->time_in_state[i]);
+		spin_unlock_irqrestore(&task_time_in_state_lock, flags);
 		seq_printf(m, "%d %lu\n", all_freq_table->freq_table[i],
-			(unsigned long)cputime_to_clock_t(
-				atomic_read(&p->time_in_state[i])));
+			(unsigned long)cputime_to_clock_t(cputime));
 	}
 	spin_unlock(&cpufreq_stats_lock);
 
@@ -916,6 +931,7 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
 {
 	struct task_struct *task = v;
 	struct uid_entry *uid_entry;
+	unsigned long flags;
 	uid_t uid;
 	int i;
 
@@ -945,10 +961,14 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
 		uid_entry->dead_max_states = task->max_states;
 	}
 
-	for (i = 0; i < task->max_states; ++i) {
-		uid_entry->dead_time_in_state[i] +=
-			atomic_read(&task->time_in_state[i]);
+	spin_lock_irqsave(&task_time_in_state_lock, flags);
+	if (task->time_in_state) {
+		for (i = 0; i < task->max_states; ++i) {
+			uid_entry->dead_time_in_state[i] +=
+				atomic_read(&task->time_in_state[i]);
+		}
 	}
+	spin_unlock_irqrestore(&task_time_in_state_lock, flags); 
 
 	rt_mutex_unlock(&uid_lock);
 	return NOTIFY_OK;
