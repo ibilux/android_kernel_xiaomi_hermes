@@ -330,8 +330,7 @@ void cpufreq_task_stats_init(struct task_struct *p)
 	spin_unlock_irqrestore(&task_time_in_state_lock, flags);
 }
 
-int proc_time_in_state_show(struct seq_file *m, struct pid_namespace *ns,
-			    struct pid *pid, struct task_struct *p)
+int proc_time_in_state_show(struct seq_file *m, struct pid *pid, struct task_struct *p)
 {
 	int i;
 	cputime_t cputime;
