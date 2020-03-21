@@ -86,7 +86,7 @@
 static struct i2c_client *cw2015_i2c_client; /* global i2c_client to support ioctl */
 static struct workqueue_struct *cw2015_workqueue;
 
-#define FG_CW2015_DEBUG 1
+#define FG_CW2015_DEBUG                1
 #define FG_CW2015_TAG                  "[FG_CW2015]"
 #ifdef FG_CW2015_DEBUG
 #define FG_CW2015_FUN(f)               printk(KERN_ERR FG_CW2015_TAG"%s\n", __FUNCTION__)
@@ -1109,9 +1109,9 @@ static int cw_get_capacity(struct cw_battery *cw_bat)
 		FG_CW2015_ERR("get cw_capacity error; cw_capacity = %d\n", cw_capacity);
 #endif
 		reset_loop++;
-		
-		if (reset_loop >5) { 		
-			reset_val = MODE_SLEEP;               
+
+		if (reset_loop >5) {
+			reset_val = MODE_SLEEP;
 			ret = cw_write(cw_bat->client, REG_MODE, &reset_val);
 			if (ret < 0)
 				return ret;
@@ -1120,13 +1120,13 @@ static int cw_get_capacity(struct cw_battery *cw_bat)
 			ret = cw_write(cw_bat->client, REG_MODE, &reset_val);
 			if (ret < 0)
 				return ret;
-						
+
 			ret = cw_init(cw_bat);
 			if (ret) 
 				return ret;
-			reset_loop =0;               
+			reset_loop =0;
 		}
-				 
+
 		return cw_capacity;
 	} else {
 		reset_loop =0;
@@ -1161,35 +1161,33 @@ static int cw_get_capacity(struct cw_battery *cw_bat)
 	//count_time == 20s  
 
 		if(count_real_capacity <= count_real_sum) {
-		 count_real_capacity++;
-	FG_CW2015_LOG("count_real_capacity = %d\n",cw_bat->charger_mode);
+			count_real_capacity++;
+			FG_CW2015_LOG("count_real_capacity = %d\n",cw_bat->charger_mode);
 		}
 
 #ifdef CONFIG_CM865_MAINBOARD //add by longcheer_liml_2015_10_12
 	if(Charger_enable_Flag==0)
 	{
-		if (
-		(cw_bat->charger_mode == 0) && (cw_capacity > cw_bat->capacity)&&(cw_capacity < (cw_bat->capacity+20))&&(count_real_capacity>= count_real_sum ) )
+		if ((cw_bat->charger_mode == 0) && (cw_capacity > cw_bat->capacity)&&(cw_capacity < (cw_bat->capacity+20))&&(count_real_capacity>= count_real_sum ))
 		{             // modify battery level swing
-		if (!(cw_capacity == 0 && cw_bat->capacity <= 2)) 
-		{		
-	cw_capacity = cw_bat->capacity;
+			if (!(cw_capacity == 0 && cw_bat->capacity <= 2)) 
+		{
+			cw_capacity = cw_bat->capacity;
 		}
-		} 
-	}else
-	{
+	}
+	}else{
 		if (
 #ifdef CHARGING_NO_DOWN_CAP //liuchao
 		((cw_bat->charger_mode > 0) && (cw_capacity <= (cw_bat->capacity - 1)) && (cw_capacity > (cw_bat->capacity - 9)))
-		|| 
+		||
 #endif
-((cw_bat->charger_mode == 0) && (cw_capacity > cw_bat->capacity)&&(cw_capacity < (cw_bat->capacity+20))&&(count_real_capacity>= count_real_sum ) )) 
+		((cw_bat->charger_mode == 0) && (cw_capacity > cw_bat->capacity)&&(cw_capacity < (cw_bat->capacity+20))&&(count_real_capacity>= count_real_sum ) )) 
 		{             // modify battery level swing
-		if (!(cw_capacity == 0 && cw_bat->capacity <= 2)) 
-		{		
-	cw_capacity = cw_bat->capacity;
-		}	
-		} 
+			if (!(cw_capacity == 0 && cw_bat->capacity <= 2)) 
+		{
+			cw_capacity = cw_bat->capacity;
+		}
+		}
 	}
 
 #else
@@ -1367,7 +1365,7 @@ static int cw_get_vol(struct cw_battery *cw_bat)
 	}		
 
 	voltage = value16_1 * 312 / 1024;
-	voltage = voltage * 1000;
+	//voltage = voltage * 1000;
 	FG_CW2015_LOG("cw_get_vol 4444 voltage = %d\n",voltage);
 	if(voltage ==0)
 		cw2015_check++;
@@ -1446,7 +1444,7 @@ static void rk_bat_update_capacity(struct cw_battery *cw_bat)
 static void rk_bat_update_vol(struct cw_battery *cw_bat)
 {
 	int ret;
-	
+
 	ret = cw_get_vol(cw_bat);
 	if ((ret >= 0) && (cw_bat->voltage != ret)) {
 		cw_bat->voltage = ret;
@@ -1464,9 +1462,9 @@ static void rk_bat_update_status(struct cw_battery *cw_bat)
 		else
 			status=POWER_SUPPLY_STATUS_CHARGING;
 	} else {
-		status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+		status = POWER_SUPPLY_STATUS_DISCHARGING;
 	}
-	
+
 	if (cw_bat->status != status) {
 		cw_bat->status = status;
 		cw_bat->bat_change = 1;
@@ -1518,8 +1516,8 @@ static int rk_usb_update_online(struct cw_battery *cw_bat)
 	int usb_status = 0;
 
 	FG_CW2015_LOG("rk_usb_update_online FG_charging_status = %d\n", FG_charging_status);
-	
-	usb_status = get_usb_charge_state(cw_bat);        
+
+	usb_status = get_usb_charge_state(cw_bat);
 	if (usb_status == 2) {
 		if (cw_bat->charger_mode != AC_CHARGER_MODE) {
 			cw_bat->charger_mode = AC_CHARGER_MODE;
@@ -1554,8 +1552,8 @@ static void cw_bat_work(struct work_struct *work)
 	struct cw_battery *cw_bat;
 	int ret;
 	static int count_real_capacity = 0;
-	
-	FG_CW2015_FUN(); 
+
+	FG_CW2015_FUN();
 	printk("cw_bat_work\n");
 
 	delay_work = container_of(work, struct delayed_work, work);
@@ -1569,12 +1567,12 @@ static void cw_bat_work(struct work_struct *work)
 	rk_bat_update_vol(cw_bat);
 	g_cw2015_capacity = cw_bat->capacity;
 	g_cw2015_vol = cw_bat->voltage;
-	
+
 	printk("cw_bat_work 777 vol = %d,cap = %d\n",cw_bat->voltage,cw_bat->capacity);
 	if (cw_bat->bat_change) {
 		cw_bat->bat_change = 0;
 	}
-	
+
 	if(count_real_capacity < 30 && g_platform_boot_mode == 8) {
 		queue_delayed_work(cw_bat->battery_workqueue, &cw_bat->battery_delay_work, msecs_to_jiffies(1000));
 		count_real_capacity++;
@@ -1585,9 +1583,9 @@ static void cw_bat_work(struct work_struct *work)
 
 /*----------------------------------------------------------------------------*/
 static int cw2015_i2c_detect(struct i2c_client *client, struct i2c_board_info *info) 
-{    
+{
 	FG_CW2015_FUN(); 
-	
+
 	strcpy(info->type, CW2015_DEV_NAME);
 	return 0;
 }

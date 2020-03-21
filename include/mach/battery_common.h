@@ -158,6 +158,7 @@ typedef struct {
 	kal_bool bat_full;
 	INT32 bat_charging_state;
 	UINT32 bat_vol;
+	//UINT32 bat_vol_now;
 	kal_bool bat_in_recharging_state;
 	kal_uint32 Vsense;
 	kal_bool charger_exist;
@@ -165,6 +166,7 @@ typedef struct {
 	INT32 charger_protect_status;
 	INT32 ICharging;
 	INT32 IBattery;
+	//INT32 INow;
 	INT32 temperature;
 	INT32 temperatureR;
 	INT32 temperatureV;
