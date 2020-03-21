@@ -31,6 +31,7 @@
  */
 #define NICE_TO_PRIO(nice)	((nice) + DEFAULT_PRIO)
 #define PRIO_TO_NICE(prio)	((prio) - DEFAULT_PRIO)
+#define TASK_NICE(p)		PRIO_TO_NICE((p)->static_prio)
 
 /*
  * 'User priority' is the nice value converted to something we
