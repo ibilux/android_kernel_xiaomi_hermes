@@ -475,4 +475,10 @@ static inline void cpufreq_task_stats_remove_uids(uid_t uid_start,
 			     uid_t uid_end) {}
 #endif
 
+/*********************************************************************
+ *                         CPUFREQ STATS                             *
+ *********************************************************************/
+
+void acct_update_power(struct task_struct *p, cputime_t cputime);
+
 #endif /* _LINUX_CPUFREQ_H */
