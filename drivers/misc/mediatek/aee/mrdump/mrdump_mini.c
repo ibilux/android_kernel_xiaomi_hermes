@@ -36,7 +36,6 @@
 #define LOGE LOG_ERROR
 
 extern void get_kernel_log_buffer(unsigned long *addr, unsigned long *size, unsigned long *start);
-extern void get_android_log_buffer(unsigned long *addr, unsigned long *size, unsigned long *start, int type);
 extern struct ram_console_buffer *ram_console_buffer;
 static struct mrdump_mini_elf_header *mrdump_mini_ehdr;
 
@@ -488,7 +487,6 @@ static void mrdump_mini_build_elf_misc(void)
 	mrdump_mini_add_misc(misc.vaddr, misc.size, misc.start, "_KERNEL_LOG_");
 	for (i = 0; i < 4; i++) {
 		memset(&misc, 0, sizeof(struct mrdump_mini_elf_misc));
-		get_android_log_buffer(&misc.vaddr, &misc.size, &misc.start, i + 1);
 		mrdump_mini_add_misc(misc.vaddr, misc.size, misc.start, log_type[i]);
 	}
 }

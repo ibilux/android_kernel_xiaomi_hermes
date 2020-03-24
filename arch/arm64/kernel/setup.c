@@ -294,7 +294,6 @@ static void __init setup_processor(void)
 	if (block && !(block & 0x8))
 		compat_elf_hwcap2 |= COMPAT_HWCAP2_CRC32;
 #endif
-
 }
 
 static void __init setup_machine_fdt(phys_addr_t dt_phys)

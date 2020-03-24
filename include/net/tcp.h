@@ -291,6 +291,7 @@ extern int sysctl_tcp_min_tso_segs;
 extern int sysctl_tcp_default_init_rwnd;
 extern int sysctl_tcp_rto_min;
 extern int sysctl_tcp_rto_max;
+
 extern atomic_long_t tcp_memory_allocated;
 extern struct percpu_counter tcp_sockets_allocated;
 extern int tcp_memory_pressure;
@@ -1570,6 +1571,7 @@ extern int tcp_gro_complete(struct sk_buff *skb);
 extern int tcp4_gro_complete(struct sk_buff *skb);
 
 extern int tcp_nuke_addr(struct net *net, struct sockaddr *addr);
+
 /* MTK_NET_CHANGES */
 extern void tcp_v4_reset_connections_by_uid(struct uid_err uid_e);
 extern void tcp_v4_handle_retrans_time_by_uid(struct uid_err uid_e);

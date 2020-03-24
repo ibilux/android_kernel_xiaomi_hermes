@@ -1106,10 +1106,9 @@ static int mmc_init_card(struct mmc_host *host, u32 ocr,
 	}
 
 	/*
-	 * If the host supports the power_off_notify capability then
-	 * set the notification byte in the ext_csd register of device
+	 * Enable power_off_notification byte in the ext_csd register
 	 */
-	if ((host->caps2 & MMC_CAP2_POWEROFF_NOTIFY) && (card->ext_csd.rev >= 6) && (card->quirks & MMC_QUIRK_PON)){
+	if ((host->caps2 & MMC_CAP2_FULL_PWR_CYCLE) && (card->ext_csd.rev >= 6) && (card->quirks & MMC_QUIRK_PON)){
 		err = mmc_switch(card, EXT_CSD_CMD_SET_NORMAL,
 				 EXT_CSD_POWER_OFF_NOTIFICATION,
 				 EXT_CSD_POWER_ON,
@@ -1540,21 +1539,19 @@ static void mmc_detect(struct mmc_host *host)
 	}
 }
 
-/*
- * Suspend callback from host.
- */
-
 #define LINUX_34_DEBUG   (1)
-static int mmc_suspend(struct mmc_host *host)
+static int _mmc_suspend(struct mmc_host *host, bool is_suspend)
 {
 	int err = 0;
+	unsigned int notify_type = is_suspend ? EXT_CSD_POWER_OFF_SHORT :
+					EXT_CSD_POWER_OFF_LONG;
 
 	BUG_ON(!host);
 	BUG_ON(!host->card);
 
 	mmc_claim_host(host);
 
-	err = mmc_cache_ctrl(host, 0);
+	err = mmc_flush_cache(host->card);
 	if (err)
 		goto out;
 
@@ -1583,6 +1580,22 @@ static int mmc_suspend(struct mmc_host *host)
 out:
 	mmc_release_host(host);
 	return err;
+}
+
+/*
+ * Suspend callback from host.
+ */
+static int mmc_suspend(struct mmc_host *host)
+{
+	return _mmc_suspend(host, true);
+}
+
+/*
+ * Shutdown callback
+ */
+static int mmc_shutdown(struct mmc_host *host)
+{
+	return _mmc_suspend(host, false);
 }
 
 /*
@@ -1688,6 +1701,7 @@ static const struct mmc_bus_ops mmc_ops = {
 	.resume = NULL,
 	.power_restore = mmc_power_restore,
 	.alive = mmc_alive,
+	.shutdown = mmc_shutdown,
 };
 
 static const struct mmc_bus_ops mmc_ops_unsafe = {
@@ -1699,6 +1713,7 @@ static const struct mmc_bus_ops mmc_ops_unsafe = {
 	.resume = mmc_resume,
 	.power_restore = mmc_power_restore,
 	.alive = mmc_alive,
+	.shutdown = mmc_shutdown,
 };
 
 static void mmc_attach_bus_ops(struct mmc_host *host)
@@ -1776,7 +1791,7 @@ int mmc_attach_mmc(struct mmc_host *host)
 	mmc_release_host(host);
 	err = mmc_add_card(host->card);
 
-	if ((host->caps2 & MMC_CAP2_POWEROFF_NOTIFY) && (host->card->ext_csd.rev >= 6) && (host->card->quirks & MMC_QUIRK_PON))
+	if ((host->caps2 & MMC_CAP2_FULL_PWR_CYCLE) && (host->card->ext_csd.rev >= 6) && (host->card->quirks & MMC_QUIRK_PON))
 	{
 		if (host->card->ext_csd.rev >= 6) {
 			err_pon = mmc_switch(host->card, EXT_CSD_CMD_SET_NORMAL,

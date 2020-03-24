@@ -29,6 +29,7 @@
 
 #include "core.h"
 #include "host.h"
+
 #define CARD_INIT_TIMEOUT (HZ * 5) //5s
 #ifdef CONFIG_MTK_EMMC_CACHE
 /*
@@ -431,6 +432,8 @@ void mmc_of_parse(struct mmc_host *host)
 		host->caps |= MMC_CAP_POWER_OFF_CARD;
 	if (of_find_property(np, "cap-sdio-irq", &len))
 		host->caps |= MMC_CAP_SDIO_IRQ;
+	if (of_find_property(np, "full-pwr-cycle", &len))
+		host->caps2 |= MMC_CAP2_FULL_PWR_CYCLE;
 	if (of_find_property(np, "keep-power-in-suspend", &len))
 		host->pm_caps |= MMC_PM_KEEP_POWER;
 	if (of_find_property(np, "enable-sdio-wakeup", &len))
@@ -484,13 +487,10 @@ struct mmc_host *mmc_alloc_host(int extra, struct device *dev)
 
 	spin_lock_init(&host->lock);
 	init_waitqueue_head(&host->wq);
-#ifndef CONFIG_HAS_EARLYSUSPEND
-	wakeup_source_init(&host->detect_wake_lock,
-		kasprintf(GFP_KERNEL, "%s_detect", mmc_hostname(host)));
-#else
+	host->wlock_name = kasprintf(GFP_KERNEL,
+			"%s_detect", mmc_hostname(host));
 	wake_lock_init(&host->detect_wake_lock, WAKE_LOCK_SUSPEND,
-		kasprintf(GFP_KERNEL, "%s_detect", mmc_hostname(host)));
-#endif
+			host->wlock_name);
 	INIT_DELAYED_WORK(&host->detect, mmc_rescan);
 #ifdef MMC_ENABLED_EMPTY_QUEUE_FLUSH
 	host->flush_info.wq = create_singlethread_workqueue("flush_wq");     
@@ -547,6 +547,8 @@ int mmc_add_host(struct mmc_host *host)
 #endif
 	mmc_host_clk_sysfs_init(host);
 
+	mmc_latency_hist_sysfs_init(host);
+
 	mmc_start_host(host);
 	if (!(host->pm_flags & MMC_PM_IGNORE_PM_NOTIFY))
 		register_pm_notifier(&host->pm_notify);
@@ -595,12 +597,9 @@ void mmc_free_host(struct mmc_host *host)
 	spin_lock(&mmc_host_lock);
 	idr_remove(&mmc_host_idr, host->index);
 	spin_unlock(&mmc_host_lock);
-#ifndef CONFIG_HAS_EARLYSUSPEND
-	wakeup_source_trash(&host->detect_wake_lock);
-#else
 	wake_lock_destroy(&host->detect_wake_lock);
-#endif
-
+	kfree(host->wlock_name);
+	mmc_latency_hist_sysfs_exit(host);
 	put_device(&host->class_dev);
 }
 

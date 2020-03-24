@@ -116,7 +116,6 @@
 #include <linux/security.h>
 #include <linux/freezer.h>
 
-
 #include <linux/uio.h>
 #include <linux/blkdev.h>
 #include <linux/compat.h>

@@ -1190,9 +1190,9 @@ static inline u16 socket_type_to_security_class(int family, int type, int protoc
 }
 
 static int selinux_genfs_get_sid(struct dentry *dentry,
-				u16 tclass,
+				 u16 tclass,
 				 u16 flags,
-				u32 *sid)
+				 u32 *sid)
 {
 	int rc;
 	struct super_block *sb = dentry->d_inode->i_sb;
@@ -1207,13 +1207,13 @@ static int selinux_genfs_get_sid(struct dentry *dentry,
 		rc = PTR_ERR(path);
 	else {
 		if (flags & SE_SBPROC) {
-		/* each process gets a /proc/PID/ entry. Strip off the
-		 * PID part to get a valid selinux labeling.
-		 * e.g. /proc/1/net/rpc/nfs -> /net/rpc/nfs */
-		while (path[1] >= '0' && path[1] <= '9') {
-			path[1] = '/';
-			path++;
-		}
+			/* each process gets a /proc/PID/ entry. Strip off the
+			 * PID part to get a valid selinux labeling.
+			 * e.g. /proc/1/net/rpc/nfs -> /net/rpc/nfs */
+			while (path[1] >= '0' && path[1] <= '9') {
+				path[1] = '/';
+				path++;
+			}
 		}
 		rc = security_genfs_sid(sb->s_type->name, path, tclass, sid);
 	}
