@@ -21,7 +21,7 @@
 #include <linux/err.h>
 #include <linux/dma-mapping.h>
 
-/* for ion_heap_ops structure */
+#include "ion.h"
 #include "ion_priv.h"
 
 #define ION_CMA_ALLOCATE_FAILED -1
