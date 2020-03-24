@@ -2254,6 +2254,7 @@ void console_unlock(void)
 	static int line_count, size_count;
 	int ret = 0;
 #endif
+
 	if (console_suspended) {
 		up(&console_sem);
 		return;
