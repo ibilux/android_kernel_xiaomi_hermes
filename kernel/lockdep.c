@@ -4150,7 +4150,7 @@ static void print_held_locks_bug(void)
 
 	printk("\n");
 	printk("=====================================\n");
-	printk("[ ProveLock BUG: %s/%d still has locks held! ]\n",
+	printk("[ BUG: %s/%d still has locks held! ]\n",
 	       current->comm, task_pid_nr(current));
 	print_kernel_ident();
 	printk("-------------------------------------\n");

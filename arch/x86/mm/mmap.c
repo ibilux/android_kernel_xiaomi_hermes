@@ -69,8 +69,6 @@ static unsigned long mmap_rnd(void)
 {
 	unsigned long rnd;
 
-	unsigned long rnd = 0;
-
 	if (current->flags & PF_RANDOMIZE) {
 		if (mmap_is_ia32())
 #ifdef CONFIG_COMPAT

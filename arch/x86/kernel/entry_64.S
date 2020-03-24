@@ -1074,6 +1074,37 @@ ENTRY(native_iret)
 
 .global native_irq_return_iret
 native_irq_return_iret:
+	iretq
+	_ASM_EXTABLE(native_irq_return_iret, bad_iret)
+
+#ifdef CONFIG_X86_ESPFIX64
+native_irq_return_ldt:
+	pushq_cfi %rax
+	pushq_cfi %rdi
+	SWAPGS
+	movq PER_CPU_VAR(espfix_waddr),%rdi
+	movq %rax,(0*8)(%rdi)	/* RAX */
+	movq (2*8)(%rsp),%rax	/* RIP */
+	movq %rax,(1*8)(%rdi)
+	movq (3*8)(%rsp),%rax	/* CS */
+	movq %rax,(2*8)(%rdi)
+	movq (4*8)(%rsp),%rax	/* RFLAGS */
+	movq %rax,(3*8)(%rdi)
+	movq (6*8)(%rsp),%rax	/* SS */
+	movq %rax,(5*8)(%rdi)
+	movq (5*8)(%rsp),%rax	/* RSP */
+	movq %rax,(4*8)(%rdi)
+	andl $0xffff0000,%eax
+	popq_cfi %rdi
+	orq PER_CPU_VAR(espfix_stack),%rax
+	SWAPGS
+	movq %rax,%rsp
+	popq_cfi %rax
+	jmp native_irq_return_iret
+#endif
+
+.global native_irq_return_iret
+native_irq_return_iret:
 	/*
 	 * This may fault.  Non-paranoid faults on return to userspace are
 	 * handled by fixup_bad_iret.  These include #SS, #GP, and #NP.

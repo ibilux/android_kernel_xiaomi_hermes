@@ -273,6 +273,7 @@ static inline struct audio_dev *func_to_audio(struct usb_function *f)
 static struct usb_request *audio_request_new(struct usb_ep *ep, int buffer_size)
 {
 	struct usb_request *req = usb_ep_alloc_request(ep, GFP_KERNEL);
+
 	if (!req)
 		return NULL;
 
@@ -356,6 +357,8 @@ static void audio_send(struct audio_dev *audio)
 	frames -= audio->frames_sent;
 
 	/* We need to send something to keep the pipeline going */
+	if (frames <= 0)
+		frames = FRAMES_PER_MSEC;
 
 	while (frames > 0) {
 		req = audio_req_get(audio);
@@ -521,7 +524,7 @@ audio_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 	return value;
 }
 
-static int audio_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
+static int audio_set_alt(struct usb_function *f, unsigned int intf, unsigned int alt)
 {
 	struct audio_dev *audio = func_to_audio(f);
 	struct usb_composite_dev *cdev = f->config->cdev;

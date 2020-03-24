@@ -176,6 +176,15 @@ static void shm_rcu_free(struct rcu_head *head)
 	ipc_rcu_free(head);
 }
 
+static void shm_rcu_free(struct rcu_head *head)
+{
+	struct ipc_rcu *p = container_of(head, struct ipc_rcu, rcu);
+	struct shmid_kernel *shp = ipc_rcu_to_struct(p);
+
+	security_shm_free(shp);
+	ipc_rcu_free(head);
+}
+
 static inline void shm_rmid(struct ipc_namespace *ns, struct shmid_kernel *s)
 {
 	ipc_rmid(&shm_ids(ns), &s->shm_perm);

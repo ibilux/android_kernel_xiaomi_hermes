@@ -23,6 +23,7 @@
 #include <linux/scatterlist.h>
 #include <linux/vmalloc.h>
 #include <linux/mtk_ion.h>
+#include "ion.h"
 #include "ion_priv.h"
 
 void *ion_heap_map_kernel(struct ion_heap *heap,
@@ -50,6 +51,7 @@ void *ion_heap_map_kernel(struct ion_heap *heap,
 	for_each_sg(table->sgl, sg, table->nents, i) {
 		int npages_this_entry = PAGE_ALIGN(sg->length) / PAGE_SIZE;
 		struct page *page = sg_page(sg);
+
 		BUG_ON(i >= npages);
 		for (j = 0; j < npages_this_entry; j++)
 			*(tmp++) = page++;
