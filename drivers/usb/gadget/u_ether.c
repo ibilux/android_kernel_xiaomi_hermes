@@ -1396,7 +1396,7 @@ static int __init gether_init(void)
 	uether_wq1  = create_singlethread_workqueue("uether_rx1");	
 	if (!uether_wq1) {
 		destroy_workqueue(uether_wq);
-		pr_err("%s: Unable to create workqueue: uether\n", __func__);
+// 		pr_err("%s: Unable to create workqueue: uether\n", __func__);
 		return -ENOMEM;
 	}
 	return 0;
