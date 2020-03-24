@@ -27,7 +27,6 @@
 int g_chr_complete_timer=0;
 int g_sw_rechr_flag=0;
 int g_sw_rechr_vlot=4100;
-extern int Charger_enable_Flag;//add by longcheer_liml_09_02
 
 #if defined(HIGH_BATTERY_VOLTAGE_SUPPORT)
 kal_uint32 g_cv_reg_val=0x4; //default 4.4V
@@ -522,14 +521,8 @@ static kal_uint32 charging_enable(void *data)
     {
         if(is_m3_en==1)
         {
-		    if(Charger_enable_Flag==1)//add by longcheer_liml_09_02
-		    {
-			    mt6332_upmu_set_rg_pwm_en(1);
-			    battery_log(BAT_LOG_FULL,"[charging_enable] mt6332_upmu_set_rg_pwm_en(1)\n");
-		    }else{
-			    mt6332_upmu_set_rg_pwm_en(0);
-			    battery_log(BAT_LOG_FULL,"[charging_enable] mt6332_upmu_set_rg_pwm_en(0)\n");
-		    }
+            mt6332_upmu_set_rg_pwm_en(1);
+            battery_log(BAT_LOG_FULL,"[charging_enable] mt6332_upmu_set_rg_pwm_en(1)\n");
         }
     }
     else
@@ -558,7 +551,7 @@ static kal_uint32 charging_set_cv_voltage(void *data)
     register_value = charging_parameter_to_value(VBAT_CV_VTH, GETARRAYNUM(VBAT_CV_VTH) ,*(kal_uint32 *)(data));
     g_cv_reg_val = register_value;
 
-    if(*(kal_uint32 *)(data) == BATTERY_VOLT_04_340000_V)
+    if(*(kal_uint32 *)(data) == BATTERY_VOLT_04_425000_V)
     {
         g_cv_reg_val=0x4;
     }
@@ -1379,5 +1372,3 @@ kal_int32 chr_control_interface(CHARGING_CTRL_CMD cmd, void *data)
 
     return status;
 }
-
-
