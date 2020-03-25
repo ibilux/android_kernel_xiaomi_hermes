@@ -1722,7 +1722,7 @@ static void ltr559_eint_work(struct work_struct *work)
 		sensor_data.value_divide = 1;
 		sensor_data.status = SENSOR_STATUS_ACCURACY_MEDIUM;
 		//let up layer to know
-		if((err = hwmsen_get_interrupt_data(ID_PROXIMITY, &sensor_data)))
+		if((err = ps_report_interrupt_data(sensor_data.values[0])))
 		{
 		  APS_ERR("call hwmsen_get_interrupt_data fail = %d\n", err);
 		}
@@ -2366,6 +2366,128 @@ static int  ltr559_local_uninit(void)
 	return 0;
 }
 
+static int als_open_report_data(int open)
+{
+	//should queuq work to report event if  is_report_input_direct=true
+	return 0;
+}
+
+static int als_enable_nodata(int en)
+{
+	int res = 0;
+
+    APS_LOG("ltr559_obj als enable value = %d\n", en);
+
+	if(!ltr559_obj)
+	{
+		APS_ERR("ltr559_obj is null!!\n");
+		return -1;
+	}
+
+	if (en) {
+		set_bit(CMC_BIT_ALS, &ltr559_obj->enable);
+		res = ltr559_als_enable(als_gainrange);
+	} else {
+		clear_bit(CMC_BIT_ALS, &ltr559_obj->enable);
+		res = ltr559_als_disable();
+	}
+
+	if (res < 0){
+		APS_ERR("als_enable_nodata is failed!!\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static int als_set_delay(u64 ns)
+{
+	return 0;
+}
+
+static int als_get_data(int* value, int* status)
+{
+	int err = 0;
+
+	if(!ltr559_obj)
+	{
+		APS_ERR("ltr559_obj is null!!\n");
+		return -1;
+	}
+	ltr559_obj->als = ltr559_als_read(als_gainrange);
+	if (ltr559_obj->als < 0)
+		err = -1;
+	else {
+		*value = ltr559_get_als_value(ltr559_obj, ltr559_obj->als);
+		if (*value < 0)
+			err = -1;
+		*status = SENSOR_STATUS_ACCURACY_MEDIUM;
+	}
+
+	return err;
+}
+
+static int ps_open_report_data(int open)
+{
+	//should queuq work to report event if  is_report_input_direct=true
+	return 0;
+}
+
+static int ps_enable_nodata(int en)
+{
+	int res = 0;
+
+    APS_LOG("ltr559_obj als enable value = %d\n", en);
+
+	if(!ltr559_obj)
+	{
+		APS_ERR("ltr559_obj is null!!\n");
+		return -1;
+	}
+
+	if (en) {
+		set_bit(CMC_BIT_PS, &ltr559_obj->enable);
+		res = ltr559_ps_enable(ps_gainrange);
+	} else {
+		clear_bit(CMC_BIT_PS, &ltr559_obj->enable);
+		res = ltr559_ps_disable();
+	}
+
+	if (res < 0){
+		APS_ERR("als_enable_nodata is failed!!\n");
+		return -1;
+	}
+
+	return 0;
+
+}
+
+static int ps_set_delay(u64 ns)
+{
+	return 0;
+}
+
+static int ps_get_data(int* value, int* status)
+{
+    int err = 0;
+
+    if(!ltr559_obj)
+	{
+		APS_ERR("ltr559_obj is null!!\n");
+		return -1;
+	}
+
+	ltr559_obj->ps = ltr559_ps_read();
+	if (ltr559_obj->ps < 0)
+		err = -1;
+	else {
+		*value = ltr559_get_ps_value(ltr559_obj, ltr559_obj->ps);
+		if (*value < 0)
+			err = -1;
+		*status = SENSOR_STATUS_ACCURACY_MEDIUM;
+	}
+	return err;
+}
 
 static int ltr559_local_init(void) 
 {
@@ -2398,8 +2520,12 @@ static int ltr559_local_init(void)
 static int ltr559_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	struct ltr559_priv *obj;
-	struct hwmsen_object obj_ps, obj_als;
+	//struct hwmsen_object obj_ps, obj_als;
 	int err = 0;
+	struct als_control_path als_ctl={0};
+	struct als_data_path als_data={0};
+	struct ps_control_path ps_ctl={0};
+	struct ps_data_path ps_data={0};
 
 	if(!(obj = kzalloc(sizeof(*obj), GFP_KERNEL)))
 	{
@@ -2459,7 +2585,9 @@ static int ltr559_i2c_probe(struct i2c_client *client, const struct i2c_device_i
 		goto exit_misc_device_register_failed;
 	}
 
-	
+    als_ctl.is_use_common_factory =false;
+	ps_ctl.is_use_common_factory = false;
+
 	/* Register sysfs attribute */
 	//if(err = ltr559_create_attr(&ltr559_alsps_driver.driver))
 	if((err = ltr559_create_attr(&(ltr559_init_info.platform_diver_addr->driver))))
@@ -2468,9 +2596,8 @@ static int ltr559_i2c_probe(struct i2c_client *client, const struct i2c_device_i
 		goto exit_create_attr_failed;
 	}
 
-
+	/*
 	obj_ps.self = ltr559_obj;
-	/*for interrup work mode support -- by liaoxl.lenovo 12.08.2011*/
 	if(1 == obj->hw->polling_mode_ps)
 	{
 		obj_ps.polling = 1;
@@ -2493,8 +2620,64 @@ static int ltr559_i2c_probe(struct i2c_client *client, const struct i2c_device_i
 	{
 		APS_ERR("attach fail = %d\n", err);
 		goto exit_create_attr_failed;
+	}*/
+
+	als_ctl.open_report_data= als_open_report_data;
+	als_ctl.enable_nodata = als_enable_nodata;
+	als_ctl.set_delay  = als_set_delay;
+	als_ctl.is_report_input_direct = false;
+	als_ctl.is_support_batch = false;
+	
+	err = als_register_control_path(&als_ctl);
+	if(err)
+	{
+		APS_ERR("register fail = %d\n", err);
+		goto exit_sensor_obj_attach_fail;
 	}
 
+	als_data.get_data = als_get_data;
+	als_data.vender_div = 100;
+	err = als_register_data_path(&als_data);	
+	if(err)
+	{
+		APS_ERR("tregister fail = %d\n", err);
+		goto exit_sensor_obj_attach_fail;
+	}
+
+	
+	ps_ctl.open_report_data= ps_open_report_data;
+	ps_ctl.enable_nodata = ps_enable_nodata;
+	ps_ctl.set_delay  = ps_set_delay;
+	ps_ctl.is_report_input_direct = false;
+	ps_ctl.is_support_batch = false;
+	
+	err = ps_register_control_path(&ps_ctl);
+	if(err)
+	{
+		APS_ERR("register fail = %d\n", err);
+		goto exit_sensor_obj_attach_fail;
+	}
+
+	ps_data.get_data = ps_get_data;
+	ps_data.vender_div = 100;
+	err = ps_register_data_path(&ps_data);	
+	if(err)
+	{
+		APS_ERR("tregister fail = %d\n", err);
+		goto exit_sensor_obj_attach_fail;
+	}
+
+	err = batch_register_support_info(ID_LIGHT,als_ctl.is_support_batch, 100, 0);
+	if(err)
+	{
+		APS_ERR("register light batch support err = %d\n", err);
+	}
+	
+	err = batch_register_support_info(ID_PROXIMITY,ps_ctl.is_support_batch, 100, 0);
+	if(err)
+	{
+		APS_ERR("register proximity batch support err = %d\n", err);
+	}
 
 #if defined(CONFIG_HAS_EARLYSUSPEND)
 	obj->early_drv.level    = EARLY_SUSPEND_LEVEL_DISABLE_FB - 1,
@@ -2515,10 +2698,11 @@ static int ltr559_i2c_probe(struct i2c_client *client, const struct i2c_device_i
 
 	APS_LOG("%s: OK\n", __func__);
 #if defined(MTK_AUTO_DETECT_ALSPS)
-    ltr559_init_flag = -1;
+    ltr559_init_flag = 0;
 #endif
 	return 0;
 
+	exit_sensor_obj_attach_fail:
 	exit_create_attr_failed:
 	misc_deregister(&ltr559_device);
 	exit_misc_device_register_failed:
