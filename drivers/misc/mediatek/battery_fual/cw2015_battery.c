@@ -86,7 +86,7 @@
 static struct i2c_client *cw2015_i2c_client; /* global i2c_client to support ioctl */
 static struct workqueue_struct *cw2015_workqueue;
 
-#define FG_CW2015_DEBUG 1
+#define FG_CW2015_DEBUG                0
 #define FG_CW2015_TAG                  "[FG_CW2015]"
 #ifdef FG_CW2015_DEBUG
 #define FG_CW2015_FUN(f)               printk(KERN_ERR FG_CW2015_TAG"%s\n", __FUNCTION__)
