@@ -91,7 +91,7 @@
 /* ////////////////////////////////////////////////////////////////////////////// */
 /* Battery Logging Entry */
 /* ////////////////////////////////////////////////////////////////////////////// */
-int Enable_BATDRV_LOG = BAT_LOG_CRTI; // 0: none; 1:BAT_LOG_CRTI; 2: BAT_LOG_FULL
+int Enable_BATDRV_LOG = 0; // 0: none; 1:BAT_LOG_CRTI; 2: BAT_LOG_FULL
 
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
 /* // Smart Battery Structure */
@@ -4131,8 +4131,6 @@ static int mt_batteryNotify_probe(struct platform_device *dev)
 		battery_log(BAT_LOG_CRTI, "proc_create current_cmd_proc_fops\n");
 		proc_create("discharging_cmd", S_IRUGO | S_IWUSR, battery_dir, &discharging_cmd_proc_fops);
 		battery_log(BAT_LOG_CRTI, "proc_create discharging_cmd_proc_fops\n");
-            
-
 #else
 		entry = create_proc_entry("battery_cmd", S_IRUGO | S_IWUSR, battery_dir);
 		if (entry) {
