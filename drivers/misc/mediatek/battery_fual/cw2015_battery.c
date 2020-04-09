@@ -1367,7 +1367,7 @@ static int cw_get_vol(struct cw_battery *cw_bat)
 	}		
 
 	voltage = value16_1 * 312 / 1024;
-	voltage = voltage;
+	//voltage = voltage * 1000;
 	FG_CW2015_LOG("cw_get_vol 4444 voltage = %d\n",voltage);
 	if(voltage ==0)
 		cw2015_check++;
