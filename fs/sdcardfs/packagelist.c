@@ -338,7 +338,6 @@ static void remove_packagelist_entry_locked(const struct qstr *key)
 	struct hashtable_entry *hash_cur;
 	unsigned int hash = key->hash;
 	struct hlist_node *h_t;
-
 	HLIST_HEAD(free_list);
 
 	hash_for_each_possible_rcu(package_to_userid, hash_cur, hlist, hash) {
@@ -392,9 +391,7 @@ static void remove_ext_gid_entry(const struct qstr *key, gid_t group)
 static void remove_userid_all_entry_locked(userid_t userid)
 {
 	struct hashtable_entry *hash_cur;
-
 	struct hlist_node *h_t;
-
 	HLIST_HEAD(free_list);
 	int i;
 
@@ -446,7 +443,6 @@ static void packagelist_destroy(void)
 {
 	struct hashtable_entry *hash_cur;
 	struct hlist_node *h_t;
-
 	HLIST_HEAD(free_list);
 	int i;
 
