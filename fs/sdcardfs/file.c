@@ -18,6 +18,7 @@
  * General Public License.
  */
 
+#include <linux/fsnotify.h>
 #include "sdcardfs.h"
 #ifdef CONFIG_SDCARD_FS_FADV_NOACTIVE
 #include <linux/backing-dev.h>
@@ -271,6 +272,7 @@ static int sdcardfs_open(struct inode *inode, struct file *file)
 			fput(lower_file); /* fput calls dput for lower_dentry */
 		}
 	} else {
+		fsnotify_open(lower_file);
 		sdcardfs_set_lower_file(file, lower_file);
 	}
 
@@ -292,10 +294,8 @@ static int sdcardfs_flush(struct file *file, fl_owner_t id)
 	struct file *lower_file = NULL;
 
 	lower_file = sdcardfs_lower_file(file);
-	if (lower_file && lower_file->f_op && lower_file->f_op->flush) {
-		filemap_write_and_wait(file->f_mapping);
+	if (lower_file && lower_file->f_op && lower_file->f_op->flush)
 		err = lower_file->f_op->flush(lower_file, id);
-	}
 
 	return err;
 }
