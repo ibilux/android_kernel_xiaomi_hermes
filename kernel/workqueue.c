@@ -2159,7 +2159,6 @@ __acquires(&pool->lock)
 	int work_color;
 	struct worker *collision;
 	unsigned long long exec_start;
-	char func[128];
 
 #ifdef CONFIG_LOCKDEP
 	/*
@@ -2232,7 +2231,6 @@ __acquires(&pool->lock)
 	lock_map_acquire(&lockdep_map);
 
 	exec_start = sched_clock();
-	sprintf(func, "%pf", work->func);
 
 	trace_workqueue_execute_start(work);
 #ifdef CONFIG_MTK_WQ_DEBUG
@@ -2240,7 +2238,7 @@ __acquires(&pool->lock)
 #endif //CONFIG_MTK_WQ_DEBUG
 
 	worker->current_func(work);
-		
+
 	/*
 	 * While we must be careful to not use "work" after this, the trace
 	 * point will only record its address.
@@ -2251,8 +2249,8 @@ __acquires(&pool->lock)
 #endif //CONFIG_MTK_WQ_DEBUG
 
 	if ((sched_clock() - exec_start)> 1000000000) // dump log if execute more than 1 sec
-		pr_warning("WQ warning! work (%s, %p) execute more than 1 sec, time: %llu ns\n", func, work, sched_clock() - exec_start);
-	
+		pr_debug("WQ warning! work (%pf, %p) execute more than 1 sec, time: %llu ns\n", work->func, work, sched_clock() - exec_start);
+
 	lock_map_release(&lockdep_map);
 	lock_map_release(&pwq->wq->lockdep_map);
 
