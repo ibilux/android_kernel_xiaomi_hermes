@@ -30,7 +30,7 @@ config HAVE_AEE_FEATURE
 	  exception catching and debugging information generation mechanism.
 	  It can collect and dump information to filesystem
 	  (/sdcard/mtklog/aee_exp)  when fatel occur(E.g. kernel
-	  panic/android system server crash and ..) 
+	  panic/android system server crash and ..)
 
 config HAVE_XLOG_SUPPORT
 	bool "HAVE_XLOG_SUPPORT"
@@ -448,7 +448,6 @@ source "drivers/misc/mediatek/lastpc/Kconfig"
 source "drivers/misc/mediatek/fmradio/Kconfig"
 source "drivers/misc/mediatek/hwmon/Kconfig"
 source "drivers/misc/mediatek/cmdq/Kconfig"
-source "drivers/misc/mediatek/video/mt6795/videox/Kconfig"
 source "drivers/misc/mediatek/mt_logger/Kconfig"
 source "drivers/misc/mediatek/boot/Kconfig"
 source "drivers/misc/mediatek/boot_reason/Kconfig"

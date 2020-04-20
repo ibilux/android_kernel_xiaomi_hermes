@@ -42,15 +42,9 @@
 
 
 
-//return value :
-  // KAL_FALSE : charger�S���ϥΤ�
-   //KAL_TRUE : charger�ϥΤ�
 
 extern kal_bool bat_is_charger_exist(void);
 
-    //return value:
-      //  true: execute in OTG mode
-        //false: otherwise
 extern bool mtk_is_host_mode(void);
 
 int strobe_getPartId(int sensorDev, int strobeId);
@@ -78,8 +72,7 @@ struct wake_lock flash_wake_lock;
  * Debug configuration
 ******************************************************************************/
 #ifdef WIN32
-#define logI(fmt, ...)    {printf(fmt, __VA_ARGS__); printf("\n");}
-#define logE(fmt, ...)    {printf("merror: %d ", __LINE__); printf(fmt, __VA_ARGS__); printf("\n");}
+#define logI(fmt, ...)    {printf(fmt, __VA_ARGS__); printf("\n"); }
 #else
 #define PFX "[KD_CAMERA_FLASHLIGHT]"
 #define PK_DBG_NONE(fmt, arg...)    do {} while (0)
@@ -88,10 +81,8 @@ struct wake_lock flash_wake_lock;
 /*#define DEBUG_KD_STROBE*/
 #ifdef DEBUG_KD_STROBE
 #define logI PK_DBG_FUNC
-#define logE(fmt, arg...)         printk(KERN_ERR PFX "%s: " fmt, __FUNCTION__ ,##arg)
 #else
 #define logI(a, ...)
-#define logE(a,...)
 #endif
 #endif
 //==============================
@@ -555,16 +546,8 @@ static long flashlight_ioctl_core(struct file *file, unsigned int cmd, unsigned 
 				}
 			}
 			break;
-		case FLASH_IOC_GET_FLASH_DRIVER_NAME_ID://ADD BY LCSH LVXIAOLIANG FOR DUAL FLASH
-			vTemp=e_FLASH_DRIVER_OTHERS; 
-			kdArg.arg = vTemp;
-			logI("FLASH_IOC_GET_FLASH_DRIVER_NAME_ID r=%d\n",vTemp);
-			if(copy_to_user((void __user *) arg , (void*)&kdArg , sizeof(kdStrobeDrvArg)))
-			{
-				logE("[FLASH_IOC_GET_FLASH_DRIVER_NAME_ID] ioctl copy to user failed ~");
-				return -EFAULT;
-			}
-    	case FLASH_IOC_GET_PRE_ON_TIME_MS:
+		case FLASH_IOC_GET_FLASH_DRIVER_NAME_ID:
+	case FLASH_IOC_GET_PRE_ON_TIME_MS:
 			{
 				FLASHLIGHT_FUNCTION_STRUCT *pF;
 				pF = g_pFlashInitFunc[sensorDevIndex][strobeIndex][partIndex];

@@ -3,9 +3,3 @@ config MTK_VIDEO
   default n
   help
     CONFIG_MTK_VIDEO
-
-config MTK_VIDEOX
-  bool CONFIG_MTK_VIDEOX
-  default n
-  help
-    CONFIG_MTK_VIDEOX
