@@ -3,7 +3,5 @@
 #
 include $(srctree)/drivers/misc/mediatek/Makefile.custom
 
-#obj-y += sensordriver/sensordrive_lens.o
-
 obj-$(CONFIG_MTK_LENS_DUMMYLENS_SUPPORT) += mt6795/dummy_lens/
 obj-$(CONFIG_MTK_LENS_DW9761BAF_SUPPORT) += mt6795/dw9761baf/

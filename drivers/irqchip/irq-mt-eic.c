@@ -2353,14 +2353,4 @@ void mt_eint_print_status(void)
 	pr_notice("\n");
 }
 arch_initcall(mt_eint_init);
-
-/*EXPORT_SYMBOL(mt_eint_dis_debounce);
-EXPORT_SYMBOL(mt_eint_registration);
-EXPORT_SYMBOL(mt_eint_set_hw_debounce);
-EXPORT_SYMBOL(mt_eint_set_polarity);
-EXPORT_SYMBOL(mt_eint_set_sens);
-EXPORT_SYMBOL(mt_eint_mask);
-EXPORT_SYMBOL(mt_eint_unmask);
-EXPORT_SYMBOL(mt_gpio_set_debounce);
-EXPORT_SYMBOL(mt_gpio_to_irq);*/
 EXPORT_SYMBOL(mt_eint_print_status);
