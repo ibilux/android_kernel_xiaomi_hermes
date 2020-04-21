@@ -79,19 +79,6 @@ typedef enum _VAL_CHIP_NAME_T {
 	VAL_CHIP_NAME_MT6570,                       /* /< Rainier (2 core) */
 	VAL_CHIP_NAME_MT6580,                       /* /< Rainier (4 core) */
 	VAL_CHIP_NAME_MT8163,
-	VAL_CHIP_NAME_MT8173,                       /* / <8173 */
-	VAL_CHIP_NAME_MT6755,                       /* / <Jade */
-	VAL_CHIP_NAME_MT6757,                       /* / <Olympus */
-	VAL_CHIP_NAME_MT6797,                       /* / <Everest */
-	VAL_CHIP_NAME_MT7623,                       /* / <MT7623 */
-	VAL_CHIP_NAME_MT8167,                       /* / <MT8167 */
-	VAL_CHIP_NAME_ELBRUS,                       /* /< ELBRUS */
-	VAL_CHIP_NAME_MT6799,                       /* /< WHITNEY */
-	VAL_CHIP_NAME_MT6759,                       /* /< ALASKA */
-	VAL_CHIP_NAME_MT6758,                       /* / <KIBOPLUS */
-	VAL_CHIP_NAME_MT6763,                       /* /< BIANCO */
-	VAL_CHIP_NAME_MT6739,                       /* /< ZION */
-	VAL_CHIP_NAME_MT3886,                       /* /< SYLVIA */
 	VAL_CHIP_NAME_MAX = 0xFFFFFFFF              /* /< Max Value */
 } VAL_CHIP_NAME_T;
 
@@ -162,8 +149,6 @@ typedef enum _VAL_DRIVER_TYPE_T {
 	VAL_DRIVER_TYPE_HEVC_ENC,                   /* /< HEVC encoder */
 	VAL_DRIVER_TYPE_HEVC_DEC,                   /* /< HEVC decoder */
 	VAL_DRIVER_TYPE_H264_ENC_LIVEPHOTO,         /* LivePhoto type */
-	VAL_DRIVER_TYPE_MMDVFS,                     /* /< MMDVFS */
-	VAL_DRIVER_TYPE_VP9_ENC,                    /* /< VP9 encoder */
 	VAL_DRIVER_TYPE_MAX = 0xFFFFFFFF            /* /< Max driver type */
 } VAL_DRIVER_TYPE_T;
 
@@ -453,10 +438,6 @@ typedef enum _VAL_VCODEC_SCENARIO_T {
 	VAL_VCODEC_SCENARIO_VENC_1080P  = 0x1,          /* /< Camera recording 1080P */
 	VAL_VCODEC_SCENARIO_VDEC_1080P  = 0x2,          /* /< Playback 1080P */
 	VAL_VCODEC_SCENARIO_VENC_WFD    = 0x4,          /* /< Wifi-display encoding */
-	VAL_VCODEC_SCENARIO_VDEC_60FPS  = 0x8,          /* /< Playback 60fps video */
-	VAL_VCODEC_SCENARIO_VDEC_4K     = 0x10,         /* /< Playback 4K */
-	VAL_VCODEC_SCENARIO_VDEC_2K     = 0x20,         /* /< Playback 2K */
-	VAL_VCODEC_SCENARIO_VENC_4K     = 0x40,         /* /< VR 4K */
 } VAL_VCODEC_SCENARIO_T;
 
 /**
