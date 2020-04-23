@@ -3,6 +3,8 @@
 
 | Branch | Description  | Android version | Dev |
 | :-: | :-: | :-: | :-: |
+| [lineage-16.0](https://github.com/ibilux/android_kernel_xiaomi_hermes/tree/lineage-16.0) | Upstreamed Kernel version 3.10.108 for LineageOS 16.0 (Oreo) | Android M | @Dinolek @ibilux |
+| [lineage-15.1](https://github.com/ibilux/android_kernel_xiaomi_hermes/tree/lineage-15.1) | Upstreamed Kernel version 3.10.108 for LineageOS 15.1 (Oreo) | Android M | @Dinolek @ibilux |
 | [lineage-15.0](https://github.com/ibilux/android_kernel_xiaomi_hermes/tree/lineage-15.0) | Upstreamed Kernel version 3.10.108 for LineageOS 15.0 (Oreo) | Android M | @Dinolek @ibilux |
 | [cm-14.1](https://github.com/ibilux/android_kernel_xiaomi_hermes/tree/cm-14.1) | Upstreamed Kernel version 3.10.108 for LineageOS 14.1 (Nougat) | Android M | @Dinolek @ibilux |
 | [cm-13.0](https://github.com/ibilux/android_kernel_xiaomi_hermes/tree/cm-13.0) | Upstreamed Kernel version 3.10.108 for LineageOS 13.0 (Marshmallow) | Android M | @Dinolek @ibilux |
