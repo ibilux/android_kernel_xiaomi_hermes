@@ -86,9 +86,9 @@
 static struct i2c_client *cw2015_i2c_client; /* global i2c_client to support ioctl */
 static struct workqueue_struct *cw2015_workqueue;
 
-#define FG_CW2015_DEBUG 1
+#define FG_CW2015_DEBUG                0
 #define FG_CW2015_TAG                  "[FG_CW2015]"
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 #define FG_CW2015_FUN(f)               printk(KERN_ERR FG_CW2015_TAG"%s\n", __FUNCTION__)
 #define FG_CW2015_ERR(fmt, args...)    printk(KERN_ERR FG_CW2015_TAG"%s %d : "fmt, __FUNCTION__, __LINE__, ##args)
 #define FG_CW2015_LOG(fmt, args...)    printk(KERN_ERR FG_CW2015_TAG fmt, ##args)
@@ -325,10 +325,12 @@ static int cw_algorithm(struct cw_battery *cw_bat,int real_capacity)
 	file = filp_open(FILE_PATH,O_RDWR|O_CREAT,0644);
 	if(IS_ERR(file))
 	{
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR(" error occured while opening file %s,exiting...\n",FILE_PATH);
+#endif
 		return real_capacity;
 	}
-	
+
 	old_fs = get_fs();
 	set_fs(KERNEL_DS); 
 	inode = file->f_dentry->d_inode;
@@ -345,7 +347,9 @@ static int cw_algorithm(struct cw_battery *cw_bat,int real_capacity)
 		st.OldSOC = real_capacity;
 		st.DetSOC = 0;
 		st.AlRunFlag = -1; 
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("cw2015_file_test  file size error!\n");
+#endif
 	}
 	else
 	{
@@ -353,9 +357,11 @@ static int cw_algorithm(struct cw_battery *cw_bat,int real_capacity)
 		file->f_pos = 0;
 		vfs_read(file,(char*)&st,sizeof(st),&file->f_pos);
 
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR(" success opening file, file_path=%s \n", FILE_PATH);
+#endif
 	}
-	
+
 	get_monotonic_boottime(&ts);
 	ktime_get_ts(&ktime_ts);
 	suspend_time = ts.tv_sec - ktime_ts.tv_sec;
@@ -367,17 +373,20 @@ static int cw_algorithm(struct cw_battery *cw_bat,int real_capacity)
 		suspend_time_changed, timeChanged_rtc, timeChanged);
 		if(timeChanged < -60 || timeChanged > 60){
 			st.bts = st.bts + timeChanged_rtc;
+#if FG_CW2015_DEBUG
 			FG_CW2015_ERR(" 1 st.bts = \t%ld\n", st.bts);
+#endif
 		}
-	}   
+	}
 	timeNow_last = timeNow;
 	suspend_time_last = suspend_time;
 
 	if(((st.bts) < 0) || (st.OldSOC > 100) || (st.OldSOC < 0) || (st.DetSOC < -1)) 
 	{
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("cw2015_file_test  reading file error!\n"); 
 		FG_CW2015_ERR("cw2015_file_test  st.bts = %ld st.OldSOC = %d st.DetSOC = %d st.AlRunFlag = %d  vmSOC = %d  2015SOC=%d\n",st.bts,st.OldSOC,st.DetSOC,st.AlRunFlag,vmSOC,real_capacity); 
-	
+#endif
 		st.bts = timeNow;
 		st.OldSOC = real_capacity;
 		st.DetSOC = 0;
@@ -577,13 +586,17 @@ static int cw_algorithm(struct cw_battery *cw_bat,int real_capacity)
 
 		if(AlgNeed(cw_bat, st.DetSOC + real_capacity, st.OldSOC) == 2){
 			st.DetSOC = st.OldSOC - real_capacity + 1;
+#if FG_CW2015_DEBUG
 			FG_CW2015_ERR("st.DetDoc=%d\n", st.DetSOC);
+#endif
 		}
 
 		st.AlRunFlag = 1;
 		st.bts = timeNow;
 		vmSOC = real_capacity + st.DetSOC;
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("cw2015_file_test  PowerResetFlag == 1!\n");
+#endif
 	}
 
 	else if(Join_Fast_Close_SOC && (st.AlRunFlag > 0)){
@@ -595,9 +608,11 @@ static int cw_algorithm(struct cw_battery *cw_bat,int real_capacity)
 			vmSOC = st.OldSOC;
 		}
 		if (vmSOC == real_capacity)
-		{ 
+		{
 			st.AlRunFlag = -1;
+#if FG_CW2015_DEBUG
 			FG_CW2015_ERR("cw2015_file_test  algriothm end of decrease acceleration\n");
+#endif
 		}
 	}
 	else if(((st.AlRunFlag) >0)&&((st.DetSOC) != 0))
@@ -630,19 +645,23 @@ static int cw_algorithm(struct cw_battery *cw_bat,int real_capacity)
 		{
 			utemp1 = 32768/(st.DetSOC);
 			if((st.bts)<timeNow)
-				utemp = cw_convertData(cw_bat,(timeNow-st.bts));   
+				utemp = cw_convertData(cw_bat,(timeNow-st.bts));
 			else
-				utemp = cw_convertData(cw_bat,1); 
+				utemp = cw_convertData(cw_bat,1);
+#if FG_CW2015_DEBUG
 			FG_CW2015_ERR("cw2015_file_test  convertdata = %d\n",utemp);
+#endif
 			if((st.DetSOC)<0)
 				vmSOC = real_capacity-(int)((((unsigned int)((st.DetSOC)*(-1))*utemp)+utemp1)/65536);
 			else
 				vmSOC = real_capacity+(int)((((unsigned int)(st.DetSOC)*utemp)+utemp1)/65536);
 
 			if (vmSOC == real_capacity)
-			{ 
+			{
 				st.AlRunFlag = -1;
+#if FG_CW2015_DEBUG
 				FG_CW2015_ERR("cw2015_file_test  algriothm end\n");
+#endif
 			}
 		}
 	}
@@ -650,11 +669,15 @@ static int cw_algorithm(struct cw_battery *cw_bat,int real_capacity)
 	{
 		st.AlRunFlag = -1;
 		st.bts = timeNow;
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("cw2015_file_test  no algriothm\n");
+#endif
 	}
+#if FG_CW2015_DEBUG
 	FG_CW2015_ERR("cw2015_file_test debugdata,\t%ld,\t%d,\t%d,\t%d,\t%d,\t%ld,\t%d,\t%d,\t%d\n",timeNow,cw_bat->capacity,cw_bat->voltage,vmSOC,st.DetSOC,st.bts,st.AlRunFlag,real_capacity,st.OldSOC);
+#endif
 	alg_run_flag = st.AlRunFlag;
-	
+
 	if(vmSOC>100)
 		vmSOC = 100;
 	else if(vmSOC<0)    
@@ -725,11 +748,12 @@ static int cw_update_config_info(struct cw_battery *cw_bat)
 	int i;
 	u8 reset_val;
 
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("func: %s-------\n", __func__);
 #endif
 
-#ifdef CONFIG_CM865_MAINBOARD     
+#if FG_CW2015_DEBUG
+#ifdef CONFIG_CM865_MAINBOARD
 	if(hmi_battery_version==2)
 		FG_CW2015_LOG("test cw_bat_config_info = 0x%x",config_info_sun[0]);
 	else if(hmi_battery_version==3)
@@ -742,15 +766,18 @@ static int cw_update_config_info(struct cw_battery *cw_bat)
 	else
 		FG_CW2015_LOG("test cw_bat_config_info = 0x%x",config_info_cos[0]);//liuchao
 #endif
+#endif
 	/* make sure no in sleep mode */
 	ret = cw_read(cw_bat->client, REG_MODE, &reg_val);
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("cw_update_config_info reg_val = 0x%x",reg_val);
+#endif
 	if (ret < 0)
 		return ret;
 
 	reset_val = reg_val;
 	if((reg_val & MODE_SLEEP_MASK) == MODE_SLEEP) {
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("Error, device in sleep mode, cannot update battery info\n");
 #endif
 		return -1;
@@ -831,15 +858,15 @@ static int cw_update_config_info(struct cw_battery *cw_bat)
 	ret = cw_read(cw_bat->client, REG_CONFIG, &reg_val);
 	if (ret < 0)
 		return ret;
-	
+
 	if (!(reg_val & CONFIG_UPDATE_FLG)) {
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_LOG("update flag for new battery info have not set..\n");
 #endif
 	}
 
 	if ((reg_val & 0xf8) != ATHD) {
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_LOG("the new ATHD have not set..\n");
 #endif
 	}
@@ -856,10 +883,12 @@ static int cw_update_config_info(struct cw_battery *cw_bat)
 		return ret;
 #ifdef BAT_CHANGE_ALGORITHM
 	PowerResetFlag = 1;
+#if FG_CW2015_DEBUG
 	FG_CW2015_ERR("cw2015_file_test  set PowerResetFlag/n ");
 #endif
+#endif
 	msleep(10);
-	
+
 	return 0;
 }
 
@@ -900,29 +929,35 @@ static int cw_init(struct cw_battery *cw_bat)
 	if (ret < 0)
 		return ret;
 
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("the new ATHD have not set reg_val = 0x%x\n",reg_val);
+#endif
 	if ((reg_val & 0xf8) != ATHD) 
 	{
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_LOG("the new ATHD have not set\n");
 #endif
 		reg_val &= 0x07;    /* clear ATHD */
 		reg_val |= ATHD;    /* set ATHD */
 		ret = cw_write(cw_bat->client, REG_CONFIG, &reg_val);
+#if FG_CW2015_DEBUG
 		FG_CW2015_LOG("cw_init 1111\n");
+#endif
 		if (ret < 0)
-			return ret;			 
+			return ret;
 	}
 
 	ret = cw_read(cw_bat->client, REG_CONFIG, &reg_val);
 	if (ret < 0)
 		 return ret;
-			 
+
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("cw_init REG_CONFIG = %d\n",reg_val);
-	
+#endif
+
 	if (!(reg_val & CONFIG_UPDATE_FLG))
 	{
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_LOG("update flag for new battery info have not set\n");
 #endif
 
@@ -976,7 +1011,7 @@ static int cw_init(struct cw_battery *cw_bat)
 		}
 #endif
 		if (i != SIZE_BATINFO) {
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 			FG_CW2015_LOG("update flag for new battery info have not set\n"); 
 #endif
 			ret = cw_update_config_info(cw_bat);
@@ -990,14 +1025,14 @@ static int cw_init(struct cw_battery *cw_bat)
 		ret = cw_read(cw_bat->client, REG_SOC, &reg_val);
 		if (ret < 0)
 			return ret;
-		
+
 		else if (reg_val <= 0x64) 
 			break;
-		
+
 		msleep(100);
 		if (i > 25)
 		{
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 			FG_CW2015_ERR("cw2015/cw2013 input unvalid power error\n");
 #endif
 		}
@@ -1007,13 +1042,13 @@ static int cw_init(struct cw_battery *cw_bat)
 	{
 		reg_val = MODE_SLEEP;
 		ret = cw_write(cw_bat->client, REG_MODE, &reg_val);
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("cw2015/cw2013 input unvalid power error_2\n");
 #endif
 		return -1;
-	} 
+	}
 	CW2015_test_init=1;
-	
+
 	return 0;
 }
 
@@ -1057,17 +1092,17 @@ static int cw_quickstart(struct cw_battery *cw_bat)
 
 	ret = cw_write(cw_bat->client, REG_MODE, &reg_val);
 	if(ret < 0) {
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("Error quick start1\n");
 #endif
 		return ret;
 	}
-	
+
 	reg_val = MODE_NORMAL;
 
 	ret = cw_write(cw_bat->client, REG_MODE, &reg_val);
 	if(ret < 0) {
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("Error quick start2\n");
 #endif
 		return ret;
@@ -1102,10 +1137,12 @@ static int cw_get_capacity(struct cw_battery *cw_bat)
 	if (ret < 0)
 		return ret;
 
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("cw_get_capacity cw_capacity_0 = %d,cw_capacity_1 = %d\n",reg_val[0],reg_val[1]);
+#endif
 	cw_capacity = reg_val[0];
 	if ((cw_capacity < 0) || (cw_capacity > 100)) {
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("get cw_capacity error; cw_capacity = %d\n", cw_capacity);
 #endif
 		reset_loop++;
@@ -1132,12 +1169,10 @@ static int cw_get_capacity(struct cw_battery *cw_bat)
 		reset_loop =0;
 	}
 
+#if FG_CW2015_DEBUG
 	if (cw_capacity == 0) 
-#ifdef FG_CW2015_DEBUG
 		FG_CW2015_LOG("the cw201x capacity is 0 !!!!!!!, funciton: %s, line: %d\n", __func__, __LINE__);
-#endif
-	else 
-#ifdef FG_CW2015_DEBUG
+	else
 		FG_CW2015_LOG("the cw201x capacity is %d, funciton: %s\n", cw_capacity, __func__);
 #endif
 
@@ -1157,12 +1192,16 @@ static int cw_get_capacity(struct cw_battery *cw_bat)
 
 	get_monotonic_boottime(&ts);
 	new_sleep_time = ts.tv_sec - new_run_time;
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("cw_get_capacity cw_bat->charger_mode = %d\n",cw_bat->charger_mode);
+#endif
 	//count_time == 20s  
 
 		if(count_real_capacity <= count_real_sum) {
-		 count_real_capacity++;
-	FG_CW2015_LOG("count_real_capacity = %d\n",cw_bat->charger_mode);
+			count_real_capacity++;
+#if FG_CW2015_DEBUG
+			FG_CW2015_LOG("count_real_capacity = %d\n",cw_bat->charger_mode);
+#endif
 		}
 
 #ifdef CONFIG_CM865_MAINBOARD //add by longcheer_liml_2015_10_12
@@ -1241,7 +1280,7 @@ static int cw_get_capacity(struct cw_battery *cw_bat)
 
 		allow_capacity = cw_bat->capacity - allow_change;
 		cw_capacity = (allow_capacity >= cw_capacity) ? allow_capacity: cw_capacity;
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_LOG("report GGIC POR happened\n");
 #endif
 		reset_val = MODE_SLEEP;               
@@ -1276,7 +1315,7 @@ static int cw_get_capacity(struct cw_battery *cw_bat)
 			ret = cw_init(cw_bat);
 			if (ret) 
 				return ret;
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 			FG_CW2015_LOG("report battery capacity still 0 if in changing\n");
 #endif
 			if_quickstart = 1;
@@ -1302,7 +1341,7 @@ static int cw_get_capacity(struct cw_battery *cw_bat)
 			}
 		} else if (if_quickstart <= 10)
 			if_quickstart =if_quickstart + 2;
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_LOG("the cw201x voltage is less than SYSTEM_SHUTDOWN_VOLTAGE !!!!!!!, funciton: %s, line: %d\n", __func__, __LINE__);
 #endif
 	} else if ((cw_bat->charger_mode > 0)&& (if_quickstart <= 12)) {
@@ -1319,20 +1358,26 @@ static int cw_get_vol(struct cw_battery *cw_bat)
 	u8 reg_val[2];
 	u16 value16, value16_1, value16_2, value16_3;
 	int voltage;
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("cw_get_vol \n");
-	
+#endif
+
 	ret = cw_read_word(cw_bat->client, REG_VCELL, reg_val);
 	if (ret < 0)
 	{
+#if FG_CW2015_DEBUG
 		FG_CW2015_LOG("cw_get_vol 1111\n");
+#endif
 		return ret;
 	}
 	value16 = (reg_val[0] << 8) + reg_val[1];
-	
+
 	ret = cw_read_word(cw_bat->client, REG_VCELL, reg_val);
 	if (ret < 0)
 	{
+#if FG_CW2015_DEBUG
 		FG_CW2015_LOG("cw_get_vol 2222\n");
+#endif
 		return ret;
 	}
 	value16_1 = (reg_val[0] << 8) + reg_val[1];
@@ -1340,7 +1385,9 @@ static int cw_get_vol(struct cw_battery *cw_bat)
 	ret = cw_read_word(cw_bat->client, REG_VCELL, reg_val);
 	if (ret < 0)
 	{
+#if FG_CW2015_DEBUG
 		FG_CW2015_LOG("cw_get_vol 3333\n");
+#endif
 		return ret;
 	}
 	value16_2 = (reg_val[0] << 8) + reg_val[1];
@@ -1368,7 +1415,9 @@ static int cw_get_vol(struct cw_battery *cw_bat)
 
 	voltage = value16_1 * 312 / 1024;
 	voltage = voltage * 1000;
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("cw_get_vol 4444 voltage = %d\n",voltage);
+#endif
 	if(voltage ==0)
 		cw2015_check++;
 	return voltage;
@@ -1392,7 +1441,7 @@ static int cw_get_alt(struct cw_battery *cw_bat)
 	reg_val = value8;
 	ret = cw_write(cw_bat->client, REG_RRT_ALERT, &reg_val);
 	if(ret < 0) {
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR( "Error clear ALRT\n");
 #endif
 		return ret;
@@ -1426,7 +1475,9 @@ static void rk_bat_update_capacity(struct cw_battery *cw_bat)
 	int cw_capacity;
 #ifdef BAT_CHANGE_ALGORITHM
 	cw_capacity = cw_get_capacity(cw_bat);
+#if FG_CW2015_DEBUG
 	FG_CW2015_ERR("cw2015_file_test userdata,	%ld,	%d,	%d\n",get_seconds(),cw_capacity,cw_bat->voltage);
+#endif
 #else
 	cw_capacity = cw_get_capacity(cw_bat);
 #endif
@@ -1435,12 +1486,14 @@ static void rk_bat_update_capacity(struct cw_battery *cw_bat)
 		cw_bat->bat_change = 1;
 		cw_update_time_member_capacity_change(cw_bat);
 
+	#if FG_CW2015_DEBUG
 		if (cw_bat->capacity == 0)
-	#ifdef FG_CW2015_DEBUG
 		FG_CW2015_LOG("report battery capacity 0 and will shutdown if no changing\n");
 	#endif
 	}
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("rk_bat_update_capacity cw_capacity = %d\n",cw_bat->capacity);
+#endif
 }
 
 static void rk_bat_update_vol(struct cw_battery *cw_bat)
@@ -1488,7 +1541,9 @@ static int get_usb_charge_state(struct cw_battery *cw_bat)
 {
 	int usb_status = 0;
 
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("get_usb_charge_state FG_charging_type = %d\n",FG_charging_type);
+#endif
 	if(FG_charging_status == 0)
 	{
 		usb_status = 0;
@@ -1507,7 +1562,9 @@ static int get_usb_charge_state(struct cw_battery *cw_bat)
 			cw_bat->charger_mode = AC_CHARGER_MODE;
 		}
 	}
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("get_usb_charge_state usb_status = %d,FG_charging_status = %d\n",usb_status,FG_charging_status);
+#endif
 
 	return usb_status;
 }
@@ -1517,9 +1574,11 @@ static int rk_usb_update_online(struct cw_battery *cw_bat)
 	int ret = 0;
 	int usb_status = 0;
 
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("rk_usb_update_online FG_charging_status = %d\n", FG_charging_status);
-	
-	usb_status = get_usb_charge_state(cw_bat);        
+#endif
+
+	usb_status = get_usb_charge_state(cw_bat);
 	if (usb_status == 2) {
 		if (cw_bat->charger_mode != AC_CHARGER_MODE) {
 			cw_bat->charger_mode = AC_CHARGER_MODE;
@@ -1554,8 +1613,10 @@ static void cw_bat_work(struct work_struct *work)
 	struct cw_battery *cw_bat;
 	int ret;
 	static int count_real_capacity = 0;
-	
-	FG_CW2015_FUN(); 
+
+#if FG_CW2015_DEBUG
+	FG_CW2015_FUN();
+#endif
 	printk("cw_bat_work\n");
 
 	delay_work = container_of(work, struct delayed_work, work);
@@ -1585,9 +1646,11 @@ static void cw_bat_work(struct work_struct *work)
 
 /*----------------------------------------------------------------------------*/
 static int cw2015_i2c_detect(struct i2c_client *client, struct i2c_board_info *info) 
-{    
-	FG_CW2015_FUN(); 
-	
+{
+#if FG_CW2015_DEBUG
+	FG_CW2015_FUN();
+#endif
+
 	strcpy(info->type, CW2015_DEV_NAME);
 	return 0;
 }
@@ -1606,8 +1669,10 @@ static int cw2015_i2c_probe(struct i2c_client *client, const struct i2c_device_i
 	int irq;
 	int irq_flags;
 	int loop = 0;
-	
-	FG_CW2015_FUN(); 
+
+#if FG_CW2015_DEBUG
+	FG_CW2015_FUN();
+#endif
 
 	mt_set_gpio_mode(GPIO1, 3);
 	mt_set_gpio_mode(GPIO2, 3);
@@ -1616,12 +1681,12 @@ static int cw2015_i2c_probe(struct i2c_client *client, const struct i2c_device_i
 
 	cw_bat = kzalloc(sizeof(struct cw_battery), GFP_KERNEL);
 	if (!cw_bat) {
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("fail to allocate memory\n");
 #endif
 		return -ENOMEM;
 	}
-		
+
 	i2c_set_clientdata(client, cw_bat);
 	cw_bat->plat_data = client->dev.platform_data;
 	cw_bat->client = client;
@@ -1648,7 +1713,7 @@ static int cw2015_i2c_probe(struct i2c_client *client, const struct i2c_device_i
 	INIT_DELAYED_WORK(&cw_bat->battery_delay_work, cw_bat_work);
 	queue_delayed_work(cw_bat->battery_workqueue, &cw_bat->battery_delay_work, msecs_to_jiffies(10));
 
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("cw2015/cw2013 driver v1.2 probe sucess\n");
 #endif
 	return 0;
@@ -1659,7 +1724,7 @@ rk_ac_register_fail:
 	power_supply_unregister(&cw_bat->rk_ac);
 rk_bat_register_fail:
 
-#ifdef FG_CW2015_DEBUG
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("cw2015/cw2013 driver v1.2 probe error!!!!\n");
 #endif
 	return ret;
@@ -1669,7 +1734,9 @@ static int  cw2015_i2c_remove(struct i2c_client *client)//__devexit
 {
 	struct cw_battery *data = i2c_get_clientdata(client);
 
-	FG_CW2015_FUN(); 
+#if FG_CW2015_DEBUG
+	FG_CW2015_FUN();
+#endif
 	cancel_delayed_work(&data->battery_delay_work);
 	cw2015_i2c_client = NULL;
 	i2c_unregister_device(client);
@@ -1682,8 +1749,10 @@ static int cw2015_i2c_suspend(struct i2c_client *client, pm_message_t mesg)
 {
 
 	struct cw_battery *cw_bat = i2c_get_clientdata(client);
-	
-	FG_CW2015_FUN(); 
+
+#if FG_CW2015_DEBUG
+	FG_CW2015_FUN();
+#endif
 	cancel_delayed_work(&cw_bat->battery_delay_work);
 
 	return 0;
@@ -1692,8 +1761,10 @@ static int cw2015_i2c_suspend(struct i2c_client *client, pm_message_t mesg)
 static int cw2015_i2c_resume(struct i2c_client *client)
 {
 	struct cw_battery *cw_bat = i2c_get_clientdata(client);
-	
-	FG_CW2015_FUN(); 
+
+#if FG_CW2015_DEBUG
+	FG_CW2015_FUN();
+#endif
 	queue_delayed_work(cw_bat->battery_workqueue, &cw_bat->battery_delay_work, msecs_to_jiffies(100));
 
 	return 0;
@@ -1714,13 +1785,17 @@ static struct i2c_driver cw2015_i2c_driver = {
 
 static int __init cw_bat_init(void)
 {
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("%s: \n", __func__); 
+#endif
 	printk("cw_bat_init\n");
 	i2c_register_board_info(4, &i2c_FG_CW2015, 1);
 
 	if(i2c_add_driver(&cw2015_i2c_driver))
 	{
+#if FG_CW2015_DEBUG
 		FG_CW2015_ERR("add driver error\n");
+#endif
 		return -1;
 	}
 	return 0;
@@ -1728,7 +1803,9 @@ static int __init cw_bat_init(void)
 
 static void __exit cw_bat_exit(void)
 {
+#if FG_CW2015_DEBUG
 	FG_CW2015_LOG("%s: \n", __func__); 
+#endif
 	printk("cw_bat_exit\n");
 	i2c_del_driver(&i2c_FG_CW2015);
 }
