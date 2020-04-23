@@ -330,7 +330,6 @@ int systracker_watchpoint_disable(void)
 
 static void systracker_reset_default(void)
 {
-	writel(BUS_DBG_CON_DEFAULT_VAL, IOMEM(BUS_DBG_CON));
 	writel(readl(IOMEM(BUS_DBG_CON)) | BUS_DBG_CON_SW_RST, IOMEM(BUS_DBG_CON));
 	writel(readl(IOMEM(BUS_DBG_CON)) | BUS_DBG_CON_IRQ_CLR, IOMEM(BUS_DBG_CON));
 	dsb();

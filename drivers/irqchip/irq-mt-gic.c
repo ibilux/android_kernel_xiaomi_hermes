@@ -225,8 +225,6 @@ static int gic_set_type(struct irq_data *d, unsigned int type)
 	} else {
 		pr_err("[GIC] not correct trigger type (0x%x)\n", type);
 		dump_stack();
-		raw_spin_unlock(&irq_controller_lock);
-		return -EINVAL;
 	}
 
 	/*
