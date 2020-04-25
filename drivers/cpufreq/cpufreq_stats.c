@@ -510,7 +510,7 @@ void cpufreq_task_stats_alloc(struct task_struct *p)
 	 * cpus
 	 */
 	alloc_size = p->max_states * sizeof(p->time_in_state[0]);
-	temp = kzalloc(alloc_size, GFP_ATOMIC);
+	temp = kzalloc(alloc_size, GFP_KERNEL);
 
 	spin_lock_irqsave(&task_time_in_state_lock, flags);
 	p->time_in_state = temp;
