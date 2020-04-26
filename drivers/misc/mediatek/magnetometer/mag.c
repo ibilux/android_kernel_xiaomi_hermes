@@ -825,11 +825,11 @@ static int mag_input_init(struct mag_context *cxt)
 	input_set_capability(dev, EV_ABS, EVENT_TYPE_MAGEL_Z);
 	input_set_capability(dev, EV_ABS, EVENT_TYPE_MAGEL_STATUS);
 	input_set_capability(dev, EV_REL, EVENT_TYPE_MAGEL_UPDATE);
-	//input_set_capability(dev, EV_REL, EVENT_TYPE_MAG_TIMESTAMP_HI);
-	//input_set_capability(dev, EV_REL, EVENT_TYPE_MAG_TIMESTAMP_LO);
+	input_set_capability(dev, EV_REL, EVENT_TYPE_MAG_TIMESTAMP_HI);
+	input_set_capability(dev, EV_REL, EVENT_TYPE_MAG_TIMESTAMP_LO);
 	input_set_capability(dev, EV_REL, EVENT_TYPE_ORIENT_UPDATE);
-	//input_set_capability(dev, EV_REL, EVENT_TYPE_ORIENT_TIMESTAMP_HI);
-	//input_set_capability(dev, EV_REL, EVENT_TYPE_ORIENT_TIMESTAMP_LO);
+	input_set_capability(dev, EV_REL, EVENT_TYPE_ORIENT_TIMESTAMP_HI);
+	input_set_capability(dev, EV_REL, EVENT_TYPE_ORIENT_TIMESTAMP_LO);
 
 	input_set_capability(dev, EV_ABS, EVENT_TYPE_O_X);
 	input_set_capability(dev, EV_ABS, EVENT_TYPE_O_Y);
@@ -998,8 +998,8 @@ int mag_data_report(enum MAG_TYPE type, int x, int y, int z, int status, int64_t
 	    input_report_abs(cxt->idev, EVENT_TYPE_MAGEL_Y, y);
 	    input_report_abs(cxt->idev, EVENT_TYPE_MAGEL_Z, z);
 	    input_report_rel(cxt->idev, EVENT_TYPE_MAGEL_UPDATE, 1);
-	    //input_report_rel(cxt->idev, EVENT_TYPE_MAG_TIMESTAMP_HI, nt >> 32);
-	    //input_report_rel(cxt->idev, EVENT_TYPE_MAG_TIMESTAMP_LO, nt & 0xFFFFFFFFLL);
+	    input_report_rel(cxt->idev, EVENT_TYPE_MAG_TIMESTAMP_HI, nt >> 32);
+	    input_report_rel(cxt->idev, EVENT_TYPE_MAG_TIMESTAMP_LO, nt & 0xFFFFFFFFLL);
 		input_sync(cxt->idev);  	
 	}
 	if(ORIENTATION==type)
@@ -1009,8 +1009,8 @@ int mag_data_report(enum MAG_TYPE type, int x, int y, int z, int status, int64_t
 	  	input_report_abs(cxt->idev, EVENT_TYPE_O_Y, y);
 	   	input_report_abs(cxt->idev, EVENT_TYPE_O_Z, z);
 	   	input_report_rel(cxt->idev, EVENT_TYPE_O_UPDATE, 1);
-	    //input_report_rel(cxt->idev, EVENT_TYPE_ORIENT_TIMESTAMP_HI, nt >> 32);
-	    //input_report_rel(cxt->idev, EVENT_TYPE_ORIENT_TIMESTAMP_LO, nt & 0xFFFFFFFFLL);
+	    input_report_rel(cxt->idev, EVENT_TYPE_ORIENT_TIMESTAMP_HI, nt >> 32);
+	    input_report_rel(cxt->idev, EVENT_TYPE_ORIENT_TIMESTAMP_LO, nt & 0xFFFFFFFFLL);
 		input_sync(cxt->idev); 
 	}
 

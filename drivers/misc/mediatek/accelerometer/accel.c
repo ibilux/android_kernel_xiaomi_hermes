@@ -573,8 +573,8 @@ static int acc_input_init(struct acc_context *cxt)
 	input_set_capability(dev, EV_ABS, EVENT_TYPE_ACCEL_Z);
 	input_set_capability(dev, EV_ABS, EVENT_TYPE_ACCEL_STATUS);
 	input_set_capability(dev, EV_REL, EVENT_TYPE_ACCEL_UPDATE);
-	//input_set_capability(dev, EV_REL, EVENT_TYPE_ACCEL_TIMESTAMP_HI);
-	//input_set_capability(dev, EV_REL, EVENT_TYPE_ACCEL_TIMESTAMP_LO);
+	input_set_capability(dev, EV_REL, EVENT_TYPE_ACCEL_TIMESTAMP_HI);
+	input_set_capability(dev, EV_REL, EVENT_TYPE_ACCEL_TIMESTAMP_LO);
 
 	input_set_abs_params(dev, EVENT_TYPE_ACCEL_X, ACC_VALUE_MIN, ACC_VALUE_MAX, 0, 0);
 	input_set_abs_params(dev, EVENT_TYPE_ACCEL_Y, ACC_VALUE_MIN, ACC_VALUE_MAX, 0, 0);
@@ -672,8 +672,8 @@ int acc_data_report(int x, int y, int z, int status, int64_t nt)
 	input_report_abs(cxt->idev, EVENT_TYPE_ACCEL_Z, z);
 	input_report_abs(cxt->idev, EVENT_TYPE_ACCEL_STATUS, status);
 	input_report_rel(cxt->idev, EVENT_TYPE_ACCEL_UPDATE, 1);
-	//input_report_rel(cxt->idev, EVENT_TYPE_ACCEL_TIMESTAMP_HI, nt >> 32);
-	//input_report_rel(cxt->idev, EVENT_TYPE_ACCEL_TIMESTAMP_LO, nt & 0xFFFFFFFFLL);
+	input_report_rel(cxt->idev, EVENT_TYPE_ACCEL_TIMESTAMP_HI, nt >> 32);
+	input_report_rel(cxt->idev, EVENT_TYPE_ACCEL_TIMESTAMP_LO, nt & 0xFFFFFFFFLL);
 	input_sync(cxt->idev);
 	return err;
 }
