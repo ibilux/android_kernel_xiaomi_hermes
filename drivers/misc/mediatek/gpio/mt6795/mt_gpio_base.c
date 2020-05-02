@@ -1108,20 +1108,20 @@ void get_gpio_vbase(struct device_node *node)
 }
 /*-----------------------User need GPIO APIs before GPIO probe------------------*/
 extern struct device_node *get_gpio_np(void);
-void get_gpio_vbase_early(struct device_node *node)
+static int __init get_gpio_vbase_early(void)
 {
-    //void __iomem *gpio_base = NULL;
-    gpio_vbase.gpio_regs = NULL;
-	struct device_node *np_gpio;
+	struct device_node *np_gpio = NULL;
+
+	gpio_vbase.gpio_regs = NULL;
 	np_gpio = get_gpio_np();
-    /* Setup IO addresses */
-    gpio_vbase.gpio_regs = of_iomap(np_gpio, 0);
-    if(!gpio_vbase.gpio_regs) {
-        GPIOERR("GPIO base addr is NULL\n");
-        return;
-    }
-    gpio_reg = (GPIO_REGS*)(GPIO_BASE_1);
-    GPIOERR("GPIO base add is 0x%p\n",gpio_reg);
+	/* Setup IO addresses */
+	gpio_vbase.gpio_regs = of_iomap(np_gpio, 0);
+	if(!gpio_vbase.gpio_regs) {
+		GPIOERR("GPIO base addr is NULL\n");
+		return;
+	}
+	gpio_reg = (GPIO_REGS*)(GPIO_BASE_1);
+	GPIOERR("GPIO base add is 0x%p\n",gpio_reg);
 }
 postcore_initcall(get_gpio_vbase_early);
 /*---------------------------------------------------------------------------*/

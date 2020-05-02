@@ -1910,7 +1910,7 @@ static unsigned int check_if_non_invasive_debug_enable(void)
 	return etm_enable;
 };
 
-static struct notifier_block __cpuinitdata pftracer_notifier = {
+static struct notifier_block pftracer_notifier = {
 	.notifier_call = restart_trace,
 };
 

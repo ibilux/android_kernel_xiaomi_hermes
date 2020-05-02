@@ -173,7 +173,7 @@ typedef struct _modem_info {
 	char ver;
 	unsigned int reserved[2];
 } modem_info_t;
-static unsigned long dt_chosen_node;
+struct device_node *dt_chosen_node;
 static unsigned int lk_load_img_status;
 static int lk_load_img_err_no[MAX_MD_NUM];
 static unsigned int md_type_at_lk[MAX_MD_NUM];
@@ -205,14 +205,6 @@ int get_md_type_from_lk(int md_id)
 	if (md_id < MAX_MD_NUM)
 		return md_type_at_lk[md_id];
 	return 0;
-}
-
-static int __init early_init_dt_get_chosen(unsigned long node, const char *uname, int depth, void *data)
-{
-	if (depth != 1 || (strcmp(uname, "chosen") != 0 && strcmp(uname, "chosen@0") != 0))
-		return 0;
-	dt_chosen_node = node;
-	return 1;
 }
 
 #define MAX_LK_INFO_SIZE	(0x10000)
@@ -291,14 +283,11 @@ static void lk_dt_info_collect(void)
 	smem_layout_t smem_layout;
 	int md_id;
 
-	/* This function will initialize dt_chosen_node */
-	ret = of_scan_flat_dt(early_init_dt_get_chosen, NULL);
-	if (ret == 0) {
-		CCCI_UTIL_INF_MSG("device node no chosen node\n");
-		return;
-	}
+	dt_chosen_node = of_find_node_by_path("/chosen");
+	if (!dt_chosen_node)
+		dt_chosen_node = of_find_node_by_path("/chosen@0");
 
-	raw_ptr = (unsigned int *)of_get_flat_dt_prop(dt_chosen_node, "ccci,modem_info", NULL);
+	raw_ptr = (unsigned int *)of_get_property(dt_chosen_node, "ccci,modem_info", NULL);
 	if (raw_ptr == NULL) {
 		CCCI_UTIL_INF_MSG("ccci,modem_info not found\n");
 		return;

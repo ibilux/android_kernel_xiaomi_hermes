@@ -482,7 +482,7 @@ EXPORT_SYMBOL(flashlight_clear_brightness);
 /****************************************************************************
  * driver functions
  ***************************************************************************/
-static int __init mt65xx_leds_probe(struct platform_device *pdev)
+static int mt65xx_leds_probe(struct platform_device *pdev)
 {
 	int i;
 	int ret, rc;

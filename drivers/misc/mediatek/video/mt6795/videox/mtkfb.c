@@ -2175,57 +2175,49 @@ unsigned int islcmconnected = 0;
 unsigned int vramsize = 0;
 phys_addr_t fb_base = 0;
 static int is_videofb_parse_done;
-static int fb_early_init_dt_get_chosen(unsigned long node, const char *uname, int depth, void *p_ret_node)
-{
-	if (depth != 1 || (strcmp(uname, "chosen") != 0 && strcmp(uname, "chosen@0") != 0))
-		return 0;
 
-	*(unsigned long *)p_ret_node = node;
-	return 1;
-}
-
-int __parse_tag_videolfb_extra(unsigned long node)
+int __parse_tag_videolfb_extra(struct device_node *node)
 {
 	void *prop;
 	unsigned long size = 0;
 	u32 fb_base_h, fb_base_l;
 	int ret;
 
-	prop = of_get_flat_dt_prop(node, "atag,videolfb-fb_base_h", NULL);
+	prop = of_get_property(node, "atag,videolfb-fb_base_h", NULL);
 	if (!prop)
 		return -1;
 	fb_base_h = of_read_number(prop, 1);
 
-	prop = of_get_flat_dt_prop(node, "atag,videolfb-fb_base_l", NULL);
+	prop = of_get_property(node, "atag,videolfb-fb_base_l", NULL);
 	if (!prop)
 		return -1;
 	fb_base_l = of_read_number(prop, 1);
 
 	fb_base = ((u64) fb_base_h << 32) | (u64) fb_base_l;
 
-	prop = of_get_flat_dt_prop(node, "atag,videolfb-islcmfound", NULL);
+	prop = of_get_property(node, "atag,videolfb-islcmfound", NULL);
 	if (!prop)
 		return -1;
 	islcmconnected = of_read_number(prop, 1);
 
-	prop = of_get_flat_dt_prop(node, "atag,videolfb-fps", NULL);
+	prop = of_get_property(node, "atag,videolfb-fps", NULL);
 	if (!prop)
 		return -1;
 	lcd_fps = of_read_number(prop, 1);
 	if (0 == lcd_fps)
 		lcd_fps = 6000;
 
-	prop = of_get_flat_dt_prop(node, "atag,videolfb-vramSize", NULL);
+	prop = of_get_property(node, "atag,videolfb-vramSize", NULL);
 	if (!prop)
 		return -1;
 	vramsize = of_read_number(prop, 1);
 
-	prop = of_get_flat_dt_prop(node, "atag,videolfb-fb_base_l", NULL);
+	prop = of_get_property(node, "atag,videolfb-fb_base_l", NULL);
 	if (!prop)
 		return -1;
 	fb_base_l = of_read_number(prop, 1);
 
-	prop = of_get_flat_dt_prop(node, "atag,videolfb-lcmname", &size);
+	prop = of_get_property(node, "atag,videolfb-lcmname", &size);
 	if (!prop)
 		return -1;
 	if (size >= sizeof(mtkfb_lcm_name)) {
@@ -2239,12 +2231,12 @@ int __parse_tag_videolfb_extra(unsigned long node)
 	return 0;
 }
 
-int __parse_tag_videolfb(unsigned long node)
+int __parse_tag_videolfb(struct device_node *node)
 {
 	struct tag_videolfb *videolfb_tag = NULL;
 	unsigned long size = 0;
 
-	videolfb_tag = (struct tag_videolfb *)of_get_flat_dt_prop(node, "atag,videolfb", &size);
+	videolfb_tag = (struct tag_videolfb *)of_get_property(node, "atag,videolfb", &size);
 	if (videolfb_tag) {
 		memset((void *)mtkfb_lcm_name, 0, sizeof(mtkfb_lcm_name));
 		strcpy((char *)mtkfb_lcm_name, videolfb_tag->lcmname);
@@ -2269,20 +2261,23 @@ int __parse_tag_videolfb(unsigned long node)
 int _parse_tag_videolfb(void)
 {
 	int ret;
-	unsigned long node = 0;
+	struct device_node *chosen_node;
 
 	DISPCHECK("[DT][videolfb]isvideofb_parse_done = %d\n", is_videofb_parse_done);
 
 	if (is_videofb_parse_done)
 		return;
 
-	ret = of_scan_flat_dt(fb_early_init_dt_get_chosen, &node);
-	if (node) {
-		ret = __parse_tag_videolfb_extra(node);
+	chosen_node = of_find_node_by_path("/chosen");
+	if (!chosen_node)
+		chosen_node = of_find_node_by_path("/chosen@0");
+
+	if (chosen_node) {
+		ret = __parse_tag_videolfb(chosen_node);
 		if (!ret)
 			goto found;
 
-		ret = __parse_tag_videolfb(node);
+		ret = __parse_tag_videolfb_extra(chosen_node);
 		if (!ret)
 			goto found;
 	}

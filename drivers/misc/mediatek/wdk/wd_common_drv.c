@@ -538,7 +538,7 @@ int mtk_rgu_sysfs(void)
 #endif /*__ENABLE_WDT_SYSFS__*/
 /*---------------------------------------------------------------------------*/
 
-static int __cpuinit wk_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+static int wk_cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
 {
 	int hotcpu = (unsigned long)hcpu;
 
@@ -590,7 +590,7 @@ static int __cpuinit wk_cpu_callback(struct notifier_block *nfb, unsigned long a
 	return NOTIFY_OK;
 }
 
-static struct notifier_block cpu_nfb __cpuinitdata = {
+static struct notifier_block cpu_nfb = {
 	.notifier_call = wk_cpu_callback,
 	.priority = 6
 };

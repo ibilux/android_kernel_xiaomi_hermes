@@ -31,11 +31,7 @@
 #include <linux/of_device.h>
 #endif
 
-#ifdef CONFIG_USBIF_COMPLIANCE
 static struct musb_fifo_cfg mtu3d_cfg[] = {
-#else
-static struct musb_fifo_cfg __initdata mtu3d_cfg[] = {
-#endif
 { .hw_ep_num =  1, .style = FIFO_TX, .maxpacket = 1024, },
 { .hw_ep_num =  1, .style = FIFO_RX, .maxpacket = 1024, },
 { .hw_ep_num =  2, .style = FIFO_TX, .maxpacket = 1024, },

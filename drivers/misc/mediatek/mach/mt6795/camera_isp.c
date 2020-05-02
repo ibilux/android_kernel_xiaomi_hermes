@@ -695,8 +695,8 @@ static volatile MINT32 gEismetaInSOF_D;
 
 static volatile MINT32 EDBufQueRemainNodeCnt;	/* record remain node count(success/fail) excludes head when enque/deque control */
 
-static volatile wait_queue_head_t WaitQueueHead_EDBuf_WaitDeque;
-static volatile wait_queue_head_t WaitQueueHead_EDBuf_WaitFrame;
+static wait_queue_head_t WaitQueueHead_EDBuf_WaitDeque;
+static wait_queue_head_t WaitQueueHead_EDBuf_WaitFrame;
 static spinlock_t SpinLockEDBufQueList;
 #define _MAX_SUPPORT_P2_FRAME_NUM_ 512
 #define _MAX_SUPPORT_P2_BURSTQ_NUM_ 4
@@ -727,7 +727,7 @@ static volatile MINT32 P2_EDBUF_MList_LastBufIdx;
 static volatile ISP_EDBUF_MGR_STRUCT P2_EDBUF_MgrList[_MAX_SUPPORT_P2_PACKAGE_NUM_];
 
 static volatile MUINT32 g_regScen = 0xa5a5a5a5;
-static volatile spinlock_t SpinLockRegScen;
+static spinlock_t SpinLockRegScen;
 
 /*WARNING:AVOID_EXTERNS: externs should be avoided in .c files*/
 /*m4u_callback_ret_t ISP_M4U_TranslationFault_callback(int port, unsigned int mva, void *data);*/

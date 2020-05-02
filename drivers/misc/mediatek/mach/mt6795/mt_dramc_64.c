@@ -985,7 +985,7 @@ unsigned int read_dram_temperature(void)
     return value;
 }
 
-static int dt_scan_dram_info(unsigned long node, const char *uname, int depth, void *data)
+static int __init dt_scan_dram_info(unsigned long node, const char *uname, int depth, void *data)
 {
 	char *type = of_get_flat_dt_prop(node, "device_type", NULL);
 	__be32 *reg, *endp;

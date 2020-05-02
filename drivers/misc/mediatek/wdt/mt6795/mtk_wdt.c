@@ -389,40 +389,11 @@ void wdt_arch_reset(char mode)
 	wdt_mode_val &=(~MTK_WDT_MODE_AUTO_RESTART);
 	/* make sure WDT mode is hw reboot mode, can not config isr mode  */
 	wdt_mode_val &=(~(MTK_WDT_MODE_IRQ|MTK_WDT_MODE_ENABLE | MTK_WDT_MODE_DUAL_MODE));
-	if(mode)
-	{
-        #ifdef CONFIG_ARM64
-	    /*SW workaround for ROME plus
-              *mode 3 for Hotplug call reboot
-              *mode 2 for system call reboot
-              */
-        if(check_pmic_wrap_init()) { /*before PMIC used wrapper should check whether wrapper init done*/
-		     mt_pwrap_hal_init();
-		     //mt_pwrap_init();
-        }
-		wdt_mt6331_upmu_set_rg_rsv_swreg();
-		wdt_pmic_full_reset();
-		printk("wdt_arch_reset called@PMIC full reset mode=%d.\n", mode);
-        #endif
+	if (mode)
 		/* mode != 0 means by pass power key reboot, We using auto_restart bit as by pass power key flag */
-		 wdt_mode_val = wdt_mode_val | (MTK_WDT_MODE_KEY|MTK_WDT_MODE_EXTEN|MTK_WDT_MODE_AUTO_RESTART);
-		 
-	}else
-	{
-	  #ifndef CONFIG_MTK_AEE_MRDUMP
-        #ifdef CONFIG_ARM64
-        /*SW workaround for ROME plus*/
-        if(check_pmic_wrap_init()){
-            mt_pwrap_hal_init();
-        }
-        wdt_mt6331_upmu_set_rg_rsv_swreg();
-        wdt_pmic_full_reset();
-        printk("wdt_arch_reset called@PMIC full reset2 mode=%d.\n", mode);
-        #endif
-       #endif
-	       wdt_mode_val = wdt_mode_val | (MTK_WDT_MODE_KEY|MTK_WDT_MODE_EXTEN);
-		 
-	}
+		wdt_mode_val = wdt_mode_val | (MTK_WDT_MODE_KEY|MTK_WDT_MODE_EXTEN|MTK_WDT_MODE_AUTO_RESTART);
+	else
+		wdt_mode_val = wdt_mode_val | (MTK_WDT_MODE_KEY|MTK_WDT_MODE_EXTEN);
 
 	DRV_WriteReg32(MTK_WDT_MODE,wdt_mode_val);
 	printk("wdt_arch_reset called end  MTK_WDT_MODE =%x \n",wdt_mode_val);
@@ -926,7 +897,7 @@ static void __exit mtk_wdt_exit (void)
 {
 }
 /*this function is for those user who need WDT APIs before WDT driver's probe*/
-static void __init mtk_wdt_get_base_addr(void)
+static int __init mtk_wdt_get_base_addr(void)
 {
 #ifdef CONFIG_OF
 	struct device_node *np_rgu;
@@ -944,6 +915,7 @@ static void __init mtk_wdt_get_base_addr(void)
 	}
 	
 #endif
+	return 0;
 }
 core_initcall(mtk_wdt_get_base_addr);
 postcore_initcall(mtk_wdt_init);

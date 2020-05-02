@@ -1127,30 +1127,12 @@ static void musb_shutdown(struct platform_device *pdev)
 	|| defined(CONFIG_USB_MUSB_OMAP2PLUS_MODULE)	\
 	|| defined(CONFIG_USB_MUSB_AM35X)		\
 	|| defined(CONFIG_USB_MUSB_AM35X_MODULE)
-
-#ifdef CONFIG_USBIF_COMPLIANCE
 static ushort fifo_mode = 4;
-#else
-static ushort __initdata fifo_mode = 4;
-#endif
-
 #elif defined(CONFIG_USB_MUSB_UX500)			\
 	|| defined(CONFIG_USB_MUSB_UX500_MODULE)
-
-#ifdef CONFIG_USBIF_COMPLIANCE
 static ushort fifo_mode = 5;
 #else
-static ushort __initdata fifo_mode = 5;
-#endif
-
-#else
-
-#ifdef CONFIG_USBIF_COMPLIANCE
 static ushort fifo_mode = 2;
-#else
-static ushort __initdata fifo_mode = 2;
-#endif
-
 #endif
 
 /* "modprobe ... fifo_mode=1" etc */
@@ -1163,11 +1145,7 @@ MODULE_PARM_DESC(fifo_mode, "initial endpoint configuration");
  */
 
 /* mode 0 - fits in 2KB */
-#ifdef CONFIG_USBIF_COMPLIANCE
 static struct musb_fifo_cfg mode_0_cfg[] = {
-#else
-static struct musb_fifo_cfg __initdata mode_0_cfg[] = {
-#endif
 { .hw_ep_num = 1, .style = FIFO_TX,   .maxpacket = 512, },
 { .hw_ep_num = 1, .style = FIFO_RX,   .maxpacket = 512, },
 { .hw_ep_num = 2, .style = FIFO_RXTX, .maxpacket = 512, },
@@ -1176,11 +1154,7 @@ static struct musb_fifo_cfg __initdata mode_0_cfg[] = {
 };
 
 /* mode 1 - fits in 4KB */
-#ifdef CONFIG_USBIF_COMPLIANCE
 static struct musb_fifo_cfg mode_1_cfg[] = {
-#else
-static struct musb_fifo_cfg __initdata mode_1_cfg[] = {
-#endif
 { .hw_ep_num = 1, .style = FIFO_TX,   .maxpacket = 512, .mode = BUF_DOUBLE, },
 { .hw_ep_num = 1, .style = FIFO_RX,   .maxpacket = 512, .mode = BUF_DOUBLE, },
 { .hw_ep_num = 2, .style = FIFO_RXTX, .maxpacket = 512, .mode = BUF_DOUBLE, },
@@ -1189,11 +1163,7 @@ static struct musb_fifo_cfg __initdata mode_1_cfg[] = {
 };
 
 /* mode 2 - fits in 4KB */
-#ifdef CONFIG_USBIF_COMPLIANCE
 static struct musb_fifo_cfg mode_2_cfg[] = {
-#else
-static struct musb_fifo_cfg __initdata mode_2_cfg[] = {
-#endif
 { .hw_ep_num = 1, .style = FIFO_TX,   .maxpacket = 512, },
 { .hw_ep_num = 1, .style = FIFO_RX,   .maxpacket = 512, },
 { .hw_ep_num = 2, .style = FIFO_TX,   .maxpacket = 512, },
@@ -1203,11 +1173,7 @@ static struct musb_fifo_cfg __initdata mode_2_cfg[] = {
 };
 
 /* mode 3 - fits in 4KB */
-#ifdef CONFIG_USBIF_COMPLIANCE
 static struct musb_fifo_cfg mode_3_cfg[] = {
-#else
-static struct musb_fifo_cfg __initdata mode_3_cfg[] = {
-#endif
 { .hw_ep_num = 1, .style = FIFO_TX,   .maxpacket = 512, .mode = BUF_DOUBLE, },
 { .hw_ep_num = 1, .style = FIFO_RX,   .maxpacket = 512, .mode = BUF_DOUBLE, },
 { .hw_ep_num = 2, .style = FIFO_TX,   .maxpacket = 512, },
@@ -1217,11 +1183,7 @@ static struct musb_fifo_cfg __initdata mode_3_cfg[] = {
 };
 
 /* mode 4 - fits in 16KB */
-#ifdef CONFIG_USBIF_COMPLIANCE
 static struct musb_fifo_cfg mode_4_cfg[] = {
-#else
-static struct musb_fifo_cfg __initdata mode_4_cfg[] = {
-#endif
 { .hw_ep_num =  1, .style = FIFO_TX,   .maxpacket = 512, },
 { .hw_ep_num =  1, .style = FIFO_RX,   .maxpacket = 512, },
 { .hw_ep_num =  2, .style = FIFO_TX,   .maxpacket = 512, },
@@ -1252,11 +1214,7 @@ static struct musb_fifo_cfg __initdata mode_4_cfg[] = {
 };
 
 /* mode 5 - fits in 8KB */
-#ifdef CONFIG_USBIF_COMPLIANCE
 static struct musb_fifo_cfg mode_5_cfg[] = {
-#else
-static struct musb_fifo_cfg __initdata mode_5_cfg[] = {
-#endif
 { .hw_ep_num =  1, .style = FIFO_TX,   .maxpacket = 512, },
 { .hw_ep_num =  1, .style = FIFO_RX,   .maxpacket = 512, },
 { .hw_ep_num =  2, .style = FIFO_TX,   .maxpacket = 512, },
@@ -1314,13 +1272,7 @@ void ep0_setup(struct musb *musb, struct musb_hw_ep  *hw_ep0, const struct musb_
  *
  * returns negative errno or offset for next fifo.
  */
-#ifdef CONFIG_USBIF_COMPLIANCE
 static int fifo_setup(struct musb *musb, struct musb_hw_ep  *hw_ep, const struct musb_fifo_cfg *cfg, u16 offset)
-#else
-static int __init
-fifo_setup(struct musb *musb, struct musb_hw_ep  *hw_ep,
-		const struct musb_fifo_cfg *cfg, u16 offset)
-#endif
 {
 	u16	maxpacket = cfg->maxpacket;
 	//u16	c_off = offset >> 3;
@@ -1395,11 +1347,7 @@ struct musb_fifo_cfg ep0_cfg_u2 = {
 	.style = FIFO_RXTX, .maxpacket = 64,
 };
 
-#ifdef CONFIG_USBIF_COMPLIANCE
 static int ep_config_from_table(struct musb *musb)
-#else
-static int __init ep_config_from_table(struct musb *musb)
-#endif
 {
 	const struct musb_fifo_cfg	*cfg;
 	unsigned		i, n;
@@ -1546,11 +1494,7 @@ enum { MUSB_CONTROLLER_MHDRC, MUSB_CONTROLLER_HDRC, };
 /* Initialize MUSB (M)HDRC part of the USB hardware subsystem;
  * configure endpoints, or take their config from silicon
  */
-#ifdef CONFIG_USBIF_COMPLIANCE
 static int musb_core_init(u16 musb_type, struct musb *musb)
-#else
-static int __init musb_core_init(u16 musb_type, struct musb *musb)
-#endif
 {
 	//u8 reg;
 	//char *type;
@@ -2080,14 +2024,8 @@ const struct hc_driver musb_hc_driver = {
 /* --------------------------------------------------------------------------
  * Init support
  */
-#ifdef CONFIG_USBIF_COMPLIANCE
 static struct musb * allocate_instance(struct device *dev,
 		struct musb_hdrc_config *config, void __iomem *mbase)
-#else
-static struct musb *__init
-allocate_instance(struct device *dev,
-		struct musb_hdrc_config *config, void __iomem *mbase)
-#endif
 {
 	struct musb		*musb;
 	struct musb_hw_ep	*ep;
@@ -2199,12 +2137,7 @@ static void musb_free(struct musb *musb)
  * @mregs: virtual address of controller registers,
  *	not yet corrected for platform-specific offsets
  */
-#ifdef CONFIG_USBIF_COMPLIANCE
 static int musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
-#else
-static int __init
-musb_init_controller(struct device *dev, int nIrq, void __iomem *ctrl)
-#endif
 {
 	int			status;
 	struct musb		*musb;
@@ -2441,12 +2374,10 @@ end:
  * bridge to a platform device; this driver then suffices.
  */
 #ifdef CONFIG_USBIF_COMPLIANCE
-static int mu3d_normal_driver_on = 0 ;
+static int mu3d_normal_driver_on = 0;
+#endif
 
 static int musb_probe(struct platform_device *pdev)
-#else
-static int __init musb_probe(struct platform_device *pdev)
-#endif
 {
 	struct device	*dev = &pdev->dev;
 	int		irq = platform_get_irq_byname(pdev, MUSB_DRIVER_NAME);
