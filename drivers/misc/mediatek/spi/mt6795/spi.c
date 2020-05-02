@@ -1364,7 +1364,7 @@ static void mt_spi_cleanup(struct spi_device *spidev)
 	return;	
 }
 
-static int __init mt_spi_probe(struct platform_device *pdev)
+static int mt_spi_probe(struct platform_device *pdev)
 {
 	int	ret = 0;
 	int	irq;

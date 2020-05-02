@@ -2169,7 +2169,7 @@ static void _mt_cpufreq_set(enum mt_cpu_dvfs_id id, int new_opp_idx)
 
 static enum mt_cpu_dvfs_id _get_cpu_dvfs_id(unsigned int cpu_id);
 
-static int __cpuinit turbo_mode_cpu_callback(struct notifier_block *nfb,
+static int turbo_mode_cpu_callback(struct notifier_block *nfb,
 		unsigned long action, void *hcpu)
 {
 #if 1

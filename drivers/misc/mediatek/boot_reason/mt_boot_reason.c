@@ -64,7 +64,7 @@ static int __init dt_get_boot_reason(unsigned long node, const char *uname, int 
 #endif
 
 
-void init_boot_reason(unsigned int line)
+void __init init_boot_reason(unsigned int line)
 {
 #ifdef CONFIG_OF
 	int rc;
@@ -99,7 +99,8 @@ void init_boot_reason(unsigned int line)
 /* return boot reason */
 boot_reason_t get_boot_reason(void)
 {
-	init_boot_reason(__LINE__);
+	if (BOOT_REASON_INITIALIZED != atomic_read(&g_br_state))
+		pr_warn("%s (%d) state(%d)\n", __func__, __LINE__, atomic_read(&g_br_state));
 	return g_boot_reason;
 }
 

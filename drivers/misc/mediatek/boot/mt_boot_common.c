@@ -64,7 +64,7 @@ static int __init dt_get_boot_common(unsigned long node, const char *uname, int 
 #endif
 
 
-void init_boot_common(unsigned int line)
+void __init init_boot_common(unsigned int line)
 {
 #ifdef CONFIG_OF
 	int rc;
@@ -100,7 +100,10 @@ void init_boot_common(unsigned int line)
 /* return boot mode */
 BOOTMODE get_boot_mode(void)
 {
-	init_boot_common(__LINE__);
+	if (BM_INITIALIZED != atomic_read(&g_boot_init)) {
+		pr_warn("%s (%d) state(%d,%d)\n", __func__, __LINE__, atomic_read(&g_boot_init),
+			g_boot_mode);
+	}
 	return g_boot_mode;
 }
 EXPORT_SYMBOL(get_boot_mode);
@@ -108,7 +111,10 @@ EXPORT_SYMBOL(get_boot_mode);
 /* for convenience, simply check is meta mode or not */
 bool is_meta_mode(void)
 {
-	init_boot_common(__LINE__);
+	if (BM_INITIALIZED != atomic_read(&g_boot_init)) {
+		pr_warn("%s (%d) state(%d,%d)\n", __func__, __LINE__, atomic_read(&g_boot_init),
+			g_boot_mode);
+	}
 
 	if (g_boot_mode == META_BOOT)
 		return true;
@@ -119,7 +125,10 @@ EXPORT_SYMBOL(is_meta_mode);
 
 bool is_advanced_meta_mode(void)
 {
-	init_boot_common(__LINE__);
+	if (BM_INITIALIZED != atomic_read(&g_boot_init)) {
+		pr_warn("%s (%d) state(%d,%d)\n", __func__, __LINE__, atomic_read(&g_boot_init),
+			g_boot_mode);
+	}
 
 	if (g_boot_mode == ADVMETA_BOOT)
 		return true;

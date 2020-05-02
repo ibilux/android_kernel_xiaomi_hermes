@@ -347,8 +347,7 @@ void mt_copy_dbg_regs(int to, int from)
 
 
 #ifdef CONFIG_SMP
-int __cpuinit
-dbgregs_hotplug_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
+int dbgregs_hotplug_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
 {
 	unsigned long this_cpu = (unsigned long) hcpu;
 	unsigned int args=0;
@@ -411,7 +410,7 @@ dbgregs_hotplug_callback(struct notifier_block *nfb, unsigned long action, void 
 	return NOTIFY_OK;
 }
 
-static struct notifier_block __cpuinitdata cpu_nfb = {
+static struct notifier_block cpu_nfb = {
 	.notifier_call = dbgregs_hotplug_callback
 };
 
