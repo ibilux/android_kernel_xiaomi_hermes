@@ -8,4 +8,4 @@ obj-$(CONFIG_MTK_BMI160_ACC) += bmi160_acc/
 
 obj-y   +=  bmi160_stc/
 
-obj-y   +=  lsm6ds3/
+obj-$(CONFIG_MTK_LSM6DS3_ACC)   +=  lsm6ds3/

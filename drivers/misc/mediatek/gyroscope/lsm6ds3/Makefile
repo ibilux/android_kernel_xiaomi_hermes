@@ -1,4 +1,4 @@
 include $(srctree)/drivers/misc/mediatek/Makefile.custom
 
-obj-y	:=  lsm6ds3_gy.o
+obj-$(CONFIG_MTK_LSM6DS3_GYRO)	:=  lsm6ds3_gy.o
 
