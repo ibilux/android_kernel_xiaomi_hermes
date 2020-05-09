@@ -5,4 +5,4 @@ obj-y   +=  gyroscope.o gyro_factory.o
 
 obj-$(CONFIG_MTK_BMI160_GYRO) += bmi160_gyro/
 
-obj-y   +=  lsm6ds3/
+obj-$(CONFIG_MTK_LSM6DS3_GYRO)   +=  lsm6ds3/
