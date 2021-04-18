@@ -1427,6 +1427,50 @@ static ssize_t store_FG_Battery_CurrentConsumption(struct device *dev,
 static DEVICE_ATTR(FG_Battery_CurrentConsumption, 0664, show_FG_Battery_CurrentConsumption,
 		   store_FG_Battery_CurrentConsumption);
 
+/***===================== adb get battery UI_SOC ==== add by longcheer_liml_2015_10_21 ==========================***/
+static ssize_t show_Battery_UI_Soc(struct device *dev, struct device_attribute *attr,
+						  char *buf)
+{
+	int battery_capacity = 10;
+	battery_capacity = g_cw2015_capacity;
+	//battery_xlog_printk(BAT_LOG_CRTI, "[EM] battery_capacity UI_soc: %d\n", battery_capacity);
+	return sprintf(buf, "%u\n", battery_capacity);
+}
+
+static ssize_t store_Battery_UI_Soc(struct device *dev,
+						   struct device_attribute *attr, const char *buf,
+						   size_t size)
+{
+	//battery_xlog_printk(BAT_LOG_CRTI, "[EM] Not Support Write Function\n");
+	return size;
+}
+
+static DEVICE_ATTR(Battery_UI_Soc, 0664, show_Battery_UI_Soc,store_Battery_UI_Soc);
+
+
+/***===================== adb control battery charger enable ==== add by longcheer_liml_2015_09_02 ==========================***/
+
+static ssize_t show_ChargerEnable(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", Charger_enable_Flag);
+}
+
+static ssize_t store_ChargerEnable(struct device *dev, struct device_attribute *attr, const char *buf, size_t size)
+{
+	int charger_enable=0;
+
+	sscanf(buf, "%u", &charger_enable);
+
+	if(charger_enable<=0)
+		Charger_enable_Flag=0;
+	else
+		Charger_enable_Flag=1;
+
+	return size;
+}
+
+static DEVICE_ATTR(ChargerEnable, 0664, show_ChargerEnable, store_ChargerEnable);
+
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
 /* // Create File For EM : FG_SW_CoulombCounter */
 /* ///////////////////////////////////////////////////////////////////////////////////////// */
@@ -3730,6 +3774,8 @@ static int battery_probe(struct platform_device *dev)
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_FG_SW_CoulombCounter);
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_Charging_CallState);
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_Charger_Type);
+		ret_device_file = device_create_file(&(dev->dev), &dev_attr_ChargerEnable);
+		ret_device_file = device_create_file(&(dev->dev), &dev_attr_Battery_UI_Soc);	//add by longcheer_liml	
 #if defined(CONFIG_MTK_PUMP_EXPRESS_SUPPORT) || defined(CONFIG_MTK_PUMP_EXPRESS_PLUS_SUPPORT)
 		ret_device_file = device_create_file(&(dev->dev), &dev_attr_Pump_Express);
 #endif
