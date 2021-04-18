@@ -338,6 +338,7 @@ typedef enum {
 
 typedef enum {
 	DISP_FEATURE_TIME_SHARING = 0x00000001,
+	DISP_FEATURE_NO_PARGB = 0x00000020,
 } DISP_FEATURE;
 
 typedef struct disp_caps_t {
