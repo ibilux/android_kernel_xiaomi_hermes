@@ -481,26 +481,15 @@ static int cpufreq_stats_update(unsigned int cpu)
 
 void cpufreq_task_stats_init(struct task_struct *p)
 {
+	size_t alloc_size;
+	void *temp;
 	unsigned long flags;
 
 	spin_lock_irqsave(&task_time_in_state_lock, flags);
 	p->time_in_state = NULL;
 	spin_unlock_irqrestore(&task_time_in_state_lock, flags);
 	WRITE_ONCE(p->max_states, 0);
- 	spin_lock_irqsave(&task_concurrent_active_time_lock, flags);
-	p->concurrent_active_time = NULL;
-	spin_unlock_irqrestore(&task_concurrent_active_time_lock, flags);
-	spin_lock_irqsave(&task_concurrent_policy_time_lock, flags);
-	p->concurrent_policy_time = NULL;
-	spin_unlock_irqrestore(&task_concurrent_policy_time_lock, flags);
-}
 
-void cpufreq_task_stats_alloc(struct task_struct *p)
-{
-	size_t alloc_size;
-	void *temp;
-	unsigned long flags;
-	
 	if (!all_freq_table || !cpufreq_all_freq_init)
 		return;
 
@@ -528,13 +517,6 @@ void cpufreq_task_stats_alloc(struct task_struct *p)
 	spin_lock_irqsave(&task_concurrent_policy_time_lock, flags);
 	p->concurrent_policy_time = temp;
 	spin_unlock_irqrestore(&task_concurrent_policy_time_lock, flags);
-}
-
-void cpufreq_task_stats_free(struct task_struct *p)
-{
-	kfree(p->time_in_state);
-	kfree(p->concurrent_active_time);
-	kfree(p->concurrent_policy_time);
 }
 
 int proc_time_in_state_show(struct seq_file *m, struct pid *pid, struct task_struct *p)
