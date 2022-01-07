@@ -399,6 +399,9 @@ extern struct cpufreq_governor cpufreq_gov_conservative;
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_HOTPLUG)
 extern struct cpufreq_governor cpufreq_gov_hotplug;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_hotplug)
+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_THUNDERX)
+extern struct cpufreq_governor cpufreq_gov_thunderx;
+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_thunderx)
 #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_BALANCE)
 extern struct cpufreq_governor cpufreq_gov_balance;
 #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_balance)
